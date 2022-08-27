@@ -1,0 +1,35 @@
+# Logs
+*.log
+npm-debug.log*
+
+# Yarn
+.yarn/*
+!.yarn/patches
+!.yarn/releases
+!.yarn/plugins
+!.yarn/sdks
+!.yarn/versions
+.pnp.*
+
+# Preferences
+.env
+.vscode
+
+# Folders
+node_modules
+.yarn
+.github
+config
+database
+00_private
+assets
+
+# Files
+test.js
+commands.json
+
+# Misc
+.DS_STORE
+package.json
+package-lock.json
+yarn.lock
