@@ -3,9 +3,17 @@
 
 //load required modules
 const { ModalBuilder, TextInputBuilder, TextInputStyle, ActionRowBuilder } = require('discord.js');
+const { saveCustomCommand, getCustomCommands } = require('../../database/QueryManager');
+const { validURL, getUrlFileType } = require('../../utils/functions');
+
+//get extention types
+const { filetypes } = require('../../config/config.json');
 
 //construct the command and export
 module.exports.run = async (client, interaction) => {
+
+    //setup status value
+    var status = { valid: false, msg: '', details: undefined }
 
     //create custom command Modal Input Field
     const modal = new ModalBuilder()
@@ -16,7 +24,7 @@ module.exports.run = async (client, interaction) => {
                 new TextInputBuilder()
                     .setCustomId('ccName')
                     .setLabel('Command name')
-                    .setPlaceholder('Choose a command name...')
+                    .setPlaceholder('Choose a command name')
                     .setStyle(TextInputStyle.Short)
                     .setRequired(true)
                     .setMinLength(2)
@@ -25,8 +33,8 @@ module.exports.run = async (client, interaction) => {
             new ActionRowBuilder().setComponents(
                 new TextInputBuilder()
                     .setCustomId('ccDesc')
-                    .setLabel('Description')
-                    .setPlaceholder('Write a description...')
+                    .setLabel('Response')
+                    .setPlaceholder('What should the custom command say?')
                     .setStyle(TextInputStyle.Paragraph)
                     .setRequired(true)
                     .setMinLength(10)
@@ -35,48 +43,90 @@ module.exports.run = async (client, interaction) => {
             new ActionRowBuilder().setComponents(
                 new TextInputBuilder()
                     .setCustomId('ccImage')
-                    .setLabel('Image')
-                    .setPlaceholder('Put an image link here...')
+                    .setLabel('Image URL')
+                    .setPlaceholder('Provide image address, must be .png, .jpg, .jpeg or .gif (optional)')
                     .setStyle(TextInputStyle.Paragraph)
                     .setRequired(false)
                     .setMinLength(10)
                     .setMaxLength(100)),
+
+            new ActionRowBuilder().setComponents(
+                new TextInputBuilder()
+                    .setCustomId('ccCooldown')
+                    .setLabel('Cooldown Time')
+                    .setPlaceholder('Please put a cooldown time between 1 and 999 seconds')
+                    .setStyle(TextInputStyle.Short)
+                    .setRequired(true)
+                    .setMinLength(1)
+                    .setMaxLength(3)),
         ])
 
     //show modal to user
     await interaction.showModal(modal);
 
-
-
-
-
-
+    //get modal return
     const modalSubmitInteraction = await interaction.awaitModalSubmit({
-        filter: (i) => {
+        filter: async (i) => {
+            //get all submitted answers, by each value
+            const ccName = i.fields.fields.get('ccName');
+            const ccDesc = i.fields.fields.get('ccDesc');
+            const ccImage = i.fields.fields.get('ccImage');
+            const ccCooldown = i.fields.fields.get('ccCooldown');
 
+            //setup database structure
+            function customCommand(customName, customResponse, customImage, cooldown, role_perms) {
+                this.customName = customName;
+                this.customResponse = customResponse;
+                this.customImage = customImage;
+                this.cooldown = cooldown;
+                this.role_perms = role_perms;
+            }
+            //setup command details
+            const commandDetails = new customCommand(ccName.value, ccDesc.value, (ccImage.value == '') ? null : ccImage.value, ccCooldown.value, null)
+            status.valid = true, status.msg = 'Success', status.details = commandDetails
 
+            //validate image
+            if (ccImage.value != '') {
+                if (!validURL(ccImage.value)) status.valid = false, status.msg = 'Image URL is invalid'
+                else if (!filetypes.includes(getUrlFileType(ccImage.value))) status.valid = false, status.msg = 'URL is not a valid image type'
+            }
 
+            //validate if command already exist
+            const currentCommands = await getCustomCommands(interaction.guild);
+            if (currentCommands.map(c => c.commandName).includes(ccName.value)) status.valid = false, status.msg = `A command named \`${ccName.value}\` already exist`
+            if (client.commands.map(c => c.info.command.name).includes(ccName.value)) status.valid = false, status.msg = `Sorry, \`${ccName.value}\` can't be choosen, since it's a client-command`
 
-            console.log(i.fields);
+            //check if cooldown is valid number
+            if (!isFinite(ccCooldown.value)) status.valid = false, status.msg = `\`${ccCooldown.value}\` is not a valid time`
 
-
-
+            //if status is true, save to database
+            if (status.valid == true) await saveCustomCommand(interaction.guild, commandDetails);
 
             return true;
         }, time: 120000,
     })
 
+    //send succes or fail message
+    if (status.valid == true) {
+
+        //CREATE SLASH COMMAND!
 
 
+        //get a random sucess message
+        const successMsg = require('../../assets/success.json');
+        let idx = Math.floor(Math.random() * successMsg.length);
 
+        return modalSubmitInteraction.reply({
+            content: `${successMsg[idx].replace('{command}', `\`/${status.details.customName}\``)}`,
+            ephemeral: true,
+        });
+    }
 
-    modalSubmitInteraction.reply({
-        content: `Thank you for reporting`,
-        ephemeral: true,
-    });
-
-
-
+    if (status.valid == false)
+        return modalSubmitInteraction.reply({
+            content: `Oops! ${status.msg}`,
+            ephemeral: true,
+        });
 
 }
 
@@ -93,7 +143,7 @@ module.exports.info = {
         options: [], //type: Subcommand 1, SubcommandGroup 2, String 3, Integer 4, Boolean 5, User 6, Channel 7, Role 8, Mentionable 9, Number 10, Attachment 11
         modal: true,
         permission: [],
-        defaultMemberPermissions: ['KickMembers'],
+        defaultMemberPermissions: ['ManageGuild'],
         ephemeral: true
     }
 }

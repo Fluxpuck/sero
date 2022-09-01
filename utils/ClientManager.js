@@ -2,6 +2,7 @@
     The ClientManager contains all functions required for the bot client */
 
 //require packages
+const { ApplicationCommandPermissionType } = require('discord.js');
 const fs = require('fs');
 
 //check if filepath is a directory
@@ -70,7 +71,7 @@ module.exports = {
                 type: command.info.slash.type,
                 options: command.info.slash.options,
                 permission: command.info.slash.permission,
-                defaultMemberPermissionsi: command.info.slash.defaultMemberPermissions
+                defaultMemberPermissions: command.info.slash.defaultMemberPermissions
             }, guild.id).catch(err => console.log('Oops, something went wrong creating all commands: ', err));
         }
     },
@@ -122,8 +123,60 @@ module.exports = {
             type: commandFile.info.slash.type,
             options: commandFile.info.slash.options,
             permission: commandFile.info.slash.permission,
-            defaultMemberPermissionsi: commandFile.info.slash.defaultMemberPermissions
+            defaultMemberPermissions: commandFile.info.slash.defaultMemberPermissions
         }, guild.id).catch(err => console.log('Oops, something went wrong creating the command: ', err));
+    },
+
+    /** filter and add all custom command details
+     * @param {*} client 
+     * @param {*} guild 
+     * @param {*} commandDetails 
+     */
+    async addSlashCustomCommand(client, guild, commandDetails) {
+
+        //fetch command permission roles 
+        const savedRoles = commandDetails.commandPerms != null ? commandDetails.commandPerms.split(',') : []
+        var commandPerms = []
+
+        //setup the command permissions
+        savedRoles.forEach(roleId => {
+            commandPerms.push({
+                id: roleId,
+                type: 1, //Role 1, User 2, Channel 3
+                permission: true
+            })
+        });
+
+        //check for {mention}, add option
+        var commandOptions = []
+        if (commandDetails.commandResponse.includes('{mention}')) {
+            commandOptions.push({
+                name: 'user',
+                type: 6,
+                description: 'Choose a member to mention',
+                required: true
+            })
+        }
+
+        //insert application with client command details
+        await client.application.commands.create({
+            name: commandDetails.commandName,
+            description: `Custom Command - ${commandDetails.commandName}`,
+            type: 1,
+            options: commandOptions,
+            permission: commandPerms,
+        }, guild.id).catch(err => console.log('Oops, something went wrong creating the custom command: ', err));
+
+    },
+
+    /**
+     * @param {*} client 
+     * @param {*} guild 
+     */
+    async updateSlashCustomCommands(client, guild) {
+
+        //...
+
     },
 
     /** remove individual (guild) command
@@ -132,12 +185,12 @@ module.exports = {
      */
     async delSlashCommand(guild, application) {
         if (!application) return;
-        await guild.commands.delete(application.first().id)
+        await guild.commands.delete(application.id)
             .catch(err => console.log('Oops, something went wrong deleting the command: ', err));
     },
 
     /** write away all client and application (guild) commands
-     * @param {*} guild 
+     * @param {*} client 
      */
     async writeCommandsJSON(client) {
         //get all client command names
@@ -154,6 +207,6 @@ module.exports = {
         fs.writeFile('./config/commands.json', JSON.stringify(jsonArray), (err) => {
             if (err) console.log(err)
         })
-    }
+    },
 
 }

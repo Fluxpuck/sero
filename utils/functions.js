@@ -105,69 +105,22 @@ module.exports = {
         return timestamp
     },
 
-    /** seperate string on flags
-     * @param {*} str 
-     * @param {*} options 
-     * @param  {...any} flagsToDetect 
-     * @returns 
-     */
-    async separateFlags(str, options = {}, ...flagsToDetect) {
-        class customflag {
-            constructor(flagName, flagArgs, validArgs) {
-                this.name = flagName // Flag name
-                this.args = flagArgs // Flag arguments
-                this.validArgs = validArgs // Whether arguments are valid aka not undefined and have a length greater than 0
-            }
-        }
-        if (!options.hasOwnProperty("separator")) Object.assign(options, { separator: 0 })
-        if (!options.hasOwnProperty("allowDuplicates")) Object.assign(options, { allowDuplicates: false })
-        return new Promise((resolve, reject) => {
-            if (options.separator == 0) reject("Nothing to separate the flags with.")
-
-            // setting up variables
-            // check to see if we passed all flags we need as an array or individual arguments and makes an appropriate array from it.
-            let flags = Array.isArray(flagsToDetect[0]) ? flagsToDetect[0] : Array.from(flagsToDetect)
-
-            // split by '-' to see what we need and remove everything before 1st flag:
-            // there will be arguments with spaces inside.
-            let args = str.split(options.separator)
-            args.splice(0, 1)
-
-            // decide the datatype we need
-            // duplicates allowed -> array, if no then set.
-            let flagSet = options.allowDuplicates ? [] : new Set()
-
-            try {
-                args.forEach(arg => {
-
-                    // flag variables
-                    let currArgs = arg.split(' ') // for each argument with spaces inside, split it up
-                    let currentFlag = currArgs[0].toLowerCase()
-                    currArgs.splice(0, 1) // delete the flag from the arguments
-                    let currentFlagArgs = ''
-
-                    // if we don't need to search for the specific flag, ignore it.
-                    if (!flags.includes(currentFlag)) return
-
-                    // splitting and finding the flag, and the arguments of the flag
-                    currArgs.forEach(flagArg => {
-                        if (flagArg != '') currentFlagArgs += `${flagArg} `
-                    })
-                    currentFlagArgs = currentFlagArgs.substring(0, currentFlagArgs.length - 1) // remove the last space
-
-                    // check if the flag arguments are undefined - if no check if the arguments are actually valid (length > 0) - if yes - set to true
-                    let validArgs = currentFlagArgs == undefined ? false : currentFlagArgs.length > 0
-
-                    if (options.allowDuplicates) flagSet.push(new customflag(currentFlag, currentFlagArgs, validArgs))
-                    else flagSet.add(new customflag(currentFlag, currentFlagArgs, validArgs))
-                })
-
-                resolve(flagSet);
-            }
-            catch (err) {
-                reject(err);
-            }
-        })
+    validURL(str) {
+        var pattern = new RegExp('^(https?:\\/\\/)?' + // protocol
+            '((([a-z\\d]([a-z\\d-]*[a-z\\d])*)\\.)+[a-z]{2,}|' + // domain name
+            '((\\d{1,3}\\.){3}\\d{1,3}))' + // OR ip (v4) address
+            '(\\:\\d+)?(\\/[-a-z\\d%_.~+]*)*' + // port and path
+            '(\\?[;&a-z\\d%_.~+=-]*)?' + // query string
+            '(\\#[-a-z\\d_]*)?$', 'i'); // fragment locator
+        return !!pattern.test(str);
     },
+
+    getUrlFileType(url) {
+        const u = new URL(url)
+        const ext = u.pathname.split(".").pop()
+        return ext === "/"
+            ? undefined
+            : ext.toLowerCase()
+    }
 
 };

@@ -5,6 +5,9 @@
 //get credentials through dot envoirement
 require('dotenv').config({ path: './config/.env' });
 
+//load npm modules
+const NodeCache = require("node-cache");
+
 //setup DiscordJS Client
 const { Client, Collection, GatewayIntentBits, Partials } = require('discord.js');
 const INTENTS_BITFIELD = [GatewayIntentBits.Guilds, GatewayIntentBits.GuildMessages, GatewayIntentBits.MessageContent];
@@ -13,6 +16,7 @@ const client = new Client({ intents: [INTENTS_BITFIELD], partials: [Partials.Cha
 //set Client information 
 client.commands = new Collection();
 client.events = new Collection();
+client.cooldowns = new NodeCache();
 client.dependencies = require('./package.json').dependencies
 client.version = require('./package.json').version
 

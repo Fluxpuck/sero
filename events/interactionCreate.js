@@ -16,16 +16,11 @@ module.exports = async (client, interaction) => {
             if (commandFile.info.slash.ephemeral == false) await interaction.deferReply({ ephemeral: false }).catch((err) => { });
         }
         commandFile.run(client, interaction).catch((err) => { });
-    } else if (true) {
-
-
-
+    } else {
+        //fire custom command event
+        await interaction.deferReply({ ephemeral: false }).catch((err) => { });
         client.emit('customCommand', interaction);
-
-
-
     }
 
     return;
-
 }
