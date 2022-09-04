@@ -158,7 +158,7 @@ module.exports = {
             })
         }
 
-        //insert application with client command details
+        // insert application with client command details
         await client.application.commands.create({
             name: commandDetails.commandName,
             description: `Custom Command - ${commandDetails.commandName}`,

@@ -2,6 +2,7 @@
     For more information on the commands, please visit hyperbot.cc  */
 
 //load in Query
+const { removeCustomCommand } = require("../../database/QueryManager");
 const { delSlashCommand } = require("../../utils/ClientManager");
 
 //construct the command and export
@@ -17,8 +18,11 @@ module.exports.run = async (client, interaction) => {
             //find the correct slash command
             const selectedCommand = await applicationcommands.find(c => c.name == commandOptions.value.toLowerCase())
             if (selectedCommand) {
-                //remove command
-                await delSlashCommand(interaction.guild, selectedCommand)
+                //remove custom command application
+                delSlashCommand(interaction.guild, selectedCommand);
+                //remove custom command from database
+                removeCustomCommand(interaction.guild, selectedCommand.name.toLowerCase());
+
                 //reply to message
                 return interaction.editReply({
                     content: `\`${selectedCommand.name}\` was removed successfully!`,

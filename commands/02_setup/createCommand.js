@@ -8,6 +8,8 @@ const { validURL, getUrlFileType } = require('../../utils/functions');
 
 //get extention types
 const { filetypes } = require('../../config/config.json');
+const { addSlashCustomCommand } = require('../../utils/ClientManager');
+const { loadCommandCache } = require('../../utils/CacheManager');
 
 //construct the command and export
 module.exports.run = async (client, interaction) => {
@@ -108,9 +110,20 @@ module.exports.run = async (client, interaction) => {
 
     //send succes or fail message
     if (status.valid == true) {
+        //create custom command details
+        function customCommand(name, response, image, cooldown, perms) {
+            this.commandName = name;
+            this.commandResponse = response;
+            this.commandImage = image;
+            this.commandCooldown = cooldown;
+            this.commandPerms = perms
+        }
+        //setup the command detail structure
+        const commandDetails = new customCommand(status.details.customName, status.details.customResponse, status.details.customImage, status.details.cooldown, status.details.role_perms)
+        await addSlashCustomCommand(client, interaction.guild, commandDetails); //register application
 
-        //CREATE SLASH COMMAND!
-
+        //update command cache
+        await loadCommandCache(interaction.guild); //update cache
 
         //get a random sucess message
         const successMsg = require('../../assets/success.json');

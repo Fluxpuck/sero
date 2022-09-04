@@ -44,7 +44,6 @@ module.exports = async (client, interaction) => {
 
     //get mention detail, if available
     const mentionMember = interaction.options.get('user');
-    if (!mentionMember) return;
 
     //check for supported Tags
     const supportedTags = ['{author}', '{mention}']
