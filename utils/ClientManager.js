@@ -2,7 +2,6 @@
     The ClientManager contains all functions required for the bot client */
 
 //require packages
-const { ApplicationCommandPermissionType } = require('discord.js');
 const fs = require('fs');
 
 //check if filepath is a directory
@@ -158,7 +157,7 @@ module.exports = {
             })
         }
 
-        // insert application with client command details
+        //insert application with client command details
         await client.application.commands.create({
             name: commandDetails.commandName,
             description: `Custom Command - ${commandDetails.commandName}`,
@@ -173,9 +172,51 @@ module.exports = {
      * @param {*} client 
      * @param {*} guild 
      */
-    async updateSlashCustomCommands(client, guild) {
+    async updateSlashCustomCommands(client, guild, customCommands) {
+        await guild.commands.fetch().then(async applications => {
 
-        //...
+
+        })
+    },
+
+    /**
+     * @param {*} client 
+     * @param {*} guild 
+     */
+    async updateSlashCustomCommand(client, guild, commandDetails, selectedCommand) {
+
+        //fetch command permission roles 
+        const savedRoles = commandDetails.commandPerms != null ? commandDetails.commandPerms.split(',') : []
+        var commandPerms = []
+
+        //setup the command permissions
+        savedRoles.forEach(roleId => {
+            commandPerms.push({
+                id: roleId,
+                type: 1, //Role 1, User 2, Channel 3
+                permission: true
+            })
+        });
+
+        //check for {mention}, add option
+        var commandOptions = []
+        if (commandDetails.commandResponse.includes('{mention}')) {
+            commandOptions.push({
+                name: 'user',
+                type: 6,
+                description: 'Choose a member to mention',
+                required: true
+            })
+        }
+
+        //update application with client command details
+        await client.application.commands.edit(selectedCommand.id, {
+            name: commandDetails.commandName,
+            description: `Custom Command - ${commandDetails.commandName}`,
+            type: 1,
+            options: commandOptions,
+            permission: commandPerms,
+        }, guild.id).catch(err => console.log('Oops, something went wrong updating the custom command: ', err));
 
     },
 

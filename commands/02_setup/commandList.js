@@ -32,7 +32,7 @@ module.exports.run = async (client, interaction) => {
 
     //construct embedded message
     const messageEmbed = new EmbedBuilder()
-        .setTitle(`Command List - Custom Commands`)
+        .setTitle(`Custom Commands`)
         .setColor(embed.color)
         .setDescription(descPages[page].join('\n'))
 

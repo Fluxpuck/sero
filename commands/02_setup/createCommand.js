@@ -84,7 +84,7 @@ module.exports.run = async (client, interaction) => {
                 this.role_perms = role_perms;
             }
             //setup command details
-            const commandDetails = new customCommand(ccName.value, ccDesc.value, (ccImage.value == '') ? null : ccImage.value, ccCooldown.value, null)
+            const commandDetails = new customCommand(ccName.value.toLowerCase(), ccDesc.value, (ccImage.value == '') ? null : ccImage.value, ccCooldown.value, null)
             status.valid = true, status.msg = 'Success', status.details = commandDetails
 
             //validate image
@@ -119,18 +119,18 @@ module.exports.run = async (client, interaction) => {
             this.commandPerms = perms
         }
         //setup the command detail structure
-        const commandDetails = new customCommand(status.details.customName, status.details.customResponse, status.details.customImage, status.details.cooldown, status.details.role_perms)
+        const commandDetails = new customCommand(status.details.customName.toLowerCase(), status.details.customResponse, status.details.customImage, status.details.cooldown, status.details.role_perms)
         await addSlashCustomCommand(client, interaction.guild, commandDetails); //register application
 
         //update command cache
         await loadCommandCache(interaction.guild); //update cache
 
-        //get a random sucess message
-        const successMsg = require('../../assets/success.json');
-        let idx = Math.floor(Math.random() * successMsg.length);
+        //get a random success message
+        const { create_success } = require('../../assets/messages.json');
+        let idx = Math.floor(Math.random() * create_success.length);
 
         return modalSubmitInteraction.reply({
-            content: `${successMsg[idx].replace('{command}', `\`/${status.details.customName}\``)}`,
+            content: `${create_success[idx].replace('{command}', `\`/${status.details.customName}\``)}`,
             ephemeral: true,
         });
     }
@@ -146,10 +146,10 @@ module.exports.run = async (client, interaction) => {
 //command information
 module.exports.info = {
     command: {
-        name: 'createcommand',
+        name: 'create-command',
         category: 'Custom Commands',
         desc: 'Create a new custom command',
-        usage: '/createcommand'
+        usage: '/create-command'
     },
     slash: {
         type: 1, //ChatInput 1, User 2, Message 3

@@ -3,9 +3,10 @@
 
 //import styling from assets
 const embed = require('../../assets/embed.json');
+const { WEB_button, BOT_BUTTON } = require('../../assets/buttons');
 
 //load required modules
-const { EmbedBuilder } = require('discord.js');
+const { EmbedBuilder, ActionRowBuilder } = require('discord.js');
 const { capitalize } = require('../../utils/functions');
 
 //construct the command and export
@@ -18,7 +19,7 @@ module.exports.run = async (client, interaction) => {
 
     //setup the embedded message
     const messageEmbed = new EmbedBuilder()
-        .setThumbnail(client.user.displayAvatarURL({ dynamic: false }))
+        // .setThumbnail(client.user.displayAvatarURL({ dynamic: false }))
         .setColor(embed.color)
     // .setFooter({ text: `${interaction.user.tag}`, iconURL: interaction.user.displayAvatarURL({ dynamic: false }) });
 
@@ -28,9 +29,10 @@ module.exports.run = async (client, interaction) => {
 
         //general embed description
         messageEmbed
-            .setTitle(`${client.user.username} - Commandlist`)
-            .setDescription(`Here is a list with all ${clientCommands.length} available commands.\
-            \ Use command \`/help [command]\` to get more detailed information.`)
+            .setTitle(`Help`)
+            .setDescription(`Hey, this is **${client.user.username}** bot, here to make it easy for you to *create* and *use* __custom commands__ in your server.
+            \nIf you need any help, feel free to join our community at [http://fluxpuck.com/discord](http://fluxpuck.com/discord).
+            \nA list of all ${clientCommands.length} available commands is below, use \`/help [command]\` to get more detailed information.`)
 
         //sort commands by category
         const groupBy = (x, f) => x.reduce((a, b, i, x) => { const k = f(b, i, x); a.get(k)?.push(b) ?? a.set(k, [b]); return a; }, new Map());
@@ -51,9 +53,14 @@ ${value.map(c => c.command.name).join('\n')}
             )
         }
 
+        //construct website button
+        const web_buttons = new ActionRowBuilder()
+            .addComponents(WEB_button, BOT_BUTTON);
+
         //reply to message
         return interaction.editReply({
             embeds: [messageEmbed],
+            components: [web_buttons],
             ephemeral: false
         }).catch((err) => { });
 

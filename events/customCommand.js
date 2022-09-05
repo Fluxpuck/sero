@@ -22,25 +22,18 @@ module.exports = async (client, interaction) => {
             ephemeral: true
         }).catch(err => { });
     }
-
-    //get the channel from the guild interaction
-    const channel = await interaction.guild.channels.fetch(interaction.channelId);
-    if (!channel) return interaction.followUp({
-        content: `Oops, Sorry. Couldn't access the channel.`,
-        ephemeral: true
-    }).catch(err => { });
-
     //(if channel was found) delete the interaction
     else interaction.deleteReply().catch(err => { });
 
     //get values from command details
-    let { commandName, commandResponse, commandImage, cooldown } = commandDetails
+    let { commandName, commandResponse, commandImage, commandCooldown } = commandDetails
 
     //check, and set cooldown
     const cooldownKey = `${interaction.user.id}_${commandName}`
+
     //check if author has cooldown, else setup cooldown
     if (client.cooldowns.has(cooldownKey)) return;
-    else client.cooldowns.set(cooldownKey, commandDetails, cooldown);
+    else client.cooldowns.set(cooldownKey, commandDetails, commandCooldown);
 
     //get mention detail, if available
     const mentionMember = interaction.options.get('user');
@@ -71,9 +64,21 @@ module.exports = async (client, interaction) => {
     if (commandImage) messageEmbed.setImage(commandImage)
 
     //reply to message
-    return channel.send({
+    return interaction.channel.send({
         embeds: [messageEmbed],
         ephemeral: false
-    }).catch((err) => { });
+    }).catch((err) => {
+
+        //get a random success message
+        const { send_error } = require('../assets/messages.json');
+        let idx = Math.floor(Math.random() * send_error.length);
+
+        //if bot does not have 'message send' permissions in the channel, return error message
+        if (err.rawError.code = 50001) return interaction.followUp({
+            content: `${send_error[idx]}`,
+            ephemeral: true
+        }).catch(err => { });
+
+    });
 
 }

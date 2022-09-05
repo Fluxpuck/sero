@@ -6,10 +6,10 @@ module.exports.run = async (client, interaction) => {
 
     //set timer for interaction reply
     const wait = require('node:timers/promises').setTimeout;
-    await wait(800);
+    await wait(800); //wait before giving a reply
 
     //reply with Discord Latency
-    interaction.editReply(`Pong! → \ ${Math.round(client.ws.ping)}ms`)
+    return interaction.editReply(`Pong! → \ ${Math.round(client.ws.ping)}ms`)
 
 }
 

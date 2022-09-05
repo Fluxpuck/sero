@@ -1,6 +1,5 @@
 /*  Fluxpuck © Creative Commons Attribution-NoDerivatives 4.0 International Public License  
-    Hyper is a comprehensive Discord moderation bot, developed for private use.
-    Developed on Discord.js v13.3.1 and Discord Rest API v9 */
+    Hyper is a comprehensive Discord moderation bot, developed for private use. */
 
 //get credentials through dot envoirement
 require('dotenv').config({ path: './config/.env' });
@@ -10,7 +9,7 @@ const NodeCache = require("node-cache");
 
 //setup DiscordJS Client
 const { Client, Collection, GatewayIntentBits, Partials } = require('discord.js');
-const INTENTS_BITFIELD = [GatewayIntentBits.Guilds, GatewayIntentBits.GuildMessages, GatewayIntentBits.MessageContent];
+const INTENTS_BITFIELD = [GatewayIntentBits.Guilds, GatewayIntentBits.GuildMessages];
 const client = new Client({ intents: [INTENTS_BITFIELD], partials: [Partials.Channel] });
 
 //set Client information 
