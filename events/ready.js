@@ -11,7 +11,7 @@ const ClientManager = require('../utils/ClientManager');
 const DataManager = require('../database/DbManager');
 
 //require Queries
-const { loadCommandCache } = require('../utils/CacheManager');
+const { loadCommandCache, loadGuildPrefixes } = require('../utils/CacheManager');
 const { getCustomCommands } = require('../database/QueryManager');
 
 //exports "ready" event
@@ -35,48 +35,60 @@ module.exports = async (client) => {
         await DataManager.UpdateGuildTable();
         //load guild specific values
         await loadCommandCache(guild);
+        await loadGuildPrefixes(guild);
     }
 
     //register or update slash commands
     for await (let guild of guilds) {
-        await guild.commands.fetch().then(async applicationcommands => {
 
-            //put application names and client command names in arrays
-            const commandNames = client.commands.map(c => c.info.command.name); //client commands (files)
-            const applicationNames = applicationcommands.map(a => a.name); //application command (guild)
-            const customCommands = await getCustomCommands(guild);
-            const customNames = customCommands.map(c => c.commandName); //custom commands (database)
+        //get all current Application Commands & map command names
+        const applicationsCommands = await guild.commands.fetch();
+        const applicationNames = applicationsCommands.map(a => a.name);
+        //get all client command & map command names
+        const commandNames = client.commands.map(c => c.info.command.name);
+        //fetch all custom commands & map command names
+        const customCommands = await getCustomCommands(guild);
+        const customNames = customCommands.map(c => c.commandName);
 
-            //merge merge client and custom commands, to see if there are any differences
-            const MergedCommands = commandNames.concat(customNames)
+        //merge client and custom commands, to see if there are any differences
+        const mergedCommands = commandNames.concat(customNames);
+        //find the new and old commands
+        const newCommands = mergedCommands.filter(x => applicationNames.indexOf(x) === -1);
+        const oldCommands = applicationNames.filter(e => !mergedCommands.find(a => e === a));
 
-            //find the new and old commands
-            const newCommands = MergedCommands.filter(x => applicationNames.indexOf(x) === -1);
-            const oldCommands = applicationNames.filter(e => !MergedCommands.find(a => e === a));
-
-            //register every new command as application
-            for await (let command of newCommands) {
-                //get client command details
-                const commandFile = client.commands.get(command);
-                if (commandFile) await ClientManager.addSlashCommand(client, guild, commandFile);
-                else { //get custom command details
-                    const customFile = customCommands.find(c => c.commandName == command)
-                    if (customFile) await ClientManager.addSlashCustomCommand(client, guild, customFile);
-                }
+        //register all new commands
+        for (let command of newCommands) {
+            //get client command details
+            const commandFile = client.commands.get(command);
+            if (commandFile) await ClientManager.addSlashCommand(client, guild, commandFile);
+            else {
+                //get custom command details
+                const customFile = customCommands.find(c => c.commandName == command)
+                if (customFile) await ClientManager.addSlashCustomCommand(client, guild, customFile);
             }
+        }
 
-            //remove every old command as application
-            for await (let command of oldCommands) {
-                //get application command details
-                const delCommand = applicationcommands.find(a => a.name === command);
-                if (delCommand) await ClientManager.delSlashCommand(guild, delCommand);
-            }
+        //remove old commands
+        for (let command of oldCommands) {
+            //get application command details
+            const delCommand = applicationsCommands.find(a => a.name === command);
+            if (delCommand) await ClientManager.delSlashCommand(guild, delCommand);
+        }
 
-            //update client commands
-            ClientManager.updateSlashCommands(client, guild);
-            //update all custom commands
-            ClientManager.updateSlashCustomCommands(client, guild);
-        })
+        // //update all current commands
+        // for await (let command of applicationsCommands.values()) {
+        //     //check if client command or custom commands...
+        //     if (commandNames.includes(command.name)) {
+        //         await ClientManager.updateSlashCommand(client, guild, command)
+        //     }
+        //     if (customNames.includes(command.name)) {
+        //         const commandDetails = customCommands.find(c => c.commandName == command.name)
+        //         await ClientManager.updateSlashCustomCommand(client, guild, commandDetails, command)
+        //     }
+        // }
+
+        //add application commands to guild collection
+        guild.applicationCommands = applicationsCommands;
     }
 
     //write applications to json

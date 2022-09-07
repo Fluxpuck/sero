@@ -78,24 +78,20 @@ module.exports = {
     /** update all application (guild) commands
      * @param {Collection} client
      * @param {Collection} guild 
+     * @param {Collection} application 
      */
-    async updateSlashCommands(client, guild) {
-        await guild.commands.fetch().then(async applications => {
-            //go over all commands and update them
-            for await (let application of applications.values()) {
-                //get client command and update application
-                const commandFile = client.commands.get(application.name);
-                if (!commandFile) return;
-                //update application with client command details
-                client.application.commands.edit(application.id, {
-                    name: commandFile.info.command.name,
-                    description: commandFile.info.command.desc,
-                    type: commandFile.info.slash.type,
-                    options: commandFile.info.slash.options,
-                    defaultMemberPermissions: commandFile.info.slash.defaultMemberPermissions,
-                }, [guild.id]).catch(err => console.log('Oops, something went wrong editting all commands: ', err));
-            }
-        })
+    async updateSlashCommand(client, guild, application) {
+        //get client command and update application
+        const commandFile = client.commands.get(application.name);
+        if (!commandFile) return;
+        //update application with client command details
+        client.application.commands.edit(application.id, {
+            name: commandFile.info.command.name,
+            description: commandFile.info.command.desc,
+            type: commandFile.info.slash.type,
+            options: commandFile.info.slash.options,
+            defaultMemberPermissions: commandFile.info.slash.defaultMemberPermissions,
+        }, [guild.id]).catch(err => console.log('Oops, something went wrong editting all commands: ', err));
     },
 
     /** remove all application (guild) commands
@@ -106,6 +102,16 @@ module.exports = {
             if (applications.size <= 0) return;
             return guild.commands.set([]);
         }).catch(err => console.log('Oops, something went wrong removing all commands: ', err));
+    },
+
+    /** remove individual (guild) command
+     * @param {*} guild 
+     * @param {*} commandName 
+     */
+    async delSlashCommand(guild, application) {
+        if (!application) return;
+        await guild.commands.delete(application.id)
+            .catch(err => console.log('Oops, something went wrong deleting the command: ', err));
     },
 
     /** insert individual (guild) command
@@ -159,7 +165,7 @@ module.exports = {
 
         //insert application with client command details
         await client.application.commands.create({
-            name: commandDetails.commandName,
+            name: `${guild.prefix}${commandDetails.commandName}`,
             description: `Custom Command - ${commandDetails.commandName}`,
             type: 1,
             options: commandOptions,
@@ -171,17 +177,8 @@ module.exports = {
     /**
      * @param {*} client 
      * @param {*} guild 
-     */
-    async updateSlashCustomCommands(client, guild, customCommands) {
-        await guild.commands.fetch().then(async applications => {
-
-
-        })
-    },
-
-    /**
-     * @param {*} client 
-     * @param {*} guild 
+     * @param {*} commandDetails 
+     * @param {*} selectedCommand 
      */
     async updateSlashCustomCommand(client, guild, commandDetails, selectedCommand) {
 
@@ -211,23 +208,13 @@ module.exports = {
 
         //update application with client command details
         await client.application.commands.edit(selectedCommand.id, {
-            name: commandDetails.commandName,
+            name: `${guild.prefix}${commandDetails.commandName}`,
             description: `Custom Command - ${commandDetails.commandName}`,
             type: 1,
             options: commandOptions,
             permission: commandPerms,
         }, guild.id).catch(err => console.log('Oops, something went wrong updating the custom command: ', err));
 
-    },
-
-    /** remove individual (guild) command
-     * @param {*} guild 
-     * @param {*} commandName 
-     */
-    async delSlashCommand(guild, application) {
-        if (!application) return;
-        await guild.commands.delete(application.id)
-            .catch(err => console.log('Oops, something went wrong deleting the command: ', err));
     },
 
     /** write away all client and application (guild) commands

@@ -33,7 +33,7 @@ module.exports.run = async (client, interaction) => {
     //construct embedded message
     const messageEmbed = new EmbedBuilder()
         .setTitle(`Custom Commands`)
-        .setColor(embed.color)
+        .setColor(embed.light_color)
         .setDescription(descPages[page].join('\n'))
 
     //if no pages... return message
@@ -62,7 +62,9 @@ module.exports.run = async (client, interaction) => {
         }).catch((err) => { });
 
         //start collecting button presses for paginator
-        let collector = await new InteractionCollector(client, { message: page_interaction, componentType: 2, time: 60000 }) //ActionRow 1, Button 2, SelectMenu 3, TextInput 4
+        let collector = await new InteractionCollector(client, { message: page_interaction, componentType: 2, time: 120000 }) //ActionRow 1, Button 2, SelectMenu 3, TextInput 4
+            .catch((err) => { });
+
         //collect button interactions
         collector.on('collect', async (button) => {
 
@@ -114,8 +116,7 @@ module.exports.run = async (client, interaction) => {
                 components: [page_buttons]
             });
 
-        });
-
+        })
 
     }
 }
@@ -125,7 +126,7 @@ module.exports.info = {
     command: {
         name: 'commandlist',
         category: 'Custom Commands',
-        desc: 'Shows a list with all the custom commands',
+        desc: 'Shows a list with all custom commands',
         usage: '/commandlist'
     },
     slash: {

@@ -5,7 +5,8 @@
 const NodeCache = require("node-cache");
 
 //load functions from Managers
-const { getCustomCommands } = require("../database/QueryManager");
+const { getCustomCommands, getGuildPrefix } = require("../database/QueryManager");
+const { defaultPrefix } = require('../config/config.json');
 
 //build cache
 const guildCommandCache = new NodeCache();
@@ -29,7 +30,16 @@ module.exports = {
         const commandCache = guildCommandCache.get(guild.id);
         const commandDetails = commandCache.filter(c => c.commandName === inputCommand);
         return commandDetails[0]
-    }
+    },
+
+    /** load prefix from database to guild collection
+     * @param {Object} guild
+     */
+    async loadGuildPrefixes(guild) {
+        var prefix = await getGuildPrefix(guild.id); //get prefix from database
+        if (prefix == undefined || prefix == null || prefix == false) prefix = defaultPrefix; //set prefix value
+        guild.prefix = prefix; //set custom values and save in guild
+    },
 
 
 

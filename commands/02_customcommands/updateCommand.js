@@ -172,7 +172,7 @@ module.exports.info = {
     command: {
         name: 'update-command',
         category: 'Custom Commands',
-        desc: 'Change and update a current custom command',
+        desc: 'Change the details of a custom commands',
         usage: '/update-command'
     },
     slash: {

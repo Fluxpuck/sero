@@ -62,7 +62,7 @@ module.exports.info = {
     command: {
         name: 'remove-command',
         category: 'Custom Commands',
-        desc: 'Remove a custom command',
+        desc: 'Remove a custom command from the server',
         usage: '/remove-command [commandname]'
     },
     slash: {

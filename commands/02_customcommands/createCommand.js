@@ -148,7 +148,7 @@ module.exports.info = {
     command: {
         name: 'create-command',
         category: 'Custom Commands',
-        desc: 'Create a new custom command',
+        desc: 'Create and add a new custom command to the server',
         usage: '/create-command'
     },
     slash: {

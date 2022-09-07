@@ -2,11 +2,11 @@
     This event is triggers by Discord and does processing of data  */
 
 //require modules
-const DbManager = require('../database/DbManager');
+const { removeSlashCommands } = require("../utils/ClientManager");
 
 module.exports = async (client, guild) => {
 
-
+    removeSlashCommands(guild);
 
     return;
 }

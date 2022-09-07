@@ -19,9 +19,7 @@ module.exports.run = async (client, interaction) => {
 
     //setup the embedded message
     const messageEmbed = new EmbedBuilder()
-        // .setThumbnail(client.user.displayAvatarURL({ dynamic: false }))
-        .setColor(embed.color)
-    // .setFooter({ text: `${interaction.user.tag}`, iconURL: interaction.user.displayAvatarURL({ dynamic: false }) });
+        .setColor(embed.light_color)
 
     //check for command options
     const commandOptions = interaction.options.get('command');
@@ -30,9 +28,9 @@ module.exports.run = async (client, interaction) => {
         //general embed description
         messageEmbed
             .setTitle(`Help`)
-            .setDescription(`Hey, this is **${client.user.username}** bot, here to make it easy for you to *create* and *use* __custom commands__ in your server.
-            \nIf you need any help, feel free to join our community at [http://fluxpuck.com/discord](http://fluxpuck.com/discord).
-            \nA list of all ${clientCommands.length} available commands is below, use \`/help [command]\` to get more detailed information.`)
+            .setDescription(`Hey, this is **${client.user.username}** bot, here to make it easy for you to *create* and *use* __custom commands__ in your server
+            \nIf you need any help, feel free to join our community at [http://fluxpuck.com/discord](http://fluxpuck.com/discord) or checkout the full commandlist on [https://fluxpuck.com/commands](https://fluxpuck.com/commands)
+            \nA list of all ${clientCommands.length} available commands is below, use \`/help [command]\` to get more detailed information`)
 
         //sort commands by category
         const groupBy = (x, f) => x.reduce((a, b, i, x) => { const k = f(b, i, x); a.get(k)?.push(b) ?? a.set(k, [b]); return a; }, new Map());
@@ -44,9 +42,7 @@ module.exports.run = async (client, interaction) => {
                 {
                     name: `${capitalize(key)}`,
                     value: `
-\`\`\`
-${value.map(c => c.command.name).join('\n')}
-\`\`\`
+${value.map(c => `\`/${c.command.name}\``).join('\n')}
                         `,
                     inline: true
                 }
@@ -71,11 +67,12 @@ ${value.map(c => c.command.name).join('\n')}
 
         //general embed description
         messageEmbed
-            .setTitle(`${capitalize(inputOption)} - Command Information`)
-            .addFields(
-                { name: `Description`, value: `\`\`\`${commandInfo.command.desc}\`\`\``, inline: false },
-                { name: `Usage`, value: `\`\`\`${commandInfo.command.usage}\`\`\``, inline: false },
-            )
+            .setTitle(`Help → ${commandInfo.command.name}`)
+            .setDescription(`
+**Desc**        - ${commandInfo.command.desc}
+**Usage**       - \`${commandInfo.command.usage}\`
+**Link**        - [${commandInfo.command.name}](https://fluxpuck.com/commands#${commandInfo.command.name})`)
+
 
         //reply to message
         return interaction.editReply({
@@ -95,7 +92,7 @@ module.exports.info = {
     command: {
         name: 'help',
         category: 'misc',
-        desc: 'Show all commands, or get more detailed information about a specific command',
+        desc: 'Get a list of all available commands',
         usage: '/help [command]'
     },
     slash: {

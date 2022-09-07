@@ -55,9 +55,12 @@ module.exports = async (client, interaction) => {
         }
     }
 
+    //randomly choose one of the pattern colours
+    let idx = Math.floor(Math.random() * embed.colourPallet.length);
+
     //construct embedded message
     const messageEmbed = new EmbedBuilder()
-        .setColor(embed.color)
+        .setColor(embed.colourPallet[idx])
         .setDescription(commandResponse)
 
     //check if image is available

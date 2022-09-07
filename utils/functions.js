@@ -121,6 +121,14 @@ module.exports = {
         return ext === "/"
             ? undefined
             : ext.toLowerCase()
+    },
+
+    charIsLetter(char) {
+        if (typeof char !== 'string') {
+            return false;
+        }
+
+        return char.toLowerCase() !== char.toUpperCase();
     }
 
 };

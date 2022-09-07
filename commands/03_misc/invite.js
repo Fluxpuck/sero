@@ -14,7 +14,7 @@ module.exports.run = async (client, interaction) => {
 
     //reply with Discord Latency
     return interaction.editReply({
-        content: `Hey, this is **${client.user.username}** bot. I was created to make it easy for you to *create* and *use* __custom commands__ in your server.\nClick the button below to invite me to your server.`,
+        content: `Hey, this is **${client.user.username}**, here to help *create* and *use* __custom commands__.\nClick the button below to invite me to your server`,
         components: [web_button]
     })
 
@@ -26,7 +26,7 @@ module.exports.info = {
     command: {
         name: 'invite',
         category: 'misc',
-        desc: 'Invite Flux to your own server!',
+        desc: 'Invite the bot to your own server',
         usage: '/invite'
     },
     slash: {
