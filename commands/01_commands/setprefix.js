@@ -84,7 +84,7 @@ module.exports.info = {
         ],
         modal: false,
         permission: [],
-        defaultMemberPermissions: ['SendMessages'],
+        defaultMemberPermissions: ['ManageGuild'],
         ephemeral: true
     }
 }

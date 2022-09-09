@@ -48,7 +48,7 @@ module.exports = {
                 if (txt.charAt(0) == "'") {
                     return
                 } else {
-                    return txt.charAt(0).toUpperCase() + txt.substr(1).toLowerCase();
+                    return txt.charAt(0).toUpperCase() + txt.substring(1).toLowerCase();
                 }
             }
         );
@@ -124,10 +124,7 @@ module.exports = {
     },
 
     charIsLetter(char) {
-        if (typeof char !== 'string') {
-            return false;
-        }
-
+        if (typeof char !== 'string') return false;
         return char.toLowerCase() !== char.toUpperCase();
     }
 

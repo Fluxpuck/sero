@@ -21,11 +21,11 @@ module.exports.run = async (client, interaction) => {
 
     //go over all command and push to desc array
     for await (let command of customCommands) {
-        descArray.push(`command:   **${command.commandName}**\n\`\`\`${command.commandResponse}\`\`\``)
+        descArray.push(`\`/${interaction.guild.prefix}${command.commandName}\` → ${command.commandResponse}`)
     }
 
     //slice desc array into chunks (pages)
-    const descPages = chunk(descArray, 5);
+    const descPages = chunk(descArray, 10);
 
     //setup pages & max page length
     let page = 0, maxpages = descPages.length - 1;

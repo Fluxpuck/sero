@@ -3,7 +3,7 @@
 
 //load required modules
 const { ModalBuilder, TextInputBuilder, TextInputStyle, ActionRowBuilder } = require('discord.js');
-const { updateCustomCommand, getCustomCommands } = require('../../database/QueryManager');
+const { updateCustomCommand } = require('../../database/QueryManager');
 const { getCommandFromCache } = require('../../utils/CacheManager');
 const { validURL, getUrlFileType } = require('../../utils/functions');
 
@@ -20,17 +20,17 @@ module.exports.run = async (client, interaction) => {
     if (commandOptions != null) {
 
         //set value for input command
-        const userInputCommand = commandOptions.value.toLowerCase();
+        var userInputCommand = commandOptions.value.toLowerCase();
 
         //get guild's application commands
-        const applicationCommands = await interaction.guild.commands.fetch();
+        const applicationCommands = await interaction.guild.applicationCommands;
         //get slash and custom command from cache
-        const customCommand = await getCommandFromCache(interaction.guild, userInputCommand)
-        const selectedCommand = await applicationCommands.find(c => c.name == userInputCommand)
+        const customCommand = await getCommandFromCache(interaction.guild, `${interaction.guild.prefix}${userInputCommand}`)
+        const selectedCommand = await applicationCommands.find(c => c.name == `${interaction.guild.prefix}${userInputCommand}`)
 
         //if command could not be found
-        if (!customCommand || !selectedCommand) return interaction.editReply({
-            content: `Hmm... I couldn't find a custom command named \`${userInputCommand}\``,
+        if (!customCommand || !selectedCommand) return interaction.followUp({
+            content: `Hmm... I couldn't find a custom command named \`${userInputCommand}\`. \nMake sure you added the server's custom command prefic (${interaction.guild.prefix})`,
             ephemeral: true
         }).catch((err) => { });
 
@@ -154,7 +154,7 @@ module.exports.run = async (client, interaction) => {
             let idx = Math.floor(Math.random() * update_success.length);
 
             return modalSubmitInteraction.reply({
-                content: `${update_success[idx].replace('{command}', `\`/${status.details.customName}\``)}`,
+                content: `${update_success[idx].replace('{command}', `\`/${interaction.guild.prefix}${status.details.customName}\``)}`,
                 ephemeral: true,
             });
         }
@@ -165,6 +165,8 @@ module.exports.run = async (client, interaction) => {
                 ephemeral: true,
             });
     }
+
+
 }
 
 //command information

@@ -28,7 +28,7 @@ module.exports = {
      */
     async getCommandFromCache(guild, inputCommand) {
         const commandCache = guildCommandCache.get(guild.id);
-        const commandDetails = commandCache.filter(c => c.commandName === inputCommand);
+        const commandDetails = commandCache.filter(c => c.commandName === inputCommand.substring(1)); //remove prefix from custom command
         return commandDetails[0]
     },
 

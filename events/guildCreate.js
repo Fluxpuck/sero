@@ -18,13 +18,13 @@ module.exports = async (client, guild) => {
     //get & register client commands
     const clientCommands = client.commands.map(c => c);
     for await (let command of clientCommands) {
-        addSlashCommand(client, guild, command);
+        await addSlashCommand(client, guild, command);
     }
 
     //fetch & register (previous) custom commands
     const customCommands = await getCustomCommands(guild);
     for await (let command of customCommands) {
-        addSlashCustomCommand(client, guild, command);
+        await addSlashCustomCommand(client, guild, command);
     }
 
     return;

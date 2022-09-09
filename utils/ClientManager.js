@@ -181,7 +181,6 @@ module.exports = {
      * @param {*} selectedCommand 
      */
     async updateSlashCustomCommand(client, guild, commandDetails, selectedCommand) {
-
         //fetch command permission roles 
         const savedRoles = commandDetails.commandPerms != null ? commandDetails.commandPerms.split(',') : []
         var commandPerms = []

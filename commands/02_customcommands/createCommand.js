@@ -130,7 +130,7 @@ module.exports.run = async (client, interaction) => {
         let idx = Math.floor(Math.random() * create_success.length);
 
         return modalSubmitInteraction.reply({
-            content: `${create_success[idx].replace('{command}', `\`/${status.details.customName}\``)}`,
+            content: `${create_success[idx].replace('{command}', `\`/${interaction.guild.prefix}${status.details.customName}\``)}`,
             ephemeral: true,
         });
     }

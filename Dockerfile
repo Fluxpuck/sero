@@ -1,4 +1,4 @@
-FROM node:16.15.0
+FROM node:18.8.0
 WORKDIR /flux
 COPY package.json /flux
 COPY package-lock.json ./

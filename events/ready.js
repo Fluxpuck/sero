@@ -13,6 +13,7 @@ const DataManager = require('../database/DbManager');
 //require Queries
 const { loadCommandCache, loadGuildPrefixes } = require('../utils/CacheManager');
 const { getCustomCommands } = require('../database/QueryManager');
+const { Console } = require('console');
 
 //exports "ready" event
 module.exports = async (client) => {
@@ -27,6 +28,17 @@ module.exports = async (client) => {
 
     //get and initialize client commands
     await ClientManager.getClientCommands(commandFolder, { dealerFunction: fileLoader })
+
+    //write applications to json
+    ClientManager.writeCommandsJSON(client);
+
+    //set client activity
+    await ClientManager.setClientActivity(client);
+
+    //finalize with the Console Messages
+    ClientConsole.WelcomeMessage();
+    ClientConsole.EventMessage(client.events);
+    ClientConsole.CommandMessage(client.commands);
 
     //check and update all database tables
     const guilds = Array.from(client.guilds.cache.values())
@@ -43,12 +55,13 @@ module.exports = async (client) => {
 
         //get all current Application Commands & map command names
         const applicationsCommands = await guild.commands.fetch();
+        guild.applicationCommands = applicationsCommands; //add commands to guild collection
         const applicationNames = applicationsCommands.map(a => a.name);
         //get all client command & map command names
         const commandNames = client.commands.map(c => c.info.command.name);
         //fetch all custom commands & map command names
         const customCommands = await getCustomCommands(guild);
-        const customNames = customCommands.map(c => c.commandName);
+        const customNames = customCommands.map(c => `${guild.prefix}${c.commandName}`); //add prefix to commands for proper filtering
 
         //merge client and custom commands, to see if there are any differences
         const mergedCommands = commandNames.concat(customNames);
@@ -63,7 +76,7 @@ module.exports = async (client) => {
             if (commandFile) await ClientManager.addSlashCommand(client, guild, commandFile);
             else {
                 //get custom command details
-                const customFile = customCommands.find(c => c.commandName == command)
+                const customFile = customCommands.find(c => c.commandName == command.substring(1))
                 if (customFile) await ClientManager.addSlashCustomCommand(client, guild, customFile);
             }
         }
@@ -82,25 +95,12 @@ module.exports = async (client) => {
         //         await ClientManager.updateSlashCommand(client, guild, command)
         //     }
         //     if (customNames.includes(command.name)) {
-        //         const commandDetails = customCommands.find(c => c.commandName == command.name)
+        //         const commandDetails = customCommands.find(c => c.commandName == command.name.substring(1))
         //         await ClientManager.updateSlashCustomCommand(client, guild, commandDetails, command)
         //     }
         // }
 
-        //add application commands to guild collection
-        guild.applicationCommands = applicationsCommands;
     }
-
-    //write applications to json
-    ClientManager.writeCommandsJSON(client);
-
-    //set client activity
-    await ClientManager.setClientActivity(client);
-
-    //finalize with the Console Messages
-    ClientConsole.WelcomeMessage();
-    ClientConsole.EventMessage(client.events);
-    ClientConsole.CommandMessage(client.commands);
 
     return;
 }
