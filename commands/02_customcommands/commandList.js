@@ -29,7 +29,7 @@ module.exports.run = async (client, interaction) => {
     }
 
     //slice desc array into chunks (pages)
-    const descPages = chunk(descArray, 5);
+    const descPages = chunk(descArray, 10);
 
     //setup pages & max page length
     let page = 0, maxpages = descPages.length - 1;
@@ -65,9 +65,9 @@ module.exports.run = async (client, interaction) => {
             components: [page_buttons]
         }).catch((err) => { });
 
+
         //start collecting button presses for paginator
-        const collector = page_interaction.createMessageComponentCollector({ componentType: 2, time: 15000 })
-            .catch((err) => { });
+        const collector = await page_interaction.createMessageComponentCollector({ componentType: 2, time: 15000 })
 
         //collect button interactions
         collector.on('collect', async (button) => {
