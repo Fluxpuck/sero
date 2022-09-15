@@ -29,10 +29,13 @@ module.exports.run = async (client, interaction) => {
         const selectedCommand = await applicationCommands.find(c => c.name == userInputCommand)
 
         //if command could not be found
-        if (!customCommand || !selectedCommand) return interaction.editReply({
-            content: `Hmm... I couldn't find a custom command named \`${userInputCommand}\``,
-            ephemeral: true
-        }).catch((err) => { });
+        if (!customCommand || !selectedCommand) {
+            await interaction.deferReply({ ephemeral: true }).catch((err) => { })
+            return interaction.editReply({
+                content: `Hmm... I couldn't find a custom command named \`${userInputCommand}\``,
+                ephemeral: true
+            }).catch((err) => { });
+        }
 
         //setup variables
         var { commandName, commandResponse, commandImage, commandCooldown } = customCommand
@@ -144,17 +147,17 @@ module.exports.run = async (client, interaction) => {
             }
             //setup the command detail structure
             const commandDetails = new customCommand(status.details.customName.toLowerCase(), status.details.customResponse, status.details.customImage, status.details.cooldown, status.details.role_perms)
-            await updateSlashCustomCommand(client, interaction.guild, commandDetails, selectedCommand); //register application
+            await updateSlashCustomCommand(client, interaction.guild, commandDetails, selectedCommand); //update application
 
             //update command cache
-            await loadCommandCache(interaction.guild); //update cache
+            await loadCommandCache(interaction.guild);
 
             //get a random success message
             const { update_success } = require('../../assets/messages.json');
             let idx = Math.floor(Math.random() * update_success.length);
 
             return modalSubmitInteraction.reply({
-                content: `${update_success[idx].replace('{command}', `\`/${status.details.customName}\``)}`,
+                content: `${update_success[idx].replace('{command}', `\`/${interaction.guild.prefix}${status.details.customName}\``)}`,
                 ephemeral: true,
             });
         }
