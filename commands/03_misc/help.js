@@ -28,9 +28,9 @@ module.exports.run = async (client, interaction) => {
         //general embed description
         messageEmbed
             .setTitle(`Help`)
-            .setDescription(`Hey, this is **${client.user.username}** bot, here to make it easy for you to *create* and *use* __custom commands__ in your server
-            \nIf you need any help, feel free to join our community at [http://fluxpuck.com/discord](http://fluxpuck.com/discord) or checkout the full commandlist on [https://fluxpuck.com/commands](https://fluxpuck.com/commands)
-            \nA list of all ${clientCommands.length} available commands is below, use \`/help [command]\` to get more detailed information`)
+            .setDescription(`Hey, this is **${client.user.username}** bot, here to make it easy for you to *create* and *use* __custom commands__ in your server.
+            \nA list of all ${clientCommands.length} commands is below, use \`/help [command]\` to get more detailed information on a command.
+            \nIf you need any further help, please watch one of our turorials on [https://fluxpuck.com/tutorial](https://fluxpuck.com/tutorial)`)
 
         //sort commands by category
         const groupBy = (x, f) => x.reduce((a, b, i, x) => { const k = f(b, i, x); a.get(k)?.push(b) ?? a.set(k, [b]); return a; }, new Map());

@@ -15,6 +15,10 @@ module.exports.run = async (client, interaction) => {
 
     //get custom commands from database
     const customCommands = await getCustomCommands(interaction.guild);
+    if (customCommands.length <= 0) return interaction.editReply({
+        content: `There are currently no custom commands... \nUse \`/creat-command\` to create a custom command!`,
+        ephemeral: true,
+    });
 
     //setup description array
     let descArray = [], page_interaction;

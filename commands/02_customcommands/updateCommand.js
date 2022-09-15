@@ -3,7 +3,7 @@
 
 //load required modules
 const { ModalBuilder, TextInputBuilder, TextInputStyle, ActionRowBuilder } = require('discord.js');
-const { updateCustomCommand } = require('../../database/QueryManager');
+const { updateCustomCommand, getCustomCommands } = require('../../database/QueryManager');
 const { getCommandFromCache } = require('../../utils/CacheManager');
 const { validURL, getUrlFileType } = require('../../utils/functions');
 
@@ -20,17 +20,17 @@ module.exports.run = async (client, interaction) => {
     if (commandOptions != null) {
 
         //set value for input command
-        var userInputCommand = commandOptions.value.toLowerCase();
+        const userInputCommand = commandOptions.value.toLowerCase();
 
         //get guild's application commands
-        const applicationCommands = await interaction.guild.applicationCommands;
+        const applicationCommands = await interaction.guild.commands.fetch();
         //get slash and custom command from cache
-        const customCommand = await getCommandFromCache(interaction.guild, `${interaction.guild.prefix}${userInputCommand}`)
-        const selectedCommand = await applicationCommands.find(c => c.name == `${interaction.guild.prefix}${userInputCommand}`)
+        const customCommand = await getCommandFromCache(interaction.guild, userInputCommand)
+        const selectedCommand = await applicationCommands.find(c => c.name == userInputCommand)
 
         //if command could not be found
-        if (!customCommand || !selectedCommand) return interaction.followUp({
-            content: `Hmm... I couldn't find a custom command named \`${userInputCommand}\`. \nMake sure you added the server's custom command prefic (${interaction.guild.prefix})`,
+        if (!customCommand || !selectedCommand) return interaction.editReply({
+            content: `Hmm... I couldn't find a custom command named \`${userInputCommand}\``,
             ephemeral: true
         }).catch((err) => { });
 
@@ -71,7 +71,7 @@ module.exports.run = async (client, interaction) => {
                 .setStyle(TextInputStyle.Paragraph)
                 .setRequired(false)
                 .setMinLength(10)
-                .setMaxLength(100))
+                .setMaxLength(120))
 
         const cooldownInput = new ActionRowBuilder().setComponents(
             new TextInputBuilder()
@@ -154,7 +154,7 @@ module.exports.run = async (client, interaction) => {
             let idx = Math.floor(Math.random() * update_success.length);
 
             return modalSubmitInteraction.reply({
-                content: `${update_success[idx].replace('{command}', `\`/${interaction.guild.prefix}${status.details.customName}\``)}`,
+                content: `${update_success[idx].replace('{command}', `\`/${status.details.customName}\``)}`,
                 ephemeral: true,
             });
         }
@@ -165,8 +165,6 @@ module.exports.run = async (client, interaction) => {
                 ephemeral: true,
             });
     }
-
-
 }
 
 //command information

@@ -3,7 +3,7 @@
 
 //load in Query
 const { removeCustomCommand } = require("../../database/QueryManager");
-const { getCommandFromCache } = require("../../utils/CacheManager");
+const { getCommandFromCache, loadCommandCache } = require("../../utils/CacheManager");
 const { delSlashCommand } = require("../../utils/ClientManager");
 
 //construct the command and export
@@ -30,6 +30,8 @@ module.exports.run = async (client, interaction) => {
                 delSlashCommand(interaction.guild, selectedCommand);
                 //remove custom command from database
                 removeCustomCommand(interaction.guild, selectedCommand.name);
+                //update cache
+                loadCommandCache(interaction.guild);
 
                 //get a random success message
                 const { remove_success } = require('../../assets/messages.json');

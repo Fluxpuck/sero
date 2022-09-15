@@ -50,7 +50,7 @@ module.exports.run = async (client, interaction) => {
                     .setStyle(TextInputStyle.Paragraph)
                     .setRequired(false)
                     .setMinLength(10)
-                    .setMaxLength(100)),
+                    .setMaxLength(120)),
 
             new ActionRowBuilder().setComponents(
                 new TextInputBuilder()
