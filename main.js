@@ -1,5 +1,5 @@
 /*  Fluxpuck © Creative Commons Attribution-NoDerivatives 4.0 International Public License  
-    Hyper is a comprehensive Discord moderation bot, developed for private use. */
+    Flux is a comprehensive Discord moderation bot, developed for private use. */
 
 //get credentials through dot envoirement
 require('dotenv').config({ path: './config/.env' });

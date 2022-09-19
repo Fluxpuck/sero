@@ -1,5 +1,5 @@
 /*  Fluxpuck © Creative Commons Attribution-NoDerivatives 4.0 International Public License
-    For more information on the commands, please visit hyperbot.cc  */
+    For more information on the commands, please visit fluxpuck.com  */
 
 //load in Query
 const { removeCustomCommand } = require("../../database/QueryManager");

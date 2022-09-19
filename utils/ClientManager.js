@@ -138,20 +138,6 @@ module.exports = {
      * @param {*} commandDetails 
      */
     async addSlashCustomCommand(client, guild, commandDetails) {
-
-        //fetch command permission roles 
-        const savedRoles = commandDetails.commandPerms != null ? commandDetails.commandPerms.split(',') : []
-        var commandPerms = []
-
-        //setup the command permissions
-        savedRoles.forEach(roleId => {
-            commandPerms.push({
-                id: roleId,
-                type: 1, //Role 1, User 2, Channel 3
-                permission: true
-            })
-        });
-
         //check for {mention}, add option
         var commandOptions = []
         if (commandDetails.commandResponse.includes('{mention}')) {
@@ -169,7 +155,6 @@ module.exports = {
             description: `Custom Command - ${commandDetails.commandName}`,
             type: 1,
             options: commandOptions,
-            permission: commandPerms,
         }, guild.id).catch(err => console.log('Oops, something went wrong creating the custom command: ', err));
 
     },
@@ -181,19 +166,6 @@ module.exports = {
      * @param {*} selectedCommand 
      */
     async updateSlashCustomCommand(client, guild, commandDetails, selectedCommand) {
-        //fetch command permission roles 
-        const savedRoles = commandDetails.commandPerms != null ? commandDetails.commandPerms.split(',') : []
-        var commandPerms = []
-
-        //setup the command permissions
-        savedRoles.forEach(roleId => {
-            commandPerms.push({
-                id: roleId,
-                type: 1, //Role 1, User 2, Channel 3
-                permission: true
-            })
-        });
-
         //check for {mention}, add option
         var commandOptions = []
         if (commandDetails.commandResponse.includes('{mention}')) {
@@ -211,7 +183,6 @@ module.exports = {
             description: `Custom Command - ${commandDetails.commandName}`,
             type: 1,
             options: commandOptions,
-            permission: commandPerms,
         }, guild.id).catch(err => console.log('Oops, something went wrong updating the custom command: ', err));
 
     },
