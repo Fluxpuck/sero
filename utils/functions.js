@@ -126,6 +126,15 @@ module.exports = {
     charIsLetter(char) {
         if (typeof char !== 'string') return false;
         return char.toLowerCase() !== char.toUpperCase();
+    },
+
+    containsSpecialChars(str) {
+        const specialChars = /[`!@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?~]/;
+        return specialChars.test(str);
+    },
+
+    hasWhiteSpace(s) {
+        return (/\s/).test(s);
     }
 
 };

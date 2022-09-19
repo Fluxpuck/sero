@@ -3,7 +3,7 @@
 
 //require modules
 const DataManager = require('../database/DbManager');
-const { insertGuild, getCustomCommands } = require('../database/QueryManager');
+const { insertGuild, getCustomCommands, activateGuild } = require('../database/QueryManager');
 const { loadCommandCache, loadGuildPrefixes } = require('../utils/CacheManager');
 const { addSlashCommand, addSlashCustomCommand } = require('../utils/ClientManager');
 

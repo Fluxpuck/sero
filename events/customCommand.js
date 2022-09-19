@@ -11,6 +11,9 @@ const embed = require('../assets/embed.json');
 
 module.exports = async (client, interaction) => {
 
+    //check if the bot has access to channel
+    if (interaction.channel == null) return interaction.deleteReply().catch(err => { });
+
     //get command details
     const commandDetails = await getCommandFromCache(interaction.guild, interaction.commandName)
     if (!commandDetails) {
@@ -80,7 +83,8 @@ module.exports = async (client, interaction) => {
         if (err.rawError.code = 50001) return interaction.followUp({
             content: `${send_error[idx]}`,
             ephemeral: true
-        }).catch(err => { });
+        }).catch(err => { })
+        else return;
 
     });
 

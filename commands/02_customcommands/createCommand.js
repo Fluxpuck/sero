@@ -4,7 +4,7 @@
 //load required modules
 const { ModalBuilder, TextInputBuilder, TextInputStyle, ActionRowBuilder } = require('discord.js');
 const { saveCustomCommand, getCustomCommands } = require('../../database/QueryManager');
-const { validURL, getUrlFileType } = require('../../utils/functions');
+const { validURL, getUrlFileType, containsSpecialChars, hasWhiteSpace } = require('../../utils/functions');
 
 //get extention types
 const { filetypes } = require('../../config/config.json');
@@ -87,7 +87,11 @@ module.exports.run = async (client, interaction) => {
             const commandDetails = new customCommand(ccName.value.toLowerCase(), ccDesc.value, (ccImage.value == '') ? null : ccImage.value, ccCooldown.value, null)
             status.valid = true, status.msg = 'Success', status.details = commandDetails
 
-            //validate image
+            //validate command name
+            if (containsSpecialChars(ccName.value) == true) status.valid = false, status.msg = 'Command name contains special character(s)'
+            if (hasWhiteSpace(ccName.value) == true) status.valid = false, status.msg = 'Command name contains space(s)'
+
+            //validate image url
             if (ccImage.value != '') {
                 if (!validURL(ccImage.value)) status.valid = false, status.msg = 'Image URL is invalid'
                 else if (!filetypes.includes(getUrlFileType(ccImage.value))) status.valid = false, status.msg = 'URL is not a valid image type'
@@ -137,7 +141,7 @@ module.exports.run = async (client, interaction) => {
 
     if (status.valid == false)
         return modalSubmitInteraction.reply({
-            content: `Oops! ${status.msg}`,
+            content: `Oops! → ${status.msg}`,
             ephemeral: true,
         });
 
