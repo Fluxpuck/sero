@@ -3,8 +3,8 @@
 
 //load required modules
 const { updateGuildPrefix } = require("../../database/QueryManager");
-const { loadGuildPrefixes } = require("../../utils/CacheManager");
-const { updateCustomCommand } = require("../../utils/ClientManager");
+const { loadGuildPrefixes, getCustomCommands } = require("../../utils/CacheManager");
+const { updateCustomCommand, addCustomCommand, removeGuildCommands } = require("../../utils/ClientManager");
 const { charIsLetter } = require("../../utils/functions");
 
 //construct the command and export
@@ -26,7 +26,7 @@ module.exports.run = async (client, interaction) => {
 
     //check if prefix contains any special characters
     if (charIsLetter(userInputPrefix) == false) return interaction.editReply({
-        content: `Hmm... \`${userInputPrefix}\` is not a valid prefix *(must be regular character)*`,
+        content: `Hmm... \`${userInputPrefix}\` is not a valid prefix *(must be a consonant or vowel)*`,
         ephemeral: true
     }).catch((err) => { });
 
@@ -34,27 +34,50 @@ module.exports.run = async (client, interaction) => {
     await updateGuildPrefix(interaction.guild.id, userInputPrefix);
     //update guild prefix cache
     await loadGuildPrefixes(interaction.guild);
+    //remove all commands
+    await removeGuildCommands(interaction.guild)
 
-    //get a random success message
-    const { prefix_success } = require('../../assets/messages.json');
-    let idx = Math.floor(Math.random() * prefix_success.length);
-
-    //reply to message
-    interaction.editReply({
-        content: `${prefix_success[idx].replace('{prefix}', `\`${userInputPrefix}\``)}`,
-        ephemeral: true
-    }).catch((err) => { });
-
-    //update all guild commands
+    //fetch all guild application commands
     const customCommands = await getCustomCommands(interaction.guild);
-    for await (let command of customCommands) {
-        await updateCustomCommand(client, guild, command);
+
+    //setup interaction message
+    var updateCounter = 0
+    var interactionMessage = interaction.followUp({
+        content: `Updating [${updateCounter}/${customCommands.length}] application commands`,
+        ephemeral: true,
+    })
+
+    //update all guild application commands
+    for (let command of customCommands) {
+        //add guild application command
+        await addCustomCommand(client, interaction.guild, command);
+
+        //update counter
+        updateCounter++
+
+        if (updateCounter == customCommands.length) {
+            //get a random success message
+            const { prefix_success } = require('../../assets/messages.json');
+            let idx = Math.floor(Math.random() * prefix_success.length);
+
+            //reply to message
+            interaction.editReply({
+                content: `${prefix_success[idx].replace('{prefix}', `\`${userInputPrefix}\``)}`,
+                ephemeral: true
+            }).catch((err) => { });
+
+        } else {
+            interactionMessage = interaction.editReply({
+                content: `Updating **[${updateCounter}/${customCommands.length}]** application commands...`,
+                ephemeral: true,
+            })
+        }
     }
 
     //get guild's application commands
     await interaction.guild.commands.fetch().then(async applicationcommands => {
         //add all guild applications to guild collection
-        interaction.guild.applicationCommands = guildApplicationsCommands;
+        interaction.guild.applicationCommands = applicationcommands;
     })
     return;
 }

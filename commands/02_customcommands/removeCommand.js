@@ -26,12 +26,16 @@ module.exports.run = async (client, interaction) => {
             //if custom command and guild application command are found, remove it
             if (customCommand && selectedCommand) {
 
+                console.log('remove 1')
                 //remove guild application command
                 await deleteGuildCommand(interaction.guild, selectedCommand);
+                console.log('remove 2')
                 //remove custom command from database
                 await removeCustomCommandDB(interaction.guild, selectedCommand.name);
+                console.log('remove 3')
                 //update the custom command cache
                 await loadGuildPrefixes(interaction.guild);
+                console.log('remove 4')
 
                 //update the interaction guild application command collection, filter out the removed command
                 interaction.guild.applicationcommands = applicationcommands.filter(c => c.id != selectedCommand.id);
