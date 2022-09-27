@@ -3,9 +3,9 @@
 
 //require modules
 const DataManager = require('../database/DbManager');
-const { insertGuild, getCustomCommands, activateGuild } = require('../database/QueryManager');
-const { loadCommandCache, loadGuildPrefixes } = require('../utils/CacheManager');
-const { addSlashCommand, addSlashCustomCommand } = require('../utils/ClientManager');
+const { insertGuild, activateGuild } = require('../database/QueryManager');
+const { loadCustomCommands, loadGuildPrefixes, getCustomCommands } = require('../utils/CacheManager');
+const { addCustomCommand } = require('../utils/ClientManager');
 
 module.exports = async (client, guild) => {
 
@@ -18,19 +18,13 @@ module.exports = async (client, guild) => {
     await activateGuild(guild);
 
     //load guild specific values
-    await loadCommandCache(guild);
+    await loadCustomCommands(guild);
     await loadGuildPrefixes(guild);
 
-    //get & register client commands
-    const clientCommands = client.commands.map(c => c);
-    for await (let command of clientCommands) {
-        await addSlashCommand(client, guild, command);
-    }
-
-    //fetch & register (previous) custom commands
+    //re-create guild application commands
     const customCommands = await getCustomCommands(guild);
     for await (let command of customCommands) {
-        await addSlashCustomCommand(client, guild, command);
+        await addCustomCommand(client, guild, command);
     }
 
     return;

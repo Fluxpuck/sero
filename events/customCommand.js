@@ -2,7 +2,7 @@
     This private-event is triggers by an function and processes data to return a  */
 
 //get functions from Managers
-const { getCommandFromCache, loadCommandCache } = require("../utils/CacheManager");
+const { getCustomCommandFromCache, loadCustomCommands } = require("../utils/CacheManager");
 
 //require discord functions
 const { EmbedBuilder } = require("discord.js");
@@ -15,10 +15,10 @@ module.exports = async (client, interaction) => {
     if (interaction.channel == null) return interaction.deleteReply().catch(err => { });
 
     //get command details
-    const commandDetails = await getCommandFromCache(interaction.guild, interaction.commandName)
+    const commandDetails = await getCustomCommandFromCache(interaction.guild, interaction.commandName)
     if (!commandDetails) {
         //reload cache...
-        loadCommandCache(interaction.guild);
+        loadCustomCommands(interaction.guild);
         //return error message
         return interaction.followUp({
             content: `Oops, Sorry. Couldn't get the command from cache.`,

@@ -56,11 +56,10 @@ module.exports = {
 
     },
 
-    /** register all application (guild) commands
-     * @param {Collection} client
-     * @param {Collection} guild 
+    /** create client application commands
+     * @param {*} client 
      */
-    async setSlashCommands(client, guild) {
+    async setClientCommands(client) {
         await client.application?.fetch();
         //go over all commands and register them
         for await (let command of client.commands.values()) {
@@ -71,16 +70,34 @@ module.exports = {
                 options: command.info.slash.options,
                 permission: command.info.slash.permission,
                 defaultMemberPermissions: command.info.slash.defaultMemberPermissions
-            }, guild.id).catch(err => console.log('Oops, something went wrong creating all commands: ', err));
+            }).catch(err => console.log('Oops, something went wrong creating all commands: ', err));
         }
     },
 
-    /** update all application (guild) commands
-     * @param {Collection} client
-     * @param {Collection} guild 
-     * @param {Collection} application 
+    /** add individual client application command
+     * @param {*} client 
+     * @param {*} commandFile 
+     * @returns 
      */
-    async updateSlashCommand(client, guild, application) {
+    async addClientCommand(client, commandFile) {
+        if (!commandFile) return;
+        // insert application with client command details
+        client.application.commands.create({
+            name: commandFile.info.command.name,
+            description: commandFile.info.command.desc,
+            type: commandFile.info.slash.type,
+            options: commandFile.info.slash.options,
+            permission: commandFile.info.slash.permission,
+            defaultMemberPermissions: commandFile.info.slash.defaultMemberPermissions
+        }).catch(err => console.log('Oops, something went wrong creating the command: ', err));
+    },
+
+    /** update client application command
+     * @param {*} client 
+     * @param {*} application 
+     * @returns 
+     */
+    async updateClientCommand(client, application) {
         //get client command and update application
         const commandFile = client.commands.get(application.name);
         if (!commandFile) return;
@@ -91,35 +108,55 @@ module.exports = {
             type: commandFile.info.slash.type,
             options: commandFile.info.slash.options,
             defaultMemberPermissions: commandFile.info.slash.defaultMemberPermissions,
-        }, [guild.id]).catch(err => console.log('Oops, something went wrong editting all commands: ', err));
+        }).catch(err => console.log('Oops, something went wrong editting all commands: ', err));
     },
 
-    /** remove all application (guild) commands
+    /** remove client application commands
+     * @param {*} client 
+     */
+    async removeClientCommands(client) {
+        await client.commands.fetch().then(async applications => {
+            if (applications.size <= 0) return;
+            return client.commands.set([]);
+        }).catch(err => console.log('Oops, something went wrong removing all commands: ', err));
+    },
+
+    /** remove individual client application command
+     * @param {*} client 
+     * @param {*} application 
+     */
+    async deleteClientCommand(client, application) {
+        if (!application) return;
+        await client.commands.delete(application.id)
+            .catch(err => console.log('Oops, something went wrong deleting the command: ', err));
+    },
+
+    /** remove guild application commands
      * @param {*} guild 
      */
-    async removeSlashCommands(guild) {
+    async removeGuildCommands(guild) {
         await guild.commands.fetch().then(async applications => {
             if (applications.size <= 0) return;
             return guild.commands.set([]);
         }).catch(err => console.log('Oops, something went wrong removing all commands: ', err));
     },
 
-    /** remove individual (guild) command
+    /** remove individual guild application command
      * @param {*} guild 
      * @param {*} commandName 
      */
-    async delSlashCommand(guild, application) {
+    async deleteGuildCommand(guild, application) {
         if (!application) return;
         await guild.commands.delete(application.id)
             .catch(err => console.log('Oops, something went wrong deleting the command: ', err));
     },
 
-    /** insert individual (guild) command
+    /** add individual guild application command
      * @param {*} client 
      * @param {*} guild 
      * @param {*} commandName 
      */
-    async addSlashCommand(client, guild, commandFile) {
+    async addGuildCommand(client, guild, commandFile) {
         if (!commandFile) return;
         // insert application with client command details
         client.application.commands.create({
@@ -132,12 +169,12 @@ module.exports = {
         }, guild.id).catch(err => console.log('Oops, something went wrong creating the command: ', err));
     },
 
-    /** filter and add all custom command details
+    /** filter and add custom guild commands
      * @param {*} client 
      * @param {*} guild 
      * @param {*} commandDetails 
      */
-    async addSlashCustomCommand(client, guild, commandDetails) {
+    async addCustomCommand(client, guild, commandDetails) {
         //check for {mention}, add option
         var commandOptions = []
         if (commandDetails.commandResponse.includes('{mention}')) {
@@ -165,7 +202,7 @@ module.exports = {
      * @param {*} commandDetails 
      * @param {*} selectedCommand 
      */
-    async updateSlashCustomCommand(client, guild, commandDetails, selectedCommand) {
+    async updateCustomCommand(client, guild, commandDetails, selectedCommand) {
         //check for {mention}, add option
         var commandOptions = []
         if (commandDetails.commandResponse.includes('{mention}')) {
@@ -190,21 +227,22 @@ module.exports = {
     /** write away all client and application (guild) commands
      * @param {*} client 
      */
-    async writeCommandsJSON(client) {
+    async writeCommandsJSON(client, jsonArray = []) {
         //get all client command names
         const clientCommandNames = client.commands.map(c => c.info)
             //filter out 'private' and 'test' categories
-            .filter(c => c.command.category != 'private' && c.command.category != 'test')
+            .filter(c => c.command.category != 'private')
             .map(c => c.command.name);
 
-        //JSON Array
-        var jsonArray = []
+        //add all client command names to array
         for await (let command of clientCommandNames) { jsonArray.push({ name: command, value: command }) }
+        if (jsonArray.length > 0) {
+            //write to json file
+            fs.writeFile('./config/commands.json', JSON.stringify(jsonArray), (err) => {
+                if (err) console.log(err)
+            })
+        }
 
-        //write to json file
-        fs.writeFile('./config/commands.json', JSON.stringify(jsonArray), (err) => {
-            if (err) console.log(err)
-        })
     },
 
 }

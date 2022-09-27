@@ -2,11 +2,11 @@
     This event is triggers by Discord and does processing of data  */
 
 //require modules
-const { removeSlashCommands } = require("../utils/ClientManager");
+const { removeGuildCommands } = require("../utils/ClientManager");
 
 module.exports = async (client, guild) => {
 
-    removeSlashCommands(guild);
+    removeGuildCommands(guild);
 
     return;
 }

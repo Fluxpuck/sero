@@ -1,37 +1,40 @@
 /*  Fluxpuck © Creative Commons Attribution-NoDerivatives 4.0 International Public License
     For more information on the commands, please visit fluxpuck.com  */
 
-//load in Query
-const { removeCustomCommand } = require("../../database/QueryManager");
-const { getCommandFromCache, loadCommandCache } = require("../../utils/CacheManager");
-const { delSlashCommand } = require("../../utils/ClientManager");
+//load required modules
+const { removeCustomCommandDB } = require("../../database/QueryManager");
+const { getCustomCommandFromCache, loadGuildPrefixes } = require("../../utils/CacheManager");
+const { deleteGuildCommand } = require("../../utils/ClientManager");
 
 //construct the command and export
 module.exports.run = async (client, interaction) => {
 
     //check for command options
-    const commandOptions = interaction.options.get('command');
-    if (commandOptions != null) {
+    const commandInput = interaction.options.get('command');
+    if (commandInput != null) {
+
+        //set command value options (with and without added prefix)
+        const commandOptions = [commandInput.value.toLowerCase(), interaction.guild.prefix + commandInput.value.toLowerCase()]
 
         //get guild's application commands
         await interaction.guild.commands.fetch().then(async applicationcommands => {
 
-            //set value for input command
-            const userInputCommand = commandOptions.value.toLowerCase();
-
             //get slash and custom command from cache
-            const customCommand = await getCommandFromCache(interaction.guild, userInputCommand)
-            const selectedCommand = await applicationcommands.find(c => c.name == userInputCommand)
+            const customCommand = await getCustomCommandFromCache(interaction.guild, commandOptions[0]) || await getCustomCommandFromCache(interaction.guild, commandOptions[1])
+            const selectedCommand = await applicationcommands.find(c => c.name == commandOptions[0]) || await applicationcommands.find(c => c.name == commandOptions[1])
 
-            //if the user input is a custom command & registered slash command, remove it
+            //if custom command and guild application command are found, remove it
             if (customCommand && selectedCommand) {
 
-                //remove custom command application
-                delSlashCommand(interaction.guild, selectedCommand);
+                //remove guild application command
+                await deleteGuildCommand(interaction.guild, selectedCommand);
                 //remove custom command from database
-                removeCustomCommand(interaction.guild, selectedCommand.name);
-                //update cache
-                loadCommandCache(interaction.guild);
+                await removeCustomCommandDB(interaction.guild, selectedCommand.name);
+                //update the custom command cache
+                await loadGuildPrefixes(interaction.guild);
+
+                //update the interaction guild application command collection, filter out the removed command
+                interaction.guild.applicationcommands = applicationcommands.filter(c => c.id != selectedCommand.id);
 
                 //get a random success message
                 const { remove_success } = require('../../assets/messages.json');
@@ -44,13 +47,11 @@ module.exports.run = async (client, interaction) => {
                 }).catch((err) => { });
 
             } else {
-
                 //reply to message
                 return interaction.editReply({
                     content: `Hmm... I couldn't find a custom command named \`${userInputCommand}\``,
                     ephemeral: true
                 }).catch((err) => { });
-
             }
         })
     }

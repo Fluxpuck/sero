@@ -3,174 +3,179 @@
 
 //load required modules
 const { ModalBuilder, TextInputBuilder, TextInputStyle, ActionRowBuilder } = require('discord.js');
-const { updateCustomCommand } = require('../../database/QueryManager');
-const { getCommandFromCache } = require('../../utils/CacheManager');
+const { updateCustomCommandDB } = require('../../database/QueryManager');
+const { getCustomCommandFromCache } = require('../../utils/CacheManager');
 const { validURL, getUrlFileType, containsSpecialChars, hasWhiteSpace } = require('../../utils/functions');
 
 //get extention types
 const { filetypes } = require('../../config/config.json');
-const { updateSlashCustomCommand } = require('../../utils/ClientManager');
-const { loadCommandCache } = require('../../utils/CacheManager');
+const { updateCustomCommand } = require('../../utils/ClientManager');
+const { loadCustomCommands } = require('../../utils/CacheManager');
 
 //construct the command and export
 module.exports.run = async (client, interaction) => {
 
     //check for command options
-    const commandOptions = interaction.options.get('command');
-    if (commandOptions != null) {
+    const commandInput = interaction.options.get('command');
+    if (commandInput != null) {
 
-        //set value for input command
-        const userInputCommand = commandOptions.value.toLowerCase();
+        //set command value options (with and without added prefix)
+        const commandOptions = [commandInput.value.toLowerCase(), interaction.guild.prefix + commandInput.value.toLowerCase()]
 
         //get guild's application commands
-        const applicationCommands = await interaction.guild.commands.fetch();
-        //get slash and custom command from cache
-        const customCommand = await getCommandFromCache(interaction.guild, userInputCommand)
-        const selectedCommand = await applicationCommands.find(c => c.name == userInputCommand)
+        await interaction.guild.commands.fetch().then(async applicationcommands => {
 
-        //if command could not be found
-        if (!customCommand || !selectedCommand) {
-            await interaction.deferReply({ ephemeral: true }).catch((err) => { })
-            return interaction.editReply({
-                content: `Hmm... I couldn't find a custom command named \`${userInputCommand}\``,
-                ephemeral: true
-            }).catch((err) => { });
-        }
+            //get slash and custom command from cache
+            const customCommand = await getCustomCommandFromCache(interaction.guild, commandOptions[0]) || await getCustomCommandFromCache(interaction.guild, commandOptions[1])
+            const selectedCommand = await applicationcommands.find(c => c.name == commandOptions[0]) || await applicationcommands.find(c => c.name == commandOptions[1])
 
-        //setup variables
-        var { commandName, commandResponse, commandImage, commandCooldown } = customCommand
-        //setup status value
-        var status = { valid: false, msg: '', details: undefined }
+            //if custom command and guild application command are found, remove it
+            if (customCommand && selectedCommand) {
 
-        //build modal componants
-        const nameInput = new ActionRowBuilder().setComponents(
-            new TextInputBuilder()
-                .setCustomId('ccName')
-                .setLabel('Command name')
-                .setPlaceholder('Choose a command name')
-                .setValue(commandName)
-                .setStyle(TextInputStyle.Short)
-                .setRequired(true)
-                .setMinLength(2)
-                .setMaxLength(12))
+                //setup variables
+                var { commandName, commandResponse, commandImage, commandCooldown } = customCommand
+                //setup status value
+                var status = { valid: false, msg: '', details: undefined }
 
-        const responseInput = new ActionRowBuilder().setComponents(
-            new TextInputBuilder()
-                .setCustomId('ccDesc')
-                .setLabel('Response')
-                .setPlaceholder('What should the custom command say?')
-                .setValue(commandResponse)
-                .setStyle(TextInputStyle.Paragraph)
-                .setRequired(true)
-                .setMinLength(10)
-                .setMaxLength(500))
+                //build modal componants
+                const nameInput = new ActionRowBuilder().setComponents(
+                    new TextInputBuilder()
+                        .setCustomId('ccName')
+                        .setLabel('Command name')
+                        .setPlaceholder('Choose a command name')
+                        .setValue(commandName)
+                        .setStyle(TextInputStyle.Short)
+                        .setRequired(true)
+                        .setMinLength(2)
+                        .setMaxLength(12))
 
-        const imageInput = new ActionRowBuilder().setComponents(
-            new TextInputBuilder()
-                .setCustomId('ccImage')
-                .setLabel('Image URL')
-                .setPlaceholder('Provide image address, must be .png, .jpg, .jpeg or .gif (optional)')
-                .setValue(commandImage)
-                .setStyle(TextInputStyle.Paragraph)
-                .setRequired(false)
-                .setMinLength(10)
-                .setMaxLength(120))
+                const responseInput = new ActionRowBuilder().setComponents(
+                    new TextInputBuilder()
+                        .setCustomId('ccDesc')
+                        .setLabel('Response')
+                        .setPlaceholder('What should the custom command say?')
+                        .setValue(commandResponse)
+                        .setStyle(TextInputStyle.Paragraph)
+                        .setRequired(true)
+                        .setMinLength(10)
+                        .setMaxLength(500))
 
-        const cooldownInput = new ActionRowBuilder().setComponents(
-            new TextInputBuilder()
-                .setCustomId('ccCooldown')
-                .setLabel('Cooldown Time')
-                .setPlaceholder('Please put a cooldown time between 1 and 999 seconds')
-                .setValue(commandCooldown.toString())
-                .setStyle(TextInputStyle.Short)
-                .setRequired(true)
-                .setMinLength(1)
-                .setMaxLength(3))
+                const imageInput = new ActionRowBuilder().setComponents(
+                    new TextInputBuilder()
+                        .setCustomId('ccImage')
+                        .setLabel('Image URL')
+                        .setPlaceholder('Provide image address, must be .png, .jpg, .jpeg or .gif (optional)')
+                        .setValue(commandImage)
+                        .setStyle(TextInputStyle.Paragraph)
+                        .setRequired(false)
+                        .setMinLength(10)
+                        .setMaxLength(120))
 
-        //create custom command Modal Input Field
-        const modal = new ModalBuilder()
-            .setCustomId('customCommand')
-            .setTitle(`Setup a new Custom Command`)
-            .addComponents([
-                nameInput, responseInput, imageInput, cooldownInput
-            ])
+                const cooldownInput = new ActionRowBuilder().setComponents(
+                    new TextInputBuilder()
+                        .setCustomId('ccCooldown')
+                        .setLabel('Cooldown Time')
+                        .setPlaceholder('Please put a cooldown time between 1 and 999 seconds')
+                        .setValue(commandCooldown.toString())
+                        .setStyle(TextInputStyle.Short)
+                        .setRequired(true)
+                        .setMinLength(1)
+                        .setMaxLength(3))
 
-        //show modal to user
-        await interaction.showModal(modal);
+                //create custom command Modal Input Field
+                const modal = new ModalBuilder()
+                    .setCustomId('customCommand')
+                    .setTitle(`Setup a new Custom Command`)
+                    .addComponents([
+                        nameInput, responseInput, imageInput, cooldownInput
+                    ])
 
-        //get modal return
-        const modalSubmitInteraction = await interaction.awaitModalSubmit({
-            filter: async (i) => {
-                //get all submitted answers, by each value
-                const ccName = i.fields.fields.get('ccName');
-                const ccDesc = i.fields.fields.get('ccDesc');
-                const ccImage = i.fields.fields.get('ccImage');
-                const ccCooldown = i.fields.fields.get('ccCooldown');
+                //show modal to user
+                await interaction.showModal(modal);
 
-                //setup database structure
-                function customCommand(customName, customResponse, customImage, cooldown, role_perms) {
-                    this.customName = customName;
-                    this.customResponse = customResponse;
-                    this.customImage = customImage;
-                    this.cooldown = cooldown;
-                    this.role_perms = role_perms;
+                //get modal return
+                const modalSubmitInteraction = await interaction.awaitModalSubmit({
+                    filter: async (i) => {
+                        //get all submitted answers, by each value
+                        const ccName = i.fields.fields.get('ccName');
+                        const ccDesc = i.fields.fields.get('ccDesc');
+                        const ccImage = i.fields.fields.get('ccImage');
+                        const ccCooldown = i.fields.fields.get('ccCooldown');
+
+                        //setup database structure
+                        function customCommand(customName, customResponse, customImage, cooldown, role_perms) {
+                            this.customName = customName;
+                            this.customResponse = customResponse;
+                            this.customImage = customImage;
+                            this.cooldown = cooldown;
+                            this.role_perms = role_perms;
+                        }
+                        //setup command details
+                        const commandDetails = new customCommand(ccName.value, ccDesc.value, (ccImage.value == '') ? null : ccImage.value, ccCooldown.value, null)
+                        status.valid = true, status.msg = 'Success', status.details = commandDetails
+
+                        //validate command name
+                        if (containsSpecialChars(ccName.value) == true) status.valid = false, status.msg = 'Command name contains special character(s)'
+                        if (hasWhiteSpace(ccName.value) == true) status.valid = false, status.msg = 'Command name contains space(s)'
+
+                        //validate image
+                        if (ccImage.value != '') {
+                            if (!validURL(ccImage.value)) status.valid = false, status.msg = 'Image URL is invalid'
+                            else if (!filetypes.includes(getUrlFileType(ccImage.value))) status.valid = false, status.msg = 'URL is not a valid image type'
+                        }
+
+                        //check if cooldown is valid number
+                        if (!isFinite(ccCooldown.value)) status.valid = false, status.msg = `\`${ccCooldown.value}\` is not a valid time`
+
+                        //if status is true, save to database
+                        if (status.valid == true) await updateCustomCommandDB(interaction.guild, commandDetails);
+
+                        return true;
+                    }, time: 120000,
+                })
+
+                //send succes or fail message
+                if (status.valid == true) {
+                    //create custom command details
+                    function customCommandDetails(name, response, image, cooldown, perms) {
+                        this.commandName = name;
+                        this.commandResponse = response;
+                        this.commandImage = image;
+                        this.commandCooldown = cooldown;
+                        this.commandPerms = perms
+                    }
+                    //setup the command detail structure
+                    const commandDetails = new customCommandDetails(status.details.customName.toLowerCase(), status.details.customResponse, status.details.customImage, status.details.cooldown, status.details.role_perms)
+                    await updateCustomCommand(client, interaction.guild, commandDetails, selectedCommand); //update application
+
+                    //update command cache
+                    await loadCustomCommands(interaction.guild);
+
+                    //get a random success message
+                    const { update_success } = require('../../assets/messages.json');
+                    let idx = Math.floor(Math.random() * update_success.length);
+
+                    return modalSubmitInteraction.reply({
+                        content: `${update_success[idx].replace('{command}', `\`/${interaction.guild.prefix}${status.details.customName}\``)}`,
+                        ephemeral: true,
+                    });
                 }
-                //setup command details
-                const commandDetails = new customCommand(ccName.value, ccDesc.value, (ccImage.value == '') ? null : ccImage.value, ccCooldown.value, null)
-                status.valid = true, status.msg = 'Success', status.details = commandDetails
 
-                //validate command name
-                if (containsSpecialChars(ccName.value) == true) status.valid = false, status.msg = 'Command name contains special character(s)'
-                if (hasWhiteSpace(ccName.value) == true) status.valid = false, status.msg = 'Command name contains space(s)'
+                if (status.valid == false)
+                    return modalSubmitInteraction.reply({
+                        content: `Oops! → ${status.msg}`,
+                        ephemeral: true,
+                    });
 
-                //validate image
-                if (ccImage.value != '') {
-                    if (!validURL(ccImage.value)) status.valid = false, status.msg = 'Image URL is invalid'
-                    else if (!filetypes.includes(getUrlFileType(ccImage.value))) status.valid = false, status.msg = 'URL is not a valid image type'
-                }
 
-                //check if cooldown is valid number
-                if (!isFinite(ccCooldown.value)) status.valid = false, status.msg = `\`${ccCooldown.value}\` is not a valid time`
-
-                //if status is true, save to database
-                if (status.valid == true) await updateCustomCommand(interaction.guild, commandDetails);
-
-                return true;
-            }, time: 120000,
-        })
-
-        //send succes or fail message
-        if (status.valid == true) {
-            //create custom command details
-            function customCommand(name, response, image, cooldown, perms) {
-                this.commandName = name;
-                this.commandResponse = response;
-                this.commandImage = image;
-                this.commandCooldown = cooldown;
-                this.commandPerms = perms
+            } else {
+                //reply to message
+                return interaction.editReply({
+                    content: `Hmm... I couldn't find a custom command named \`${userInputCommand}\``,
+                    ephemeral: true
+                }).catch((err) => { });
             }
-            //setup the command detail structure
-            const commandDetails = new customCommand(status.details.customName.toLowerCase(), status.details.customResponse, status.details.customImage, status.details.cooldown, status.details.role_perms)
-            await updateSlashCustomCommand(client, interaction.guild, commandDetails, selectedCommand); //update application
-
-            //update command cache
-            await loadCommandCache(interaction.guild);
-
-            //get a random success message
-            const { update_success } = require('../../assets/messages.json');
-            let idx = Math.floor(Math.random() * update_success.length);
-
-            return modalSubmitInteraction.reply({
-                content: `${update_success[idx].replace('{command}', `\`/${interaction.guild.prefix}${status.details.customName}\``)}`,
-                ephemeral: true,
-            });
-        }
-
-        if (status.valid == false)
-            return modalSubmitInteraction.reply({
-                content: `Oops! → ${status.msg}`,
-                ephemeral: true,
-            });
+        })
     }
 }
 

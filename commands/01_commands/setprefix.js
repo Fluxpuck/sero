@@ -1,10 +1,10 @@
 /*  Fluxpuck © Creative Commons Attribution-NoDerivatives 4.0 International Public License
     For more information on the commands, please visit fluxpuck.com  */
 
-
+//load required modules
 const { updateGuildPrefix } = require("../../database/QueryManager");
 const { loadGuildPrefixes } = require("../../utils/CacheManager");
-const { updateSlashCustomCommand } = require("../../utils/ClientManager");
+const { updateCustomCommand } = require("../../utils/ClientManager");
 const { charIsLetter } = require("../../utils/functions");
 
 //construct the command and export
@@ -30,8 +30,9 @@ module.exports.run = async (client, interaction) => {
         ephemeral: true
     }).catch((err) => { });
 
-    //save to database & reload cache
+    //update guild prefix database
     await updateGuildPrefix(interaction.guild.id, userInputPrefix);
+    //update guild prefix cache
     await loadGuildPrefixes(interaction.guild);
 
     //get a random success message
@@ -44,21 +45,18 @@ module.exports.run = async (client, interaction) => {
         ephemeral: true
     }).catch((err) => { });
 
-    //update slash commands
-    //get all current Application Commands & map command names
-    const applicationsCommands = interaction.guild.applicationsCommands;
-    //fetch all custom commands & map command names
-    const customCommands = await getCustomCommands(application.guild);
-    const customNames = customCommands.map(c => c.commandName);
-
-    //update all current commands
-    for await (let command of applicationsCommands.values()) {
-        if (customNames.includes(command.name)) {
-            const commandDetails = customCommands.find(c => c.commandName == command.name)
-            await ClientManager.updateSlashCustomCommand(client, guild, commandDetails, command)
-        }
+    //update all guild commands
+    const customCommands = await getCustomCommands(interaction.guild);
+    for await (let command of customCommands) {
+        await updateCustomCommand(client, guild, command);
     }
 
+    //get guild's application commands
+    await interaction.guild.commands.fetch().then(async applicationcommands => {
+        //add all guild applications to guild collection
+        interaction.guild.applicationCommands = guildApplicationsCommands;
+    })
+    return;
 }
 
 

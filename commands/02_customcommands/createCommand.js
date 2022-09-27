@@ -3,16 +3,19 @@
 
 //load required modules
 const { ModalBuilder, TextInputBuilder, TextInputStyle, ActionRowBuilder } = require('discord.js');
-const { saveCustomCommand, getCustomCommands } = require('../../database/QueryManager');
+const { saveCustomCommandDB, getCustomCommandsDB } = require('../../database/QueryManager');
 const { validURL, getUrlFileType, containsSpecialChars, hasWhiteSpace } = require('../../utils/functions');
 
 //get extention types
 const { filetypes } = require('../../config/config.json');
-const { addSlashCustomCommand } = require('../../utils/ClientManager');
-const { loadCommandCache } = require('../../utils/CacheManager');
+const { addCustomCommand } = require('../../utils/ClientManager');
+const { loadCustomCommands } = require('../../utils/CacheManager');
 
 //construct the command and export
 module.exports.run = async (client, interaction) => {
+
+    //preset status options
+    // const status = { valid: false, command: null, msg: '' }
 
     //setup status value
     var status = { valid: false, msg: '', details: undefined }
@@ -98,7 +101,7 @@ module.exports.run = async (client, interaction) => {
             }
 
             //validate if command already exist
-            const currentCommands = await getCustomCommands(interaction.guild);
+            const currentCommands = await getCustomCommandsDB(interaction.guild);
             if (currentCommands.map(c => c.commandName).includes(ccName.value)) status.valid = false, status.msg = `A command named \`${ccName.value}\` already exist`
             if (client.commands.map(c => c.info.command.name).includes(ccName.value)) status.valid = false, status.msg = `Sorry, \`${ccName.value}\` can't be choosen, since it's a client-command`
 
@@ -106,7 +109,7 @@ module.exports.run = async (client, interaction) => {
             if (!isFinite(ccCooldown.value)) status.valid = false, status.msg = `\`${ccCooldown.value}\` is not a valid time`
 
             //if status is true, save to database
-            if (status.valid == true) await saveCustomCommand(interaction.guild, commandDetails);
+            if (status.valid == true) await saveCustomCommandDB(interaction.guild, commandDetails);
 
             return true;
         }, time: 120000,
@@ -124,10 +127,10 @@ module.exports.run = async (client, interaction) => {
         }
         //setup the command detail structure
         const commandDetails = new customCommand(status.details.customName.toLowerCase(), status.details.customResponse, status.details.customImage, status.details.cooldown, status.details.role_perms)
-        await addSlashCustomCommand(client, interaction.guild, commandDetails); //register application
+        await addCustomCommand(client, interaction.guild, commandDetails); //register application
 
         //update command cache
-        await loadCommandCache(interaction.guild); //update cache
+        await loadCustomCommands(interaction.guild); //update cache
 
         //get a random success message
         const { create_success } = require('../../assets/messages.json');

@@ -6,8 +6,8 @@ const embed = require('../../assets/embed.json');
 const { PREVIOUS_button, NEXT_button } = require('../../assets/buttons');
 
 //require modules
-const { EmbedBuilder, ActionRowBuilder, InteractionCollector } = require("discord.js");
-const { getCustomCommands } = require("../../database/QueryManager");
+const { EmbedBuilder, ActionRowBuilder } = require("discord.js");
+const { getCustomCommands } = require('../../utils/CacheManager');
 const { chunk } = require("../../utils/functions");
 
 //construct the command and export
@@ -16,7 +16,7 @@ module.exports.run = async (client, interaction) => {
     //get custom commands from database
     const customCommands = await getCustomCommands(interaction.guild);
     if (customCommands.length <= 0) return interaction.editReply({
-        content: `There are currently no custom commands... \nUse \`/creat-command\` to create a custom command!`,
+        content: `There are currently no custom commands... \nUse \`/create-command\` to create a custom command!`,
         ephemeral: true,
     });
 

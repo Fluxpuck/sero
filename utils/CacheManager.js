@@ -5,7 +5,7 @@
 const NodeCache = require("node-cache");
 
 //load functions from Managers
-const { getCustomCommands, getGuildPrefix } = require("../database/QueryManager");
+const { getCustomCommandsDB, getGuildPrefix } = require("../database/QueryManager");
 const { defaultPrefix } = require('../config/config.json');
 
 //build cache
@@ -13,20 +13,27 @@ const guildCommandCache = new NodeCache();
 
 module.exports = {
 
-    /** load commands from database to cache
+    /** load custom commands from database to cache
      * @param {*} guild 
      */
-    async loadCommandCache(guild) {
-        const commands = await getCustomCommands(guild);
+    async loadCustomCommands(guild) {
+        const commands = await getCustomCommandsDB(guild);
         await guildCommandCache.set(guild.id, commands)
     },
 
-    /** get specific command from command cache
+    /** get all custom commands from cache
+     * @param {*} guild 
+     */
+    async getCustomCommands(guild) {
+        return guildCommandCache.get(guild.id);
+    },
+
+    /** get specific custom command from cache
      * @param {*} guild 
      * @param {*} inputCommand 
      * @returns 
      */
-    async getCommandFromCache(guild, inputCommand) {
+    async getCustomCommandFromCache(guild, inputCommand) {
         const commandCache = guildCommandCache.get(guild.id);
         const commandDetails = commandCache.filter(c => c.commandName === inputCommand.substring(1)); //remove prefix from custom command
         return commandDetails[0]
