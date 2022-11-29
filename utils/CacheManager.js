@@ -5,7 +5,7 @@
 const NodeCache = require("node-cache");
 
 //load functions from Managers
-const { getCustomCommandsDB, getGuildPrefix } = require("../database/QueryManager");
+const { getCustomCommandsDB, getGuildPrefix, getGuildApplyId } = require("../database/QueryManager");
 const { defaultPrefix } = require('../config/config.json');
 
 //build cache
@@ -46,6 +46,14 @@ module.exports = {
         var prefix = await getGuildPrefix(guild.id); //get prefix from database
         if (prefix == undefined || prefix == null || prefix == false) prefix = defaultPrefix; //set prefix value
         guild.prefix = prefix; //set custom values and save in guild
+    },
+
+    /** load apply channeld id from database to guild collection
+     * @param {*} guild 
+     */
+    async loadGuildApplyChannel(guild) {
+        var apply_channeldId = await getGuildApplyId(guild.id); //get apply channel id from database
+        guild.applyId = apply_channeldId; //set custom values and save in guild
     },
 
 

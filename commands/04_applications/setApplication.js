@@ -1,0 +1,40 @@
+/*  Fluxpuck © Creative Commons Attribution-NoDerivatives 4.0 International Public License
+    For more information on the commands, please visit fluxpuck.com  */
+
+//load required modules
+
+//construct the command and export
+module.exports.run = async (client, interaction) => {
+
+    //check if there already is an application channel
+
+
+
+    //send the application message
+    return interaction.channel.send({
+        content: 'You have ',
+        components: [apply_button],
+        ephemeral: false
+    }).catch(err => { });
+
+}
+
+
+//command information
+module.exports.info = {
+    command: {
+        name: 'set-application',
+        category: 'setup',
+        desc: 'Will enable the application feature in the current channel.',
+        usage: '/set-application'
+    },
+    slash: {
+        type: 1, //ChatInput 1, User 2, Message 3
+        options: [ //type: Subcommand 1, SubcommandGroup 2, String 3, Integer 4, Boolean 5, User 6, Channel 7, Role 8, Mentionable 9, Number 10, Attachment 11
+        ],
+        modal: false,
+        permission: [],
+        defaultMemberPermissions: ['ManageGuild'],
+        ephemeral: true
+    }
+}

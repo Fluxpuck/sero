@@ -30,7 +30,7 @@ module.exports.run = async (client, interaction) => {
             .setTitle(`Help`)
             .setDescription(`Hey, this is **${client.user.username}** bot, here to make it easy for you to *create* and *use* __custom commands__ in your server.
             \nA list of all ${clientCommands.length} commands is below, use \`/help [command]\` to get more detailed information on a command.
-            \nIf you need any further help, please watch one of our turorials on [https://fluxpuck.com/tutorial](https://fluxpuck.com/tutorial)`)
+            \nIf you need any further help, please watch one of our turorials on [https://fluxpuck.com/tutorials](https://fluxpuck.com/tutorials.html)`)
 
         //sort commands by category
         const groupBy = (x, f) => x.reduce((a, b, i, x) => { const k = f(b, i, x); a.get(k)?.push(b) ?? a.set(k, [b]); return a; }, new Map());
@@ -72,7 +72,6 @@ ${value.map(c => `\`/${c.command.name}\``).join('\n')}
 **Desc**        - ${commandInfo.command.desc}
 **Usage**       - \`${commandInfo.command.usage}\`
 **Link**        - [${commandInfo.command.name}](https://fluxpuck.com/commands#${commandInfo.command.name})`)
-
 
         //reply to message
         return interaction.editReply({

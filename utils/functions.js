@@ -3,9 +3,6 @@
 
 module.exports = {
 
-    /** convert timestamp to 2400 time object
-     * @param {String} t Time object
-     */
     time(t) {
         //check if (t) is a valid time string
         let valid = (new Date(t)).getTime() > 0;
@@ -17,10 +14,6 @@ module.exports = {
         } else return undefined
     },
 
-    /** convert milliseconds to hours, minutes, and seconds
-     * @param {*} t 
-     * @returns 
-     */
     msToTime(t) {
         //get hours, minutes and seconds
         const date = new Date(t * 1000);
@@ -38,9 +31,6 @@ module.exports = {
         return dateString //return to user
     },
 
-    /** capitalize full string
-     * @param {String} str String object
-     */
     capitalize(str) {
         return str.replace(
             /\w\S*/g,
@@ -54,9 +44,6 @@ module.exports = {
         );
     },
 
-    /** clean the string object
-    * @param {String} string String object
-    */
     clean(client, string) {
         if (typeof string === 'string') {
             return string
@@ -69,10 +56,6 @@ module.exports = {
         }
     },
 
-    /** slice array in chunks
-     * @param {Array} array Lenghy array
-     * @param {Number} chunk Chunk size
-     */
     chunk(array, chunk) {
         let i, j, temp, returnArray = [];
         for (i = 0, j = array.length; i < j; i += chunk) {
@@ -81,10 +64,6 @@ module.exports = {
         return returnArray;
     },
 
-    /** get timestamp from snowflake
-     * @param {*} input 
-     * @returns 
-     */
     convertSnowflake(input) {
         /* set default discord EPOCH from discord documentation
         https://discord.com/developers/docs/reference#snowflakes */
@@ -135,6 +114,16 @@ module.exports = {
 
     hasWhiteSpace(s) {
         return (/\s/).test(s);
+    },
+
+    OlderThanTwoWeeks(timestamp) {
+        //setup the times 
+        const now = +new Date()
+        const objectTime = +new Date((timestamp))
+        const TwoWeeks = 14 * 60 * 60 * 24 * 1000
+
+        //return true or false
+        return (now - objectTime) > TwoWeeks
     }
 
 };

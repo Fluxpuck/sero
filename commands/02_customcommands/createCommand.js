@@ -14,9 +14,6 @@ const { loadCustomCommands } = require('../../utils/CacheManager');
 //construct the command and export
 module.exports.run = async (client, interaction) => {
 
-    //preset status options
-    // const status = { valid: false, command: null, msg: '' }
-
     //setup status value
     var status = { valid: false, msg: '', details: undefined }
 

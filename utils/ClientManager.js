@@ -146,9 +146,6 @@ module.exports = {
      * @param {*} commandName 
      */
     async deleteGuildCommand(guild, application) {
-
-        console.log(application)
-
         if (!application) return;
         await guild.commands.delete(application.id)
             .catch(err => console.log('Oops, something went wrong deleting the command: ', err));

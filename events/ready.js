@@ -72,9 +72,11 @@ module.exports = async (client) => {
     for await (let guild of guilds) {
         //update client/guild table(s)
         await DataManager.UpdateGuildTable();
+        await DataManager.UpdateApplicationBLTable();
         //load guild specific values
         await CacheManager.loadCustomCommands(guild);
         await CacheManager.loadGuildPrefixes(guild);
+        await CacheManager.loadGuildApplyChannel(guild);
     }
 
     //register or update slash commands
