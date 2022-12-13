@@ -1,7 +1,8 @@
 /*  Fluxpuck © Creative Commons Attribution-NoDerivatives 4.0 International Public License
     For more information on the commands, please visit fluxpuck.com  */
 
-//load required modules
+// → Assets and configs
+// → Modules, functions and utilities
 const { removeCustomCommandDB } = require("../../database/QueryManager");
 const { getCustomCommandFromCache, loadGuildPrefixes } = require("../../utils/CacheManager");
 const { deleteGuildCommand } = require("../../utils/ClientManager");

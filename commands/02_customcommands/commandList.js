@@ -1,11 +1,11 @@
 /*  Fluxpuck © Creative Commons Attribution-NoDerivatives 4.0 International Public License
     For more information on the commands, please visit fluxpuck.com  */
 
-//import styling from assets
+// → Assets and configs
 const embed = require('../../assets/embed.json');
 const { PREVIOUS_button, NEXT_button } = require('../../assets/buttons');
 
-//require modules
+// → Modules, functions and utilities
 const { EmbedBuilder, ActionRowBuilder } = require("discord.js");
 const { getCustomCommands } = require('../../utils/CacheManager');
 const { chunk } = require("../../utils/functions");

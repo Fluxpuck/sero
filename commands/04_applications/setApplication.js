@@ -1,21 +1,28 @@
 /*  Fluxpuck © Creative Commons Attribution-NoDerivatives 4.0 International Public License
     For more information on the commands, please visit fluxpuck.com  */
 
-//load required modules
+// → Assets and configs
+// → Modules, functions and utilities
 
 //construct the command and export
 module.exports.run = async (client, interaction) => {
 
-    //check if there already is an application channel
+    //check if channel has thread options available
+
+    console.log(interaction.channel)
 
 
 
-    //send the application message
-    return interaction.channel.send({
-        content: 'You have ',
-        components: [apply_button],
-        ephemeral: false
-    }).catch(err => { });
+
+
+
+
+
+    // //send the application message
+    // return interaction.channel.send({
+    //     content: 'You have ',
+    //     ephemeral: false
+    // }).catch(err => { });
 
 }
 

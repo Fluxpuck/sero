@@ -1,13 +1,13 @@
 /*  Fluxpuck © Creative Commons Attribution-NoDerivatives 4.0 International Public License
     For more information on the commands, please visit fluxpuck.com  */
 
-//load required modules
+// → Assets and configs
+const { filetypes } = require('../../config/config.json');
+
+// → Modules, functions and utilities
 const { ModalBuilder, TextInputBuilder, TextInputStyle, ActionRowBuilder } = require('discord.js');
 const { saveCustomCommandDB, getCustomCommandsDB } = require('../../database/QueryManager');
 const { validURL, getUrlFileType, containsSpecialChars, hasWhiteSpace } = require('../../utils/functions');
-
-//get extention types
-const { filetypes } = require('../../config/config.json');
 const { addCustomCommand } = require('../../utils/ClientManager');
 const { loadCustomCommands } = require('../../utils/CacheManager');
 

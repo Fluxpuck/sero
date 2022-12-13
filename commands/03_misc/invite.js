@@ -1,9 +1,10 @@
 /*  Fluxpuck © Creative Commons Attribution-NoDerivatives 4.0 International Public License
     For more information on the commands, please visit fluxpuck.com  */
 
-//import styling from assets
-const { ActionRowBuilder } = require('discord.js');
+// → Assets and configs
 const { BOT_BUTTON } = require('../../assets/buttons');
+// → Modules, functions and utilities
+const { ActionRowBuilder } = require('discord.js');
 
 //construct the command and export
 module.exports.run = async (client, interaction) => {

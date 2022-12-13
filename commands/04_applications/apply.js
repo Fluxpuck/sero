@@ -1,8 +1,8 @@
 /*  Fluxpuck © Creative Commons Attribution-NoDerivatives 4.0 International Public License
     For more information on the commands, please visit fluxpuck.com  */
 
-// → Assets
-// → Modules and Utilities
+// → Assets and configs
+// → Modules, functions and utilities
 const { ModalBuilder, TextInputBuilder, TextInputStyle, ActionRowBuilder, Collection } = require('discord.js');
 const { getMemberApplications, getMemberFromBL, saveMemberApplication } = require("../../database/QueryManager");
 const { OlderThanTwoWeeks } = require('../../utils/functions');
@@ -18,11 +18,13 @@ module.exports.run = async (client, interaction) => {
     // → Application Filters & checks
     //check if last application is less than 2 weeks old...
     const memberApplications = await getMemberApplications(interaction.guild.id, member.user.id)
-    const lastApplication = memberApplications.sort((a, b) => a.date - b.date)[0]
-    if (OlderThanTwoWeeks(lastApplication.date) == false) return interaction.reply({
-        content: `Oops, seems like you have already applied recently. Feel free to apply again in the future.`,
-        ephemeral: true,
-    }).catch(err => { });
+    if (memberApplications.length >= 1) {
+        const lastApplication = memberApplications.sort((a, b) => a.date - b.date)[0]
+        if (OlderThanTwoWeeks(lastApplication.date) == false) return interaction.reply({
+            content: `Oops, seems like you have already applied recently. Feel free to apply again in the future.`,
+            ephemeral: true,
+        }).catch(err => { });
+    }
 
     //check if member is blocked from applying...
     const memberBlocked = await getMemberFromBL(interaction.guild.id, member.user.id)
