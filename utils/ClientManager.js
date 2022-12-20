@@ -129,6 +129,7 @@ module.exports = {
         if (!application) return;
         await client.commands.delete(application.id)
             .catch(err => console.log('Oops, something went wrong deleting the command: ', err));
+        return console.log(`Application has been delete... ${application.id}`)
     },
 
     /** remove guild application commands

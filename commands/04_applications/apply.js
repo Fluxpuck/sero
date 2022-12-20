@@ -113,7 +113,7 @@ module.exports.run = async (client, interaction) => {
                 //send message to thread
                 threadChannel.send({
                     content: `
-Hello <@${member.user.id}>. This is your private application thread, where your application process will continue.
+Hello <@${member.user.id}>. This is your private application thread. Your application will continue here.
 Please be patient, a moderator will reply soon.
 
 **Name**            -   \`${member.user.tag} - ${member.user.id}\`  \n
@@ -152,8 +152,8 @@ Please be patient, a moderator will reply soon.
 module.exports.info = {
     command: {
         name: 'apply-for-mod',
-        category: 'feature',
-        desc: 'Apply',
+        category: 'applications',
+        desc: 'Apply to become a Moderator',
         usage: '/apply-for-mod'
     },
     slash: {
