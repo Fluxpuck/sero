@@ -47,8 +47,8 @@ module.exports.info = {
                 name: 'time',
                 type: 10,
                 minValue: 1,
-                maxValue: 6,
-                description: 'How long should the member be blocked for in minutes?',
+                maxValue: 3,
+                description: 'How long should the member be blocked for in days?',
                 required: false
             },
         ],

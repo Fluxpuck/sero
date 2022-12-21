@@ -25,3 +25,22 @@ events.run(client); //run the events
 
 //client login to discord
 client.login(process.env.TOKEN);
+
+// → scheduled tasks
+var cron = require('node-cron');
+cron.schedule('*/1 * * * *', () => {
+
+    client.emit('applicationTimer')
+
+})
+
+
+
+
+//Running a job at 01:00 at Europe/Amsterdam timezone
+cron.schedule('0 1 * * *', () => {
+    client.emit('applicationTimer')
+}, {
+    scheduled: true,
+    timezone: "Europe/Amsterdam"
+});
