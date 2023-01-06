@@ -18,7 +18,7 @@ module.exports.run = async (client, interaction) => {
     await saveMemberToBL(interaction.guild, blockMember.user, expireTime)
 
     //return message to user
-    return interaction.reply({
+    return interaction.editReply({
         content: `**${blockMember.user.username}** has been blocked from applying again.`,
         ephemeral: true
     })

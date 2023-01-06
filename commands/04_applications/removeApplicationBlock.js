@@ -16,11 +16,10 @@ module.exports.run = async (client, interaction) => {
     await deleteMemberFromBL(interaction.guild.id, blockMember.value);
 
     //return message to user
-    return interaction.reply({
+    return interaction.editReply({
         content: `**${blockMember.user.username}** has been unblocked and can apply again.`,
         ephemeral: true
     })
-
 }
 
 

@@ -121,9 +121,16 @@ Please be patient, a moderator will reply soon.
 **Region**          -   \`${formRegion.value}\`                     \n
 **Reason**          -   \`${formReason.value}\`                     \n
 **Experience**      -   \`${formExperience.value}\`                 \n
+${(memberApplications.length > 0) ? `\n*Previous applications: ${memberApplications.length}*` : ``}
                     `,
+
                     ephemeral: false
-                }).catch(err => { });
+                }).catch(err => {
+                    return i.reply({
+                        content: `Oops, something went wrong trying to send a message in the application-thread!\nMake sure <@${client.user.id}> has access to <#${interaction.guild.applyId}> and has permissions to create threads (there).`,
+                        ephemeral: true
+                    })
+                });
 
                 //save data to database
                 const applicationData = { _age: formAge.value, _region: formRegion.value, _reason: formReason.value, _experience: formExperience.value }
@@ -137,7 +144,7 @@ Please be patient, a moderator will reply soon.
 
             }).catch(async err => {
                 return i.reply({
-                    content: `Oops, something went wrong trying to create an application-thread for you`,
+                    content: `Oops, something went wrong trying to create an application-thread!\nMake sure <@${client.user.id}> has access to <#${interaction.guild.applyId}> and has permissions to create threads (there).`,
                     ephemeral: true
                 })
             })
