@@ -3,6 +3,8 @@
 
 // → Assets and configs
 // → Modules, functions and utilities
+const { UpdateGuildApplicationTable } = require("../../database/DbManager");
+const { updateGuildApplyId } = require("../../database/QueryManager");
 
 //construct the command and export
 module.exports.run = async (client, interaction) => {
@@ -13,9 +15,12 @@ module.exports.run = async (client, interaction) => {
     //remove member from block list
     await updateGuildApplyId(interaction.guild.id, applicationChannel.value);
 
+    //create database table
+    await UpdateGuildApplicationTable(interaction.guild.id);
+
     //return message to user
-    return interaction.reply({
-        content: `All applications will be created as thread under <#${applicationChannel.value}>.`,
+    return interaction.editReply({
+        content: `All applications will be created as threads under <#${applicationChannel.value}>.`,
         ephemeral: true
     })
 

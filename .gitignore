@@ -1,8 +1,6 @@
-# Logs
-*.log
-npm-debug.log*
-
 # Yarn
+yarn.lock
+.yarn
 .yarn/*
 !.yarn/patches
 !.yarn/releases
@@ -11,25 +9,31 @@ npm-debug.log*
 !.yarn/versions
 .pnp.*
 
+# Npm
+node_modules
+package.json
+package-lock.json
+
+# Docker
+Dockerfile
+
+# Logs
+*.log
+npm-debug.log*
+
 # Preferences
+config.json
 .env
 .vscode
 
 # Folders
-node_modules
-.yarn
+.git
 .github
 config
 database
-00_private
+private
 assets
-
-# Files
-test.js
-commands.json
 
 # Misc
 .DS_STORE
-package.json
-package-lock.json
-yarn.lock
+test.js

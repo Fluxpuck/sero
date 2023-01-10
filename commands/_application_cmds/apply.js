@@ -3,14 +3,17 @@
 
 // → Assets and configs
 // → Modules, functions and utilities
-const { ModalBuilder, TextInputBuilder, TextInputStyle, ActionRowBuilder, Collection } = require('discord.js');
+const { ModalBuilder, TextInputBuilder, TextInputStyle, ActionRowBuilder } = require('discord.js');
 const { getMemberApplications, getMemberFromBL, saveMemberApplication } = require("../../database/QueryManager");
 const { OlderThanTwoWeeks } = require('../../utils/functions');
 
 module.exports.run = async (client, interaction) => {
 
     //if there is no apply channel setup
-    if (!interaction.guild.applyId) return;
+    if (!interaction.guild.applyId) return interaction.reply({
+        content: `*The application feature has not been setup yet! Please use \`/set-application\`.*`,
+        ephemeral: true,
+    });
 
     //information from the interaction + setup status
     const { guild, member } = interaction;

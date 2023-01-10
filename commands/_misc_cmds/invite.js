@@ -15,7 +15,7 @@ module.exports.run = async (client, interaction) => {
 
     //reply with Discord Latency
     return interaction.editReply({
-        content: `Hey, this is **${client.user.username}**, here to help *create* and *use* __custom commands__.\nClick the button below to invite me to your server`,
+        content: `Hello friend. I can help you out! Click the button below to invite me to your server`,
         components: [web_button]
     })
 
