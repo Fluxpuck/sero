@@ -10,6 +10,7 @@ const ClientConsole = require('../utils/ConsoleManager');
 const ClientManager = require('../utils/ClientManager');
 const CacheManager = require('../utils/CacheManager');
 const DataManager = require('../database/DbManager');
+const { insertGuild } = require('../database/QueryManager');
 
 //exports "ready" event
 module.exports = async (client) => {
@@ -73,6 +74,9 @@ module.exports = async (client) => {
         //update client/guild table(s)
         await DataManager.UpdateGuildTable();
         await DataManager.UpdateApplicationBLTable();
+        //(double) check if all tables are present
+        await insertGuild(guild);
+        await DataManager.UpdateCustomCommandsTable(guild.id);
         //load guild specific values
         await CacheManager.loadCustomCommands(guild);
         await CacheManager.loadGuildPrefixes(guild);
