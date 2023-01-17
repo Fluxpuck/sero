@@ -129,7 +129,7 @@ module.exports.run = async (client, interaction) => {
 module.exports.info = {
     command: {
         name: 'commandlist',
-        category: 'Custom Commands',
+        category: 'custom commands',
         desc: 'Shows a list with all custom commands',
         usage: '/commandlist'
     },

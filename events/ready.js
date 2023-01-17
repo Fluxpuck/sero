@@ -74,13 +74,16 @@ module.exports = async (client) => {
         //update client/guild table(s)
         await DataManager.UpdateGuildTable();
         await DataManager.UpdateApplicationBLTable();
+        await DataManager.UpdateGuildEconomyCompanyTable();
+        await DataManager.UpdateEconomyCompanyPendingTable();
+
         //(double) check if all tables are present
         await insertGuild(guild);
-        await DataManager.UpdateCustomCommandsTable(guild.id);
         //load guild specific values
         await CacheManager.loadCustomCommands(guild);
         await CacheManager.loadGuildPrefixes(guild);
         await CacheManager.loadGuildApplyChannel(guild);
+        await CacheManager.loadGuildFeatures(guild);
     }
 
     //register or update slash commands

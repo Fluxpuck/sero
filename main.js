@@ -28,8 +28,22 @@ client.login(process.env.TOKEN);
 
 // → scheduled tasks
 var cron = require('node-cron');
+//check applicationTimer
+//runs every day 00:00, Europe/Amsterdam Time
 cron.schedule('0 1 * * *', () => {
     client.emit('applicationTimer')
+}, {
+    scheduled: true,
+    timezone: "Europe/Amsterdam"
+});
+//check economy company pending requests
+//runs every 15 minutes, Europe/Amsterdam Time
+cron.schedule('*/15 * * * *', () => {
+
+
+
+
+
 }, {
     scheduled: true,
     timezone: "Europe/Amsterdam"

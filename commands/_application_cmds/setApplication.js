@@ -31,7 +31,7 @@ module.exports.run = async (client, interaction) => {
 module.exports.info = {
     command: {
         name: 'set-application',
-        category: 'setup',
+        category: 'applications',
         desc: 'Will enable the application feature in the current channel.',
         usage: '/set-application'
     },

@@ -5,8 +5,9 @@
 const NodeCache = require("node-cache");
 
 //load functions from Managers
-const { getCustomCommandsDB, getGuildPrefix, getGuildApplyId } = require("../database/QueryManager");
+const { getCustomCommandsDB, getGuildPrefix, getGuildApplyId, checkTableExistance } = require("../database/QueryManager");
 const { defaultPrefix } = require('../config/config.json');
+const { InteractionCollector } = require("discord.js");
 
 //build cache
 const guildCommandCache = new NodeCache();
@@ -56,7 +57,27 @@ module.exports = {
         guild.applyId = apply_channeldId; //set custom values and save in guild
     },
 
+    /** load guild features and store to guild collection
+     * @param {*} guild 
+     */
+    async loadGuildFeatures(guild) {
+        //collect application features by checking if tables exists
+        const customcommandsTable = await checkTableExistance(`${guild.id}_commands`);
+        const economyTable = await checkTableExistance(`${guild.id}_economycredits`);
+        const applicationTable = await checkTableExistance(`${guild.id}_applications`);
 
+        //setup the guild featurelist
+        const guildFeatures = []
+
+        //push features to Array
+        if (customcommandsTable.length >= 1) guildFeatures.push(`CUSTOMCOMMANDS`)
+        if (economyTable.length >= 1) guildFeatures.push(`ECONOMY`)
+        if (applicationTable.length >= 1) guildFeatures.push(`APPLICATION`)
+
+        //add all guild features to guild collection
+        guild.fluxFeatures = guildFeatures;
+
+    }
 
 
 

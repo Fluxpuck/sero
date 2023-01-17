@@ -183,7 +183,7 @@ module.exports.run = async (client, interaction) => {
 module.exports.info = {
     command: {
         name: 'update-command',
-        category: 'Custom Commands',
+        category: 'custom commands',
         desc: 'Change the details of a custom commands',
         usage: '/update-command'
     },

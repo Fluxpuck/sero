@@ -64,7 +64,7 @@ module.exports.run = async (client, interaction) => {
 module.exports.info = {
     command: {
         name: 'remove-command',
-        category: 'Custom Commands',
+        category: 'custom commands',
         desc: 'Remove a custom command from the server',
         usage: '/remove-command [commandname]'
     },

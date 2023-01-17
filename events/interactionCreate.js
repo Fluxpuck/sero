@@ -24,3 +24,13 @@ module.exports = async (client, interaction) => {
 
     return;
 }
+
+
+/* NOTES →
+
+Create a function to check what feature the command is part of (bast on category)
+Make sure to exclude set commands from this check
+if a command is part of the feature but it's not enabled, don't execute the command
+but reply with a message to the user
+
+*/
