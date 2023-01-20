@@ -31,17 +31,17 @@ module.exports.run = async (client, interaction) => {
 module.exports.info = {
     command: {
         name: 'set-application',
-        category: 'applications',
+        category: 'APPLICATION',
         desc: 'Will enable the application feature in the current channel.',
         usage: '/set-application'
     },
     slash: {
-        type: 1, //ChatInput 1, User 2, Message 3
-        options: [ //type: Subcommand 1, SubcommandGroup 2, String 3, Integer 4, Boolean 5, User 6, Channel 7, Role 8, Mentionable 9, Number 10, Attachment 11
+        type: 1, //ChatInput → https://discord-api-types.dev/api/discord-api-types-v10/enum/ApplicationCommandType
+        options: [ //CommandOptions → https://discord-api-types.dev/api/discord-api-types-v10/enum/ApplicationCommandOptionType
             {
                 name: 'channel',
                 type: 7,
-                channelTypes: 0, //channelTypes → https://discord-api-types.dev/api/discord-api-types-v10/enum/ChannelType
+                // channelTypes: 0, //channelTypes → https://discord-api-types.dev/api/discord-api-types-v10/enum/ChannelType
                 description: 'Choose a channel that will hold all the application threads',
                 required: true
             },

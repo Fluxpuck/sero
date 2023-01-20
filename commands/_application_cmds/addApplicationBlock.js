@@ -30,7 +30,7 @@ module.exports.run = async (client, interaction) => {
 module.exports.info = {
     command: {
         name: 'block-apply',
-        category: 'applications',
+        category: 'APPLICATION',
         desc: 'Block a member to prevent them applying (again)',
         usage: '/set-application'
     },

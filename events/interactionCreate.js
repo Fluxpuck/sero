@@ -9,6 +9,17 @@ module.exports = async (client, interaction) => {
     //fetch and execute client command
     const commandFile = client.commands.get(interaction.commandName);
     if (commandFile) {
+
+        //check if the feature is available before executing the command
+        if (!interaction.guild.fluxFeatures.includes(commandFile.info.command.category)) {
+            if (commandFile.info.command.category != 'misc' && commandFile.info.command.category != 'private') {
+                return interaction.editReply({
+                    content: `The ${commandFile.info.command.category.toLowerCase()} feature is not available`,
+                    ephemeral: true
+                }).catch((err) => { });
+            }
+        }
+
         //check if slash commands hold a modal and skip defer
         if (commandFile.info.slash.modal == false) {
             // check if command is emphemeral or not

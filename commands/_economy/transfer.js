@@ -4,7 +4,7 @@
 
 // → Assets and configs
 // → Modules, functions and utilities
-const { giveMemberCredits, createEconomyLog, getMemberCreditsBalance } = require("../../database/QueryManager");
+const { giveMemberCredits, createEconomyLog, getMemberCreditsBalance, removeMemberCredits } = require("../../database/QueryManager");
 
 //construct the command and export
 module.exports.run = async (client, interaction) => {
@@ -20,15 +20,20 @@ module.exports.run = async (client, interaction) => {
         ephemeral: true
     })
 
-    //add funds to members credits
+    //add funds to target members credits & remove from your account
     await giveMemberCredits(interaction.guild.id, giveMember.value, giveAmount.value);
+    await removeMemberCredits(interaction.guild.id, interaction.user.id, giveAmount.value);
 
     //save log to database
     await createEconomyLog(interaction.guild.id, module.exports.info.command.name, giveMember.user, { old: memberBalance, new: (memberBalance + giveAmount.value) });
 
+    //get a random success message
+    const { transfer_success } = require('../../assets/messages.json');
+    let idx = Math.floor(Math.random() * transfer_success.length);
+
     //reply message to the user
     return interaction.editReply({
-        content: `${giveMember.user.tag} just recieved ${giveAmount.value}. Their current balance is now: ${(memberBalance + giveAmount.value)} credits`,
+        content: `${transfer_success[idx].replace('{amount}', `${giveAmount.value}`).replace('{user}', `${giveMember.user.tag}`)}`,
         ephemeral: false
     })
 
@@ -38,10 +43,10 @@ module.exports.run = async (client, interaction) => {
 //command information
 module.exports.info = {
     command: {
-        name: 'give-credits',
+        name: 'transfer-credits',
         category: 'ECONOMY',
-        desc: 'Give credits to a member',
-        usage: '/give-credits [member] [amount]'
+        desc: 'Transfer credits from you to another member',
+        usage: '/transfer-credits [member] [amount]'
     },
     slash: {
         type: 1, //ChatInput 1, User 2, Message 3

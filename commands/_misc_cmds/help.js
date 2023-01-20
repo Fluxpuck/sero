@@ -4,7 +4,6 @@
 // → Assets and configs
 const embed = require('../../assets/embed.json');
 const { WEB_button, BOT_BUTTON } = require('../../assets/buttons');
-
 // → Modules, functions and utilities
 const { EmbedBuilder, ActionRowBuilder } = require('discord.js');
 const { capitalize } = require('../../utils/functions');
@@ -85,7 +84,6 @@ ${value.map(c => `\`/${c.command.name}\``).join('\n')}
 
 //import command options from json
 const applicationChoices = require('../../config/commands.json');
-
 //command information
 module.exports.info = {
     command: {

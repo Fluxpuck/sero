@@ -162,7 +162,7 @@ ${(memberApplications.length > 0) ? `\n*Previous applications: ${memberApplicati
 module.exports.info = {
     command: {
         name: 'apply-for-mod',
-        category: 'applications',
+        category: 'APPLICATION',
         desc: 'Apply to become a Moderator',
         usage: '/apply-for-mod'
     },

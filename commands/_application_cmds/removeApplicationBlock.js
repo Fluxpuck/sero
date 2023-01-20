@@ -27,7 +27,7 @@ module.exports.run = async (client, interaction) => {
 module.exports.info = {
     command: {
         name: 'remove-block-apply',
-        category: 'applications',
+        category: 'APPLICATION',
         desc: 'Remove a blocked member and allow them to apply again',
         usage: '/remove-block-apply'
     },

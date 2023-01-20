@@ -48,7 +48,7 @@ module.exports.run = async (client, interaction) => {
 module.exports.info = {
     command: {
         name: 'set-economy',
-        category: 'economy',
+        category: 'ECONOMY',
         desc: 'Enable or RESET economy',
         usage: '/set-economy'
     },

@@ -147,7 +147,7 @@ module.exports.run = async (client, interaction) => {
 module.exports.info = {
     command: {
         name: 'show-applications',
-        category: 'applications',
+        category: 'APPLICATION',
         desc: 'Show all previous application form answers',
         usage: '/show-applications [user]'
     },

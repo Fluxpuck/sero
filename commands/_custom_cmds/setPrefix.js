@@ -88,7 +88,7 @@ module.exports.run = async (client, interaction) => {
 module.exports.info = {
     command: {
         name: 'set-prefix',
-        category: 'custom commands',
+        category: 'CUSTOMCOMMANDS',
         desc: 'Set or update guild prefix',
         usage: '/set-prefix [prefix]'
     },

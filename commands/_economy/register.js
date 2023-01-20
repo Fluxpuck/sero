@@ -1,9 +1,10 @@
 /*  Fluxpuck © Creative Commons Attribution-NoDerivatives 4.0 International Public License
     For more information on the commands, please visit fluxpuck.com  */
 
+
 // → Assets and configs
 // → Modules, functions and utilities
-const { getMemberCreditsBalance } = require("../../database/QueryManager")
+const { getMemberCreditsBalance, registerMemberCredits } = require("../../database/QueryManager")
 
 //construct the command and export
 module.exports.run = async (client, interaction) => {
@@ -11,16 +12,22 @@ module.exports.run = async (client, interaction) => {
     //set 60 second cooldown feature for this command
     // → ...
 
-    //get balance from database
+    //check if member already has registered
     const memberBalance = await getMemberCreditsBalance(interaction.guild.id, interaction.user.id);
-    if (memberBalance === false) return interaction.editReply({
-        content: `*Oops, looks like you haven't registered yet. Please use \`/register-work\` to start your journey.*`,
+    if (memberBalance != false) return interaction.editReply({
+        content: `*Oops, looks like you have already registered.*`,
         ephemeral: true
     })
 
+    //register user to the credit table
+    await registerMemberCredits(interaction.guild.id, interaction.user);
+
+    //log to economy logs
+    // → ...
+
     //return message to user
     return interaction.editReply({
-        content: `Your current balance is: \`${memberBalance}\` ${memberBalance == 1 ? 'credit' : 'credits'}.`,
+        content: `Congratulations! You're now eligable to work and earn credits.`,
         ephemeral: false
     })
 
@@ -30,10 +37,10 @@ module.exports.run = async (client, interaction) => {
 //command information
 module.exports.info = {
     command: {
-        name: 'balance',
+        name: 'register-work',
         category: 'ECONOMY',
-        desc: 'Check your credit balance',
-        usage: '/balance'
+        desc: 'Get your work-visum and to work and earn credits',
+        usage: '/register-work'
     },
     slash: {
         type: 1, //ChatInput 1, User 2, Message 3
@@ -42,6 +49,6 @@ module.exports.info = {
         modal: false,
         permission: [],
         defaultMemberPermissions: ['ManageGuild'],
-        ephemeral: true
+        ephemeral: false
     }
 }

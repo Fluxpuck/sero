@@ -127,9 +127,12 @@ module.exports = {
      */
     async deleteClientCommand(client, application) {
         if (!application) return;
-        await client.commands.delete(application.id)
-            .catch(err => console.log('Oops, something went wrong deleting the command: ', err));
-        return console.log(`Application has been delete... ${application.id}`)
+        client.application.commands.fetch(application.id) // id of your command
+            .then((command) => {
+                command.delete()
+                    .catch(err => console.log('Oops, something went wrong trying to delete the command: ', err));
+            }).catch(err => console.log('Oops, something went wrong fetching the command to delete: ', err));
+        return
     },
 
     /** remove guild application commands
