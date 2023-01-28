@@ -3,7 +3,7 @@
 
 //require modules
 const DataManager = require('../database/DbManager');
-const { insertGuild, activateGuild } = require('../database/QueryManager');
+const { insertGuild } = require('../database/QueryManager');
 const { loadCustomCommands, loadGuildPrefixes, getCustomCommands } = require('../utils/CacheManager');
 const { addCustomCommand } = require('../utils/ClientManager');
 
@@ -15,7 +15,6 @@ module.exports = async (client, guild) => {
 
     //insert new guild & activate
     await insertGuild(guild);
-    await activateGuild(guild);
 
     //load guild specific values
     await loadCustomCommands(guild);
