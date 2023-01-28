@@ -27,7 +27,7 @@ module.exports.run = async (client, interaction) => {
 
     //reply message to the user
     return interaction.editReply({
-        content: `${new Intl.NumberFormat().format(removeAmount.value)} credits were just taken from ${removeMember.user.tag}. Their current balance is now: ${new Intl.NumberFormat().format(memberBalance + removeMember.value)} credits`,
+        content: `*${new Intl.NumberFormat().format(removeAmount.value)}* credits were just taken from ${removeMember.user.tag}. Their current balance is now: 🪙 **${new Intl.NumberFormat().format(memberBalance + removeMember.value)}** credits`,
     })
 
 

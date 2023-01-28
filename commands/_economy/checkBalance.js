@@ -21,7 +21,7 @@ module.exports.run = async (client, interaction) => {
 
     //return message to user
     return interaction.editReply({
-        content: `**${checkMember.user.tag}**'s current balance is: \`${new Intl.NumberFormat().format(memberBalance)}\` ${memberBalance == 1 ? 'credit' : 'credits'}.`,
+        content: `**${checkMember.user.tag}**'s current balance is: 🪙 **${new Intl.NumberFormat().format(memberBalance)}** ${memberBalance == 1 ? 'credit' : 'credits'}.`,
         ephemeral: false
     })
 

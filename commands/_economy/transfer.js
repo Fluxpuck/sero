@@ -33,7 +33,7 @@ module.exports.run = async (client, interaction) => {
 
     //reply message to the user
     return interaction.editReply({
-        content: `${transfer_success[idx].replace('{amount}', `${new Intl.NumberFormat().format(giveAmount.value)}`).replace('{user}', `${giveMember.user.tag}`)}`,
+        content: `${transfer_success[idx].replace('{amount}', `*${new Intl.NumberFormat().format(giveAmount.value)}*`).replace('{user}', `${giveMember.user.tag}`)}`,
         ephemeral: false
     })
 

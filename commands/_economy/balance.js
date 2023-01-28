@@ -20,7 +20,7 @@ module.exports.run = async (client, interaction) => {
 
     //return message to user
     return interaction.editReply({
-        content: `Your current balance is: \`${new Intl.NumberFormat().format(memberBalance)}\` ${memberBalance == 1 ? 'credit' : 'credits'}.`,
+        content: `Your current balance is: 🪙 **${new Intl.NumberFormat().format(memberBalance)}** ${memberBalance == 1 ? 'credit' : 'credits'}.`,
         ephemeral: false
     })
 

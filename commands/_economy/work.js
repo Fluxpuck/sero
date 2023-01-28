@@ -25,17 +25,18 @@ module.exports.run = async (client, interaction) => {
     //get member's work economy logs
     const memberLog = await getMemberEconomyLogs(interaction.guild.id, interaction.user.id, exports.info.command.name)
     const lastMemberLog = memberLog[memberLog.length - 1];
+    if (memberLog.length > 0) {
+        //setup the timestamps of current date and last member log's creation date
+        let currentTime = moment(), timestampToCheck = moment(lastMemberLog.create_date);
+        let differenceInMinutes = currentTime.diff(timestampToCheck, 'minutes');
 
-    //setup the timestamps of current date and last member log's creation date
-    let currentTime = moment(), timestampToCheck = moment(lastMemberLog.create_date);
-    let differenceInMinutes = currentTime.diff(timestampToCheck, 'minutes');
-
-    //if the timestamp is younger than 60 minutes
-    let id_work_not_complete = Math.floor(Math.random() * work_not_complete.length);
-    if (differenceInMinutes < 60) return interaction.editReply({
-        content: `${work_not_complete[id_work_not_complete].replace('{time}', `**${60 - differenceInMinutes}**`)}`,
-        ephemeral: false
-    })
+        //if the timestamp is younger than 60 minutes
+        let id_work_not_complete = Math.floor(Math.random() * work_not_complete.length);
+        if (differenceInMinutes < 60) return interaction.editReply({
+            content: `${work_not_complete[id_work_not_complete].replace('{time}', `**${60 - differenceInMinutes}**`)}`,
+            ephemeral: false
+        })
+    }
 
     //get all logs from today...
     const todayLogs = memberLog.filter((log, index) => {
@@ -44,8 +45,8 @@ module.exports.run = async (client, interaction) => {
 
     //if someone has already worked 5 times in the past 24 hours... refuse!
     if (todayLogs.length > 5) return interaction.editReply({
-        content: `${work_timeout[id_work_timeout]}`,
-        ephemeral: false
+        content: `*${work_timeout[id_work_timeout]}*`,
+        ephemeral: true
     })
 
     //calculate & randomize what someone can earn based on: Account Age, Company, 
@@ -63,13 +64,12 @@ module.exports.run = async (client, interaction) => {
 
         //return message
         return interaction.editReply({
-            content: `${work_success[id_work_success].replace('{amount}', `**$${new Intl.NumberFormat().format(amount)}**`)}`,
+            content: `${work_success[id_work_success].replace('{amount}', `**$${new Intl.NumberFormat({ style: 'currency', currency: 'USD' }).format(amount)}**`)}`,
             ephemeral: false
         })
     }
-
     if (jobSuccess === false) return interaction.editReply({
-        content: `${work_failed[id_work_failed].replace('{amount}', `**$${new Intl.NumberFormat().format(amount)}**`)}`,
+        content: `${work_failed[id_work_failed].replace('{amount}', `**$${new Intl.NumberFormat({ style: 'currency', currency: 'USD' }).format(amount)}**`)}`,
         ephemeral: false
     })
 

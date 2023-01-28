@@ -25,11 +25,11 @@ module.exports.run = async (client, interaction) => {
     //go over all applications and push to desc array
     for (let memberBalance of guildBalance) {
         //create embed description
-        descArray.push(`\`#${guildBalance.indexOf(memberBalance) + 1}\` 🪙 ${(new Intl.NumberFormat().format(memberBalance.balance))} → ${memberBalance.userName}`)
+        descArray.push(`\`#${guildBalance.indexOf(memberBalance) + 1}\` 🪙 **${(new Intl.NumberFormat({ style: 'currency', currency: 'USD' }).format(memberBalance.balance))}** → ${memberBalance.userName}`)
     }
 
     //slice desc array into chunks (pages)
-    const descPages = chunk(descArray, 1);
+    const descPages = chunk(descArray, 10);
 
     //setup pages & max page length
     let page = 0, maxpages = descPages.length - 1;

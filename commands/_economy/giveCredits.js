@@ -28,7 +28,7 @@ module.exports.run = async (client, interaction) => {
 
     //reply message to the user
     return interaction.editReply({
-        content: `${giveMember.user.tag} just recieved ${new Intl.NumberFormat().format(giveAmount.value)}. Their current balance is now: ${new Intl.NumberFormat().format(memberBalance + giveAmount.value)} credits`,
+        content: `${giveMember.user.tag} just recieved *${new Intl.NumberFormat().format(giveAmount.value)}*. Their current balance is now: 🪙 **${new Intl.NumberFormat().format(memberBalance + giveAmount.value)}** credits`,
         ephemeral: false
     })
 
