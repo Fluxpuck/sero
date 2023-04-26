@@ -90,7 +90,7 @@ module.exports.run = async (client, interaction) => {
             //validate command name
             if (containsSpecialChars(ccName.value) == true) status.valid = false, status.msg = 'Command name contains special character(s)'
             if (hasWhiteSpace(ccName.value) == true) status.valid = false, status.msg = 'Command name contains space(s)'
-            if (isLowerCase(cc.name) == false) status.valid = false, status.msg = "Command name is not lower case"
+            if (isLowerCase(ccName.value) == false) status.valid = false, status.msg = "Command name is not lower case"
 
             //validate image url
             if (ccImage.value != '') {
