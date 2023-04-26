@@ -116,6 +116,10 @@ module.exports = {
         return (/\s/).test(s);
     },
 
+    isLowerCase(s) {
+        return s == s.toLowerCase()
+    },
+
     OlderThanTwoWeeks(timestamp) {
         //setup the times 
         const now = +new Date()
