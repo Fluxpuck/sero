@@ -7,7 +7,7 @@ const { filetypes } = require('../../config/config.json');
 // → Modules, functions and utilities
 const { ModalBuilder, TextInputBuilder, TextInputStyle, ActionRowBuilder } = require('discord.js');
 const { saveCustomCommandDB, getCustomCommandsDB } = require('../../database/QueryManager');
-const { validURL, getUrlFileType, containsSpecialChars, hasWhiteSpace } = require('../../utils/functions');
+const { validURL, getUrlFileType, containsSpecialChars, hasWhiteSpace, isLowerCase } = require('../../utils/functions');
 const { addCustomCommand } = require('../../utils/ClientManager');
 const { loadCustomCommands } = require('../../utils/CacheManager');
 
@@ -90,6 +90,7 @@ module.exports.run = async (client, interaction) => {
             //validate command name
             if (containsSpecialChars(ccName.value) == true) status.valid = false, status.msg = 'Command name contains special character(s)'
             if (hasWhiteSpace(ccName.value) == true) status.valid = false, status.msg = 'Command name contains space(s)'
+            if (isLowerCase(ccName.value) == false) status.valid = false, status.msg = "Command name is not lower case"
 
             //validate image url
             if (ccImage.value != '') {
