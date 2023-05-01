@@ -1,5 +1,5 @@
 /*  FluxBot © 2023 Fluxpuck
-The Resolver contains all functions parsing and collecting information */
+The CommandManager contains functions to set client commands from files */
 
 // → require packages & functions
 const fs = require('fs');
@@ -27,19 +27,26 @@ module.exports = {
 
         // iterate over files array
         for (const file of files) {
+
             // get the full path of the file
             const filePath = join(directoryPath, file);
 
             // Check if the file is a directory or a file
             if (isDir(filePath)) {
+
                 // If the file is a directory, call the function recursively with the subdirectory path
                 await module.exports.loadCommands(client, filePath);
+
             } else if (file.endsWith(".js")) {
+
                 // If the file is a JavaScript file, load the command from the file
                 const command = require(filePath);
-                if (command && command.name) {
+
+                if (command && command.details.name) {
+
                     // Set the command in the client's collection
-                    client.commands.set(command.name, command);
+                    client.commands.set(command.details.name, command);
+
                 }
             }
         }
