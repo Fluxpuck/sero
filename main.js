@@ -7,6 +7,7 @@
 require('dotenv').config({ path: './config/.env' });
 
 // → Setup DiscordJS Client
+const NodeCache = require("node-cache");
 const { Client, Collection, GatewayIntentBits, Partials } = require('discord.js');
 const INTENTS_BITFIELD = [GatewayIntentBits.Guilds, GatewayIntentBits.GuildMessages];
 const client = new Client({ intents: [INTENTS_BITFIELD], partials: [Partials.GuildMember, Partials.Channel, Partials.Message] });
@@ -14,6 +15,7 @@ const client = new Client({ intents: [INTENTS_BITFIELD], partials: [Partials.Gui
 //→ Set Client information 
 client.commands = new Collection();
 client.events = new Collection();
+client.cooldowns = new NodeCache();
 client.dependencies = require('./package.json').dependencies
 client.version = require('./package.json').version
 

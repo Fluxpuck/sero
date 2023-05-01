@@ -5,6 +5,7 @@ module.exports = async (client, guild) => {
 
     // Remove guild from API
     const response = await deleteRequest(`/guilds/${guild.id}`);
+
     console.log(response.status, response.data)
 
     return;
