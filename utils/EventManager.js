@@ -1,23 +1,28 @@
-/*  Fluxpuck © Creative Commons Attribution-NoDerivatives 4.0 International Public License
-    The EventManager setup and triggers all Discord Events */
+/*  FluxBot © 2023 Fluxpuck
+This code exports a function that reads event files from a specified directory, 
+binds them to the Discord client, and stores them in a client.events object for reference. */
 
-//load required modules
+// → require packages & functions
 const { readdirSync } = require('fs');
 const { join } = require('path');
 
-//run and export module
 module.exports.run = (client) => {
 
     //set directory path to events and read files
     const filePath = join(__dirname, '..', 'events');
     const eventFiles = readdirSync(filePath);
 
-    //go through all events and bind to Client
+    // Loop through each file in the events directory
     for (const file of eventFiles) {
-        const event = require(`${filePath}/${file}`)
-        const eventName = file.split('.').shift()
-        client.on(eventName, event.bind(null, client))
-        client.events.set(eventName, { name: eventName, file: file })
+        // Load the event from the file
+        const event = require(`${filePath}/${file}`);
+        // Get the name of the event from the file name
+        const eventName = file.split('.').shift();
+
+        // Bind the event to the client
+        client.on(eventName, event.bind(null, client));
+        // Add the event to the client's events collection
+        client.events.set(eventName, { name: eventName, file: file });
     }
 
 }
