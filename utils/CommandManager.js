@@ -3,7 +3,7 @@ The CommandManager contains functions to set client commands from files */
 
 // → require packages & functions
 const fs = require('fs');
-const { join } = require('path');
+const { join, resolve } = require('path');
 
 // This function checks if a given path is a directory.
 function isDir(filePath) {
@@ -50,5 +50,27 @@ module.exports = {
                 }
             }
         }
+    },
+
+    /**
+     * Get all commands
+     * @returns {Array} Array of commands
+     */
+    async getAllCommands(commands = []) {
+
+        const commandFolders = fs.readdirSync(resolve(__dirname, '..', 'commands'));
+
+        for await (const folder of commandFolders) {
+            const commandFiles = fs.readdirSync(resolve(__dirname, '..', 'commands', folder)).filter(file => file.endsWith('.js'));
+            for await (const file of commandFiles) {
+                const command = require(resolve(__dirname, '..', 'commands', folder, file));
+                if (command.details) {
+                    if (command.details.private == false) commands.push({ "name": command.details.name, "value": command.details.name });
+                }
+            }
+        }
+
+        fs.writeFile(join(__dirname, '..', 'assets', 'help-commands.json'), JSON.stringify(commands), (err) => { });
+
     }
 }

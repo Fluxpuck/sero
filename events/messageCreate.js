@@ -6,6 +6,9 @@ const { postRequest } = require("../database/connection");
 
 module.exports = async (client, message) => {
 
+    // If the message is from a bot, return
+    if (message.author.bot) return;
+
     // Setting up the cooldown key
     const cooldownKey = `${message.guildId}/${message.author.name}`
 
@@ -18,10 +21,7 @@ module.exports = async (client, message) => {
         // If the response status is 404 (not found), create a new entry in the leaderboard for the user and guild
         if (response.status == 404) {
             const response_2 = await postRequest(`/leaderboard/${message.guildId}/${message.author.id}`);
-            console.log(response_2.status, response_2.data)
         }
-
-        // console.log(response.status, response.data);
 
         // Add the user to the cooldowns Collection
         client.cooldowns.set(cooldownKey, message, 60)

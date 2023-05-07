@@ -7,14 +7,12 @@ const { postRequest } = require("../database/connection");
 module.exports = async (client, member) => {
 
     // Save Guild Member to API
-    const response = await postRequest(`/users/${member.guild.id}/${member.id}`, {
+    await postRequest(`/users/${member.guild.id}/${member.id}`, {
         user: {
             userId: member.user.id,
             userName: member.user.tag
         }
     })
-
-    console.log(response.status, response.data)
 
     return;
 }

@@ -3,12 +3,14 @@ This event is triggers by Discord and does processing of data  */
 
 // → require packages & functions
 const { join } = require('path');
-const { loadCommands } = require("../utils/CommandManager");
+const { loadCommands, getAllCommands } = require("../utils/CommandManager");
 const { displayWelcomeMessage } = require('../utils/ConsoleManager');
 const { removeClientCommand } = require('../utils/InteractionManager');
-const { escape } = require('querystring');
 
 module.exports = async (client) => {
+
+    // Save all commands in a json file
+    getAllCommands();
 
     // Sets the bot's presence to indicate that it is listening to a user with the username 'Fluxpuck#0001'.
     client.user.setPresence({ activities: [{ type: 'LISTENING', name: 'Fluxpuck#0001' }], status: 'online' });
@@ -24,6 +26,9 @@ module.exports = async (client) => {
         // Find the interaction
         const interaction = clientInteractions.find(interaction => interaction.name === command.details.name);
         if (interaction) { // Update the command
+
+            console.log(`updating command ${command.details.name}`);
+
             await client.application?.commands.edit(interaction.id, {
                 name: command.details.name,
                 description: command.details.description,
@@ -32,6 +37,9 @@ module.exports = async (client) => {
                 defaultMemberPermissions: command.details.interaction.defaultMemberPermissions,
             });
         } else { // Create the command
+
+            console.log(`creating command ${command.details.name}`);
+
             await client.application?.commands.create({
                 name: command.details.name,
                 description: command.details.description,
