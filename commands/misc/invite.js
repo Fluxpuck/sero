@@ -15,12 +15,10 @@ module.exports.run = async (client, interaction) => {
         .addComponents(invite);
 
     // Send the message
-    return interaction.editReply({
+    return interaction.reply({
         content: `Invite me to your server! \n Created with ❤️ by \`Fluxpuck#0001\``,
         components: [invite_button]
-    })
-
-    return;
+    }).catch((err) => { throw err });
 }
 
 

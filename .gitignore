@@ -31,7 +31,6 @@ config.json
 .github
 config
 database
-private
 assets
 
 # Misc

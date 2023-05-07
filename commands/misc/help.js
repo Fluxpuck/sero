@@ -44,7 +44,7 @@ module.exports.run = async (client, interaction) => {
             embeds: [messageEmbed],
             components: [],
             ephemeral: false
-        }).catch((err) => { });
+        }).catch((err) => { throw err });
 
     } else { // Command specified
 
@@ -64,7 +64,7 @@ module.exports.run = async (client, interaction) => {
         return interaction.reply({
             embeds: [messageEmbed],
             ephemeral: false
-        }).catch((err) => { });
+        }).catch((err) => { throw err });
     }
 }
 

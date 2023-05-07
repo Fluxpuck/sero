@@ -10,6 +10,7 @@ module.exports.run = async (client, interaction) => {
 
     // Reply with Discord Latency
     return interaction.reply(`Pong! → \ ${Math.round(client.ws.ping)}ms`)
+        .catch((err) => { throw err });
 }
 
 
