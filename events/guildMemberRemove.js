@@ -6,8 +6,8 @@ const { deleteRequest } = require("../database/connection");
 
 module.exports = async (client, member) => {
 
-    // Remove Guild Member from API
-    await deleteRequest(`/users/${member.guild.id}/${member.id}}`);
+    // Deactivate Guild Member from API
+    await deleteRequest(`/users/deactivate/${member.guild.id}/${member.id}}`);
 
     return;
 }

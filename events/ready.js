@@ -25,29 +25,29 @@ module.exports = async (client) => {
     for await (const command of clientCommands) {
         // Find the interaction
         const interaction = clientInteractions.find(interaction => interaction.name === command.details.name);
-        if (interaction) { // Update the command
+        // if (interaction) { // Update the command
 
-            console.log(`updating command ${command.details.name}`);
+        //     console.log(`updating command ${command.details.name}`);
 
-            await client.application?.commands.edit(interaction.id, {
-                name: command.details.name,
-                description: command.details.description,
-                type: command.details.interaction.type,
-                options: command.details.interaction.options,
-                defaultMemberPermissions: command.details.interaction.defaultMemberPermissions,
-            });
-        } else { // Create the command
+        //     await client.application?.commands.edit(interaction.id, {
+        //         name: command.details.name,
+        //         description: command.details.description,
+        //         type: command.details.interaction.type,
+        //         options: command.details.interaction.options,
+        //         defaultMemberPermissions: command.details.interaction.defaultMemberPermissions,
+        //     });
+        // } else { // Create the command
 
-            console.log(`creating command ${command.details.name}`);
+        //     console.log(`creating command ${command.details.name}`);
 
-            await client.application?.commands.create({
-                name: command.details.name,
-                description: command.details.description,
-                type: command.details.interaction.type,
-                options: command.details.interaction.options,
-                defaultMemberPermissions: command.details.interaction.defaultMemberPermissions,
-            });
-        }
+        //     await client.application?.commands.create({
+        //         name: command.details.name,
+        //         description: command.details.description,
+        //         type: command.details.interaction.type,
+        //         options: command.details.interaction.options,
+        //         defaultMemberPermissions: command.details.interaction.defaultMemberPermissions,
+        //     });
+        // }
     }
 
     // Displays a welcome message in the console to indicate that the bot has successfully started up.
