@@ -25,9 +25,9 @@ module.exports.run = async (client, interaction) => {
 // → Exporting the command details
 const path = require('path');
 module.exports.details = {
-    name: 'rank',
+    name: 'leaderboard',
     directory: path.relative(path.resolve(__dirname, '..'), __dirname),
-    description: 'Check your level and rank',
+    description: 'See the top 10 users with the highest levels',
     usage: '/rank [user]',
     private: true,
     cooldown: 0,

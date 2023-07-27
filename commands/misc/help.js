@@ -35,7 +35,7 @@ module.exports.run = async (client, interaction) => {
         // Display the commands by folder (category)
         for (let [key, value] of sortCommands) {
             messageEmbed.addFields(
-                { name: capitalize(key), value: `${value.map(c => `**${c.name}** - ${c.description}`).join('\n')}`, inline: true }
+                { name: capitalize(key), value: `${value.map(c => `- ${c.name}`).join('\n')}`, inline: true }
             )
         }
 
@@ -58,7 +58,7 @@ module.exports.run = async (client, interaction) => {
             .setThumbnail(client.user.displayAvatarURL({ dynamic: false }))
             .setDescription(commandDetails.description)
             .addFields({ name: `Usage`, value: `${commandDetails.usage}`, inline: false },
-                { name: `Additional Info`, value: `For more help and resources visit [fluxpuck.com](https://bot.fluxpuck.com)`, inline: false },)
+                { name: `Additional Info`, value: `For more help and resources visit our [website](https://bot.fluxpuck.com)`, inline: false },)
 
         //reply to message
         return interaction.reply({
@@ -78,6 +78,8 @@ try {
 } catch (error) {
     applicationChoices = []
 }
+
+
 module.exports.details = {
     name: 'help',
     directory: path.relative(path.resolve(__dirname, '..'), __dirname),
@@ -97,7 +99,6 @@ module.exports.details = {
                     required: false
                 }
             ],
-
         permissionType: [],
         optionType: [],
         ephemeral: false,

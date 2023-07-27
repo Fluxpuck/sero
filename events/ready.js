@@ -6,6 +6,7 @@ const { join } = require('path');
 const { loadCommands, getAllCommands } = require("../utils/CommandManager");
 const { displayWelcomeMessage } = require('../utils/ConsoleManager');
 const { removeClientCommand } = require('../utils/InteractionManager');
+const { postRequest } = require('../database/connection');
 
 module.exports = async (client) => {
 
@@ -25,29 +26,50 @@ module.exports = async (client) => {
     for await (const command of clientCommands) {
         // Find the interaction
         const interaction = clientInteractions.find(interaction => interaction.name === command.details.name);
-        // if (interaction) { // Update the command
+        if (interaction) { // Update the command
 
-        //     console.log(`updating command ${command.details.name}`);
+            console.log(`updating command ${command.details.name}`);
 
-        //     await client.application?.commands.edit(interaction.id, {
-        //         name: command.details.name,
-        //         description: command.details.description,
-        //         type: command.details.interaction.type,
-        //         options: command.details.interaction.options,
-        //         defaultMemberPermissions: command.details.interaction.defaultMemberPermissions,
-        //     });
-        // } else { // Create the command
+            await client.application?.commands.edit(interaction.id, {
+                name: command.details.name,
+                description: command.details.description,
+                type: command.details.interaction.type,
+                options: command.details.interaction.options,
+                defaultMemberPermissions: command.details.interaction.defaultMemberPermissions,
+            }).then(async (application) => {
 
-        //     console.log(`creating command ${command.details.name}`);
+                // Update the command in the database
+                await postRequest(`/client/command`, {
+                    command: {
+                        commandId: application.id,
+                        commandName: application.name,
+                        private: command.details.private,
+                    }
+                })
 
-        //     await client.application?.commands.create({
-        //         name: command.details.name,
-        //         description: command.details.description,
-        //         type: command.details.interaction.type,
-        //         options: command.details.interaction.options,
-        //         defaultMemberPermissions: command.details.interaction.defaultMemberPermissions,
-        //     });
-        // }
+            });
+        } else { // Create the command
+
+            console.log(`creating command ${command.details.name}`);
+
+            await client.application?.commands.create({
+                name: command.details.name,
+                description: command.details.description,
+                type: command.details.interaction.type,
+                options: command.details.interaction.options,
+                defaultMemberPermissions: command.details.interaction.defaultMemberPermissions,
+            }).them(async (application) => {
+
+                // Create the command in the database
+                await postRequest(`/client/command`, {
+                    command: {
+                        commandId: application.id,
+                        commandName: application.name,
+                        private: command.details.private,
+                    }
+                })
+            });
+        }
     }
 
     // Displays a welcome message in the console to indicate that the bot has successfully started up.
