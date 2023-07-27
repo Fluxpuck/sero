@@ -28,7 +28,6 @@ config.json
 
 # Folders
 .git
-.github
 config
 database
 assets
