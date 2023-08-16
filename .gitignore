@@ -1,4 +1,3 @@
-# Yarn
 yarn.lock
 .yarn
 .yarn/*
@@ -8,32 +7,28 @@ yarn.lock
 !.yarn/sdks
 !.yarn/versions
 .pnp.*
-
-# Npm
-node_modules
-package.json
+.next
+/.idea
 package-lock.json
-
-# Docker
-Dockerfile
-
-# Logs
-*.log
 npm-debug.log*
+*.env
 
-# Preferences
-config.json
-.env
-.vscode
+# Node Modules
+node_modules
 
-# Folders
-.git
-.github
-config
-database
-private
-assets
+# Any Generated Logs
+*.log
 
-# Misc
-.DS_STORE
-test.js
+# MacOS
+*.DS_Store
+
+# Ignore WebStorm HTTP Client private envs
+*.private.env.json
+
+# Ignore setting files for Visual Studio Code
+.vscode/
+.secrets/
+
+# Miscelaneous 
+/temp
+/test

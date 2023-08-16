@@ -1,0 +1,25 @@
+{
+  "name": "flux",
+  "version": "v1.0.0",
+  "private": true,
+  "engines": {
+    "node": ">=16"
+  },
+  "workspaces": {
+    "packages": [
+      "packages/*"
+    ]
+  },
+  "dependencies": {
+    "dotenv": "^10.0.0"
+  },
+  "devDependencies": {
+    "prettier": "^2.8.4",
+    "turbo": "^1.10.12"
+  },
+  "scripts": {
+    "start-api": "node packages/api/app.js",
+    "start-bot": "node packages/bot/bot.js",
+    "start-all": "npm run start-api && npm run start-bot"
+  }
+}

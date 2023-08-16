@@ -1,0 +1,19 @@
+version: "1"
+
+services:
+  # PostgreSQL
+  postgres:
+    image: "postgres:15"
+    command: postgres -c 'max_connections=200' -c shared_preload_libraries=pg_stat_statements -c pg_stat_statements.track=all -c pg_stat_statements.max=10000
+    ports:
+      - "5432:5432"
+    environment:
+      - POSTGRES_PASSWORD=postgres
+    labels:
+      NAME: "flux-pg"
+    volumes:
+      - postgresql-data:/var/lib/postgresql-15/data
+
+# Persistent Data Volumes
+volumes:
+  postgresql-data:
