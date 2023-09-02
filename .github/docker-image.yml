@@ -1,0 +1,16 @@
+name: Docker Image CI
+
+on: 
+push: 
+branches: ["development"] # For now, since we are still toying around with this.
+pull_requests: 
+branches: ["development"]
+
+steps:
+
+runs-on: ubuntu-latest
+
+steps: 
+- uses: actions/checkout@v3
+- name: Build Docker image
+- run: docker build . --file Dockerfile --tag flux-bot:$(date +%s)
