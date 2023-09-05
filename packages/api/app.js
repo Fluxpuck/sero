@@ -49,13 +49,14 @@ require("dotenv").config({ path: "./config/.env" });
         return console.log(`
 RESTFUL API - Startup details:
 > ${new Date().toUTCString()}
-> Sequelize Synced in ${Math.round(t1 - t0)} milliseconds.
+> Database Synced in ${Math.round(t1 - t0)} milliseconds.
 > Ready on http://localhost:${port}
 `)
     });
 
+
     // Injects demo data on launch
-    // const demoData = require('./test/demoData');
-    // await demoData.run();
+    const demoData = require('./test/demoData');
+    await demoData.run();
 
 })();

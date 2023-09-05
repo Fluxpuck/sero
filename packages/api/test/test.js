@@ -1,8 +1,18 @@
+
+
+
+
+
+
+
+
+
+
 const axios = require('axios');
 const instance = axios.create({
     baseURL: 'http://localhost:3000/api',
     headers: {
-        'Authorization': '000123',
+        'Authorization': process.env.API_MASTER_KEY,
         "Content-type": "application/json"
     }
 });
