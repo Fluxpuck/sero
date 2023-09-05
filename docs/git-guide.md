@@ -19,16 +19,19 @@ Some common [naming conventions](https://dev.to/varbsan/a-simplified-convention-
 - Bug fix branches: bugfix/issue
 - Release branches: release/version-number
 
-### 3. Commit message
-Before creating a commit, please fetch from the development branch to have the latest code included in your commit. This way will prevent commits that are behind the main.
+### 3. Commit & Push 
+Before committing, always make a fetch request, to have the latest code included in your commit. This should prevent commits to be behind the main.
 
-Writing a commit message is essential to mainting a clear aand organized commit history. A message should start with a very short summary of the changes made in the commit, followed by any necessary context or details. It is recommended to use imperative mood and maintain a consistant style and format.[^2] 
+Adding a commit message is essential to maintaining a clear and organized commit history. A message should include a short summary of the changes. [^2] 
 
-### 4. Push your code
-...
+Its good practise to regularly push the code to your branch. Advisable after each iteration or function written. This will help with backtracking code if needed.
 
-### 5. Merging code
-...
+### 4. Merging code
+Once the task/feature is completed, all commits can be tied together by making a merge request. This will merge the branch you worked on with the main (development) branch.
+
+Make sure a comprehensive title is added to the request. This title should summerize the entire task/feature in one sentence. Furthermore, for the describtion, try to summerize all the changes that were made. Making a list to do so is a good practise. People need to be able to understand what the merge request is for an what has been changed.
+
+
 
 <br>
 <br>
@@ -38,4 +41,4 @@ Writing a commit message is essential to mainting a clear aand organized commit 
 <br>
 
 [^1]: It is possible to switch branches.
-[^2]: In addition you can include a reference to the related issues or tasks to help tie the commit back to a specific item.
+[^2]: In addition you can include a reference to a related issue(s) or task(s) to help tie the commit back to a specific item.
