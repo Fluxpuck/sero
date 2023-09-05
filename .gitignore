@@ -9,7 +9,6 @@ yarn.lock
 .pnp.*
 .next
 /.idea
-package-lock.json
 npm-debug.log*
 *.env
 
