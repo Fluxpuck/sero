@@ -1,0 +1,33 @@
+name: Tests | PR
+
+on:
+    pull_request:
+        branches: ["development"]
+
+jobs:
+    
+
+    tests:
+
+        runs-on: ubuntu-latest
+
+        steps:
+            - uses: actions/checkout@v3
+              name: Repo Checkout
+
+            - uses: actions/setup-node@v3
+              name: Install Node.js @ v18
+              with:
+                node-version: 18
+
+            - uses: npm i
+              name: Install dependencies
+
+            - uses: node . 
+              name: Run scripts
+
+            - uses: echo "Test is completed."
+              name: Post Testing
+
+
+
