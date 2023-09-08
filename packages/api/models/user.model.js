@@ -5,7 +5,7 @@
 
 // → Require sequelize
 const { Model, DataTypes } = require('sequelize');
-const { generateUniqueToken } = require('../utils/FunctionManager');
+const { generateUniqueHash } = require('../utils/FunctionManager');
 
 // → set assosiations with this Model
 class User extends Model {
@@ -23,12 +23,7 @@ module.exports = sequelize => {
         userKey: {
             type: DataTypes.STRING,
             primaryKey: true,
-            allowNull: false,
             unique: true,
-            defaultValue: () => {
-                // Generate a unique token
-                return generateUniqueToken();
-            }
         },
         userName: {
             type: DataTypes.STRING,
@@ -50,7 +45,27 @@ module.exports = sequelize => {
         sequelize,
         modelName: 'User',
         timestamps: true,
-        createdAt: true
+        createdAt: true,
+        hooks: {
+            beforeCreate: async (user, options) => {
+                // Generate a unique token for userKey based on userId
+                user.userKey = generateUniqueHash(user.userId, user.guildId);
+
+                // Check if a user with the same guildId and userId already exists
+                const existingUser = await User.findOne({
+                    where: {
+                        guildId: user.guildId,
+                        userId: user.userId,
+                    },
+                });
+
+                if (existingUser) {
+                    throw new Error('User with the same guildId and userId already exists.');
+                }
+            },
+        },
     });
+
+
     return User;
 }

@@ -54,9 +54,4 @@ RESTFUL API - Startup details:
 `)
     });
 
-
-    // Injects demo data on launch
-    const demoData = require('./test/demoData');
-    await demoData.run();
-
 })();

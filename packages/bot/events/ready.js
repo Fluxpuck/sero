@@ -3,15 +3,12 @@ This event is triggers by Discord and does processing of data  */
 
 // → require packages & functions
 const { join } = require('path');
-const { loadCommands, getAllCommands } = require("../utils/CommandManager");
+const { loadCommands } = require("../utils/CommandManager");
 const { displayWelcomeMessage } = require('../utils/ConsoleManager');
 const { removeClientCommand } = require('../utils/InteractionManager');
 const { postRequest } = require('../database/connection');
 
 module.exports = async (client) => {
-
-    // Save all commands in a json file
-    getAllCommands();
 
     // Sets the bot's presence to indicate that it is listening to a user with the username 'Fluxpuck#0001'.
     client.user.setPresence({ activities: [{ type: 'LISTENING', name: 'Fluxpuck#0001' }], status: 'online' });

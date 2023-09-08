@@ -11,7 +11,7 @@ module.exports = {
         if (!err.status) err.status = 500;
 
         //log the error to the console → for debugging purposes only!
-        console.error(err);
+        console.error("[Catch Error]:", err);
 
         // Send the error response to the client
         return res.status(err.status).json({

@@ -21,6 +21,7 @@
   "scripts": {
     "start-api": "node packages/api/app.js",
     "start-bot": "node packages/bot/bot.js",
-    "start-all": "npm run start-api && npm run start-bot"
+    "start-all": "npm run start-api && npm run start-bot",
+    "seedmanager": "node packages/api/test/_seedManager.js"
   }
 }

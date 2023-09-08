@@ -5,6 +5,8 @@
 
 // → Require Packages & Modules
 const { Sequelize } = require('sequelize');
+const { join } = require('path');
+require("dotenv").config({ path: join(__dirname, '..', 'config', '.env') });
 
 // → Setup Sequelize
 let sequelize;
@@ -19,9 +21,6 @@ if (process.env.NODE_ENV === 'production') {
         {
             host: process.env.REMOTE_HOST,
             dialect: 'postgres',
-            logging: (message) => {
-                console.log(`Sequelize: ${message}`);
-            }
         }
     );
 } else {
@@ -36,11 +35,14 @@ if (process.env.NODE_ENV === 'production') {
             port: process.env.LOCAL_PORT,
             dialect: 'postgres',
             logging: (message) => {
-                console.log(`Sequelize: ${message}`);
+                // console.log(`Sequelize: ${message}`);
             }
         }
     );
 }
+
+// Sync to the Database
+sequelize.sync({ logging: false });
 
 // → Export Database Function
 module.exports = { sequelize };

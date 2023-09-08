@@ -51,6 +51,22 @@ module.exports = {
     },
 
     /**
+     * Generate a unique hash code
+     * @param {*} userId 
+     * @param {*} guildId 
+     * @returns 
+     */
+    generateUniqueHash(userId, guildId) {
+        const combinedString = userId + guildId;
+        let hash = 0;
+        for (let i = 0; i < combinedString.length; i++) {
+            const char = combinedString.charCodeAt(i);
+            hash = (hash << 5) - hash + char;
+        }
+        return Math.abs(hash); // Ensure the result is always positive
+    },
+
+    /**
      * Validate params
      * @param {*} req - request
      * @param {*} paramNames - array of param names
