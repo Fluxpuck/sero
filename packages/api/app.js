@@ -46,10 +46,10 @@ require("dotenv").config({ path: join(__dirname, '.', 'config', '.env') });
     // → Start server
     await app.listen(port, () => {
         return console.log(`
-RESTFUL API - Startup details:
-> ${new Date().toUTCString()}
-> Database Synced in ${Math.round(t1 - t0)} milliseconds.
-> Ready on http://localhost:${port}
+    RESTFUL API - Startup details:
+    > ${new Date().toUTCString()}
+    > Database Synced in ${Math.round(t1 - t0)} milliseconds.
+    > Ready on http://localhost:${port}
 `)
     });
 

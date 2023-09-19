@@ -7,7 +7,7 @@ const instance = axios.create({
     baseURL: process.env.API_URL,
     // Set the default headers for requests
     headers: {
-        'Authorization': process.env.FLUX_KEY,
+        'Authorization': process.env.API_MASTER_KEY,
         "Content-type": "application/json"
     }
 });

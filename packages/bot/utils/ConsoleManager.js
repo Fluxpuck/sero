@@ -13,10 +13,13 @@ function displayWelcomeMessage(client) {
    |    ___||   |___ |       | |     | 
    |   |    |       ||       ||   _   |
    |___|    |_______||_______||__| |__|
-         
-   Startup > ${new Date().toUTCString()} 
-   NODE_ENV > ${process.env.NODE_ENV}
-   Client > ${client.user.tag}
+
+    Discord bot - Startup details:
+    > ${new Date().toUTCString()}
+    > Database Synced in 106 milliseconds.
+    > Ready on http://localhost:3336
+    > NODE_ENV: ${process.env.NODE_ENV}
+    > ${client.user.tag}
 `);
 }
 
