@@ -25,7 +25,7 @@ module.exports = async (client) => {
         const interaction = clientInteractions.find(interaction => interaction.name === command.details.name);
         if (interaction) { // Update the command
 
-            console.log(`updating command ${command.details.name}`);
+            // console.log(`updating command ${command.details.name}`);
 
             await client.application?.commands.edit(interaction.id, {
                 name: command.details.name,
@@ -47,7 +47,7 @@ module.exports = async (client) => {
             });
         } else { // Create the command
 
-            console.log(`creating command ${command.details.name}`);
+            // console.log(`creating command ${command.details.name}`);
 
             await client.application?.commands.create({
                 name: command.details.name,
@@ -71,5 +71,4 @@ module.exports = async (client) => {
 
     // Displays a welcome message in the console to indicate that the bot has successfully started up.
     await displayWelcomeMessage(client);
-
 }

@@ -16,8 +16,6 @@ function displayWelcomeMessage(client) {
 
     Discord bot - Startup details:
     > ${new Date().toUTCString()}
-    > Database Synced in 106 milliseconds.
-    > Ready on http://localhost:3336
     > NODE_ENV: ${process.env.NODE_ENV}
     > ${client.user.tag}
 `);
