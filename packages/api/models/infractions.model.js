@@ -50,7 +50,7 @@ module.exports = sequelize => {
         },
     }, {
         sequelize,
-        modelName: 'Infractions',
+        modelName: 'infractions',
         timestamps: true,
         createdAt: true
     });

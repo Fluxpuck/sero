@@ -39,7 +39,7 @@ module.exports = sequelize => {
     },
         {
             sequelize,
-            modelName: 'ClientCommands',
+            modelName: 'clientcommands',
             timestamps: true,
             createdAt: true,
             updatedAt: true,

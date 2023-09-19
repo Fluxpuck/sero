@@ -8,14 +8,13 @@ const express = require("express");
 const bodyParser = require("body-parser");
 const cors = require("cors");
 const helmet = require("helmet");
-
-// → Get credentials
-require("dotenv").config({ path: "./config/.env" });
+const { join } = require('path');
+require("dotenv").config({ path: join(__dirname, '.', 'config', '.env') });
 
 (async () => {
     // → Setup server
     const app = express();
-    const port = 3000;
+    const port = 3336;
 
     // → Adding Helmet to enhance API security
     app.use(helmet());

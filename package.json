@@ -15,13 +15,14 @@
     "pg": "^8.11.3"
   },
   "devDependencies": {
+    "npm-run-all": "^4.1.5",
     "prettier": "^2.8.4",
     "turbo": "^1.10.12"
   },
   "scripts": {
     "start-api": "node packages/api/app.js",
     "start-bot": "node packages/bot/bot.js",
-    "start-all": "npm run start-api && npm run start-bot",
+    "start-all": "npm-run-all -p start-api start-bot",
     "seedmanager": "node packages/api/test/_seedManager.js"
   }
 }

@@ -6,9 +6,10 @@ services:
     image: "postgres:15"
     command: postgres -c 'max_connections=200' -c shared_preload_libraries=pg_stat_statements -c pg_stat_statements.track=all -c pg_stat_statements.max=10000
     ports:
-      - "5432:5432"
+      - "5433:5432" # Map port 5433 on the host to port 5432 in the container
     environment:
       - POSTGRES_PASSWORD=postgres
+      - POSTGRES_DB=dev_api_flux
     labels:
       NAME: "flux-pg"
     volumes:

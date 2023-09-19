@@ -35,7 +35,7 @@ module.exports = sequelize => {
         }
     }, {
         sequelize,
-        modelName: 'Messages',
+        modelName: 'messages',
         timestamps: true,
         createdAt: true
     });

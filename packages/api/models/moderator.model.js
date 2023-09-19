@@ -37,7 +37,7 @@ module.exports = sequelize => {
         },
     }, {
         sequelize,
-        modelName: 'Moderator',
+        modelName: 'moderator',
         timestamps: true,
         updatedAt: true,
         createdAt: true

@@ -60,7 +60,7 @@ module.exports = sequelize => {
         }
     }, {
         sequelize,
-        modelName: 'Levels',
+        modelName: 'levels',
         timestamps: true,
         updatedAt: true,
         createdAt: true

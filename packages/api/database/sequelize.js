@@ -27,7 +27,7 @@ if (process.env.NODE_ENV === 'production') {
     // Run development-specific code
     // → Connect to the local postgresql database
     sequelize = new Sequelize(
-        process.env.LOCAL_POST,
+        process.env.LOCAL_DB,
         process.env.LOCAL_POST,
         process.env.LOCAL_POST,
         {
@@ -40,9 +40,6 @@ if (process.env.NODE_ENV === 'production') {
         }
     );
 }
-
-// Sync to the Database
-sequelize.sync({ logging: false });
 
 // → Export Database Function
 module.exports = { sequelize };

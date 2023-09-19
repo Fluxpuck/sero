@@ -41,7 +41,7 @@ module.exports = sequelize => {
   },
     {
       sequelize,
-      modelName: 'Guild',
+      modelName: 'guild',
       timestamps: true,
       createdAt: true
     },

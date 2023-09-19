@@ -41,7 +41,7 @@ module.exports = sequelize => {
         },
     }, {
         sequelize,
-        modelName: 'EventChannels',
+        modelName: 'eventchannels',
         timestamps: true,
         createdAt: true,
     }, {

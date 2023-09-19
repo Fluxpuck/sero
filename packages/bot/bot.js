@@ -4,7 +4,10 @@
 */
 
 // → Get credentials
-require('dotenv').config({ path: './config/.env' });
+const { join } = require('path');
+console.log(join(__dirname, '.', 'config', '.env'))
+
+// require("dotenv").config({ path: join(__dirname, '..', 'config', '.env') });
 
 // → Setup DiscordJS Client
 const NodeCache = require("node-cache");
@@ -22,6 +25,10 @@ client.version = require('./package.json').version
 // → Listen to Client events
 const events = require('./utils/EventManager');
 events.run(client); //run the events
+
+console.log(process.env.NODE_ENV)
+console.log(process.env.DISCORD_TOKEN)
+console.log(process.env.API_KEY)
 
 // → Login to Discord API
 client.login(process.env.DISCORD_TOKEN);
