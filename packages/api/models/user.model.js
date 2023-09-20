@@ -48,9 +48,6 @@ module.exports = sequelize => {
         createdAt: true,
         hooks: {
             beforeCreate: async (user, options) => {
-                // Generate a unique token for userKey based on userId
-                user.userKey = generateUniqueHash(user.userId, user.guildId);
-
                 // Check if a user with the same guildId and userId already exists
                 const existingUser = await User.findOne({
                     where: {
@@ -62,6 +59,10 @@ module.exports = sequelize => {
                 if (existingUser) {
                     throw new Error('User with the same guildId and userId already exists.');
                 }
+
+                // Generate a unique token for userKey based on userId
+                user.userKey = generateUniqueHash(user.userId, user.guildId);
+
             },
         },
     });

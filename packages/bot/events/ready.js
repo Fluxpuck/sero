@@ -72,3 +72,10 @@ module.exports = async (client) => {
     // Displays a welcome message in the console to indicate that the bot has successfully started up.
     await displayWelcomeMessage(client);
 }
+
+
+/* TO:DO
+Make the command loader fetch the commands from the database, from the folder 
+and from the client.applications and compare for any changes. Based on the changes 
+create, update or remove a command from/to the client.applications and database.
+*/

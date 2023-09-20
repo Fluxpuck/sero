@@ -50,7 +50,7 @@ require("dotenv").config({ path: join(__dirname, '.', 'config', '.env') });
     > ${new Date().toUTCString()}
     > Database Synced in ${Math.round(t1 - t0)} milliseconds.
     > Ready on http://localhost:${port}
-`)
+        `)
     });
 
 })();

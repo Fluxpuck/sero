@@ -35,7 +35,7 @@ if (process.env.NODE_ENV === 'production') {
             port: process.env.LOCAL_PORT,
             dialect: 'postgres',
             logging: (message) => {
-                // console.log(`Sequelize: ${message}`);
+                console.log(`[Sequelize]: ${message} \n`);
             }
         }
     );
