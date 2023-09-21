@@ -8,8 +8,6 @@ Github Desktop is a client application for version control of the project. It he
 *Download link: https://desktop.github.com/*
 
 ### 2. Use of branches
-The project
-
 Push changes to a respectable branch to isolate the changes you make. This will make collaboration easier, allows for changes without affecting the main codebase, and provide a way to easily rollback changes if something goes wrong.
 
 As for naming those branches, it is important to choose descriptive and meaningful names that reflect the changes or features you're working on.[^1]

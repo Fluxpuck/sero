@@ -9,8 +9,20 @@ const { Model, DataTypes } = require('sequelize');
 // → set assosiations with this Model
 class Moderator extends Model {
     static associate(models) {
-        this.belongsTo(models.Guild, { foreignKey: 'guildId' });
-        this.belongsTo(models.User, { foreignKey: 'userKey' });
+        this.belongsToMany(models.Guild, {
+            through: 'ModeratorAssociation', // Name of the shared intermediary table
+            foreignKey: 'moderatorId', // This should match the foreign key in the Moderator model
+            otherKey: 'guildId', // Foreign key for the Guild model
+        });
+        this.belongsToMany(models.User, {
+            through: 'ModeratorAssociation', // Name of the shared intermediary table
+            foreignKey: 'moderatorId', // This should match the foreign key in the Moderator model
+            otherKey: 'guildId', // Foreign key for the Guild model
+        });
+        this.belongsTo(models.User, {
+            foreignKey: 'userKey', // This should match the foreign key in the User model (userKey)
+            targetKey: 'userKey', // This should match the target key in the User model (userKey)
+        });
     }
 }
 

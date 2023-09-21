@@ -30,12 +30,11 @@ const { sequelize } = require('../database/sequelize');
             const seed = require(filePath);
 
             try {
+                // Run the seed file
                 seed.run();
             } catch (error) {
-                console.log("[Seed Manager Error]:", error)
+                console.log("[Seed Manager Error]:", { seed: seed, error: error })
             }
         }
-
     }
-
 })()

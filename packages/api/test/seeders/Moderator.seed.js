@@ -1,4 +1,5 @@
 const { Moderator } = require("../../database/models");
+const { generateUniqueHash } = require('../../utils/FunctionManager');
 
 module.exports.run = async () => {
 
@@ -26,7 +27,12 @@ module.exports.run = async () => {
         },
     ]
 
-    for (const moderatorInfo of moderatorData) {
+    const updatedModeratorData = moderatorData.map((moderator) => ({
+        ...moderator,
+        userKey: generateUniqueHash(moderator.userId, moderator.guildId),
+    }));
+
+    for (const moderatorInfo of updatedModeratorData) {
         try {
 
             await Moderator.create(moderatorInfo);
