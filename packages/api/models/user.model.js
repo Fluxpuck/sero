@@ -11,7 +11,6 @@ const { generateUniqueHash } = require('../utils/FunctionManager');
 class User extends Model {
     static associate(models) {
         this.belongsTo(models.Guild, { foreignKey: 'guildId' });
-        this.belongsToMany(models.Guild, { through: models.Moderator, as: 'guilds', foreignKey: 'userKey' });
         this.hasMany(models.Messages, { foreignKey: 'userId' });
         this.hasMany(models.Infractions, { foreignKey: 'userId' });
     }

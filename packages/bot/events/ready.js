@@ -75,7 +75,7 @@ module.exports = async (client) => {
 
 
 /* TO:DO
-Make the command loader fetch the commands from the database, from the folder 
-and from the client.applications and compare for any changes. Based on the changes 
-create, update or remove a command from/to the client.applications and database.
+Step 1 - Check if there are any new command files and upload to database and create on client (Discord API)
+Step 2 - Check if any command propperties have been changed from the client, compared to the database, if so, update command
+Step 3 - Check if there is a mismatch between client commands and command files, and remove missing command files from the client (Discord API), and remove from Database
 */

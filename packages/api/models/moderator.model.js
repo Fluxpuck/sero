@@ -9,31 +9,42 @@ const { Model, DataTypes } = require('sequelize');
 // → set assosiations with this Model
 class Moderator extends Model {
     static associate(models) {
-        this.belongsToMany(models.Guild, {
-            through: 'ModeratorAssociation', // Name of the shared intermediary table
-            foreignKey: 'moderatorId', // This should match the foreign key in the Moderator model
-            otherKey: 'guildId', // Foreign key for the Guild model
-        });
-        this.belongsToMany(models.User, {
-            through: 'ModeratorAssociation', // Name of the shared intermediary table
-            foreignKey: 'moderatorId', // This should match the foreign key in the Moderator model
-            otherKey: 'guildId', // Foreign key for the Guild model
-        });
-        this.belongsTo(models.User, {
-            foreignKey: 'userKey', // This should match the foreign key in the User model (userKey)
-            targetKey: 'userKey', // This should match the target key in the User model (userKey)
-        });
+        // this.belongsToMany(models.Guild, {
+        //     foreignKey: 'userKey', // This should match the foreign key in the Moderator model
+        //     otherKey: 'guildId', // Foreign key for the Guild model
+        // });
+        // this.belongsToMany(models.User, {
+        //     foreignKey: 'userKey', // This should match the foreign key in the Moderator model
+        //     otherKey: 'userId', // Foreign key for the Guild model
+        // });
+        // this.belongsTo(models.User, {
+        //     foreignKey: 'userKey', // This should match the foreign key in the User model (userKey)
+        //     targetKey: 'userKey', // This should match the target key in the User model (userKey)
+        // });
     }
 }
 
 // → export Model
 module.exports = sequelize => {
     Moderator.init({
-        moderatorId: {
-            type: DataTypes.INTEGER,
+        userKey: {
+            type: DataTypes.STRING,
             primaryKey: true,
-            autoIncrement: true,
-            allowNull: false
+            unique: true,
+        },
+        userId: {
+            type: DataTypes.BIGINT,
+            allowNull: false,
+            validate: {
+                is: /^\d{17,20}$/ //Discord Snowflake
+            }
+        },
+        guildId: {
+            type: DataTypes.STRING,
+            allowNull: false,
+            validate: {
+                is: /^\d{17,20}$/ //Discord Snowflake
+            }
         },
         location: {
             type: DataTypes.STRING,
