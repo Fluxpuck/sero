@@ -36,6 +36,10 @@ module.exports = sequelize => {
             type: DataTypes.BOOLEAN,
             allowNull: true,
         },
+        desc: {
+            type: DataTypes.STRING,
+            allowNull: true,
+        }
     },
         {
             sequelize,
@@ -48,9 +52,11 @@ module.exports = sequelize => {
     // → set help based on privacy of the command
     ClientCommands.beforeSave(async (clientcommands, options) => {
         if (clientcommands.private === true) {
-            clientcommands.help = false;  // If private is true, set help to false
+            // If private is true, set help to false
+            clientcommands.help = false;
         } else if (clientcommands.private === false) {
-            clientcommands.help = true; // If private is false, set help to true
+            // If private is false, set help to true
+            clientcommands.help = true;
         }
         // If private is null or undefined, help will remain as it is (true or false)
     });
