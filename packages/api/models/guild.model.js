@@ -12,7 +12,7 @@ class Guild extends Model {
     this.hasMany(models.User, { foreignKey: 'guildId' });
     this.hasMany(models.Messages, { foreignKey: 'guildId' });
     this.hasMany(models.EventChannels, { foreignKey: 'guildId' });
-    this.hasMany(models.Infractions, { foreignKey: 'guildId' });
+    this.hasMany(models.AuditLogs, { foreignKey: 'guildId' });
     this.hasMany(models.EventChannels, { foreignKey: 'guildId' });
   }
 }

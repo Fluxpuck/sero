@@ -7,7 +7,7 @@
 const { Model, DataTypes } = require('sequelize');
 
 // → set assosiations with this Model
-class Infractions extends Model {
+class AuditLogs extends Model {
     static associate(models) {
         this.belongsTo(models.Guild, { foreignKey: 'guildId' });
         this.belongsTo(models.User, { foreignKey: 'userKey' });
@@ -16,7 +16,7 @@ class Infractions extends Model {
 
 // → export Model
 module.exports = sequelize => {
-    Infractions.init({
+    AuditLogs.init({
         id: {
             type: DataTypes.INTEGER,
             primaryKey: true,
@@ -50,10 +50,10 @@ module.exports = sequelize => {
         },
     }, {
         sequelize,
-        modelName: 'infractions',
+        modelName: 'auditlogs',
         timestamps: true,
         createdAt: true
     });
 
-    return Infractions;
+    return AuditLogs;
 }

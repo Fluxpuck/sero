@@ -8,8 +8,35 @@ const { sequelize } = require('../database/sequelize');
 
 (async () => {
 
-    // Sync to the Database
-    await sequelize.sync({ logging: false });
+    // Authenticate to the Database
+    await sequelize.sync();
+
+    // Fetch all Tables from the Database
+    const query = `SELECT table_name FROM information_schema.tables WHERE table_schema = 'public' AND table_type = 'BASE TABLE';`
+    const [results] = await sequelize.query(query);
+    const tables = results.map((row) => row.table_name);
+
+
+    try {
+        for (const table of tables) {
+
+            console.log(table)
+
+            // await sequelize.query(`DROP TABLE ${table} CASCADE`);
+        }
+    } catch (error) {
+        console.log("[ERROR]: ", error)
+    } finally {
+        await sequelize.sync();
+    }
+
+
+
+
+
+
+
+    return;
 
     // Set Directory path to Seeder files
     const directoryPath = join(__dirname, '.', 'seeders');

@@ -24,6 +24,9 @@ if (process.env.NODE_ENV === 'production') {
         }
     );
 } else {
+
+    console.log('Sequelize: Dev')
+
     // Run development-specific code
     // → Connect to the local postgresql database
     sequelize = new Sequelize(

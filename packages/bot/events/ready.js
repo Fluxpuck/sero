@@ -25,8 +25,6 @@ module.exports = async (client) => {
         const interaction = clientInteractions.find(interaction => interaction.name === command.details.name);
         if (interaction) { // Update the command
 
-            // console.log(`updating command ${command.details.name}`);
-
             await client.application?.commands.edit(interaction.id, {
                 name: command.details.name,
                 description: command.details.description,
@@ -46,8 +44,6 @@ module.exports = async (client) => {
 
             });
         } else { // Create the command
-
-            // console.log(`creating command ${command.details.name}`);
 
             await client.application?.commands.create({
                 name: command.details.name,
@@ -74,7 +70,7 @@ module.exports = async (client) => {
 }
 
 
-/* TO:DO
+/* @to:do
 Step 1 - Check if there are any new command files and upload to database and create on client (Discord API)
 Step 2 - Check if any command propperties have been changed from the client, compared to the database, if so, update command
 Step 3 - Check if there is a mismatch between client commands and command files, and remove missing command files from the client (Discord API), and remove from Database

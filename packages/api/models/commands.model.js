@@ -7,14 +7,15 @@
 const { Model, DataTypes } = require('sequelize');
 
 // → set assosiations with this Model
-class ClientCommands extends Model {
+class Commands extends Model {
     static associate(models) {
+        this.belongsTo(models.Client, { foreignKey: 'clientId' });
     }
 }
 
 // → export Model
 module.exports = sequelize => {
-    ClientCommands.init({
+    Commands.init({
         id: {
             type: DataTypes.INTEGER,
             primaryKey: true,
@@ -43,23 +44,23 @@ module.exports = sequelize => {
     },
         {
             sequelize,
-            modelName: 'clientcommands',
+            modelName: 'commands',
             timestamps: true,
             createdAt: true,
             updatedAt: true,
         }, {
     });
     // → set help based on privacy of the command
-    ClientCommands.beforeSave(async (clientcommands, options) => {
-        if (clientcommands.private === true) {
+    Commands.beforeSave(async (command, options) => {
+        if (command.private === true) {
             // If private is true, set help to false
-            clientcommands.help = false;
-        } else if (clientcommands.private === false) {
+            command.help = false;
+        } else if (command.private === false) {
             // If private is false, set help to true
-            clientcommands.help = true;
+            command.help = true;
         }
         // If private is null or undefined, help will remain as it is (true or false)
     });
 
-    return ClientCommands;
+    return Commands;
 }

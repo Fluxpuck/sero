@@ -12,7 +12,7 @@ class User extends Model {
     static associate(models) {
         this.belongsTo(models.Guild, { foreignKey: 'guildId' });
         this.hasMany(models.Messages, { foreignKey: 'userId' });
-        this.hasMany(models.Infractions, { foreignKey: 'userId' });
+        this.hasMany(models.AuditLogs, { foreignKey: 'userId' });
     }
 }
 
