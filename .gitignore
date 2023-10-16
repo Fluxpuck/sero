@@ -25,7 +25,7 @@ node_modules
 *.private.env.json
 
 # Ignore setting files for Visual Studio Code
-.vscode/
+# .vscode/
 .secrets/
 
 # Miscelaneous 
