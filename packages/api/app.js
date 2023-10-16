@@ -40,7 +40,7 @@ require("dotenv").config({ path: join(__dirname, '.', 'config', '.env') });
     // → Sync Database Connection
     const t0 = performance.now();
     let { sequelize } = require("./database/sequelize");
-    await sequelize.sync({ logging: false });
+    await sequelize.sync();
     const t1 = performance.now();
 
     // → Start server

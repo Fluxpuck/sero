@@ -25,8 +25,6 @@ if (process.env.NODE_ENV === 'production') {
     );
 } else {
 
-    console.log('Sequelize: Dev')
-
     // Run development-specific code
     // → Connect to the local postgresql database
     sequelize = new Sequelize(
@@ -38,7 +36,7 @@ if (process.env.NODE_ENV === 'production') {
             port: process.env.LOCAL_PORT,
             dialect: 'postgres',
             logging: (message) => {
-                console.log(`[Sequelize]: ${message} \n`);
+                // console.log(`[Sequelize]: ${message} \n`);
             }
         }
     );

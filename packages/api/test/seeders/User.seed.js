@@ -1,4 +1,4 @@
-const { User } = require("../../database/models");
+const { User, Guild } = require("../../database/models");
 
 module.exports.run = async () => {
 
@@ -39,22 +39,30 @@ module.exports.run = async () => {
 
     for (const userInfo of userData) {
         try {
-            // Check if the user already exists
-            const existingUser = await User.findOne({
+            // Check if the guild with the specified guildId exists
+            const existingGuild = await Guild.findOne({
                 where: {
-                    userId: userInfo.userId,
-                    guildId: userInfo.guildId
+                    guildId: userInfo.guildId,
                 },
             });
 
-            if (existingUser) {
-                // User already exists, update its data
-                await existingUser.update(userInfo);
-            } else {
-                // User doesn't exist, create a new record
-                await User.create(userInfo);
-            }
+            if (existingGuild) {
+                // Guild exists, proceed to create or update the user
+                const existingUser = await User.findOne({
+                    where: {
+                        userId: userInfo.userId,
+                        guildId: userInfo.guildId,
+                    },
+                });
 
+                if (existingUser) {
+                    // User already exists, update its data
+                    await existingUser.update(userInfo);
+                } else {
+                    // User doesn't exist, create a new record
+                    await User.create(userInfo);
+                }
+            }
         } catch (error) {
             console.error(`Error creating/updating user: ${error.message}`);
         }

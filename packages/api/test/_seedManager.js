@@ -5,38 +5,40 @@ The SeedManager fetches and executes all seeds */
 const fs = require('fs');
 const { join, resolve } = require('path');
 const { sequelize } = require('../database/sequelize');
+const { finished } = require('stream');
 
 (async () => {
 
-    // Authenticate to the Database
-    await sequelize.sync();
+    console.log("[SEEDING MANAGER]")
 
-    // Fetch all Tables from the Database
-    const query = `SELECT table_name FROM information_schema.tables WHERE table_schema = 'public' AND table_type = 'BASE TABLE';`
-    const [results] = await sequelize.query(query);
-    const tables = results.map((row) => row.table_name);
+    // Create database connection
+    await sequelize.authenticate({ logging: false });
 
+    // Query to get a list of all tables in the 'public' schema
+    const getTablesQuery = `
+      SELECT table_name
+      FROM information_schema.tables
+      WHERE table_schema = 'public'
+      AND table_type = 'BASE TABLE';
+    `;
+    const [tablesResult] = await sequelize.query(getTablesQuery);
+    const tables = tablesResult.map((row) => row.table_name);
 
     try {
+
         for (const table of tables) {
-
-            console.log(table)
-
-            // await sequelize.query(`DROP TABLE ${table} CASCADE`);
+            // Truncate all database tables
+            await sequelize.query(`TRUNCATE TABLE ${table} CASCADE`);
         }
+
     } catch (error) {
-        console.log("[ERROR]: ", error)
+        // Throw error o.O
+        throw Error("Error Truncating Tables: ", error);
+
     } finally {
-        await sequelize.sync();
+        console.log("Truncated all database tables")
+        await sequelize.sync({ force: true, logging: false })
     }
-
-
-
-
-
-
-
-    return;
 
     // Set Directory path to Seeder files
     const directoryPath = join(__dirname, '.', 'seeders');
@@ -44,8 +46,26 @@ const { sequelize } = require('../database/sequelize');
     // Get the list of files and directories in the directory
     const files = fs.readdirSync(directoryPath);
 
+    // Set the desired order for the files to be executed in...
+    const desiredOrder = ['Client.seed.js', 'Guild.seed.js', 'User.seed.js'];
+    const desiredFilesMap = new Map(desiredOrder.map((fileName, index) => [fileName, index]));
+
+    // Sort the files based on their presence in the desiredOrder
+    const sortedFiles = files.slice().sort((fileA, fileB) => {
+        const indexA = desiredFilesMap.get(fileA);
+        const indexB = desiredFilesMap.get(fileB);
+
+        // If both files are in desiredOrder or both aren't, keep their order
+        if (indexA === undefined && indexB === undefined) return 0;
+        if (indexA !== undefined && indexB !== undefined) return indexA - indexB;
+
+        // If only one of the files is in desiredOrder, prioritize it
+        if (indexA !== undefined) return -1;
+        return 1;
+    });
+
     // Iterate over files array
-    for (const file of files) {
+    for (const file of sortedFiles) {
 
         // Get the full path of the file
         const filePath = join(directoryPath, file);
@@ -57,10 +77,11 @@ const { sequelize } = require('../database/sequelize');
             const seed = require(filePath);
 
             try {
-                // Run the seed file
-                seed.run();
+                await seed.run(); // Run Seed Files in desired Order
             } catch (error) {
-                console.log("[Seed Manager Error]:", { seed: seed, error: error })
+                console.log("[Seed Manager Error]: ", { file: file, error: error })
+            } finally {
+                console.log(`Executed Seed: ${file}`)
             }
         }
     }

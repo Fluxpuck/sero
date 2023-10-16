@@ -16,7 +16,7 @@ class Client extends Model {
 // → export Model
 module.exports = sequelize => {
     Client.init({
-        clienId: {
+        clientId: {
             type: DataTypes.STRING,
             primaryKey: true,
             unique: true,
@@ -35,6 +35,10 @@ module.exports = sequelize => {
         },
         isPending: {
             type: DataTypes.BOOLEAN,
+            allowNull: true
+        },
+        disconnectedAt: {
+            type: DataTypes.DATE,
             allowNull: true
         }
     }, {
