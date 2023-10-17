@@ -8,7 +8,7 @@ const express = require("express");
 const router = express.Router();
 
 // → Importing Database Models & Classes
-const { ClientCommands } = require("../database/models");
+const { Client } = require("../database/models");
 const { sequelize } = require('../database/sequelize');
 const { createError } = require('../utils/ClassManager');
 const { validateParams, validateData } = require('../utils/FunctionManager');
@@ -24,7 +24,7 @@ const { validateParams, validateData } = require('../utils/FunctionManager');
 router.get("/commands", async (req, res, next) => {
   try {
     //find all client commands
-    const commands = await ClientCommands.findAll();
+    const commands = await Client.findAll();
 
     //check for any client commands, else trigger error
     if (!commands) throw new createError(404, 'No client commands found.');
@@ -47,7 +47,7 @@ router.post("/command", async (req, res, next) => {
     const data = validateData(req, ['command']);
     if (data instanceof createError) throw data;
 
-    const [command, created] = await ClientCommands.findOrCreate({
+    const [command, created] = await Client.findOrCreate({
       where: { commandId: data.command.commandId },
       defaults: {
         commandId: data.command.commandId,
