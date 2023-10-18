@@ -51,7 +51,7 @@ module.exports = async (client) => {
                 type: command.details.interaction.type,
                 options: command.details.interaction.options,
                 defaultMemberPermissions: command.details.interaction.defaultMemberPermissions,
-            }).them(async (application) => {
+            }).then(async (application) => {
 
                 // Create the command in the database
                 await postRequest(`/client/command`, {
