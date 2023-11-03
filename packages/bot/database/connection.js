@@ -15,7 +15,7 @@ const instance = axios.create({
 module.exports = {
 
     /**
-     * Makes a GET request to the API
+     * GET request to the API
      * @param {string} endpoint - The endpoint to make the request to
      */
     async getRequest(endpoint) {
@@ -28,7 +28,7 @@ module.exports = {
     },
 
     /**
-     * Makes a POST request to the API
+     * POST request to the API
      * @param {string} endpoint - The endpoint to make the request to
      * @param {object} data - The data to send with the request
      */
@@ -41,9 +41,8 @@ module.exports = {
         }
     },
 
-
     /**
-     * Makes a DELETE request to the API
+     * DELETE request to the API
      * @param {string} endpoint - The endpoint to make the request to
      */
     async deleteRequest(endpoint) {
