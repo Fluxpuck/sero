@@ -38,6 +38,23 @@ router.get("/commands", async (req, res, next) => {
   }
 });
 
+// Get a specific client commands
+router.get("/commands:commandId", async (req, res, next) => {
+  try {
+    const { commandId } = req.params; // Extract the commandId from the request parameters
+    // Find the client command by commandId
+    const command = await Commands.findOne({ where: { commandId } });
+    // Check if the command exists, else trigger an error
+    if (!command) {
+      throw new createError(404, 'Client command not found.');
+    }
+    // Return the data
+    return res.status(200).json(command);
+  } catch (error) {
+    next(error);
+  }
+});
+
 // Save new client command 
 router.post("/command", async (req, res, next) => {
 

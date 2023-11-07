@@ -1,13 +1,25 @@
-/*  Fluxpuck © Creative Commons Attribution-NoDerivatives 4.0 International Public License
-    For more information on the commands, please visit hyperbot.cc  */
-
-// → Importing necessary modules, functions and classes
 const { EmbedBuilder } = require('discord.js');
-
-// → Import styling elements
 const colors = require('../../assets/embed-colors.json');
 
-// → Constructing the command and exporting
+module.exports.props = {
+    commandName: "ping",
+    description: "Check the client latency",
+    usage: "/ping",
+    interaction: {
+        type: 1, // → https://discord-api-types.dev/api/discord-api-types-v10/enum/ApplicationCommandType
+        options:
+            [
+                {
+                    name: 'command',
+                    type: 3, // → https://discord-api-types.dev/api/discord-api-types-v10/enum/ApplicationCommandOptionType 
+                    description: 'The command to get information about',
+                    choices: applicationChoices,
+                    required: false
+                }
+            ],
+    }
+}
+
 module.exports.run = async (client, interaction) => {
 
     // Get all client commands that are not private
@@ -65,44 +77,5 @@ module.exports.run = async (client, interaction) => {
             embeds: [messageEmbed],
             ephemeral: false
         }).catch((err) => { throw err });
-    }
-}
-
-
-// → Exporting the command details
-const path = require('path');
-const { capitalize } = require('../../lib/text/text-modifications');
-// Load the commands from the config file
-try {
-    applicationChoices = require('../../assets/help-commands.json');
-} catch (error) {
-    applicationChoices = []
-}
-
-
-module.exports.details = {
-    name: 'help',
-    directory: path.relative(path.resolve(__dirname, '..'), __dirname),
-    description: 'Show list of commands or information about a specific command',
-    usage: '/help [command]',
-    private: false,
-    cooldown: 0,
-    interaction: {
-        type: 1, // → https://discord-api-types.dev/api/discord-api-types-v10/enum/ApplicationCommandType
-        options:
-            [
-                {
-                    name: 'command',
-                    type: 3, // → https://discord-api-types.dev/api/discord-api-types-v10/enum/ApplicationCommandOptionType 
-                    description: 'The command to get information about',
-                    choices: applicationChoices,
-                    required: false
-                }
-            ],
-        permissionType: [],
-        optionType: [],
-        ephemeral: false,
-        modal: false,
-        defaultMemberPermissions: []
     }
 }

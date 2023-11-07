@@ -1,7 +1,7 @@
-/*  Fluxpuck © Creative Commons Attribution-NoDerivatives 4.0 International Public License
-    For more information on the commands, please visit hyperbot.cc  */
+module.exports.details = {
 
-// → Constructing the command and exporting
+}
+
 module.exports.run = async (client, interaction) => {
 
     // Set timer for message reply

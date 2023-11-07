@@ -9,7 +9,7 @@ const { Model, DataTypes } = require('sequelize');
 // → set assosiations with this Model
 class Client extends Model {
     static associate(models) {
-        this.hasMany(models.Commands, { foreignKey: 'commandId' });
+        this.hasMany(models.Commands, { foreignKey: 'clientId' });
     }
 }
 

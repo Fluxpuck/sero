@@ -6,24 +6,31 @@ const { join } = require('path');
 const { loadCommands } = require("../utils/CommandManager");
 const { displayWelcomeMessage } = require('../utils/ConsoleManager');
 const { removeClientCommand } = require('../utils/InteractionManager');
+const { fetchCommands } = require("../lib/commands/clientCommands");
 
 module.exports = async (client) => {
 
     // Sets the bot's presence to indicate that it is listening to a user with the username 'Fluxpuck#0001'.
     client.user.setPresence({ activities: [{ type: 'LISTENING', name: 'Fluxpuck#0001' }], status: 'online' });
 
+    const API_URL = "/client/commands"
+    const commands = await fetchCommands(API_URL);
+    const applications = await client.application.commands.fetch();
 
+    for (const command of commands) {
+        for (const [key, value] of applications) {
+            if (command.commandId === key) {
 
+                console.log("Time to UPDATE the command!", command)
 
+            } else if (command.commandName === value.name) {
 
+                console.log("Time to MAKE the command!", key, value)
 
+            }
 
-
-
-
-
-
-
+        }
+    }
 
     /* @to:do
     Step 1 - Check if there are any new command files and upload to database and create on client (Discord API)
@@ -31,6 +38,7 @@ module.exports = async (client) => {
     Step 3 - Check if there is a mismatch between client commands and command files, and remove missing command files from the client (Discord API), and remove from Database
     */
 
+    
 
 
 
