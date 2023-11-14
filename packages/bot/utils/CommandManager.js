@@ -42,14 +42,14 @@ module.exports = {
                 // If the file is a JavaScript file, load the command from the file
                 const command = require(filePath);
 
-                if (command && command.details.name) {
+                if (command && command.props?.name) {
 
                     // Set the command in the client's collection
-                    client.commands.set(command.details.name, command);
+                    client.commands.set(command.props.name, command);
 
                 }
             }
         }
     }
-    
+
 }

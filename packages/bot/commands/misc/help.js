@@ -2,9 +2,9 @@ const { EmbedBuilder } = require('discord.js');
 const colors = require('../../assets/embed-colors.json');
 
 module.exports.props = {
-    commandName: "ping",
-    description: "Check the client latency",
-    usage: "/ping",
+    commandName: "help",
+    description: "Get information on the bot",
+    usage: "/help",
     interaction: {
         type: 1, // → https://discord-api-types.dev/api/discord-api-types-v10/enum/ApplicationCommandType
         options:
@@ -13,7 +13,7 @@ module.exports.props = {
                     name: 'command',
                     type: 3, // → https://discord-api-types.dev/api/discord-api-types-v10/enum/ApplicationCommandOptionType 
                     description: 'The command to get information about',
-                    choices: applicationChoices,
+                    choices: [],
                     required: false
                 }
             ],

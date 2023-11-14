@@ -1,6 +1,5 @@
 const { postRequest, getRequest } = require('../../database/connection');
 
-
 async function fetchCommands(url) {
     try {
         const response = await getRequest(url);
@@ -15,4 +14,15 @@ async function fetchCommands(url) {
     }
 }
 
-module.exports = { fetchCommands };
+async function postCommands(url, command) {
+    try {
+        const response = await postRequest(`/client/command`, {
+
+        })
+
+    } catch (error) {
+
+    }
+}
+
+module.exports = { fetchCommands, postCommands };

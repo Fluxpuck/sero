@@ -1,5 +1,8 @@
-module.exports.details = {
-
+module.exports.props = {
+    commandName: "ping",
+    description: "Check the client latency",
+    usage: "/ping",
+    interaction: {}
 }
 
 module.exports.run = async (client, interaction) => {

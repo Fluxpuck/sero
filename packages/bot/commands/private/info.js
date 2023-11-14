@@ -1,12 +1,14 @@
-/*  Fluxpuck © Creative Commons Attribution-NoDerivatives 4.0 International Public License
-    For more information on the commands, please visit hyperbot.cc  */
-
-// → Importing necessary modules, functions and classes
 const { EmbedBuilder, version: discordVersion } = require('discord.js');
 const { version: botVersion } = require('../../package.json');
 const { formatTime } = require('../../lib/time/formattime');
 
-// → Constructing the command and exporting
+module.exports.props = {
+    commandName: "info",
+    description: "Check the client information",
+    usage: "/info",
+    interaction: {}
+}
+
 module.exports.run = async (client, interaction) => {
 
     // Setting up the embedded message
@@ -25,23 +27,4 @@ module.exports.run = async (client, interaction) => {
         embeds: [messageEmbed],
         ephemeral: false,
     }).catch((err) => { throw err });
-}
-
-
-// → Exporting the command details
-const path = require('path');
-module.exports.details = {
-    name: 'info',
-    directory: path.relative(path.resolve(__dirname, '..'), __dirname),
-    description: 'Show client information',
-    usage: '/info',
-    private: true,
-    cooldown: 0,
-    interaction: {
-        type: 1, // → https://discord-api-types.dev/api/discord-api-types-v10/enum/ApplicationCommandType
-        optionType: [], // → https://discord-api-types.dev/api/discord-api-types-v10/enum/ApplicationCommandOptionType 
-        ephemeral: false,
-        modal: false,
-        defaultMemberPermissions: ['Administrator']
-    }
 }
