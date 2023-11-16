@@ -6,32 +6,29 @@ async function fetchCommands(commandId) {
         const endpoint = commandId ? `/client/command:${commandId}` : `/client/commands`;
         // Make the getRequest with the updated endpoint
         const response = await getRequest(endpoint);
-        if (response.status === 200) {
+        if (response.status >= 200 && response.status <= 299) {
             return response.data;
         } else {
             throw new Error(`Request failed with status ${response.status}`);
         }
     } catch (error) {
-        console.error("Error fetching data:", error);
+        console.error("fetchCommands", error);
     }
 }
 
-async function postCommands(commandId, data) {
-
-    console.log(data)
-
+async function postCommands(commandName, data) {
     try {
         // Update the endpoint URL based on the presence of commandId
-        const endpoint = commandId ? `/client/command:${commandId}` : `/client/command`;
+        const endpoint = commandName ? `/client/commands/${commandName}` : `/client/command`;
         // Make the postRequest with the updated endpoint
         const response = await postRequest(endpoint, data);
-        if (response.status === 200) {
+        if (response.status >= 200 && response.status <= 299) {
             return response.data;
         } else {
             throw new Error(`Request failed with status ${response.status}`);
         }
     } catch (error) {
-        console.error("Error posting data:", error);
+        console.error("postCommands", error);
     }
 }
 

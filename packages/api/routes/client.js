@@ -41,7 +41,7 @@ router.get("/commands", async (req, res, next) => {
 });
 
 // Get a specific client commands
-router.get("/command:commandId", async (req, res, next) => {
+router.get("/command/:commandId", async (req, res, next) => {
   try {
     const { commandId } = req.params; // Extract the commandId from the request parameters
     // Find the client command by commandId
@@ -58,16 +58,12 @@ router.get("/command:commandId", async (req, res, next) => {
 });
 
 // Save new client command 
-router.post("/commands:commandName", async (req, res, next) => {
-
+router.post("/commands/:commandName", async (req, res, next) => {
+  const t = await sequelize.transaction();
 
   try {
-
     const { body, params } = req;
-    const commandName = params.commandName;
-    const t = await sequelize.transaction();
-
-    return console.log(body)
+    const COMMAND_NAME = params.commandName;
 
     // Validate request data
     if (!body || Object.keys(body).length === 0) {
@@ -79,11 +75,38 @@ router.post("/commands:commandName", async (req, res, next) => {
       throw new createError(400, `Missing required fields: ${missingFields.join(', ')}`);
     }
 
+    //find the Command by commandName
+    const command = await Commands.findOne({
+      where: { commandName: COMMAND_NAME },
+      transaction: t
+    });
 
+    const { commandId, commandName, clientId, description, usage } = body;
 
+    if (command) {
+      //if the command already exists, update command
+      command.commandId = commandId;
+      command.commandName = commandName;
+      command.clientId = clientId;
+      command.description = description;
+      command.usage = usage;
 
+      await command.save({ transaction: t });
+      res.status(200).send(`Command (${commandId}) updated successfully`);
+    } else {
+      //create a new Guild
+      await Commands.create({
+        commandId,
+        commandName,
+        clientId,
+        description,
+        usage,
+      }, { transaction: t });
+      res.status(201).send(`Command (${commandId}) created successfully`);
+    }
 
-
+    //commit the transaction
+    await t.commit();
 
   } catch (error) {
     //rollback the transaction if an error occurs

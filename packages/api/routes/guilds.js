@@ -1,13 +1,5 @@
-/* RESTFUL API for Flux
- Intented for Private use only
- Copyright © 2023
-*/
-
-// → Require Packages & Modules
 const express = require('express');
 const router = express.Router();
-
-// → Importing Database Models & Classes
 const { Guild, EventChannels } = require("../database/models");
 const { sequelize } = require('../database/sequelize');
 const { createError } = require('../utils/ClassManager');

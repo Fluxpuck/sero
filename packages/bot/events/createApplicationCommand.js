@@ -20,7 +20,7 @@ module.exports = async (client, application) => {
                     options: interactionOptions,
                     defaultMemberPermissions: [],
                 }).then((application) => {
-                    postCommands(application.id, {
+                    postCommands(application.name, {
                         commandId: application.id,
                         commandName: application.name,
                         description: description,
@@ -41,7 +41,7 @@ module.exports = async (client, application) => {
                     options: interactionOptions,
                     defaultMemberPermissions: [],
                 }).then((application) => {
-                    postCommands(application.id, {
+                    postCommands(application.name, {
                         commandId: application.id,
                         commandName: application.name,
                         description: description,
