@@ -33,6 +33,10 @@ module.exports = {
      * @param {object} data - The data to send with the request
      */
     async postRequest(endpoint, data) {
+
+        console.log("endpoint", endpoint)
+        console.log("data", data)
+
         try {
             const response = await instance.post(endpoint, data);
             return response;

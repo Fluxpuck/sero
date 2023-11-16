@@ -3,7 +3,9 @@ const router = express.Router();
 const { Client, Commands } = require("../database/models");
 const { sequelize } = require('../database/sequelize');
 const { createError } = require('../utils/ClassManager');
-const { validateParams, validateData } = require('../utils/FunctionManager');
+
+const ClientAttributes = ['clientId', 'clientName'];
+const CommandAttributes = ['commandId', 'commandName', 'clientId'];
 
 // → Define the routes for 'api/client'
 // Get default information on the API
@@ -39,7 +41,7 @@ router.get("/commands", async (req, res, next) => {
 });
 
 // Get a specific client commands
-router.get("/commands:commandId", async (req, res, next) => {
+router.get("/command:commandId", async (req, res, next) => {
   try {
     const { commandId } = req.params; // Extract the commandId from the request parameters
     // Find the client command by commandId
@@ -56,11 +58,37 @@ router.get("/commands:commandId", async (req, res, next) => {
 });
 
 // Save new client command 
-router.post("/command", async (req, res, next) => {
+router.post("/commands:commandName", async (req, res, next) => {
+
+
   try {
 
-  } catch (error) {
+    const { body, params } = req;
+    const commandName = params.commandName;
+    const t = await sequelize.transaction();
 
+    return console.log(body)
+
+    // Validate request data
+    if (!body || Object.keys(body).length === 0) {
+      throw new createError(400, 'No command data provided.');
+    }
+    // Validate required fields
+    const missingFields = CommandAttributes.filter(field => !(field in body));
+    if (missingFields.length > 0) {
+      throw new createError(400, `Missing required fields: ${missingFields.join(', ')}`);
+    }
+
+
+
+
+
+
+
+  } catch (error) {
+    //rollback the transaction if an error occurs
+    await t.rollback();
+    next(error);
   }
 });
 

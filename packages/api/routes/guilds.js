@@ -14,7 +14,6 @@ const { createError } = require('../utils/ClassManager');
 const { validateParams, validateData } = require('../utils/FunctionManager');
 
 // → Define the routes for 'api/guild'
-
 // Get all Guilds
 router.get('/', async (req, res, next) => {
   try {
@@ -100,7 +99,6 @@ router.post('/:guildId', async (req, res, next) => {
     await t.rollback();
     next(error);
   }
-  return;
 });
 
 // Deactivate a Guild
@@ -163,7 +161,6 @@ router.delete('/:guildId', async (req, res, next) => {
     await t.rollback();
     next(error);
   }
-  return;
 });
 
 
@@ -192,7 +189,6 @@ router.get('/events/:guildId', async (req, res, next) => {
   } catch (error) {
     next(error);
   }
-  return;
 });
 
 // Get Guild Events Settings by Category
@@ -221,7 +217,6 @@ router.get('/events/:guildId/:category', async (req, res, next) => {
   } catch (error) {
     next(error);
   }
-  return;
 });
 
 // Update Guild Events Settings
@@ -267,7 +262,6 @@ router.post('/settings/:guildId/:category', async (req, res, next) => {
     await t.rollback();
     next(error);
   }
-  return;
 });
 
 // Delete Guild Events Settings
@@ -297,7 +291,6 @@ router.delete('/settings/:guildId/category', async (req, res, next) => {
     await t.rollback();
     next(error);
   }
-  return;
 });
 
 
