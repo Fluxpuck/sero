@@ -4,7 +4,7 @@ module.exports.run = async () => {
 
     const clientData = [
         {
-            clientId: "986544396298240071",
+            clientId: "1017426308491386921",
             clientName: "Fluxbot"
         }
     ]

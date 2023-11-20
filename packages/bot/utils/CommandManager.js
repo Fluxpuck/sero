@@ -1,11 +1,7 @@
-/*  FluxBot © 2023 Fluxpuck
-The CommandManager contains functions to set client commands from files */
-
-// → require packages & functions
 const fs = require('fs');
-const { join, resolve } = require('path');
+const { join } = require('path');
+const { postCommands } = require('../lib/commands/clientCommands');
 
-// This function checks if a given path is a directory.
 function isDir(filePath) {
     // Check if the path exists and is a directory.
     // Returns true if both conditions are met, false otherwise.
@@ -13,7 +9,6 @@ function isDir(filePath) {
 }
 
 module.exports = {
-
     /**
      * This function reads command files from a specified directory,
      * and stores them in a client.commands object for reference.
@@ -42,14 +37,29 @@ module.exports = {
                 // If the file is a JavaScript file, load the command from the file
                 const command = require(filePath);
 
-                if (command && command.details.name) {
+                if (command && command.props?.commandName) {
 
                     // Set the command in the client's collection
-                    client.commands.set(command.details.name, command);
+                    client.commands.set(command.props.commandName, command);
+
+                    // Save to the database if config is set
+                    if (client.config?.saveFileCommands === true) {
+                        const { commandName, description, usage } = command.props;
+                        const { interactionType = 1, interactionOptions } = command.props?.interaction;
+
+                        postCommands(command.props.commandName, {
+                            commandName: commandName,
+                            interactionType: interactionType,
+                            interactionOptions: interactionOptions,
+                            description: description,
+                            usage: usage,
+                            clientId: client.user.id
+                        });
+                    }
 
                 }
             }
         }
     }
-    
+
 }

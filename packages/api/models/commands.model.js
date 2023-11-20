@@ -19,28 +19,41 @@ module.exports = sequelize => {
         id: {
             type: DataTypes.INTEGER,
             primaryKey: true,
+            unique: true,
             autoIncrement: true,
         },
         commandId: {
             type: DataTypes.STRING,
-            allowNull: false,
+            unique: true,
+            allowNull: true,
         },
         commandName: {
             type: DataTypes.STRING,
+            unique: true,
             allowNull: false,
+        },
+        description: {
+            type: DataTypes.STRING,
+            allowNull: true,
+        },
+        usage: {
+            type: DataTypes.STRING,
+            allowNull: true,
+        },
+        interactionType: {
+            type: DataTypes.INTEGER,
+            allowNull: false,
+            defaultValue: 1,
+        },
+        interactionOptions: {
+            type: DataTypes.JSON,
+            allowNull: true,
         },
         private: {
             type: DataTypes.BOOLEAN,
             allowNull: true,
+            defaultValue: false
         },
-        help: {
-            type: DataTypes.BOOLEAN,
-            allowNull: true,
-        },
-        desc: {
-            type: DataTypes.STRING,
-            allowNull: true,
-        }
     },
         {
             sequelize,
@@ -49,17 +62,6 @@ module.exports = sequelize => {
             createdAt: true,
             updatedAt: true,
         }, {
-    });
-    // → set help based on privacy of the command
-    Commands.beforeSave(async (command, options) => {
-        if (command.private === true) {
-            // If private is true, set help to false
-            command.help = false;
-        } else if (command.private === false) {
-            // If private is false, set help to true
-            command.help = true;
-        }
-        // If private is null or undefined, help will remain as it is (true or false)
     });
 
     return Commands;

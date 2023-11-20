@@ -108,26 +108,34 @@ module.exports = {
                 case 'user':
                     if (!req.body[dataName].userId) return new createError(400, `No ${dataName}.userId provided.`);
                     if (!req.body[dataName].userName) return new createError(400, `No ${dataName}.userName provided.`);
+                    if (!req.body[dataName].guildId) return new createError(400, `No ${dataName}.guildId provided.`);
                     break;
                 case 'level':
                     if (!req.body[dataName].experience) return new createError(400, `No ${dataName}.experience provided.`);
+                    if (!req.body[dataName].userId) return new createError(400, `No ${dataName}.userId provided.`);
                     break;
                 case 'moderator':
                     if (!req.body[dataName].location) return new createError(400, `No ${dataName}.location provided.`);
                     if (!req.body[dataName].language) return new createError(400, `No ${dataName}.language provided.`);
                     if (!req.body[dataName].rank) return new createError(400, `No ${dataName}.rank provided.`);
+                    if (!req.body[dataName].userId) return new createError(400, `No ${dataName}.userId provided.`);
+                    if (!req.body[dataName].guildId) return new createError(400, `No ${dataName}.guildId provided.`);
                     break;
                 case 'message':
                     if (!req.body[dataName].messageId) return new createError(400, `No ${dataName}.messageId provided.`);
                     if (!req.body[dataName].channelId) return new createError(400, `No ${dataName}.channelId provided.`);
+                    if (!req.body[dataName].userId) return new createError(400, `No ${dataName}.userId provided.`);
+                    if (!req.body[dataName].guildId) return new createError(400, `No ${dataName}.guildId provided.`);
                     break;
                 case 'event':
                     if (!req.body[dataName].category) return new createError(400, `No ${dataName}.category provided.`);
                     if (!req.body[dataName].channelId) return new createError(400, `No ${dataName}.channelId provided.`);
+                    if (!req.body[dataName].guildId) return new createError(400, `No ${dataName}.guildId provided.`);
                     break;
                 case 'command':
                     if (!req.body[dataName].commandId) return new createError(400, `No ${dataName}.commandId provided.`);
                     if (!req.body[dataName].commandName) return new createError(400, `No ${dataName}.commandName provided.`);
+                    if (!req.body[dataName].clientId) return new createError(400, `No ${dataName}.clientId provided.`);
                     break;
                 default:
                     break;

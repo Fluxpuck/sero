@@ -1,42 +1,24 @@
-/*  Fluxpuck © Creative Commons Attribution-NoDerivatives 4.0 International Public License
-    For more information on the commands, please visit hyperbot.cc  */
+const { ActionRowBuilder, ButtonBuilder, ButtonStyle } = require('discord.js');
+const INVITE_BUTTON = new ButtonBuilder()
+    .setStyle(ButtonStyle.Link)
+    .setURL('https://google.com/')
+    .setEmoji('🔗')
+    .setLabel('Invite')
+    .setDisabled(false)
 
-// → Importing necessary modules, functions and classes
-const { ActionRowBuilder } = require('discord.js');
-
-// → Import styling elements
-const { invite } = require('../../assets/embed-buttons')
-
-// → Constructing the command and exporting
-module.exports.run = async (client, interaction) => {
-
-    // Construct invite button
-    const invite_button = new ActionRowBuilder()
-        .addComponents(invite);
-
-    // Send the message
-    return interaction.reply({
-        content: `Invite me to your server! \n Created with ❤️ by \`Fluxpuck#0001\``,
-        components: [invite_button]
-    }).catch((err) => { throw err });
+module.exports.props = {
+    commandName: "invite",
+    description: "Invite the bot to your server",
+    usage: "/invite",
+    interaction: {}
 }
 
+module.exports.run = async (client, interaction) => {
 
-// → Exporting the command details
-const path = require('path');
-module.exports.details = {
-    name: 'invite',
-    directory: path.relative(path.resolve(__dirname, '..'), __dirname),
-    description: 'Invite the bot to your server',
-    usage: '/invite',
-    private: false,
-    cooldown: 0,
-    interaction: {
-        type: 1, // → https://discord-api-types.dev/api/discord-api-types-v10/enum/ApplicationCommandType
-        permissionType: [], // → https://discord-api-types.dev/api/discord-api-types-v10/enum/ApplicationCommandPermissionType  
-        optionType: [], // → https://discord-api-types.dev/api/discord-api-types-v10/enum/ApplicationCommandOptionType 
-        ephemeral: false,
-        modal: false,
-        defaultMemberPermissions: []
-    }
+    // Reply with client invite
+    return interaction.editReply({
+        content: `Hello friend. I can help you out! Click the button below to invite me to your server`,
+        components: [new ActionRowBuilder().addComponents(INVITE_BUTTON)]
+    })
+
 }
