@@ -5,7 +5,7 @@ const { sequelize } = require('../database/sequelize');
 const { createError } = require('../utils/ClassManager');
 
 const ClientAttributes = ['clientId', 'clientName'];
-const CommandAttributes = ['commandId', 'commandName', 'clientId'];
+const CommandAttributes = ['commandName', 'clientId'];
 
 // → Define the routes for 'api/client'
 // Get default information on the API
@@ -81,12 +81,21 @@ router.post("/commands/:commandName", async (req, res, next) => {
       transaction: t
     });
 
-    const { commandId, commandName, clientId, description, usage } = body;
+    const {
+      commandId,
+      commandName,
+      clientId,
+      interactionType,
+      interactionOptions,
+      description,
+      usage } = body;
 
     if (command) {
       //if the command already exists, update command
       command.commandId = commandId;
       command.commandName = commandName;
+      command.interactionType = interactionType;
+      command.interactionOptions = interactionOptions;
       command.clientId = clientId;
       command.description = description;
       command.usage = usage;

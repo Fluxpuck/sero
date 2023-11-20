@@ -29,6 +29,7 @@ module.exports = sequelize => {
         },
         commandName: {
             type: DataTypes.STRING,
+            unique: true,
             allowNull: false,
         },
         description: {

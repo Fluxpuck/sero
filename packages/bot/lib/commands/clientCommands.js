@@ -20,6 +20,7 @@ async function postCommands(commandName, data) {
     try {
         // Update the endpoint URL based on the presence of commandId
         const endpoint = commandName ? `/client/commands/${commandName}` : `/client/command`;
+
         // Make the postRequest with the updated endpoint
         const response = await postRequest(endpoint, data);
         if (response.status >= 200 && response.status <= 299) {
@@ -28,7 +29,7 @@ async function postCommands(commandName, data) {
             throw new Error(`Request failed with status ${response.status}`);
         }
     } catch (error) {
-        console.error("postCommands", error);
+        console.error("postCommands", commandName, error);
     }
 }
 
