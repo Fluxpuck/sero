@@ -3,6 +3,7 @@ const { loadCommands } = require("../utils/CommandManager");
 const { displayWelcomeMessage } = require('../utils/ConsoleManager');
 const events = require('../config/eventEnum');
 const config = require('../config/config.json');
+const { postRequest } = require('../database/connection');
 
 module.exports = async (client) => {
 
@@ -22,4 +23,21 @@ module.exports = async (client) => {
 
     // Displays a welcome message in the console to indicate that the bot has successfully started up.
     await displayWelcomeMessage(client);
+
+    // Set global guild active setting
+    Array.from(client.guilds.cache.values()).forEach(async guild => {
+        if (client.config.saveClientGuilds === true) {
+            await postRequest(`/guilds/${guild.id}`, {
+                guild: {
+                    guildId: guild.id,
+                    guildName: guild.name,
+                    active: false
+                }
+            })
+        }
+
+        const { data } = await getRequest(`/guilds/${guild.id}`);
+        guild.active = data.active === true;
+    });
+
 }

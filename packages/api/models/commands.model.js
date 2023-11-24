@@ -2,7 +2,6 @@ const { Model, DataTypes } = require('sequelize');
 
 class Commands extends Model {
     static associate(models) {
-        this.belongsTo(models.Client, { foreignKey: 'clientId' });
     }
 }
 

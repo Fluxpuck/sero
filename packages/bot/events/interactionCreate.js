@@ -1,4 +1,10 @@
 module.exports = async (client, interaction) => {
+    // Return if guild is not active!
+    if (!interaction.guild.active) return interaction.reply({
+        content: `*This bot has not been activated in this guild yet!*`,
+        ephemeral: true,
+    });;
+
     try {
         // Check if the interaction is a command
         if (!interaction.isCommand()) return;

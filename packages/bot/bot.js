@@ -1,9 +1,3 @@
-/* FluxBot
- Intented for Private use only
- Copyright © 2023
-*/
-
-// → Get credentials
 const { join } = require('path');
 require("dotenv").config({ path: join(__dirname, '.', 'config', '.env') });
 
@@ -25,4 +19,6 @@ const events = require('./utils/EventManager');
 events.run(client); //run the events
 
 // → Login to Discord API
-client.login(process.env.DISCORD_TOKEN);
+client.login(process.env.NODE_ENV === "production"
+    ? process.env.SERO_TOKEN
+    : process.env.DEVELOPMENT_TOKEN);

@@ -1,6 +1,7 @@
 const { fetchCommands, postCommands } = require("../lib/commands/clientCommands");
 
 module.exports = async (client, applications) => {
+
     const commands = await fetchCommands();
     if (!commands) return;
 
@@ -54,7 +55,7 @@ module.exports = async (client, applications) => {
                         clientId: client.user.id
                     });
                 }).catch((error) => {
-                    console.error('Error editing command:', error);
+                    console.error(`[Error editing (${commandName})]: `, error);
                 });
             }
         } else {
@@ -80,7 +81,7 @@ module.exports = async (client, applications) => {
                     clientId: client.user.id
                 });
             }).catch((error) => {
-                console.error('Error creating command:', error);
+                console.error(`[Error creating (${commandName})]: `, error);
             });
         }
     }
