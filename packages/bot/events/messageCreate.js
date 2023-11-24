@@ -1,10 +1,7 @@
-/*  FluxBot © 2023 Fluxpuck
-This event is triggers by Discord and does processing of data  */
-
-// → Importing necessary modules, functions and classes
 const { postRequest } = require("../database/connection");
 
 module.exports = async (client, message) => {
+    if (!message.guild.active) return
 
     // If the message is from a bot, return
     if (message.author.bot) return;

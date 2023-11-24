@@ -1,9 +1,9 @@
 const { join } = require('path');
 const { loadCommands } = require("../utils/CommandManager");
 const { displayWelcomeMessage } = require('../utils/ConsoleManager');
+const { postRequest, getRequest } = require('../database/connection');
 const events = require('../config/eventEnum');
 const config = require('../config/config.json');
-const { postRequest } = require('../database/connection');
 
 module.exports = async (client) => {
 

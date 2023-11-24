@@ -1,7 +1,6 @@
 const { fetchCommands, postCommands } = require("../lib/commands/clientCommands");
 
 module.exports = async (client, applications) => {
-
     const commands = await fetchCommands();
     if (!commands) return;
 

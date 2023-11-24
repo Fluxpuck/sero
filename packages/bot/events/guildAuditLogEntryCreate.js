@@ -1,6 +1,7 @@
 const { getEventCategory } = require("../lib/discord/auditlogevent");
 
 module.exports = async (client, auditLog, guild) => {
+    if (!message.guild.active) return
 
     // Return if guild is not active!
     if (!guild.active) return;
