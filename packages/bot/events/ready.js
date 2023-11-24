@@ -8,6 +8,7 @@ const config = require('../config/config.json');
 module.exports = async (client) => {
 
     // Attach config settings to the client
+    // @TODO: Put these config settings in the database
     client.config = config;
 
     // Sets the bot's presence to indicate that it is listening to a user with the username 'Fluxpuck#0001'.
