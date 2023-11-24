@@ -1,9 +1,3 @@
-/* RESTFUL API for Flux
- Intented for Private use only
- Copyright © 2023
-*/
-
-// → Classes
 const { createError } = require('../utils/ClassManager');
 
 // → Export any Function from this Manager

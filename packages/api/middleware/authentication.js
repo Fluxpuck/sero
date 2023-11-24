@@ -1,12 +1,5 @@
-/* RESTFUL API for Flux
- Intented for Private use only
- Copyright © 2023
-*/
-
-// → Require Packages & Modules
 const { createError } = require('../utils/ClassManager');
 
-// → Export module's function
 module.exports = {
 
     authenticate(req, res, next) {

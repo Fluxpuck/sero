@@ -1,6 +1,3 @@
-/*  FluxBot © 2023 Fluxpuck
-The InteractionManager contains all functions for creating, updating and removing Interaction commands */
-
 module.exports = {
 
     // → Create Interactions

@@ -1,9 +1,3 @@
-/* RESTFUL API for Flux
- Intented for Private use only
- Copyright © 2023
-*/
-
-// → Require Packages & Modules
 const express = require('express');
 const router = express.Router();
 
