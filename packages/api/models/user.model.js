@@ -1,13 +1,6 @@
-/* RESTFUL API for Flux
- Intented for Private use only
- Copyright © 2023
-*/
-
-// → Require sequelize
 const { Model, DataTypes } = require('sequelize');
 const { generateUniqueHash } = require('../utils/FunctionManager');
 
-// → set assosiations with this Model
 class User extends Model {
     static associate(models) {
         this.belongsTo(models.Guild, { foreignKey: 'guildId' });
@@ -16,7 +9,6 @@ class User extends Model {
     }
 }
 
-// → export Model
 module.exports = sequelize => {
     User.init({
         userKey: {
@@ -61,7 +53,6 @@ module.exports = sequelize => {
 
                 // Generate a unique token for userKey based on userId
                 user.userKey = generateUniqueHash(user.userId, user.guildId);
-
             },
         },
     });

@@ -2,37 +2,45 @@ const { Sequelize } = require('sequelize');
 const { join } = require('path');
 require('dotenv').config({ path: join(__dirname, '..', 'config', '.env') });
 
-let sequelize;
+// Function to create and return a Sequelize instance
+function createSequelizeInstance() {
+    const {
+        REMOTE_HOST, REMOTE_DB, REMOTE_USER, REMOTE_PASS, REMOTE_PORT,
+        LOCAL_HOST, LOCAL_DB, LOCAL_USER, LOCAL_PASS, LOCAL_PORT,
+        NODE_ENV
+    } = process.env;
 
-try {
-    if (process.env.NODE_ENV === 'production') {
-        // Connect to the remote PostgreSQL database in production
-        sequelize = new Sequelize(
-            process.env.REMOTE_DB,
-            process.env.REMOTE_USER,
-            process.env.REMOTE_PASS,
+    try {
+        const sequelize = new Sequelize(
+            NODE_ENV === 'production' ? REMOTE_DB : LOCAL_DB,
+            NODE_ENV === 'production' ? REMOTE_USER : LOCAL_USER,
+            NODE_ENV === 'production' ? REMOTE_PASS : LOCAL_PASS,
             {
-                host: process.env.REMOTE_HOST,
-                dialect: 'postgres',
-            }
-        );
-    } else {
-        // Connect to the local PostgreSQL database in development
-        sequelize = new Sequelize(
-            process.env.LOCAL_DB,
-            process.env.LOCAL_POST,
-            process.env.LOCAL_POST,
-            {
-                host: process.env.LOCAL_HOST,
-                port: process.env.LOCAL_PORT,
+                host: NODE_ENV === 'production' ? REMOTE_HOST : LOCAL_HOST,
+                port: NODE_ENV === 'production' ? REMOTE_PORT : LOCAL_PORT,
                 dialect: 'postgres',
                 logging: false, // Disable logging or provide a custom logging function
             }
         );
+        return sequelize;
+    } catch (error) {
+        throw new Error(`Error creating Sequelize instance: ${error.message}`);
     }
-} catch (error) {
-    console.error('Error connecting to the database:', error.message);
 }
 
-// Export the Sequelize instance for database operations
-module.exports = sequelize;
+// Function to check the database connection
+async function checkDatabaseConnection(sequelize) {
+    try {
+        await sequelize.authenticate();
+    } catch (error) {
+        throw new Error(`Unable to connect to the database: ${error.message}`);
+    }
+}
+
+// Create Sequelize instance
+const sequelize = createSequelizeInstance();
+
+// Check database connection
+checkDatabaseConnection(sequelize);
+
+module.exports = { sequelize };

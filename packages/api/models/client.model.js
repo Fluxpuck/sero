@@ -1,19 +1,11 @@
-/* RESTFUL API for Flux
- Intented for Private use only
- Copyright © 2023
-*/
-
-// → Require sequelize
 const { Model, DataTypes } = require('sequelize');
 
-// → set assosiations with this Model
 class Client extends Model {
     static associate(models) {
         this.hasMany(models.Commands, { foreignKey: 'clientId' });
     }
 }
 
-// → export Model
 module.exports = sequelize => {
     Client.init({
         clientId: {
@@ -47,7 +39,6 @@ module.exports = sequelize => {
         timestamps: true,
         createdAt: true,
     });
-
 
     return Client;
 }
