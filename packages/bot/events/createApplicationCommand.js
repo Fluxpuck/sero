@@ -4,7 +4,7 @@ module.exports = async (client, applications) => {
     const commands = await fetchCommands();
     if (!commands) return;
 
-    //refresh all unused commands
+    // Refresh all unused commands
     if (client.config?.applicationRefresh === true) {
         for (const [commandId, { name }] of applications) {
 
@@ -23,6 +23,7 @@ module.exports = async (client, applications) => {
         }
     }
 
+    // Create or Update application commands
     for (const command of commands) {
         const commandKey = command.commandId || command.commandName;
 

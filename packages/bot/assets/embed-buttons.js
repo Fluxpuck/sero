@@ -1,26 +1,39 @@
-// → Importing necessary modules, functions and classes
 const { ButtonBuilder, ButtonStyle } = require('discord.js');
 
-module.exports = {
+// ButtonStyle → https://discord-api-types.dev/api/discord-api-types-v10/enum/ButtonStyle
+// Button Object → https://discord.com/developers/docs/interactions/message-components#button-object-button-styles
 
-    invite: new ButtonBuilder()
-        .setStyle(ButtonStyle.Link)
-        .setLabel('Invite')
-        .setURL('https://discord.com/api/oauth2/authorize?client_id=882615019340079370&permissions=8&scope=bot%20applications.commands')
-        .setEmoji('📨'),
+const DiscordButtonsEnum = {
 
-    next: new ButtonBuilder()
+    NEXT_PAGE: new ButtonBuilder()
         .setStyle(ButtonStyle.Secondary)
         .setLabel('Next >')
-        .setCustomId('next')
+        .setCustomId('next_pg')
         .setDisabled(false),
 
-    previous: new ButtonBuilder()
+    PREVIOUS_PAGE: new ButtonBuilder()
         .setStyle(ButtonStyle.Secondary)
         .setLabel('< Previous')
-        .setCustomId('previous')
-        .setDisabled(true),
+        .setCustomId('previous_pg')
+        .setDisabled(false),
 
+    AGREE: new ButtonBuilder()
+        .setStyle(ButtonStyle.Success)
+        .setLabel('Agree')
+        .setCustomId('agree')
+        .setDisabled(false),
+
+    CANCEL: new ButtonBuilder()
+        .setStyle(ButtonStyle.Danger)
+        .setLabel('Cancel')
+        .setCustomId('cancel')
+        .setDisabled(false),
+
+    INVITE: new ButtonBuilder()
+        .setStyle(ButtonStyle.Link)
+        .setLabel('Invite')
+        .setURL('https://discord.com/')
+        .setDisabled(false),
 };
 
-// → https://discord-api-types.dev/api/discord-api-types-v10/enum/ButtonStyle
+module.exports = DiscordButtonsEnum;

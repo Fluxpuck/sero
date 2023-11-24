@@ -1,10 +1,5 @@
-const { ActionRowBuilder, ButtonBuilder, ButtonStyle } = require('discord.js');
-const INVITE_BUTTON = new ButtonBuilder()
-    .setStyle(ButtonStyle.Link)
-    .setURL('https://google.com/')
-    .setEmoji('🔗')
-    .setLabel('Invite')
-    .setDisabled(false)
+const { ActionRowBuilder } = require('discord.js');
+const DiscordButtonsEnum = require('../../assets/embed-buttons');
 
 module.exports.props = {
     commandName: "invite",
@@ -14,11 +9,8 @@ module.exports.props = {
 }
 
 module.exports.run = async (client, interaction) => {
-
-    // Reply with client invite
     return interaction.editReply({
         content: `Hello friend. I can help you out! Click the button below to invite me to your server`,
-        components: [new ActionRowBuilder().addComponents(INVITE_BUTTON)]
-    })
-
+        components: [new ActionRowBuilder().addComponents(DiscordButtonsEnum.INVITE)]
+    });
 }
