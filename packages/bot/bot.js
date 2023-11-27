@@ -20,5 +20,5 @@ events.run(client); //run the events
 
 // → Login to Discord API
 client.login(process.env.NODE_ENV === "production"
-    ? process.env.SERO_TOKEN
+    ? process.env.PRODUCTION_TOKEN
     : process.env.DEVELOPMENT_TOKEN);

@@ -38,7 +38,7 @@ module.exports = async (client) => {
                 guild: {
                     guildId: guild.id,
                     guildName: guild.name,
-                    active: false
+                    active: true
                 }
             })
         }

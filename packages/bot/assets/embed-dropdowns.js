@@ -1,4 +1,4 @@
-const { ActionRowBuilder, StringSelectMenuBuilder, StringSelectMenuOptionBuilder } = require('discord.js');
+const { StringSelectMenuBuilder, StringSelectMenuOptionBuilder } = require('discord.js');
 
 // SelectMenuOptions → https://discord-api-types.dev/api/discord-api-types-v10/interface/APISelectMenuOption
 // StringSelectComponent Object → https://discord-api-types.dev/api/discord-api-types-v10/interface/APIStringSelectComponent
@@ -6,7 +6,7 @@ const { ActionRowBuilder, StringSelectMenuBuilder, StringSelectMenuOptionBuilder
 module.exports = {
     createCustomDropdown({
         customId = 1,
-        placeholder = "placeholder",
+        placeholder = "Select an option",
         options = []
     }) {
 
@@ -18,9 +18,10 @@ module.exports = {
             options?.forEach((option) => {
                 dropdownMenu.addOptions(
                     new StringSelectMenuOptionBuilder()
-                        .setLabel(option?.label)
-                        .setDescription(option?.description)
-                        .setValue(option?.value)
+                        .setLabel(option?.label ?? "label")
+                        .setDescription(option?.description ?? "description")
+                        .setValue(option?.value ?? 1)
+                        .setDefault(option?.default ?? false)
                 )
             });
         }
