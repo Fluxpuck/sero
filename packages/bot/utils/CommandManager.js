@@ -1,5 +1,5 @@
 const fs = require('fs');
-const { join } = require('path');
+const { join, dirname, basename } = require('path');
 const { postCommands } = require('../lib/commands/clientCommands');
 
 function isDir(filePath) {
@@ -21,10 +21,11 @@ module.exports = {
         const files = fs.readdirSync(directoryPath);
 
         // iterate over files array
-        for (const file of files) {
+        for await (const file of files) {
 
             // get the full path of the file
             const filePath = join(directoryPath, file);
+            const directoryCategory = basename(dirname(filePath));
 
             // Check if the file is a directory or a file
             if (isDir(filePath)) {
@@ -36,8 +37,10 @@ module.exports = {
 
                 // If the file is a JavaScript file, load the command from the file
                 const command = require(filePath);
+                if (command) {
 
-                if (command && command.props?.commandName) {
+                    // Add the directoryCategory to the props
+                    command.props.category = directoryCategory;
 
                     // Set the command in the client's collection
                     client.commands.set(command.props.commandName, command);
@@ -45,21 +48,19 @@ module.exports = {
                     // Save to the database if config is set
                     if (client.config?.saveFileCommands === true) {
                         const { commandName, description, usage } = command.props;
-                        const { interactionType = 1, interactionOptions } = command.props?.interaction;
+                        const { type = 1, options } = command.props?.interaction;
 
                         postCommands(command.props.commandName, {
                             commandName: commandName,
-                            interactionType: interactionType,
-                            interactionOptions: interactionOptions,
+                            interactionType: type,
+                            interactionOptions: options,
                             description: description,
                             usage: usage,
                             clientId: client.user.id
                         });
                     }
-
                 }
             }
         }
     }
-
 }

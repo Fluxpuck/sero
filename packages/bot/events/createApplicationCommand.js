@@ -24,24 +24,51 @@ module.exports = async (client, applications) => {
     }
 
     // Create or Update application commands
-    for (const command of commands) {
-        const commandKey = command.commandId || command.commandName;
+    if (client.config?.applicationInitialize === true) {
+        for (const command of commands) {
+            const commandKey = command.commandId || command.commandName;
 
-        const applicationMatch = Array.from(applications.entries()).find(([key, value]) => commandKey === key || commandKey === value.name);
+            const applicationMatch = Array.from(applications.entries()).find(([key, value]) => commandKey === key || commandKey === value.name);
 
-        if (applicationMatch) {
-            const [key, value] = applicationMatch;
-            const { commandId, commandName, description, usage, interactionType, interactionOptions, private } = command;
+            if (applicationMatch) {
+                const [key, value] = applicationMatch;
+                const { commandId, commandName, description, usage, interactionType, interactionOptions, private } = command;
 
-            if (commandId === key || commandName === value.name) {
-                await client.application?.commands.edit(commandId, {
+                if (commandId === key || commandName === value.name) {
+                    await client.application?.commands.edit(commandId, {
+                        name: commandName,
+                        description: description,
+                        type: interactionType,
+                        options: interactionOptions,
+                        defaultMemberPermissions: [],
+                    }).then((application) => {
+                        console.log("Updated Application: " + application.name);
+
+                        postCommands(application.name, {
+                            commandId: application.id,
+                            commandName: application.name,
+                            interactionType: interactionType,
+                            interactionOptions: interactionOptions,
+                            description: description,
+                            usage: usage,
+                            private: private,
+                            clientId: client.user.id
+                        });
+                    }).catch((error) => {
+                        console.error(`[Error editing (${commandName})]: `, error);
+                    });
+                }
+            } else {
+                const { commandName, description, usage, interactionType, interactionOptions, private } = command;
+
+                await client.application?.commands.create({
                     name: commandName,
                     description: description,
                     type: interactionType,
                     options: interactionOptions,
                     defaultMemberPermissions: [],
                 }).then((application) => {
-                    console.log("Updated Application: " + application.name);
+                    console.log("Created Application: " + application.name);
 
                     postCommands(application.name, {
                         commandId: application.id,
@@ -54,34 +81,9 @@ module.exports = async (client, applications) => {
                         clientId: client.user.id
                     });
                 }).catch((error) => {
-                    console.error(`[Error editing (${commandName})]: `, error);
+                    console.error(`[Error creating (${commandName})]: `, error);
                 });
             }
-        } else {
-            const { commandName, description, usage, interactionType, interactionOptions, private } = command;
-
-            await client.application?.commands.create({
-                name: commandName,
-                description: description,
-                type: interactionType,
-                options: interactionOptions,
-                defaultMemberPermissions: [],
-            }).then((application) => {
-                console.log("Created Application: " + application.name);
-
-                postCommands(application.name, {
-                    commandId: application.id,
-                    commandName: application.name,
-                    interactionType: interactionType,
-                    interactionOptions: interactionOptions,
-                    description: description,
-                    usage: usage,
-                    private: private,
-                    clientId: client.user.id
-                });
-            }).catch((error) => {
-                console.error(`[Error creating (${commandName})]: `, error);
-            });
         }
     }
 }
