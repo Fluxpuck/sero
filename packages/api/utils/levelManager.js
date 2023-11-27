@@ -1,9 +1,3 @@
-/* RESTFUL API for Flux
- Intented for Private use only
- Copyright © 2023
-*/
-
-// → Export any Function from this Manager
 module.exports = {
 
     // → Function to calculate the level from the experience

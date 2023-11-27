@@ -1,11 +1,7 @@
-/*  FluxBot © 2023 Fluxpuck
-The CommandManager contains functions to set client commands from files */
-
-// → require packages & functions
 const fs = require('fs');
-const { join, resolve } = require('path');
+const { join, dirname, basename } = require('path');
+const { postCommands } = require('../lib/commands/clientCommands');
 
-// This function checks if a given path is a directory.
 function isDir(filePath) {
     // Check if the path exists and is a directory.
     // Returns true if both conditions are met, false otherwise.
@@ -13,7 +9,6 @@ function isDir(filePath) {
 }
 
 module.exports = {
-
     /**
      * This function reads command files from a specified directory,
      * and stores them in a client.commands object for reference.
@@ -26,10 +21,11 @@ module.exports = {
         const files = fs.readdirSync(directoryPath);
 
         // iterate over files array
-        for (const file of files) {
+        for await (const file of files) {
 
             // get the full path of the file
             const filePath = join(directoryPath, file);
+            const directoryCategory = basename(dirname(filePath));
 
             // Check if the file is a directory or a file
             if (isDir(filePath)) {
@@ -41,15 +37,30 @@ module.exports = {
 
                 // If the file is a JavaScript file, load the command from the file
                 const command = require(filePath);
+                if (command) {
 
-                if (command && command.details.name) {
+                    // Add the directoryCategory to the props
+                    command.props.category = directoryCategory;
 
                     // Set the command in the client's collection
-                    client.commands.set(command.details.name, command);
+                    client.commands.set(command.props.commandName, command);
 
+                    // Save to the database if config is set
+                    if (client.config?.saveFileCommands === true) {
+                        const { commandName, description, usage } = command.props;
+                        const { type = 1, options } = command.props?.interaction;
+
+                        postCommands(command.props.commandName, {
+                            commandName: commandName,
+                            interactionType: type,
+                            interactionOptions: options,
+                            description: description,
+                            usage: usage,
+                            clientId: client.user.id
+                        });
+                    }
                 }
             }
         }
     }
-    
 }

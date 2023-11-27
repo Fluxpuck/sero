@@ -1,8 +1,3 @@
-/*  FluxBot © 2023 Fluxpuck
-This code exports a function that reads event files from a specified directory, 
-binds them to the Discord client, and stores them in a client.events object for reference. */
-
-// → require packages & functions
 const { readdirSync } = require('fs');
 const { join } = require('path');
 

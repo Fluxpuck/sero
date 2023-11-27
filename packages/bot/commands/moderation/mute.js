@@ -1,7 +1,7 @@
 module.exports.props = {
-    commandName: "ping",
-    description: "Check the client latency",
-    usage: "/ping",
+    commandName: "mute",
+    description: "Mute a selected member",
+    usage: "/mute [user]",
     interaction: {}
 }
 

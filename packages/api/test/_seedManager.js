@@ -1,7 +1,3 @@
-/*  FluxAPI © 2023 Fluxpuck
-The SeedManager fetches and executes all seeds */
-
-// → require packages & functions
 const fs = require('fs');
 const { join, resolve } = require('path');
 const { sequelize } = require('../database/sequelize');

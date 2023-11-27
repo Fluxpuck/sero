@@ -1,13 +1,6 @@
-/* RESTFUL API for Flux
- Intented for Private use only
- Copyright © 2023
-*/
-
-// → Require sequelize
 const { Model, DataTypes } = require('sequelize');
 const { calculateLevel } = require('../utils/levelManager');
 
-// → set assosiations with this Model
 class Levels extends Model {
     static associate(models) {
         this.belongsTo(models.User, { foreignKey: 'userKey', otherKey: 'userId' });
@@ -15,7 +8,6 @@ class Levels extends Model {
     }
 }
 
-// → export Model
 module.exports = sequelize => {
     Levels.init({
         levelId: {
@@ -65,7 +57,7 @@ module.exports = sequelize => {
         updatedAt: true,
         createdAt: true
     });
-    // → calculate the level from the experience
+
     Levels.beforeSave(async (level, options) => {
         let exp = level.getDataValue('experience');
         let calculatedLevel = calculateLevel(exp);
@@ -74,6 +66,7 @@ module.exports = sequelize => {
         level.setDataValue('nextLevelExp', calculatedLevel.nextLevelExp);
         level.setDataValue('remainingExp', calculatedLevel.remainingExp);
     });
+    
     return Levels;
 }
 

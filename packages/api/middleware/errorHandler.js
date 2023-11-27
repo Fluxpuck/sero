@@ -1,9 +1,3 @@
-/* RESTFUL API for Flux
- Intented for Private use only
- Copyright © 2023
-*/
-
-// → Export module's function
 module.exports = {
 
     errorHandler(err, req, res, next) {

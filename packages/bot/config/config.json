@@ -2,9 +2,8 @@
     "ownerIds": [
         "270640827787771943"
     ],
-    "textchannels": [
-        "GUILD_TEXT",
-        "GUILD_PUBLIC_THREAD",
-        "GUILD_PRIVATE_THREAD"
-    ]
+    "applicationRefresh": true,
+    "applicationInitialize": true,
+    "saveFileCommands": false,
+    "saveClientGuilds": false
 }

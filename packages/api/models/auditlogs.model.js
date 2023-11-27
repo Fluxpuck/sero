@@ -1,12 +1,5 @@
-/* RESTFUL API for Flux
- Intented for Private use only
- Copyright © 2023
-*/
-
-// → Require sequelize
 const { Model, DataTypes } = require('sequelize');
 
-// → set assosiations with this Model
 class AuditLogs extends Model {
     static associate(models) {
         this.belongsTo(models.Guild, { foreignKey: 'guildId' });
@@ -14,7 +7,6 @@ class AuditLogs extends Model {
     }
 }
 
-// → export Model
 module.exports = sequelize => {
     AuditLogs.init({
         id: {

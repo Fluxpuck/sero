@@ -1,12 +1,5 @@
-/* RESTFUL API for Flux
- Intented for Private use only
- Copyright © 2023
-*/
-
-// → Require sequelize
 const { Model, DataTypes } = require('sequelize');
 
-// → set assosiations with this Model
 class Moderator extends Model {
     static associate(models) {
         // this.belongsToMany(models.Guild, {
@@ -24,7 +17,6 @@ class Moderator extends Model {
     }
 }
 
-// → export Model
 module.exports = sequelize => {
     Moderator.init({
         userKey: {
@@ -65,5 +57,6 @@ module.exports = sequelize => {
         updatedAt: true,
         createdAt: true
     });
+    
     return Moderator;
 }
