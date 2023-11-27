@@ -5,9 +5,16 @@ const { postRequest, getRequest } = require('../database/connection');
 const events = require('../config/eventEnum');
 const config = require('../config/config.json');
 
+const getDirectories = (dir) => {
+    return fs.readdirSync(dir, { withFileTypes: true })
+        .filter(dirent => dirent.isDirectory())
+        .map(dirent => dirent.name);
+};
+
 module.exports = async (client) => {
 
     // Attach config settings to the client
+    // @TODO: Put these config settings in the database
     client.config = config;
 
     // Sets the bot's presence to indicate that it is listening to a user with the username 'Fluxpuck#0001'.
@@ -31,7 +38,7 @@ module.exports = async (client) => {
                 guild: {
                     guildId: guild.id,
                     guildName: guild.name,
-                    active: false
+                    active: true
                 }
             })
         }

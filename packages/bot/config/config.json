@@ -3,6 +3,7 @@
         "270640827787771943"
     ],
     "applicationRefresh": true,
-    "saveFileCommands": true,
+    "applicationInitialize": false,
+    "saveFileCommands": false,
     "saveClientGuilds": false
 }

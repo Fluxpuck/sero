@@ -3,7 +3,7 @@ const { ButtonBuilder, ButtonStyle } = require('discord.js');
 // ButtonStyle → https://discord-api-types.dev/api/discord-api-types-v10/enum/ButtonStyle
 // Button Object → https://discord.com/developers/docs/interactions/message-components#button-object-button-styles
 
-const DiscordButtonsEnum = {
+const ClientButtonsEnum = {
 
     NEXT_PAGE: new ButtonBuilder()
         .setStyle(ButtonStyle.Secondary)
@@ -31,9 +31,9 @@ const DiscordButtonsEnum = {
 
     INVITE: new ButtonBuilder()
         .setStyle(ButtonStyle.Link)
-        .setLabel('Invite')
+        .setLabel('Invite Me')
         .setURL('https://discord.com/')
         .setDisabled(false),
 };
 
-module.exports = DiscordButtonsEnum;
+module.exports = ClientButtonsEnum;

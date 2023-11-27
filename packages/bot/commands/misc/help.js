@@ -1,81 +1,96 @@
-const { EmbedBuilder } = require('discord.js');
-const colors = require('../../assets/embed-colors.json');
+const { ActionRowBuilder, ComponentType, } = require('discord.js');
+const { capitalize } = require('../../lib/text/text-modifications');
+const { createCustomEmbed } = require('../../assets/embed');
+const { createCustomDropdown } = require('../../assets/embed-dropdowns');
 
 module.exports.props = {
     commandName: "help",
     description: "Get information on the bot",
     usage: "/help",
-    interaction: {
-        type: 1, // → https://discord-api-types.dev/api/discord-api-types-v10/enum/ApplicationCommandType
-        options:
-            [
-                {
-                    name: 'command',
-                    type: 3, // → https://discord-api-types.dev/api/discord-api-types-v10/enum/ApplicationCommandOptionType 
-                    description: 'The command to get information about',
-                    choices: [],
-                    required: false
-                }
-            ],
-    }
+    interaction: {}
 }
 
 module.exports.run = async (client, interaction) => {
 
-    // Get all client commands that are not private
-    const clientCommands = client.commands.map(c => c.details)
-    // .filter(c => !c.private);
-
-    // Sort the commands by folder (category)
+    // Get all commands that do not have the Private property
+    const commandList = client.commands.map(c => c.props)
+        .filter(c => c.private != true || c.category != 'private')
     const groupBy = (x, f) => x.reduce((a, b, i, x) => { const k = f(b, i, x); a.get(k)?.push(b) ?? a.set(k, [b]); return a; }, new Map());
-    const sortCommands = groupBy(clientCommands, v => v.directory);
+    const sortedCommands = groupBy(commandList, props => props.category);
 
-    // Setup the embed
-    let messageEmbed = new EmbedBuilder()
-        .setColor(colors.home)
+    // Set a category list for the embed message
+    const categoryEmbedFields = [...sortedCommands.entries()].map(([key, value]) => ({
+        name: capitalize(key),
+        value: value.map(c => `\`/${c.commandName}\``).join('\n'),
+        inline: true
+    }));
 
-    // Check if user specified a command
-    const commandOptions = interaction.options.get('command');
-    if (commandOptions == null) { // No command specified
+    // Build the messageEmbed
+    const messageEmbed = createCustomEmbed({
+        title: `${client.user.username} | Help`,
+        thumbnail: client.user.displayAvatarURL({ dynamic: false }),
+        description: "Use the dropdown menu to get information on specific commands.",
+        fields: categoryEmbedFields
+    });
 
-        // Setup the embed
-        messageEmbed
-            .setTitle('Flux - Help')
-            .setThumbnail(client.user.displayAvatarURL({ dynamic: false }))
-            .setDescription('Flux is a Discord bot written in JavaScript using the Discord.js library.');
+    // Set a category list for the dropdown
+    const categoryListDropdown = [...sortedCommands.entries()].map(([key, value]) => ({
+        label: capitalize(key),
+        description: `Get more info on commands in ${capitalize(key)}`,
+        value: key
+    }));
 
-        // Display the commands by folder (category)
-        for (let [key, value] of sortCommands) {
-            messageEmbed.addFields(
-                { name: capitalize(key), value: `${value.map(c => `- ${c.name}`).join('\n')}`, inline: true }
-            )
-        }
+    // Build the dropdownMenu
+    const dropdownMenu = createCustomDropdown({
+        customId: "help",
+        placeholder: "Select a category",
+        options: categoryListDropdown
+    })
 
-        // Send the message
-        return interaction.reply({
+    // Reply to the user
+    const embedActionRow = new ActionRowBuilder().addComponents(dropdownMenu)
+    const response = await interaction.reply({
+        embeds: [messageEmbed],
+        components: [embedActionRow],
+        ephemeral: false
+    }).catch((error) => { return error; });
+
+    // Collect the dropdownMenu selection
+    const options = { componentType: ComponentType.StringSelect, idle: 300_000, time: 3_600_000 }
+    const collector = response.createMessageComponentCollector({ options });
+    collector.on('collect', async i => {
+
+        const selectedCategory = i.values[0];
+
+        // Filter commands from the selected category
+        const selectedCommands = client.commands.map(c => c.props)
+            .filter(c => c.private != true && c.category === selectedCategory)
+        const commandEmbedFields = selectedCommands.map(command => (
+            {
+                name: "\u200b",
+                value: `**${capitalize(command.commandName)}** - ${command.description} \n Usage: \`${command.usage}\``,
+                inline: false
+            }
+        ));
+
+        // Update the messageEmbed 
+        messageEmbed.data.title = `${client.user.username} | ${capitalize(selectedCategory)}`
+        messageEmbed.data.description = null;
+        messageEmbed.data.fields = commandEmbedFields;
+
+        // Update the dropdownMenu
+        embedActionRow.components[0].options.forEach(option => {
+            option.data.default = false;
+            if (option.data.value === selectedCategory) {
+                option.data.default = true;
+            }
+        });
+
+        // Update the messageEmbed
+        await i.update({
             embeds: [messageEmbed],
-            components: [],
-            ephemeral: false
-        }).catch((err) => { throw err });
+            components: [embedActionRow],
+        }).catch((error) => { return error; });
 
-    } else { // Command specified
-
-        // Get the command information
-        const inputOption = commandOptions.value;
-        const commandDetails = client.commands.get(inputOption).details;
-
-        // Setup the embed
-        messageEmbed
-            .setTitle(`Help - ${capitalize(commandDetails.name)}`)
-            .setThumbnail(client.user.displayAvatarURL({ dynamic: false }))
-            .setDescription(commandDetails.description)
-            .addFields({ name: `Usage`, value: `${commandDetails.usage}`, inline: false },
-                { name: `Additional Info`, value: `For more help and resources visit our [website](https://bot.fluxpuck.com)`, inline: false },)
-
-        //reply to message
-        return interaction.reply({
-            embeds: [messageEmbed],
-            ephemeral: false
-        }).catch((err) => { throw err });
-    }
+    });
 }

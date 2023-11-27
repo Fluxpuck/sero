@@ -1,6 +1,6 @@
 {
-  "name": "Sero",
-  "version": "v1.0",
+  "name": "flux",
+  "version": "1",
   "private": true,
   "engines": {
     "node": ">=16"

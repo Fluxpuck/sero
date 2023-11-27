@@ -1,5 +1,5 @@
 const { ActionRowBuilder } = require('discord.js');
-const DiscordButtonsEnum = require('../../assets/embed-buttons');
+const ClientButtonsEnum = require('../../assets/embed-buttons');
 
 module.exports.props = {
     commandName: "invite",
@@ -9,8 +9,8 @@ module.exports.props = {
 }
 
 module.exports.run = async (client, interaction) => {
-    return interaction.editReply({
+    return interaction.reply({
         content: `Hello friend. I can help you out! Click the button below to invite me to your server`,
-        components: [new ActionRowBuilder().addComponents(DiscordButtonsEnum.INVITE)]
+        components: [new ActionRowBuilder().addComponents(ClientButtonsEnum.INVITE)]
     });
 }

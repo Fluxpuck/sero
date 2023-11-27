@@ -13,9 +13,9 @@ module.exports.run = async (client, interaction) => {
 
     // Setting up the embedded message
     const messageEmbed = new EmbedBuilder()
-        .setTitle('FluxBot')
+        .setTitle(client.user.username)
         .setThumbnail(client.user.displayAvatarURL({ dynamic: false }))
-        .setDescription('FluxBot is a Discord bot written in JavaScript using the Discord.js library.')
+        .setDescription('Sero is a Discord bot written in JavaScript using the Discord.js library.')
         .addFields(
             { name: 'Version', value: botVersion, inline: true },
             { name: 'Discord.js', value: discordVersion, inline: true },

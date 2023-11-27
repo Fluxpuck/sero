@@ -2,6 +2,7 @@ module.exports.props = {
     commandName: "update-commands",
     description: "Fetch client commands, push to database and create/update application commands",
     usage: "/update-commands",
+    private: true,
     interaction: {
         type: 1, // → https://discord-api-types.dev/api/discord-api-types-v10/enum/ApplicationCommandType
         options: // → https://discord-api-types.dev/api/discord-api-types-v10/enum/ApplicationCommandOptionType 
