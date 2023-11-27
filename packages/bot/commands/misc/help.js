@@ -36,7 +36,7 @@ module.exports.run = async (client, interaction) => {
     // Set a category list for the dropdown
     const categoryListDropdown = [...sortedCommands.entries()].map(([key, value]) => ({
         label: capitalize(key),
-        description: `Get more information on commands in category ${capitalize(key)}`,
+        description: `Get more info on commands in ${capitalize(key)}`,
         value: key
     }));
 
