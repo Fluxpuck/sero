@@ -1,3 +1,4 @@
+const { PermissionFlagsBits } = require('discord.js');
 const { fetchCommands, postCommands } = require("../lib/commands/clientCommands");
 
 module.exports = async (client, applications) => {
@@ -40,7 +41,7 @@ module.exports = async (client, applications) => {
                         description: description,
                         type: interactionType,
                         options: interactionOptions,
-                        defaultMemberPermissions: [],
+                        defaultMemberPermissions: [PermissionFlagsBits.KickMembers],
                     }).then((application) => {
                         console.log("Updated Application: " + application.name);
 
@@ -66,7 +67,7 @@ module.exports = async (client, applications) => {
                     description: description,
                     type: interactionType,
                     options: interactionOptions,
-                    defaultMemberPermissions: [],
+                    defaultMemberPermissions: [PermissionFlagsBits.KickMembers],
                 }).then((application) => {
                     console.log("Created Application: " + application.name);
 
