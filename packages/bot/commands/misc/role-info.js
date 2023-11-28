@@ -1,7 +1,6 @@
-/*  Fluxpuck © Creative Commons Attribution-NoDerivatives 4.0 International Public License
-    For more information on the commands, please visit hyperbot.cc  */
 // → Importing necessary structures
-const { EmbedBuilder, CommandInteraction } = require("discord.js")
+const { createCustomEmbed} = require("../../assets/embed")
+
 module.exports.props = {
     commandName: "role-info",
     description: "Get info on a role.",
@@ -82,14 +81,10 @@ module.exports.run = async (client, interaction) => {
             value: `${extractedPerms}`,
         }, 
     ]
+
     // Construct the Embed
-    const embed = new EmbedBuilder()
-    .setTitle(`${role_name} | ${role.position}/${interaction.guild.roles.cache.size}`)
-    .setColor(role_colour)
-    .addFields(...embed_fields)
-    .setFooter({ text: `${interaction.user.username}` })
-    .setTimestamp()
-    interaction.reply({ embeds: [embed] })
+   const embed = createCustomEmbed({ title: `${role_name} | ${role.position}/${interaction.guild.roles.cache.size}`, color: role_colour, fields: embed_fields })
+   interaction.reply({embeds: [embed]})
 }
 
 function normalizeText (text) {
