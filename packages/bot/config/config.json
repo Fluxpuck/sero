@@ -4,6 +4,6 @@
     ],
     "applicationRefresh": true,
     "applicationInitialize": true,
-    "saveFileCommands": false,
+    "saveFileCommands": true,
     "saveClientGuilds": false
 }
