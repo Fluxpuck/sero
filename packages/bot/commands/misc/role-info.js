@@ -1,5 +1,8 @@
 // → Importing necessary structures
+const { PermissionFlagsBits } = require("discord.js");
 const { createCustomEmbed} = require("../../assets/embed")
+const { normalizeText } = require("../../lib/text/normalizeText")
+
 
 module.exports.props = {
     commandName: "role-info",
@@ -39,7 +42,8 @@ module.exports.run = async (client, interaction) => {
         'UseSoundboard',
         'ManageMessages',
         'ModerateMembers',
-        'UseEmbeddedActivities'
+        'UseEmbeddedActivities',
+        "UseApplicationCommands",
     ]
     // → Turn role permissions into an array, filter permissions to get the permissions listed above.
     const rolePermissions = role.permissions.toArray();
