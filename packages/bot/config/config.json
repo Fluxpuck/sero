@@ -2,7 +2,7 @@
     "ownerIds": [
         "270640827787771943"
     ],
-    "applicationRefresh": false,
+    "applicationRefresh": true,
     "saveFileCommands": true,
     "saveClientGuilds": true
 }
