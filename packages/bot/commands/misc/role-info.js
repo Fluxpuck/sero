@@ -44,10 +44,9 @@ module.exports.run = async (client, interaction) => {
     ]
     // → Turn role permissions into an array, filter permissions to get the permissions listed above.
     const rolePermissions = role.permissions.toArray();
-    console.log(rolePermissions)
     const extractedPerms = rolePermissions
     .filter((permission) => permissionsArray.includes(permission))
-    .map((permission) => `${permission}`)
+    .map((permission) => `${normalizeText(permission)}`)
     if(!extractedPerms) {
         "This role has no permissions."
     }
@@ -91,4 +90,9 @@ module.exports.run = async (client, interaction) => {
     .setFooter({ text: `${interaction.user.username}` })
     .setTimestamp()
     interaction.reply({ embeds: [embed] })
+}
+
+function normalizeText (text) {
+    return text
+    .replace(/([a-z])([A-Z])/g, '$1 $2')
 }
