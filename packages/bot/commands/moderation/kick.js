@@ -42,13 +42,13 @@ module.exports.run = async (client, interaction) => {
 const apiUser = interaction.options.get("member").user;
 const member = interaction.guild.members.cache.find(user => user.id === apiUser.id)
 if(!member) interaction.reply({ content: `The member you provided was not a proper member.` });
-const PreReasonOption = interaction.options.get("prereason");
+const preReasonOption = interaction.options.get("prereason");
 const user_reason = interaction.options.get("reason");
 
 if(user_reason && prereasonopt) {
     interaction.reply({ content: `There can only be one reason.`})
 }
-switch (PreReasonOption.value) {
+switch (preReasonOption.value) {
     case "IMPERSONATION":
         member.kick(KICK_PREREASONS.IMPERSONATION.replace("%user%", "{FLUX}"))
         interaction.reply({ content: `${KICK_PREREASONS.IMPERSONATION.replace('%user%', `${member}`)}`})
