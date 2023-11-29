@@ -1,9 +1,9 @@
 const { KICK_PREREASONS } = require("../../assets/pre-reasons");
-const {CommandInteraction} = require("discord.js")
+
 module.exports.props = {
     commandName: "kick",
     description: "Kick a user from the server.",
-    usage: "/kick [user] [prereason?] [reason]",
+    usage: "/kick [user] [reason] [prereason?]",
     private: true,
     interaction: {
         type: 1, // → https://discord-api-types.dev/api/discord-api-types-v10/enum/ApplicationCommandType
@@ -37,38 +37,33 @@ module.exports.props = {
             ],
     }
 }
-/**
- * 
- * @param {CommandInteraction} interaction 
 
- */
 module.exports.run = async (client, interaction) => {
 const apiUser = interaction.options.get("member").user;
 const member = interaction.guild.members.cache.find(user => user.id === apiUser.id)
 if(!member) interaction.reply({ content: `The member you provided was not a proper member.` });
-const prereasonopt = interaction.options.get("prereason");
+const PreReasonOption = interaction.options.get("prereason");
 const user_reason = interaction.options.get("reason");
 
 if(user_reason && prereasonopt) {
     interaction.reply({ content: `There can only be one reason.`})
 }
-switch (prereasonopt.value) {
+switch (PreReasonOption.value) {
     case "IMPERSONATION":
         member.kick(KICK_PREREASONS.IMPERSONATION.replace("%user%", "{FLUX}"))
         interaction.reply({ content: `${KICK_PREREASONS.IMPERSONATION.replace('%user%', `${member}`)}`})
         break;
         case "INNAPROPRIATE_USER":
             member.kick(KICK_PREREASONS.INAPPROPRIATE_USER.replace("%user%", `{FLUX}`))
-            interaction.reply({ content: `${KICK_PREREASONS.INAPPROPRIATE_USER.replace(`%user%`, `${member}`)}`})
+            interaction.reply({ content: `${KICK_PREREASONS.INAPPROPRIATE_USENRNAME.replace(`%user%`, `${member}`)}`})
             break;
             case "ALT_ACCOUNT":
                 member.kick(KICK_PREREASONS.ALT_ACCOUNT.replace("%user%", `{FLUX}`))
                 interaction.reply({ content: `${KICK_PREREASONS.ALT_ACCOUNT.replace('%user%', `${member}`)}`})
                 break;
-}
-if(!prereasonopt) {
-    member.kick(user_reason)
-    interaction.reply({ content: `Kicked ${member} for ${user_reason}`})
+                default:
+                    member.kick(user_reason)
+                    interaction.reply({ content: `Kicked ${member} for ${user_reason}`})
 }
 
 
