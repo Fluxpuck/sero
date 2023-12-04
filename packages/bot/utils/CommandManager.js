@@ -1,6 +1,6 @@
 const fs = require('fs');
 const { join, dirname, basename } = require('path');
-const { postCommands } = require('../lib/commands/clientCommands');
+const { postCommands } = require('../lib/client/commands');
 
 function isDir(filePath) {
     // Check if the path exists and is a directory.

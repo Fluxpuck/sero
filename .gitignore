@@ -31,3 +31,6 @@ node_modules
 # Miscelaneous 
 .VSCodeCounter
 /temp
+
+# Configuration
+packages/bot/config/config.json

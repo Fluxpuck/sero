@@ -1,39 +1,21 @@
 const express = require("express");
 const router = express.Router();
-const { Client, Commands } = require("../database/models");
+const { ConfigFlags } = require("../database/models");
 const { sequelize } = require('../database/sequelize');
 const { createError } = require('../utils/ClassManager');
 
-const ClientAttributes = ['clientId', 'clientName'];
 const CommandAttributes = ['commandName', 'clientId'];
 
-// → Define the routes for 'api/client'
-// Get default information on the API
+// → Define the routes for 'api/config'
+// Get all client config
 router.get("/", async (req, res, next) => {
   try {
-    // get all client information
-    const client = await Client.findAll();
-    // check for any clients, else trigger error
-    if (!client) throw new createError(404, 'No client found.');
+    //find all client config
+    const config = await ConfigFlags.findAll();
+    //check for any client config, else trigger error
+    if (!config) throw new createError(404, 'No client configs found.');
     // return data
-    return res.status(200).json(commands);
-
-  } catch (error) {
-    next(error);
-  }
-});
-
-
-// → Define the routes for 'api/client/commands'
-// Get all client commands
-router.get("/commands", async (req, res, next) => {
-  try {
-    //find all client commands
-    const commands = await Commands.findAll();
-    //check for any client commands, else trigger error
-    if (!commands) throw new createError(404, 'No client commands found.');
-    // return data
-    return res.status(200).json(commands);
+    return res.status(200).json(config);
 
   } catch (error) {
     next(error);
@@ -41,24 +23,24 @@ router.get("/commands", async (req, res, next) => {
 });
 
 // Get a specific client commands
-router.get("/command/:commandId", async (req, res, next) => {
+router.get("/:config", async (req, res, next) => {
   try {
-    const { commandId } = req.params; // Extract the commandId from the request parameters
-    // Find the client command by commandId
-    const command = await Commands.findOne({ where: { commandId: commandId } });
-    // Check if the command exists, else trigger an error
-    if (!command) {
-      throw new createError(404, 'Client command not found.');
+    const { configName } = req.params; // Extract the config from the request parameters
+    // Find the client config by name
+    const config = await ConfigFlags.findOne({ where: { config: configName } });
+    // Check if the config exists, else trigger an error
+    if (!config) {
+      throw new createError(404, 'Client config not found.');
     }
     // Return the data
-    return res.status(200).json(command);
+    return res.status(200).json(config);
   } catch (error) {
     next(error);
   }
 });
 
 // Save new client command 
-router.post("/commands/:commandName", async (req, res, next) => {
+router.post("/:commandName", async (req, res, next) => {
   const t = await sequelize.transaction();
 
   try {

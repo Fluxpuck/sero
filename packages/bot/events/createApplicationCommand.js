@@ -1,5 +1,5 @@
 const { PermissionFlagsBits } = require('discord.js');
-const { fetchCommands, postCommands } = require("../lib/commands/clientCommands");
+const { fetchCommands, postCommands } = require("../lib/client/commands");
 
 module.exports = async (client, applications) => {
     const commands = await fetchCommands();
@@ -36,7 +36,7 @@ module.exports = async (client, applications) => {
                 const { commandId, commandName, description, usage, interactionType, interactionOptions, private } = command;
 
                 if (commandId === key || commandName === value.name) {
-                    await client.application?.commands.edit(commandId, {
+                    await client.application?.commands.edit(key, {
                         name: commandName,
                         description: description,
                         type: interactionType,

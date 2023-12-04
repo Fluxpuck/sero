@@ -12,6 +12,7 @@
   },
   "dependencies": {
     "dotenv": "^10.0.0",
+    "eventemitter3": "^5.0.1",
     "pg": "^8.11.3"
   },
   "devDependencies": {

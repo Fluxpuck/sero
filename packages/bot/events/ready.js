@@ -1,15 +1,16 @@
 const { join } = require('path');
 const { loadCommands } = require("../utils/CommandManager");
+const { fetchConfig } = require('../lib/client/config');
 const { displayWelcomeMessage } = require('../utils/ConsoleManager');
 const { postRequest, getRequest } = require('../database/connection');
 const events = require('../config/eventEnum');
-const config = require('../config/config.json');
+const configFile = require('../config/config.json');
 
 module.exports = async (client) => {
 
     // Attach config settings to the client
-    // @TODO: Put these config settings in the database
-    client.config = config;
+    const clientConfig = await fetchConfig();
+    client.config = clientConfig ?? configFile;
 
     // Sets the bot's presence to indicate that it is listening to a user with the username 'Fluxpuck#0001'.
     client.user.setPresence({ activities: [{ type: 'LISTENING', name: 'Fluxpuck#0001' }], status: 'online' });
@@ -26,8 +27,8 @@ module.exports = async (client) => {
     await displayWelcomeMessage(client);
 
     // Set global guild active setting
-    Array.from(client.guilds.cache.values()).forEach(async guild => {
-        if (client.config.saveClientGuilds === true) {
+    if (client.config.saveClientGuilds === true) {
+        Array.from(client.guilds.cache.values()).forEach(async guild => {
             await postRequest(`/guilds/${guild.id}`, {
                 guild: {
                     guildId: guild.id,
@@ -35,10 +36,9 @@ module.exports = async (client) => {
                     active: true
                 }
             })
-        }
 
-        const { data } = await getRequest(`/guilds/${guild.id}`);
-        guild.active = data.active === true;
-    });
-
+            const { data } = await getRequest(`/guilds/${guild.id}`);
+            guild.active = data.active === true;
+        });
+    }
 }
