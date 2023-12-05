@@ -22,5 +22,10 @@ function capitalize(str) {
         }
     );
 }
+function normalizeText (text) {
+    // This adds a space between a lower case letter and a upper case letter (i.e. ManageMessages -> "Manage Messages")
+    return text
+    .replace(/([a-z])([A-Z])/g, '$1 $2')
+}
 
-module.exports = { capitalize };
+module.exports = { capitalize, normalizeText };
