@@ -1,0 +1,156 @@
+const express = require("express");
+const router = express.Router();
+const { Away } = require("../database/models");
+const { sequelize } = require('../database/sequelize');
+const { createError } = require('../utils/ClassManager');
+
+/**
+ * @router GET api/away/:guildId
+ * @description Get all Away statusses for a specific guild
+ */
+router.get("/:guildId", async (req, res, next) => {
+  try {
+    const { guildId } = req.params;
+
+    // Check for results related to the guildId
+    const result = await Away.findAll({
+      where: { guildId: guildId },
+    });
+
+    // If no results found, trigger error
+    if (!result || result.length === 0) {
+      throw new createError(404, 'No Away status for this guildId found.');
+    }
+
+    // Return the results
+    return res.status(200).json(result);
+
+  } catch (error) {
+    next(error);
+  }
+});
+
+/**
+ * @router GET api/away/:guildId/userId
+ * @description Get the Away status from a specific user from a specific guild
+ */
+router.get("/:guildId/:userId", async (req, res, next) => {
+  try {
+    const { guildId, userId } = req.params;
+
+    // Check for results related to the guildId and userId
+    const result = await Away.findAll({
+      where: {
+        guildId: guildId,
+        userId: userId
+      },
+    });
+
+    // If no results found, trigger error
+    if (!result || result.length === 0) {
+      throw new createError(404, 'No Away status for this combination of guildId and userId found.');
+    }
+
+    // Return the results
+    return res.status(200).json(result);
+
+  } catch (error) {
+    next(error);
+  }
+});
+
+
+
+const requiredProperties = ['userId', 'guildId', 'duration'];
+
+/**
+ * @router POST api/away/:guildId/userId
+ * @description Save the Away status from a specific user from a specific guild
+ */
+router.post("/:guildId/:userId", async (req, res, next) => {
+  const t = await sequelize.transaction();
+
+  try {
+    const { body, params } = req;
+    const { guildId, userId } = params;
+
+    // Check if the request body has all required properties
+    if (!body || Object.keys(body).length === 0 || requiredProperties.some(prop => body[prop] === undefined)) {
+      throw new createError(400, 'Invalid or missing data for this request');
+    }
+
+    // Get the data from the request body && create object
+    const { duration } = body;
+    const updateData = {
+      userId: userId,
+      guildId: guildId,
+      duration: duration
+    }
+
+    // Check if the user is already away
+    const request = await Away.findOne({
+      where: {
+        guildId: guildId,
+        userId: userId
+      },
+      transaction: t
+    });
+
+    // Update or Create the request
+    if (request) {
+      await request.update(updateData, { transaction: t });
+      res.status(200).send(`Away status for ${guildId}/${userId} updated successfully`);
+    } else {
+      await Away.create(updateData, { transaction: t });
+      res.status(200).send(`Away status for ${guildId}/${userId} updated successfully`);
+    }
+
+    // Commit and finish the transaction
+    return t.commit();
+
+  } catch (error) {
+    await t.rollback();
+    next(error);
+  }
+});
+
+
+
+
+/**
+ * @router DELETE api/away/:guildId/userId
+ * @description Delete the Away status from a specific user from a specific guild
+ */
+router.delete("/:guildId/:userId", async (req, res, next) => {
+  try {
+    const { guildId, userId } = req.params;
+
+    // Check if the user is already away
+    const request = await Away.findOne({
+      where: {
+        guildId: guildId,
+        userId: userId
+      },
+    });
+
+    // If no results found, trigger error
+    if (!request) {
+      throw new createError(404, 'No Away status for this combination of guildId and userId found.');
+    }
+
+    // Delete the request
+    await request.destroy();
+
+    // Return the results
+    return res.status(200).json(request);
+
+  } catch (error) {
+    next(error);
+  }
+});
+
+
+
+
+// → Export Router to App
+module.exports = router;

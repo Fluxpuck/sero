@@ -4,7 +4,7 @@ const { Commands } = require("../database/models");
 const { sequelize } = require('../database/sequelize');
 const { createError } = require('../utils/ClassManager');
 
-// Setup Attributes for the Route
+// Setup Attributes for this Route
 const CommandAttributes = ['commandName', 'clientId'];
 
 // → Define the routes for 'api/commands'

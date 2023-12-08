@@ -1,6 +1,6 @@
 const { Model, DataTypes } = require('sequelize');
 
-class Moderator extends Model {
+class Away extends Model {
     static associate(models) {
         // this.belongsToMany(models.Guild, {
         //     foreignKey: 'userKey', // This should match the foreign key in the Moderator model
@@ -18,7 +18,7 @@ class Moderator extends Model {
 }
 
 module.exports = sequelize => {
-    Moderator.init({
+    Away.init({
         id: {
             type: DataTypes.INTEGER,
             autoIncrement: true,
@@ -39,25 +39,29 @@ module.exports = sequelize => {
                 is: /^\d{17,20}$/ //Discord Snowflake
             }
         },
-        location: {
-            type: DataTypes.STRING,
-            allowNull: true
+        duration: {
+            type: DataTypes.INTEGER,
+            allowNull: false,
+            defaultValue: 5,
         },
-        language: {
-            type: DataTypes.STRING,
-            allowNull: true
-        },
-        rank: {
-            type: DataTypes.STRING,
-            allowNull: true
+        expireAt: {
+            type: DataTypes.DATE,
+            allowNull: false,
         },
     }, {
         sequelize,
-        modelName: 'moderator',
+        modelName: 'away',
         timestamps: true,
-        updatedAt: true,
-        createdAt: true
+        createdAt: true,
+        hooks: {
+            beforeCreate: (away, options) => {
+                // Calculate expireAt based on duration and createdAt
+                const expireAt = new Date(away.createdAt);
+                expireAt.setMinutes(expireAt.getMinutes() + away.duration);
+                away.expireAt = expireAt;
+            },
+        },
     });
 
-    return Moderator;
+    return Away;
 }
