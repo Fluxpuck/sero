@@ -4,108 +4,151 @@ const { Commands } = require("../database/models");
 const { sequelize } = require('../database/sequelize');
 const { createError } = require('../utils/ClassManager');
 
-// Setup Attributes for this Route
-const CommandAttributes = ['commandName', 'clientId'];
-
-// → Define the routes for 'api/commands'
-// Get all client commands
+/**
+ * @router GET api/commands
+ * @description Get all Client/Application commands
+ */
 router.get("/", async (req, res, next) => {
   try {
-    //find all client commands
-    const commands = await Commands.findAll();
-    //check for any client commands, else trigger error
-    if (!commands) throw new createError(404, 'No client commands found.');
-    // return data
-    return res.status(200).json(commands);
+    // Find all client commands
+    const result = await Commands.findAll();
+
+    // If no results found, trigger error
+    if (!result || result.length === 0) {
+      throw new createError(404, 'No commands were found');
+    }
+
+    // Return the results
+    return res.status(200).json(result);
 
   } catch (error) {
     next(error);
   }
 });
 
-// Get a specific client commands
+/**
+ * @router GET api/commands/:commandId
+ * @description Get a specific Client/Application command
+ */
 router.get("/:commandId", async (req, res, next) => {
   try {
-    const { commandId } = req.params; // Extract the commandId from the request parameters
-    // Find the client command by commandId
-    const command = await Commands.findOne({ where: { commandId: commandId } });
-    // Check if the command exists, else trigger an error
-    if (!command) {
-      throw new createError(404, 'Client command not found.');
+    const { commandId } = req.params;
+
+    // Check for results related to the guildId
+    const result = await Commands.findAll({
+      where: { commandId: commandId },
+    });
+
+    // If no results found, trigger error
+    if (!result || result.length === 0) {
+      throw new createError(404, 'Command was not found');
     }
-    // Return the data
-    return res.status(200).json(command);
+
+    // Return the results
+    return res.status(200).json(result);
+
   } catch (error) {
     next(error);
   }
 });
 
-// Save new client command 
+
+// Setup Attributes for this Route
+const requiredProperties = ['commandName', 'commandId'];
+
+/**
+ * @router POST api/commands/:commandName
+ * @description Save a new Client/Application command
+ */
 router.post("/:commandName", async (req, res, next) => {
   const t = await sequelize.transaction();
 
   try {
     const { body, params } = req;
-    const COMMAND_NAME = params.commandName;
+    const { commandName } = params;
 
-    // Validate request data
-    if (!body || Object.keys(body).length === 0) {
-      throw new createError(400, 'No command data provided.');
-    }
-    // Validate required fields
-    const missingFields = CommandAttributes.filter(field => !(field in body));
-    if (missingFields.length > 0) {
-      throw new createError(400, `Missing required fields: ${missingFields.join(', ')}`);
+    // Check if the request body has all required properties
+    if (!body || Object.keys(body).length === 0 || requiredProperties.some(prop => body[prop] === undefined)) {
+      throw new createError(400, 'Invalid or missing data for this request');
     }
 
-    //find the Command by commandName
-    const command = await Commands.findOne({
-      where: { commandName: COMMAND_NAME },
-      transaction: t
-    });
-
+    // Get the data from the request body
     const {
       commandId,
-      commandName,
-      clientId,
       interactionType,
       interactionOptions,
       description,
       usage } = body;
+    // Create a new data object
+    const updateData = {
+      commandId: commandId,
+      commandName: commandName,
+      interactionType: interactionType,
+      interactionOptions: interactionOptions,
+      description: description,
+      usage: usage,
+    };
 
-    if (command) {
-      //if the command already exists, update command
-      command.commandId = commandId;
-      command.commandName = commandName;
-      command.interactionType = interactionType;
-      command.interactionOptions = interactionOptions;
-      command.clientId = clientId;
-      command.description = description;
-      command.usage = usage;
+    // Check if the command already exists
+    const request = await Commands.findOne({
+      where: {
+        commandName: commandName
+      },
+      transaction: t
+    });
 
-      await command.save({ transaction: t });
-      res.status(200).send(`Command (${commandId}) updated successfully`);
+    // Update or Create the request
+    if (request) {
+      await request.update(updateData, { transaction: t });
+      res.status(200).send(`The command ${commandName} was updated successfully`);
     } else {
-      //create a new Guild
-      await Commands.create({
-        commandId,
-        commandName,
-        clientId,
-        description,
-        usage,
-      }, { transaction: t });
-      res.status(201).send(`Command (${commandId}) created successfully`);
+      await Commands.create(updateData, { transaction: t });
+      res.status(200).send(`The command ${commandName} was created successfully`);
     }
 
-    //commit the transaction
-    await t.commit();
+    // Commit and finish the transaction
+    return t.commit();
 
   } catch (error) {
-    //rollback the transaction if an error occurs
     await t.rollback();
     next(error);
   }
 });
+
+
+
+/**
+ * @router DELETE api/commands/:commandName
+ * @description Delete a specific Client/Application command
+ */
+router.delete("/:commandName", async (req, res, next) => {
+  try {
+    const { commandName } = req.params;
+
+    // Check if the command exists
+    const request = await Commands.findOne({
+      where: {
+        commandName: commandName
+      }
+    });
+
+    // If no results found, trigger error
+    if (!request || request.length === 0) {
+      throw new createError(404, 'Command was not found');
+    }
+
+    // Delete the command
+    await request.destroy();
+
+    // Return the results
+    return res.status(200).send(`The command ${commandName} was deleted successfully`);
+
+  } catch (error) {
+    next(error);
+  }
+});
+
+
 
 // → Export Router to App
 module.exports = router;

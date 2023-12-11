@@ -60,7 +60,7 @@ router.get("/:guildId/:userId", async (req, res, next) => {
 });
 
 
-
+// Setup Attributes for this Route
 const requiredProperties = ['userId', 'guildId', 'duration'];
 
 /**
@@ -102,7 +102,7 @@ router.post("/:guildId/:userId", async (req, res, next) => {
       res.status(200).send(`Away status for ${guildId}/${userId} updated successfully`);
     } else {
       await Away.create(updateData, { transaction: t });
-      res.status(200).send(`Away status for ${guildId}/${userId} updated successfully`);
+      res.status(200).send(`Away status for ${guildId}/${userId} created successfully`);
     }
 
     // Commit and finish the transaction
@@ -125,7 +125,7 @@ router.delete("/:guildId/:userId", async (req, res, next) => {
   try {
     const { guildId, userId } = req.params;
 
-    // Check if the user is already away
+    // Check if the user is away
     const request = await Away.findOne({
       where: {
         guildId: guildId,
@@ -134,7 +134,7 @@ router.delete("/:guildId/:userId", async (req, res, next) => {
     });
 
     // If no results found, trigger error
-    if (!request) {
+    if (!request || request.length === 0) {
       throw new createError(404, 'No Away status for this combination of guildId and userId found.');
     }
 
@@ -142,13 +142,12 @@ router.delete("/:guildId/:userId", async (req, res, next) => {
     await request.destroy();
 
     // Return the results
-    return res.status(200).json(request);
+    return res.status(200).json(`The Away status for ${guildId}/${userId} was deleted successfully`);
 
   } catch (error) {
     next(error);
   }
 });
-
 
 
 

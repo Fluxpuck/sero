@@ -20,6 +20,10 @@ module.exports = sequelize => {
                 is: /^\d{17,20}$/
             },
         },
+        name: {
+            type: DataTypes.STRING,
+            allowNull: false,
+        },
         reason: {
             type: DataTypes.STRING,
             allowNull: false,

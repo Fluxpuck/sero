@@ -45,12 +45,9 @@ module.exports = sequelize => {
         },
         language: {
             type: DataTypes.STRING,
-            allowNull: true
-        },
-        rank: {
-            type: DataTypes.STRING,
-            allowNull: true
-        },
+            allowNull: true,
+            defaultValue: 'English'
+        }
     }, {
         sequelize,
         modelName: 'moderator',

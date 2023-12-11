@@ -24,13 +24,20 @@ module.exports = sequelize => {
             validate: {
                 is: /^\d{17,20}$/ //Discord Snowflake
             }
-        }
+        },
+        userId: {
+            type: DataTypes.BIGINT,
+            allowNull: false,
+            validate: {
+                is: /^\d{17,20}$/ //Discord Snowflake
+            }
+        },
     }, {
         sequelize,
         modelName: 'messages',
         timestamps: true,
         createdAt: true
     });
-    
+
     return Messages;
 }

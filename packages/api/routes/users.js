@@ -1,216 +1,152 @@
 const express = require('express');
 const router = express.Router();
-
-// → Importing Database Models & Classes
 const { Guild, User } = require("../database/models");
 const { sequelize } = require('../database/sequelize');
 const { createError } = require('../utils/ClassManager');
-const { validateParams, validateData } = require('../utils/FunctionManager');
-
-// → Define the routes for 'api/users'
 
 /**
- * Get all Users per Guild
+ * @router GET api/users/:guildId
+ * @description Get all Users
  */
-router.get('/:guildId', async (req, res, next) => {
+router.get("/", async (req, res, next) => {
     try {
-        //validate the params
-        const validation = validateParams(req, ['guildId'])
-        if (validation) throw validation
+        const { guildId } = req.params;
 
-        //get guildId from the request
-        const guildId = req.params.guildId;
-
-        //find all users per guild
-        const users = await User.findAll({ where: { guildId: guildId } });
-        //check for any guild, else trigger error
-        if (!users) throw new createError(404, 'No users found.');
-
-        //return data
-        return res.status(200).json(users);
-    } catch (error) {
-        next(error);
-    }
-    return;
-});
-
-/**
- * Get all Guilds per User
- */
-router.get('/:userId', async (req, res, next) => {
-    try {
-        //validate the params
-        const validation = validateParams(req, ['userId'])
-        if (validation) throw validation
-
-        //get guildId from the request
-        const userId = req.params.userId;
-
-        //find all users per guild
-        const user = await User.findAll({ where: { userId: userId } });
-        //check for any guild, else trigger error
-        if (!user) throw new createError(404, 'No user found.');
-
-        //return data
-        return res.status(200).json(user);
-    } catch (error) {
-        next(error);
-    }
-    return;
-});
-
-/**
- * Get User by Id
- */
-router.get('/:guildId/:userId', async (req, res, next) => {
-    try {
-        //validate the params
-        const validation = validateParams(req, ['guildId', 'userId']);
-        if (validation) throw validation;
-
-        //get guildId & userId
-        const { guildId, userId } = req.params;
-
-        //find user by guildId & userId
-        const user = await User.findOne({
-            where: { guildId: guildId, userId: userId }
-        })
-        //check if user is present, else trigger error
-        if (!user) throw new createError(404, 'User not found.');
-
-        //return data
-        return res.status(200).json(user);
-
-    } catch (error) {
-        next(error);
-    }
-    return;
-});
-
-/**
- * Create or update User
- */
-router.post('/:guildId/:userId', async (req, res, next) => {
-    //start a transaction
-    const t = await sequelize.transaction();
-    try {
-
-        //validate the params
-        const validation = validateParams(req, ['guildId', 'userId']);
-        if (validation) throw validation;
-
-        //get guildId & userId
-        const { guildId, userId } = req.params;
-
-        const guild = await Guild.findByPk(guildId);
-        if (!guild) throw new createError(404, 'Guild not found.');
-
-        //validate the data
-        if (!req.body) throw new createError(400, 'No request data provided.');
-        const data = validateData(req, ['user']);
-        if (data instanceof createError) throw data;
-
-        //create or update a User
-        const [user, created] = await User.findOrCreate({
-            where: {
-                userId: userId,
-                guildId: guildId
-            },
-            defaults: {
-                userName: data.user.userName,
-                userId: data.user.userId,
-                guildId: guildId
-            },
-            transaction: t
+        // Find all users
+        const result = await User.findAll({
+            where: { guildId: guildId },
         });
 
-        if (!created) {
-            //if the user already exists, update userName
-            user.userName = data.user.userName;
-            user.active = true;
-            await user.save({ transaction: t });
-            res.status(201).send('User updated succesfully')
-        } else {
-            res.status(201).send('User created succesfully')
+        // If no results found, trigger error
+        if (!result || result.length === 0) {
+            throw new createError(404, 'No users were found');
         }
 
-        //commit transaction
-        await t.commit();
+        // Return the results
+        return res.status(200).json(result);
 
     } catch (error) {
-        //rollback the transaction if an error occurs
-        await t.rollback();
-        next(error);
-    }
-    return;
-});
-
-/**
- * Deactivate a User
- */
-router.post('/deactivate/:guildId/:userId', async (req, res, next) => {
-    //start a transaction
-    const t = await sequelize.transaction();
-    try {
-        //get and validate the data
-        if (!req.body) throw new createError(400, 'No request data provided.');
-        const data = validateData(req, ['guild']);
-        if (data instanceof createError) throw data;
-
-        const guild = await Guild.findByPk(guildId);
-        if (!guild) throw new createError(404, 'Guild not found.');
-
-        const user = await User.findByPk(userId);
-        if (!user) throw new createError(404, 'User not found.');
-
-        //deactivate the user
-        user.active = false;
-        await user.save({ transaction: t });
-
-        //commit the transaction
-        await t.commit();
-
-        //success message
-        return res.status(200).send('Guild deactivated succesfully');
-
-    } catch (error) {
-        //rollback the transaction if an error occurs
-        await t.rollback();
         next(error);
     }
 });
 
-
 /**
- * Delete a User
+ * @router GET api/users/:guildId/:userId
+ * @description Get a specific User
  */
-router.delete('/:guildId/:userId', async (req, res, next) => {
-    //start a transaction
-    const t = await sequelize.transaction();
+router.get("/:guildId/:userId", async (req, res, next) => {
     try {
-        //validate the params
-        const validation = validateParams(req, ['guildId', 'userId']);
-        if (validation) throw validation;
-
-        //get guildId & userId
         const { guildId, userId } = req.params;
 
-        //delete guild from model
-        const user = await User.destroy({ where: { userId: userId, guildId: guildId }, transaction: t });
-        if (!user) throw new createError(400, 'User not found.');
+        // Check for results related to the guildId
+        const result = await User.findAll({
+            where: {
+                guildId: guildId,
+                userId: userId
+            },
+        });
 
-        //commit the transaction
-        await t.commit();
+        // If no results found, trigger error
+        if (!result || result.length === 0) {
+            throw new createError(404, 'User was not found');
+        }
 
-        //success message
-        return res.status(204).send('User removed succesfully')
+        // Return the results
+        return res.status(200).json(result);
 
     } catch (error) {
-        //rollback the transaction if an error occurs
+        next(error);
+    }
+});
+
+
+// Setup Attributes for this Route
+const requiredProperties = ['userName'];
+
+/**
+ * @router POST api/users/:guildId/:userId
+ * @description Create or update a User
+ */
+router.post('/:guildId/:userId', async (req, res, next) => {
+    const t = await sequelize.transaction();
+    try {
+        const { body, params } = req;
+        const { guildId, userId } = params;
+
+        // Check if the request body has all required properties
+        if (!body || Object.keys(body).length === 0 || requiredProperties.some(prop => body[prop] === undefined)) {
+            throw new createError(400, 'Invalid or missing data for this request');
+        }
+
+        // Get the data from request body && create object
+        const { userName } = body;
+        const updateData = {
+            guildId: guildId,
+            userId: userId,
+            userName: userName
+        }
+
+        // Check if the guild already exists
+        const request = await User.findOne({
+            where: {
+                guildId: guildId,
+                userId: userId
+            },
+            transaction: t,
+        });
+
+        // Update or Create the request
+        if (request) {
+            await request.update(updateData, { transaction: t });
+            res.status(200).send(`User ${userId} was updated successfully`);
+        } else {
+            await User.create(updateData, { transaction: t });
+            res.status(200).send(`User ${userId} was created successfully`);
+        }
+
+        // Commit and finish the transaction
+        return t.commit();
+
+    } catch (error) {
         await t.rollback();
         next(error);
     }
-    return;
+});
+
+/**
+ * @router DELETE api/users/:guildId/:userId
+ * @description Delete a User
+ */
+router.delete("/:guildId/:userId", async (req, res, next) => {
+    const t = await sequelize.transaction();
+    try {
+        const { guildId, userId } = req.params;
+
+        // Check if the guild already exists
+        const request = await User.findOne({
+            where: {
+                guildId: guildId,
+                userId: userId
+            },
+            transaction: t,
+        });
+
+        // If no results found, trigger error
+        if (!request) {
+            throw new createError(404, 'User was not found');
+        }
+
+        // Delete the request
+        await request.destroy({ transaction: t });
+        res.status(200).send(`User ${userId} was deleted successfully`);
+
+        // Commit and finish the transaction
+        return t.commit();
+
+    } catch (error) {
+        await t.rollback();
+        next(error);
+    }
 });
 
 // → Export Router to App

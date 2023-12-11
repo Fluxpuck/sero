@@ -1,219 +1,156 @@
 const express = require('express');
 const router = express.Router();
-
-// → Importing Database Models & Classes
 const { Guild, User, Moderator } = require("../database/models");
 const { sequelize } = require('../database/sequelize');
 const { createError } = require('../utils/ClassManager');
-const { validateParams, validateData } = require('../utils/FunctionManager');
-
-// → Define the routes for 'api/moderators'
 
 /**
- * Get all Guild Moderators
+ * @router GET api/moderators/:guildId
+ * @description Get all Moderators
  */
 router.get("/:guildId", async (req, res, next) => {
     try {
-        //validate the params
-        const validation = validateParams(req, ['guildId'])
-        if (validation) throw validation
+        const { guildId } = req.params;
 
-        //get guildId from the request
-        const guildId = req.params.guildId;
+        // Find all moderators per guild
+        const result = await Moderator.findAll({
+            where: { guildId: guildId }
+        });
 
-        //find all moderators  
-        const moderators = await Moderator.findAll({ where: { guildId: guildId } });
-        //check for any moderator, else trigger error
-        if (!moderators) throw new createError(404, 'No moderators found.');
+        // If no results found, trigger error
+        if (!result || result.length === 0) {
+            throw new createError(404, 'No Moderators found for this guild');
+        }
 
-        //return data  
-        return res.status(200).json(moderators);
+        // Return the results
+        return res.status(200).json(result);
+
     } catch (error) {
         next(error);
     }
-    return;
 });
 
 /**
- * Get Guild Moderator by userId
+ * @router GET api/moderators/:guildId/:userId
+ * @description Get all Moderators from a specific user
  */
 router.get("/:guildId/:userId", async (req, res, next) => {
     try {
-
-        //validate the params
-        const validation = validateParams(req, ['guildId', 'userId'])
-        if (validation) throw validation
-
-        //get guildId & userId
         const { guildId, userId } = req.params;
 
-        //find moderator by userId
-        const moderator = await Moderator.findOne({
-            where: { userId: userId, guildId: guildId }
-        });
-        //check if moderator is present, else trigger error
-        if (!moderator) throw new createError(404, 'Moderator not found.');
-
-        //return data
-        return res.status(200).json(moderator);
-
-    } catch (error) {
-        next(error);
-    }
-    return;
-});
-
-/**
- * Create a new Moderator
- */
-router.post("/:guildId/:userId", async (req, res, next) => {
-    //start a transaction
-    const t = await sequelize.transaction();
-    try {
-        //validate the params
-        const validation = validateParams(req, ['guildId', 'userId'])
-        if (validation) throw validation
-
-        //get guildId & userId
-        const { guildId, userId } = req.params;
-
-        const guild = await Guild.findByPk(guildId);
-        if (!guild) throw new createError(404, 'Guild not found.');
-
-        const user = await User.findOne({ where: { userId: userId, guildId: guildId } });
-        if (!user) throw new createError(404, 'User not found.');
-
-        //get and validate the data
-        if (!req.body) throw new createError(400, 'No request data provided.');
-        const data = validateData(req, ['moderator']);
-        if (data instanceof createError) throw data;
-
-        //create or update a Moderator
-        const [moderator, created] = await Moderator.findOrCreate({
+        // Find all moderators per user
+        const result = await Moderator.findAll({
             where: {
                 guildId: guildId,
-                userKey: user.userKey
+                userId: userId
             },
-            defaults: {
-                location: data.moderator.location || undefined,
-                language: data.moderator.language || 'English',
-                rank: 'Moderator'
-            },
-            transaction: t
         });
 
-        if (!created) {
-            //if the moderator already exists, update location & language
-            moderator.location = data.moderator.location || undefined;
-            moderator.language = data.moderator.language || 'English';
-            moderator.rank = 'Moderator';
-            await moderator.save({ transaction: t });
-            res.status(201).send('Moderator updated succesfully')
-        } else {
-            res.status(201).send('Moderator created succesfully')
+        // If no results found, trigger error
+        if (!result || result.length === 0) {
+            throw new createError(404, 'This user is not a Moderator in this guild.');
         }
 
-        //commit the transaction
-        await t.commit();
+        // Return the results
+        return res.status(200).json(result);
 
     } catch (error) {
-        //rollback the transaction if an error occurs
-        await t.rollback();
         next(error);
     }
-    return;
 });
 
+
 /**
- * Delete a Moderator
+ * @router POST api/moderators/:guildId/:userId
+ * @description Create or update a Moderator
  */
-router.delete("/:userId", async (req, res, next) => {
-    //start a transaction
+router.post("/:guildId/:userId", async (req, res, next) => {
     const t = await sequelize.transaction();
     try {
-        //validate the params
-        const validation = validateParams(req, ['userId'])
-        if (validation) throw validation
+        const { body, params } = req;
+        const { guildId, userId } = params;
 
-        //get userId from the request
-        const userId = req.params.userId;
+        // Check if the request body has all required properties
+        if (!body || Object.keys(body).length === 0 || requiredProperties.some(prop => body[prop] === undefined)) {
+            throw new createError(400, 'Invalid or missing data for this request');
+        }
 
-        //delete moderator from model
-        const moderator = await Moderator.destroy({ where: { userId: userId }, transaction: t });
-        if (!moderator) throw new createError(404, 'Moderator not found.');
+        // Check if the guild exists && If no guild found, trigger error
+        const guild = await Guild.findByPk(guildId);
+        if (!guild) { throw new createError(404, 'Guild not found.') };
 
-        //commit the transaction
-        await t.commit();
+        // Check if the user exists && If no user found, trigger error
+        const user = await User.findOne({ where: { userId: userId, guildId: guildId } });
+        if (!user) { throw new createError(404, 'User not found.') };
 
-        //success message
-        res.status(200).send('Moderator deleted succesfully');
+        // Get the data from request body && create object
+        const { location, language } = body;
+        const updateData = {
+            guildId: guildId,
+            userId: userId,
+            location: location || undefined,
+            language: language || 'English',
+        }
+
+        // Check if the guild already exists
+        const request = await Moderator.findOne({
+            where: {
+                guildId: guildId
+            },
+            transaction: t,
+        });
+
+        // Update or Create the request
+        if (request) {
+            await request.update(updateData, { transaction: t });
+            res.status(200).send(`Guild ${guildId} was updated successfully`);
+        } else {
+            await Moderator.create(updateData, { transaction: t });
+            res.status(200).send(`Guild ${guildId} was created successfully`);
+        }
+
+        // Commit and finish the transaction
+        return t.commit();
 
     } catch (error) {
-        //rollback the transaction if an error occurs
         await t.rollback();
         next(error);
     }
-    return;
-});
-
-
-
-
-// → Define the routes for 'api/moderatorstats'
-
-/**
- * Get all Guild Moderator Stats
- */
-router.get("/stats/:guildId", async (req, res, next) => {
-    try {
-        //validate the params
-        const validation = validateParams(req, ['guildId'])
-        if (validation) throw validation
-
-        //get guildId from the request
-        const guildId = req.params.guildId;
-
-        //find all moderatorStats  
-        const moderatorstats = await ModeratorStats.findAll({ where: { guildId: guildId } });
-        //check for any moderator, else trigger error
-        if (!moderatorstats) throw new createError(404, 'No moderators found.');
-
-        //return data
-        return res.status(200).json(moderatorstats);
-    } catch (error) {
-        next(error);
-    }
-    return;
 });
 
 /**
- * Get Guild Moderator Stats by userId
+ * @router POST api/moderators/:guildId/:userId
+ * @description Remove a Moderator
  */
-router.get("/stats/:guildId/:userId", async (req, res, next) => {
+router.delete("/:guildId/:userId", async (req, res, next) => {
+    const t = await sequelize.transaction();
     try {
-        //validate the params
-        const validation = validateParams(req, ['guildId', 'userId'])
-        if (validation) throw validation
-
-        //get guildId & userId
         const { guildId, userId } = req.params;
 
-        //find moderator by userId
-        const moderatorstats = await ModeratorStats.findOne({
-            where: { guildId: guildId, userId: userId }
+        // Check if the guild exists
+        const request = await Moderator.findOne({
+            where: {
+                guildId: guildId,
+                userId: userId
+            }
         });
-        //check if moderator is present, else trigger error
-        if (!moderatorstats) throw new createError(404, 'Moderator not found.');
 
-        //return data
-        return res.status(200).json(moderatorstats);
+        // If no results found, trigger error
+        if (!request || request.length === 0) {
+            throw new createError(404, 'Guild was not found');
+        }
+
+        // Delete the moderator
+        await request.destroy();
+
+        // Return the results
+        return res.status(200).send(`Moderator ${guildId}/${userId} was deleted successfully`);
 
     } catch (error) {
+        await t.rollback();
         next(error);
     }
-    return;
 });
-
 
 
 // → Export Router to App

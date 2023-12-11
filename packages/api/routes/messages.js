@@ -1,132 +1,114 @@
 const express = require('express');
 const router = express.Router();
-
-// → Importing Database Models & Classes
 const { Guild, User, Messages } = require("../database/models");
 const { sequelize } = require('../database/sequelize');
 const { createError } = require('../utils/ClassManager');
-const { validateParams, validateData } = require('../utils/FunctionManager');
-
-// → Define the routes for 'api/messages'
 
 /**
- * Get message count per server
+ * @router GET api/messages/:guildId
+ * @description Get all Messages
  */
 router.get("/:guildId", async (req, res, next) => {
   try {
-    //validate the params
-    const validation = validateParams(req, ['guildId'])
-    if (validation) throw validation
+    const { guildId } = req.params;
 
-    //get guildId from the request
-    const guildId = req.params.guildId;
-
-    //find all messages per guild
-    const messages = await Messages.findAll({
-      where: { guildId: guildId },
-      include: [{
-        model: Guild,
-        attributes: ['guildName'],
-        required: true,
-        duplicating: false
-      }],
-      distinct: true
+    // Find all messages per guild
+    const result = await Messages.findAll({
+      where: { guildId: guildId }
     });
-    //check for any messages, else trigger error
-    if (!messages) throw new createError(404, 'No messages found.');
 
-    //return data
-    return res.status(200).json(messages);
+    // If no results found, trigger error
+    if (!result || result.length === 0) {
+      throw new createError(404, 'No Messages found for this guild.');
+    }
+
+    // Return the results
+    return res.status(200).json(result);
 
   } catch (error) {
     next(error);
   }
-  return;
 });
 
 /**
- * Get message count per user
+ * @router GET api/messages/:guildId/:userId
+ * @description Get all Messages from a specific user
  */
 router.get("/:guildId/:userId", async (req, res, next) => {
   try {
-    //validate the params
-    const validation = validateParams(req, ['guildId', 'userId'])
-    if (validation) throw validation
-
-    //get guildId & userId
     const { guildId, userId } = req.params;
 
-    //find all messages per user
-    const messages = await Messages.findAll({
-      where: { guildId: guildId, userId: userId },
-      include: [{
-        model: Guild,
-        attributes: ['guildName'],
-        required: true,
-        duplicating: false
-      }],
-      distinct: true
+    // Find all messages per user
+    const result = await Messages.findAll({
+      where: {
+        guildId: guildId,
+        userId: userId
+      },
     });
-    //check for any messages, else trigger error
-    if (!messages) throw new createError(404, 'No messages found.');
 
-    //return data
-    return res.status(200).json(messages);
+    // If no results found, trigger error
+    if (!result || result.length === 0) {
+      throw new createError(404, 'No Messages found for this user.');
+    }
+
+    // Return the results
+    return res.status(200).json(result);
+
   } catch (error) {
     next(error);
   }
-  return;
 });
 
+
+// Setup Attributes for this Route
+const requiredProperties = ['messageId', 'channelId'];
+
 /**
- * Add message to database
+ * @router POST api/messages/:guildId/:userId
+ * @description Create a Message
  */
-router.post("/:guildId/:userId", async (req, res, next) => {
-  //start transaction
+router.post('/:guildId/:userId', async (req, res, next) => {
   const t = await sequelize.transaction();
   try {
+    const { body, params } = req;
+    const { guildId, userId } = params;
 
-    //validate the params
-    const validation = validateParams(req, ['guildId', 'userId'])
-    if (validation) throw validation
+    // Check if the request body has all required properties
+    if (!body || Object.keys(body).length === 0 || requiredProperties.some(prop => body[prop] === undefined)) {
+      throw new createError(400, 'Invalid or missing data for this request');
+    }
 
-    //get guildId & userId
-    const { guildId, userId } = req.params;
-
+    // Check if the guild exists && If no guild found, trigger error
     const guild = await Guild.findByPk(guildId);
-    if (!guild) throw new createError(404, 'Guild not found.');
+    if (!guild) { throw new createError(404, 'Guild not found.') };
 
-    const user = await User.findByPk(userId);
-    if (!user) throw new createError(404, 'User not found.');
+    // Check if the user exists && If no user found, trigger error
+    const user = await User.findOne({ where: { userId: userId, guildId: guildId } });
+    if (!user) { throw new createError(404, 'User not found.') };
 
-    //validate the data
-    if (!req.body) throw new createError(400, 'No request data provided.');
-    const data = validateData(req, ['message']);
-    if (data instanceof createError) throw data;
+    // Get the data from request body && create object
+    const { messageId, channelId } = body;
 
-    //save message to database
+    // Create a new message
     await Messages.create({
       guildId: guildId,
       userId: userId,
-      messageId: data.message.messageId,
-      channelId: data.message.channlId
-    }, {
-      transaction: t,
-    });
+      messageId: messageId,
+      channelId: channelId
+    }, { transaction: t });
 
-    //commit transaction
-    await t.commit();
+    // Return success
+    res.status(200).send(`Message (${messageId}) from ${guildId}/${userId} was stored successfully`);
 
-    //send success response
-    res.status(201).send('Message was stored successfully');
+    // Commit and finish the transaction
+    return t.commit();
 
   } catch (error) {
-    //rollback transaction if error occurs
     await t.rollback();
     next(error);
   }
-  return;
 });
+
 
 // → Export Router to App
 module.exports = router;

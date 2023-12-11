@@ -1,290 +1,195 @@
 const express = require('express');
 const router = express.Router();
-const { Guild, EventChannels } = require("../database/models");
+const { Guild } = require("../database/models");
 const { sequelize } = require('../database/sequelize');
 const { createError } = require('../utils/ClassManager');
-const { validateParams, validateData } = require('../utils/FunctionManager');
 
-// → Define the routes for 'api/guild'
-// Get all Guilds
-router.get('/', async (req, res, next) => {
+/**
+ * @router GET api/guild
+ * @description Get all Guilds
+ */
+router.get("/", async (req, res, next) => {
   try {
-    //find all guilds
-    const guilds = await Guild.findAll();
-    //check for any guild, else trigger error
-    if (!guilds) throw new createError(404, 'No guilds found.');
+    // Find all guilds
+    const result = await Guild.findAll();
 
-    //return data
-    return res.status(200).json(guilds);
+    // If no results found, trigger error
+    if (!result || result.length === 0) {
+      throw new createError(404, 'No guilds were found');
+    }
+
+    // Return the results
+    return res.status(200).json(result);
 
   } catch (error) {
     next(error);
   }
-  return;
 });
 
-// Get Guild by Id
-router.get('/:guildId', async (req, res, next) => {
+/**
+ * @router GET api/guild/:guildId
+ * @description Get a specific Guild
+ */
+router.get("/:guildId", async (req, res, next) => {
   try {
-    //validate the params
-    const validation = validateParams(req, ['guildId'])
-    if (validation) throw validation
+    const { guildId } = req.params;
 
-    //get guildId from the request
-    const guildId = req.params.guildId;
-
-    //find guild by guildId
-    const guild = await Guild.findOne({
-      where: { guildId: guildId }
-    })
-    //check if guild is present, else trigger error
-    if (!guild) throw new createError(404, 'Guild not found.');
-
-    //return data
-    return res.status(200).json(guild);
-
-  } catch (error) {
-    next(error);
-  }
-  return;
-});
-
-// Create or update Guild
-router.post('/:guildId', async (req, res, next) => {
-  //start a transaction
-  const t = await sequelize.transaction();
-  try {
-    //get and validate the data
-    if (!req.body) throw new createError(400, 'No request data provided.');
-    const data = validateData(req, ['guild']);
-    if (data instanceof createError) throw data;
-
-    //get guildId from the request
-    const guildId = req.params.guildId;
-
-    //find the Guild by guildId
-    const guild = await Guild.findOne({
+    // Check for results related to the guildId
+    const result = await Guild.findAll({
       where: { guildId: guildId },
-      transaction: t
     });
 
-    if (guild) {
-      //if the guild already exists, update guildName
-      guild.guildName = data.guild.guildName;
-      guild.active = true;
-      await guild.save({ transaction: t });
-      res.status(200).send('Guild updated successfully');
-    } else {
-      //create a new Guild
-      await Guild.create({
-        guildName: data.guild.guildName,
+    // If no results found, trigger error
+    if (!result || result.length === 0) {
+      throw new createError(404, 'Guild was not found');
+    }
+
+    // Return the results
+    return res.status(200).json(result);
+
+  } catch (error) {
+    next(error);
+  }
+});
+
+
+// Setup Attributes for this Route
+const requiredProperties = ['guildId', 'guildName'];
+
+/**
+ * @router POST api/guild/:guildId
+ * @description Create or update a Guild
+ */
+router.post('/:guildId', async (req, res, next) => {
+  const t = await sequelize.transaction();
+  try {
+    const { body, params } = req;
+    const { guildId } = params;
+
+    // Check if the request body has all required properties
+    if (!body || Object.keys(body).length === 0 || requiredProperties.some(prop => body[prop] === undefined)) {
+      throw new createError(400, 'Invalid or missing data for this request');
+    }
+
+    // Get the data from request body && create object
+    const { guildName } = body;
+    const updateData = {
+      guildId: guildId,
+      guildName: guildName
+    }
+
+    // Check if the guild already exists
+    const request = await Guild.findOne({
+      where: {
         guildId: guildId
-      }, { transaction: t });
-      res.status(201).send('Guild created successfully');
-    }
-
-    //commit the transaction
-    await t.commit();
-
-  } catch (error) {
-    //rollback the transaction if an error occurs
-    await t.rollback();
-    next(error);
-  }
-});
-
-// Deactivate a Guild
-router.post('/deactivate/:guildId', async (req, res, next) => {
-  //start a transaction
-  const t = await sequelize.transaction();
-  try {
-    //get and validate the data
-    if (!req.body) throw new createError(400, 'No request data provided.');
-    const data = validateData(req, ['guild']);
-    if (data instanceof createError) throw data;
-
-    //get guildId from the request
-    const guildId = req.params.guildId;
-
-    const guild = await Guild.findByPk(guildId);
-    if (!guild) throw new createError(404, 'Guild not found.');
-
-    //deactivate the guild
-    guild.active = false;
-    await guild.save({ transaction: t });
-
-    //commit the transaction
-    await t.commit();
-
-    //success message
-    return res.status(200).send('Guild deactivated succesfully');
-
-  } catch (error) {
-    //rollback the transaction if an error occurs
-    await t.rollback();
-    next(error);
-  }
-});
-
-// Delete a Guild
-router.delete('/:guildId', async (req, res, next) => {
-  //start a transaction
-  const t = await sequelize.transaction();
-  try {
-    //validate the params
-    const validation = validateParams(req, ['guildId'])
-    if (validation) throw validation
-
-    //get guildId from the request
-    const guildId = req.params.guildId;
-
-    //delete guild from model
-    const guild = await Guild.destroy({ where: { guildId: guildId }, transaction: t });
-    if (!guild) throw new createError(400, 'Guild not found.');
-
-    //commit the transaction
-    await t.commit();
-
-    //success message
-    return res.status(204).send('Guild removed succesfully')
-
-  } catch (error) {
-    //rollback the transaction if an error occurs
-    await t.rollback();
-    next(error);
-  }
-});
-
-
-// → Define the routes for 'api/guild/events'
-
-// Get All Guild Events Settings
-router.get('/events/:guildId', async (req, res, next) => {
-  try {
-    //validate the params
-    const validation = validateParams(req, ['guildId'])
-    if (validation) throw validation
-
-    //get guildId from the request
-    const guildId = req.params.guildId;
-
-    //find guild by guildId
-    const guild = await EventChannels.findOne({
-      where: { guildId: guildId }
-    })
-    //check if guild is present, else trigger error
-    if (!guild) throw new createError(404, 'Guild not found.');
-
-    //return data
-    return res.status(200).json(guild);
-
-  } catch (error) {
-    next(error);
-  }
-});
-
-// Get Guild Events Settings by Category
-router.get('/events/:guildId/:category', async (req, res, next) => {
-  try {
-    //validate the params
-    const validation = validateParams(req, ['guildId', 'category'])
-    if (validation) throw validation
-
-    //get guildId and category from the request
-    const { guildId, category } = req.params.guildId;
-
-    //find guild by guildId
-    const eventchannel = await EventChannels.findOne({
-      where: {
-        guildId: guildId,
-        category: category
-      }
-    })
-    //check if guild is present, else trigger error
-    if (!eventchannel) throw new createError(404, 'Event channel not found.');
-
-    //return data
-    return res.status(200).json(eventchannel);
-
-  } catch (error) {
-    next(error);
-  }
-});
-
-// Update Guild Events Settings
-router.post('/settings/:guildId/:category', async (req, res, next) => {
-  //start a transaction
-  const t = await sequelize.transaction();
-  try {
-    //get and validate the data
-    if (!req.body) throw new createError(400, 'No request data provided.');
-    const data = validateData(req, ['event']);
-    if (data instanceof createError) throw data;
-
-    //get guildId and category from the request
-    const { guildId, category } = req.params;
-
-    //create or update a Guild
-    const [eventchannel, created] = await EventChannels.findOrCreate({
-      where: {
-        guildId: guildId,
-        category: category
       },
-      defaults: {
-        category: data.event.category,
-        channelId: data.event.channelId
-      },
-      transaction: t
+      transaction: t,
     });
 
-    if (!created) {
-      //if the category already exists, update channelId
-      eventchannel.channelId = data.event.channelId;
-      await guild.save({ transaction: t });
-      res.status(201).send('Event channel updated succesfully')
+    // Update or Create the request
+    if (request) {
+      await request.update(updateData, { transaction: t });
+      res.status(200).send(`Guild ${guildId} was updated successfully`);
     } else {
-      res.status(201).send('Event channel created succesfully')
+      await Guild.create(updateData, { transaction: t });
+      res.status(200).send(`Guild ${guildId} was created successfully`);
     }
 
-    //commit the transaction
-    await t.commit();
+    // Commit and finish the transaction
+    return t.commit();
 
   } catch (error) {
-    //rollback the transaction if an error occurs
     await t.rollback();
     next(error);
   }
 });
 
-// Delete Guild Events Settings
-router.delete('/settings/:guildId/category', async (req, res, next) => {
-  //start a transaction
+
+/**
+ * @router POST api/guild/activate/:guildId
+ * @description Activate a Guild
+ */
+router.post('/activate/:guildId', async (req, res, next) => {
   const t = await sequelize.transaction();
   try {
-    //validate the params
-    const validation = validateParams(req, ['guildId, category'])
-    if (validation) throw validation
+    const { guildId } = req.params;
 
-    //get guildId and category from the request
-    const { guildId, category } = req.params;
+    // Check if the guild exists
+    const request = await Guild.findByPk(guildId);
+    if (!request) throw new createError(404, 'Guild was not found.');
 
-    //delete guild from model
-    const eventchannel = await EventChannels.destroy({ where: { guildId: guildId, category: category }, transaction: t });
-    if (!eventchannel) throw new createError(400, 'Event channel not found.');
+    // Activate the guild
+    await request.update({ active: true }, { transaction: t });
+    res.status(200).send(`Guild ${guildId} activated succesfully`);
 
-    //commit the transaction
-    await t.commit();
-
-    //success message
-    return res.status(204).send('Event channel removed succesfully')
+    // Commit and finish the transaction
+    return t.commit();
 
   } catch (error) {
-    //rollback the transaction if an error occurs
     await t.rollback();
     next(error);
   }
 });
 
+/**
+ * @router POST api/guild/deactivate/:guildId
+ * @description Deactivate a Guild
+ */
+router.post('/deactivate/:guildId', async (req, res, next) => {
+  const t = await sequelize.transaction();
+  try {
+    const { guildId } = req.params;
+
+    // Check if the guild exists
+    const request = await Guild.findByPk(guildId);
+    if (!request) throw new createError(404, 'Guild was not found.');
+
+    // Deactivate the guild
+    await request.update({ active: false }, { transaction: t });
+    res.status(200).send(`Guild ${guildId} deactivated succesfully`);
+
+    // Commit and finish the transaction
+    return t.commit();
+
+  } catch (error) {
+    await t.rollback();
+    next(error);
+  }
+});
+
+
+/**
+ * @router DELETE api/guild/:guildId
+ * @description Delete a specific Guild
+ */
+router.delete("/:guildId", async (req, res, next) => {
+  const t = await sequelize.transaction();
+  try {
+    const { guildId } = req.params;
+
+    // Check if the guild exists
+    const request = await Guild.findOne({
+      where: {
+        guildId: guildId
+      }
+    });
+
+    // If no results found, trigger error
+    if (!request || request.length === 0) {
+      throw new createError(404, 'Guild was not found');
+    }
+
+    // Delete the command
+    await request.destroy();
+
+    // Return the results
+    return res.status(200).send(`The guild ${guildId} was deleted successfully`);
+
+  } catch (error) {
+    await t.rollback();
+    next(error);
+  }
+});
 
 // → Export Router to App
 module.exports = router;
