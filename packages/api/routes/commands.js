@@ -2,7 +2,7 @@ const express = require("express");
 const router = express.Router();
 const { Commands } = require("../database/models");
 const { sequelize } = require('../database/sequelize');
-const { createError } = require('../utils/ClassManager');
+const { CreateError } = require('../utils/ClassManager');
 
 /**
  * @router GET api/commands
@@ -15,7 +15,7 @@ router.get("/", async (req, res, next) => {
 
     // If no results found, trigger error
     if (!result || result.length === 0) {
-      throw new createError(404, 'No commands were found');
+      throw new CreateError(404, 'No commands were found');
     }
 
     // Return the results
@@ -41,7 +41,7 @@ router.get("/:commandId", async (req, res, next) => {
 
     // If no results found, trigger error
     if (!result || result.length === 0) {
-      throw new createError(404, 'Command was not found');
+      throw new CreateError(404, 'Command was not found');
     }
 
     // Return the results
@@ -69,7 +69,7 @@ router.post("/:commandName", async (req, res, next) => {
 
     // Check if the request body has all required properties
     if (!body || Object.keys(body).length === 0 || requiredProperties.some(prop => body[prop] === undefined)) {
-      throw new createError(400, 'Invalid or missing data for this request');
+      throw new CreateError(400, 'Invalid or missing data for this request');
     }
 
     // Get the data from the request body
@@ -134,7 +134,7 @@ router.delete("/:commandName", async (req, res, next) => {
 
     // If no results found, trigger error
     if (!request || request.length === 0) {
-      throw new createError(404, 'Command was not found');
+      throw new CreateError(404, 'Command was not found');
     }
 
     // Delete the command

@@ -2,7 +2,7 @@ const express = require('express');
 const router = express.Router();
 const { Guild } = require("../database/models");
 const { sequelize } = require('../database/sequelize');
-const { createError } = require('../utils/ClassManager');
+const { CreateError } = require('../utils/ClassManager');
 
 /**
  * @router GET api/guilds
@@ -15,7 +15,7 @@ router.get("/", async (req, res, next) => {
 
     // If no results found, trigger error
     if (!result || result.length === 0) {
-      throw new createError(404, 'No guilds were found');
+      throw new CreateError(404, 'No guilds were found');
     }
 
     // Return the results
@@ -41,7 +41,7 @@ router.get("/:guildId", async (req, res, next) => {
 
     // If no results found, trigger error
     if (!result || result.length === 0) {
-      throw new createError(404, 'Guild was not found');
+      throw new CreateError(404, 'Guild was not found');
     }
 
     // Return the results
@@ -68,7 +68,7 @@ router.post('/:guildId', async (req, res, next) => {
 
     // Check if the request body has all required properties
     if (!body || Object.keys(body).length === 0 || requiredProperties.some(prop => body[prop] === undefined)) {
-      throw new createError(400, 'Invalid or missing data for this request');
+      throw new CreateError(400, 'Invalid or missing data for this request');
     }
 
     // Get the data from request body && create object
@@ -116,7 +116,7 @@ router.post('/activate/:guildId', async (req, res, next) => {
 
     // Check if the guild exists
     const request = await Guild.findByPk(guildId);
-    if (!request) throw new createError(404, 'Guild was not found.');
+    if (!request) throw new CreateError(404, 'Guild was not found.');
 
     // Activate the guild
     await request.update({ active: true }, { transaction: t });
@@ -142,7 +142,7 @@ router.post('/deactivate/:guildId', async (req, res, next) => {
 
     // Check if the guild exists
     const request = await Guild.findByPk(guildId);
-    if (!request) throw new createError(404, 'Guild was not found.');
+    if (!request) throw new CreateError(404, 'Guild was not found.');
 
     // Deactivate the guild
     await request.update({ active: false }, { transaction: t });
@@ -176,7 +176,7 @@ router.delete("/:guildId", async (req, res, next) => {
 
     // If no results found, trigger error
     if (!request || request.length === 0) {
-      throw new createError(404, 'Guild was not found');
+      throw new CreateError(404, 'Guild was not found');
     }
 
     // Delete the command

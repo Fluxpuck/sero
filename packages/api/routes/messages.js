@@ -2,7 +2,7 @@ const express = require('express');
 const router = express.Router();
 const { Guild, User, Messages } = require("../database/models");
 const { sequelize } = require('../database/sequelize');
-const { createError } = require('../utils/ClassManager');
+const { CreateError } = require('../utils/ClassManager');
 
 /**
  * @router GET api/messages/:guildId
@@ -19,7 +19,7 @@ router.get("/:guildId", async (req, res, next) => {
 
     // If no results found, trigger error
     if (!result || result.length === 0) {
-      throw new createError(404, 'No Messages found for this guild.');
+      throw new CreateError(404, 'No Messages found for this guild.');
     }
 
     // Return the results
@@ -48,7 +48,7 @@ router.get("/:guildId/:userId", async (req, res, next) => {
 
     // If no results found, trigger error
     if (!result || result.length === 0) {
-      throw new createError(404, 'No Messages found for this user.');
+      throw new CreateError(404, 'No Messages found for this user.');
     }
 
     // Return the results
@@ -75,22 +75,22 @@ router.post('/:guildId/:userId', async (req, res, next) => {
 
     // Check if the request body has all required properties
     if (!body || Object.keys(body).length === 0 || requiredProperties.some(prop => body[prop] === undefined)) {
-      throw new createError(400, 'Invalid or missing data for this request');
+      throw new CreateError(400, 'Invalid or missing data for this request');
     }
 
     // Check if the guild exists && If no guild found, trigger error
     const guild = await Guild.findByPk(guildId);
-    if (!guild) { throw new createError(404, 'Guild not found.') };
+    if (!guild) { throw new CreateError(404, 'Guild not found') };
 
     // Check if the user exists && If no user found, trigger error
     const user = await User.findOne({ where: { userId: userId, guildId: guildId } });
-    if (!user) { throw new createError(404, 'User not found.') };
+    if (!user) { throw new CreateError(404, 'User not found') }
 
     // Get the data from request body && create object
     const { messageId, channelId } = body;
 
     // Create a new message
-    await Messages.create({
+    const request = await Messages.create({
       guildId: guildId,
       userId: userId,
       messageId: messageId,
@@ -98,7 +98,10 @@ router.post('/:guildId/:userId', async (req, res, next) => {
     }, { transaction: t });
 
     // Return success
-    res.status(200).send(`Message (${messageId}) from ${guildId}/${userId} was stored successfully`);
+    res.status(200).json({
+      message: `Message (${messageId}) from ${guildId}/${userId} was stored successfully`,
+      data: request
+    });
 
     // Commit and finish the transaction
     return t.commit();

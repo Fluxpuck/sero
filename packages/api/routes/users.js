@@ -2,7 +2,7 @@ const express = require('express');
 const router = express.Router();
 const { Guild, User } = require("../database/models");
 const { sequelize } = require('../database/sequelize');
-const { createError } = require('../utils/ClassManager');
+const { CreateError } = require('../utils/ClassManager');
 
 /**
  * @router GET api/users/:guildId
@@ -19,7 +19,7 @@ router.get("/", async (req, res, next) => {
 
         // If no results found, trigger error
         if (!result || result.length === 0) {
-            throw new createError(404, 'No users were found');
+            throw new CreateError(404, 'No users were found');
         }
 
         // Return the results
@@ -48,7 +48,7 @@ router.get("/:guildId/:userId", async (req, res, next) => {
 
         // If no results found, trigger error
         if (!result || result.length === 0) {
-            throw new createError(404, 'User was not found');
+            throw new CreateError(404, 'User was not found');
         }
 
         // Return the results
@@ -75,7 +75,7 @@ router.post('/:guildId/:userId', async (req, res, next) => {
 
         // Check if the request body has all required properties
         if (!body || Object.keys(body).length === 0 || requiredProperties.some(prop => body[prop] === undefined)) {
-            throw new createError(400, 'Invalid or missing data for this request');
+            throw new CreateError(400, 'Invalid or missing data for this request');
         }
 
         // Get the data from request body && create object
@@ -98,10 +98,16 @@ router.post('/:guildId/:userId', async (req, res, next) => {
         // Update or Create the request
         if (request) {
             await request.update(updateData, { transaction: t });
-            res.status(200).send(`User ${userId} was updated successfully`);
+            res.status(200).json({
+                message: `User ${userId} was updated successfully`,
+                data: request
+            });
         } else {
             await User.create(updateData, { transaction: t });
-            res.status(200).send(`User ${userId} was created successfully`);
+            res.status(200).json({
+                message: `User ${userId} was created successfully`,
+                data: request
+            });
         }
 
         // Commit and finish the transaction
@@ -133,12 +139,15 @@ router.delete("/:guildId/:userId", async (req, res, next) => {
 
         // If no results found, trigger error
         if (!request) {
-            throw new createError(404, 'User was not found');
+            throw new CreateError(404, 'User was not found');
         }
 
         // Delete the request
         await request.destroy({ transaction: t });
-        res.status(200).send(`User ${userId} was deleted successfully`);
+        res.status(200).json({
+            message: `User ${userId} was deleted successfully`,
+            data: request
+        });
 
         // Commit and finish the transaction
         return t.commit();

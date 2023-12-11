@@ -2,7 +2,7 @@ const express = require('express');
 const router = express.Router();
 const { Levels, User, Guild } = require("../database/models");
 const { sequelize } = require('../database/sequelize');
-const { createError } = require('../utils/ClassManager');
+const { CreateError } = require('../utils/ClassManager');
 const { calculateXP } = require('../utils/levelManager');
 
 /**
@@ -20,7 +20,7 @@ router.get("/:guildId	", async (req, res, next) => {
 
     // If no results found, trigger error
     if (!result || result.length === 0) {
-      throw new createError(404, 'No levels found for this guild.');
+      throw new CreateError(404, 'No levels found for this guild.');
     }
 
     // Return the results
@@ -49,7 +49,7 @@ router.get("/:guildId/:userId", async (req, res, next) => {
 
     // If no results found, trigger error
     if (!result || result.length === 0) {
-      throw new createError(404, 'No levels found for this user.');
+      throw new CreateError(404, 'No levels found for this user');
     }
 
     // Return the results
@@ -61,9 +61,6 @@ router.get("/:guildId/:userId", async (req, res, next) => {
 });
 
 
-// Setup Attributes for this Route
-const requiredProperties = ['userId', 'guildId'];
-
 /**
  * @router POST api/leaderboard/:guildId/:userId
  * @description Create or update a Level
@@ -71,21 +68,16 @@ const requiredProperties = ['userId', 'guildId'];
 router.post('/:guildId/:userId', async (req, res, next) => {
   const t = await sequelize.transaction();
   try {
-    const { body, params } = req;
+    const { params } = req;
     const { guildId, userId } = params;
-
-    // Check if the request body has all required properties
-    if (!body || Object.keys(body).length === 0 || requiredProperties.some(prop => body[prop] === undefined)) {
-      throw new createError(400, 'Invalid or missing data for this request');
-    }
 
     // Check if the guild exists && If no guild found, trigger error
     const guild = await Guild.findByPk(guildId);
-    if (!guild) { throw new createError(404, 'Guild not found.') };
+    if (!guild) { throw new CreateError(404, `Guild (${guildId}) not found`) };
 
     // Check if the user exists && If no user found, trigger error
     const user = await User.findOne({ where: { userId: userId, guildId: guildId } });
-    if (!user) { throw new createError(404, 'User not found.') };
+    if (!user) { throw new CreateError(404, `User (${userId}) not found`) };
 
     // Create data object 
     const updateData = {
@@ -96,7 +88,6 @@ router.post('/:guildId/:userId', async (req, res, next) => {
     // Check if the user already has levels
     const levels = await Levels.findOne({
       where: {
-        userHash: user.userHash,
         userId: userId,
         guildId: guildId,
       },
@@ -106,10 +97,16 @@ router.post('/:guildId/:userId', async (req, res, next) => {
     // Update or Create the request
     if (levels) {
       await levels.update(updateData, { transaction: t });
-      res.status(200).send(`Levels information for ${guildId}/${userId} updated successfully`);
+      res.status(200).json({
+        message: `Levels information for ${guildId}/${userId} updated successfully`,
+        data: levels
+      });
     } else {
-      await Levels.create(updateData, { transaction: t });
-      res.status(200).send(`Levels for ${guildId}/${userId} created successfully`);
+      const request = await Levels.create(updateData, { transaction: t });
+      res.status(200).json({
+        message: `Levels for ${guildId} / ${userId} created successfully`,
+        data: request
+      });
     }
 
     // Commit and finish the transaction
@@ -142,17 +139,24 @@ router.post('/gain/:guildId/:userId', async (req, res, next) => {
       transaction: t,
     });
 
+    if (!levels) {
+      throw new CreateError(404, 'Levels not found.');
+    };
+
     // Calculate the XP
     let personalModifier = 1; //TODO: add personal modifier, based on personal settings?
     let serverModifier = 1; //TODO: add server modifier, based on guild settings?
     const EXP_GAIN = calculateXP(personalModifier, serverModifier);
 
     // Add EXP to the user's experience
-    levels.experience += EXP_GAIN;
+    levels.experience = (levels.experience ?? 0) + EXP_GAIN;
 
     // Update the level
-    await levels.save({ transaction: t });
-    res.status(200).send(`User ${guildId}/${userId} gained ${EXP_GAIN} experience points.`);
+    const request = await levels.save({ transaction: t });
+    res.status(200).json({
+      message: `User ${guildId}/${userId} gained ${EXP_GAIN} experience points.`,
+      data: request
+    });
 
     //commit transaction
     return t.commit();
@@ -220,7 +224,7 @@ router.delete("/:guildId/:userId", async (req, res, next) => {
         userId: userId
       }
     });
-    if (!request) throw new createError(404, 'Level was not found.');
+    if (!request) throw new CreateError(404, 'Level was not found.');
 
     // Delete level data
     await request.destroy({ transaction: t });

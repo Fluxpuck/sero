@@ -2,7 +2,7 @@ const express = require("express");
 const router = express.Router();
 const { Reasons } = require("../database/models");
 const { sequelize } = require('../database/sequelize');
-const { createError } = require('../utils/ClassManager');
+const { CreateError } = require('../utils/ClassManager');
 
 /**
  * @router GET api/reasons
@@ -17,7 +17,7 @@ router.get("/", async (req, res, next) => {
 
     // If no results found, trigger error
     if (!result || result.length === 0) {
-      throw new createError(404, 'No client reasons were found');
+      throw new CreateError(404, 'No client reasons were found');
     }
 
     // Return the results
@@ -43,7 +43,7 @@ router.get("/:guildId", async (req, res, next) => {
 
     // If no results found, trigger error
     if (!result || result.length === 0) {
-      throw new createError(404, 'No reasons were found for this guild');
+      throw new CreateError(404, 'No reasons were found for this guild');
     }
 
     // Return the results
@@ -68,7 +68,7 @@ router.get("/:type", async (req, res, next) => {
 
     // If no results found, trigger error
     if (!result || result.length === 0) {
-      throw new createError(404, 'No reasons were found for this type');
+      throw new CreateError(404, 'No reasons were found for this type');
     }
 
     // Return the results
@@ -96,7 +96,7 @@ router.get("/:type/:guildId", async (req, res, next) => {
 
     // If no results found, trigger error
     if (!result || result.length === 0) {
-      throw new createError(404, 'No client reasons were found');
+      throw new CreateError(404, 'No client reasons were found');
     }
 
     // Return the results
@@ -122,7 +122,7 @@ router.post('/:guildId/:name', async (req, res, next) => {
 
     // Check if the request body has all required properties
     if (!body || Object.keys(body).length === 0 || requiredProperties.some(prop => body[prop] === undefined)) {
-      throw new createError(400, 'Invalid or missing data for this request');
+      throw new CreateError(400, 'Invalid or missing data for this request');
     }
 
     // Get the data from request body && create object
@@ -181,7 +181,7 @@ router.delete("/:guildId/:type/:name", async (req, res, next) => {
 
     // If no reason found, trigger error
     if (!request) {
-      throw new createError(404, 'Reason not found');
+      throw new CreateError(404, 'Reason not found');
     }
 
     // Delete the reason

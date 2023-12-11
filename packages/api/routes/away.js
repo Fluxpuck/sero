@@ -2,7 +2,7 @@ const express = require("express");
 const router = express.Router();
 const { Away } = require("../database/models");
 const { sequelize } = require('../database/sequelize');
-const { createError } = require('../utils/ClassManager');
+const { CreateError } = require('../utils/ClassManager');
 
 /**
  * @router GET api/away/:guildId
@@ -19,7 +19,7 @@ router.get("/:guildId", async (req, res, next) => {
 
     // If no results found, trigger error
     if (!result || result.length === 0) {
-      throw new createError(404, 'No Away status for this guildId found.');
+      throw new CreateError(404, 'No Away status for this guildId found.');
     }
 
     // Return the results
@@ -48,7 +48,7 @@ router.get("/:guildId/:userId", async (req, res, next) => {
 
     // If no results found, trigger error
     if (!result || result.length === 0) {
-      throw new createError(404, 'No Away status for this combination of guildId and userId found.');
+      throw new CreateError(404, 'No Away status for this combination of guildId and userId found.');
     }
 
     // Return the results
@@ -76,7 +76,7 @@ router.post("/:guildId/:userId", async (req, res, next) => {
 
     // Check if the request body has all required properties
     if (!body || Object.keys(body).length === 0 || requiredProperties.some(prop => body[prop] === undefined)) {
-      throw new createError(400, 'Invalid or missing data for this request');
+      throw new CreateError(400, 'Invalid or missing data for this request');
     }
 
     // Get the data from the request body && create object
@@ -135,7 +135,7 @@ router.delete("/:guildId/:userId", async (req, res, next) => {
 
     // If no results found, trigger error
     if (!request || request.length === 0) {
-      throw new createError(404, 'No Away status for this combination of guildId and userId found.');
+      throw new CreateError(404, 'No Away status for this combination of guildId and userId found.');
     }
 
     // Delete the request
