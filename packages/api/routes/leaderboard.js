@@ -148,7 +148,7 @@ router.post('/gain/:guildId/:userId', async (req, res, next) => {
     const EXP_GAIN = calculateXP(personalModifier, serverModifier);
 
     // Add EXP to the user's experience
-    level.experience += EXP_GAIN;
+    levels.experience += EXP_GAIN;
 
     // Update the level
     await levels.save({ transaction: t });

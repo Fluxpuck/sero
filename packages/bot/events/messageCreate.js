@@ -8,10 +8,9 @@ module.exports = async (client, message) => {
 
     // Store the messageId and channelId
     await postRequest(`/messages/${message.guildId}/${message.author.id}`, {
-        message: {
-            messageId: message.id,
-            channelId: message.channelId
-        }
+        messageId: message.id,
+        channelId: message.channelId,
+        userId: message.author.id
     });
 
     // Setting up the cooldown key
