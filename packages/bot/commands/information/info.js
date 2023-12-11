@@ -15,7 +15,7 @@ module.exports.run = async (client, interaction) => {
     const messageEmbed = new EmbedBuilder()
         .setTitle(client.user.username)
         .setThumbnail(client.user.displayAvatarURL({ dynamic: false }))
-        .setDescription('Sero is a Discord bot written in JavaScript using the Discord.js library.')
+        .setDescription(`${client.user.username} is a Discord bot written in JavaScript using the Discord.js library.`)
         .addFields(
             { name: 'Version', value: botVersion, inline: true },
             { name: 'Discord.js', value: discordVersion, inline: true },

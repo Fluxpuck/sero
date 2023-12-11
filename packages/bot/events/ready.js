@@ -29,15 +29,13 @@ module.exports = async (client) => {
     // Set global guild active setting
     Array.from(client.guilds.cache.values()).forEach(async guild => {
         const { data } = await getRequest(`/guilds/${guild.id}`);
-        guild.active = data[0].active === true;
+        guild.active = data[0]?.active === true;
 
         if (client.config.saveClientGuilds === true) {
             await postRequest(`/guilds/${guild.id}`, {
-                guild: {
-                    guildId: guild.id,
-                    guildName: guild.name,
-                    active: true
-                }
+                guildId: guild.id,
+                guildName: guild.name,
+                active: true
             })
         }
     });

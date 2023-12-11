@@ -14,8 +14,8 @@ module.exports = async (client, applications) => {
             if (commandMismatch) {
                 const application = applications.get(commandId);
                 try {
-                    console.log("Delete Application: " + application.name);
-                    application.delete();
+                    const result = await application.delete();
+                    console.log(result);
                 } catch (error) {
                     console.log(error)
                 }
@@ -42,10 +42,11 @@ module.exports = async (client, applications) => {
                         type: interactionType,
                         options: interactionOptions,
                         defaultMemberPermissions: [PermissionFlagsBits.KickMembers],
-                    }).then((application) => {
-                        console.log("Updated Application: " + application.name);
+                    }).then(async (application) => {
 
-                        postCommands(application.name, {
+                        console.log(`Application Updated: ${application.name} | ${application.id}`)
+
+                        const result = await postCommands(application.name, {
                             commandId: application.id,
                             commandName: application.name,
                             description: description,
@@ -54,6 +55,8 @@ module.exports = async (client, applications) => {
                             interactionOptions: interactionOptions,
                             private: private,
                         });
+                        console.log(result);
+
                     }).catch((error) => {
                         console.error(`[Error editing (${commandName})]: `, error);
                     });
@@ -67,10 +70,11 @@ module.exports = async (client, applications) => {
                     type: interactionType,
                     options: interactionOptions,
                     defaultMemberPermissions: [PermissionFlagsBits.KickMembers],
-                }).then((application) => {
-                    console.log("Created Application: " + application.name);
+                }).then(async (application) => {
 
-                    postCommands(application.name, {
+                    console.log(`Application Created: ${application.name} | ${application.id}`)
+
+                    const result = await postCommands(application.name, {
                         commandId: application.id,
                         commandName: application.name,
                         description: description,
@@ -79,6 +83,9 @@ module.exports = async (client, applications) => {
                         interactionOptions: interactionOptions,
                         private: private,
                     });
+
+                    console.log(result);
+
                 }).catch((error) => {
                     console.error(`[Error creating (${commandName})]: `, error);
                 });

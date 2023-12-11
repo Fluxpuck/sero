@@ -7,6 +7,8 @@ module.exports = {
         //log the error to the console → for debugging purposes only!
         console.error("[API ErrorHandler]:", err);
 
+        console.log(req.originalUrl)
+
         // Send the error response to the client
         return res.status(err.status).json({
             error: {

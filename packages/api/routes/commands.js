@@ -100,10 +100,10 @@ router.post("/:commandName", async (req, res, next) => {
     // Update or Create the request
     if (request) {
       await request.update(updateData, { transaction: t });
-      res.status(200).send(`The command ${commandName} was updated successfully`);
+      res.status(200).send(`${commandName} was updated successfully`);
     } else {
       await Commands.create(updateData, { transaction: t });
-      res.status(200).send(`The command ${commandName} was created successfully`);
+      res.status(200).send(`${commandName} was created successfully`);
     }
 
     // Commit and finish the transaction
@@ -141,7 +141,7 @@ router.delete("/:commandName", async (req, res, next) => {
     await request.destroy();
 
     // Return the results
-    return res.status(200).send(`The command ${commandName} was deleted successfully`);
+    return res.status(200).send(`${commandName} was deleted successfully`);
 
   } catch (error) {
     next(error);
