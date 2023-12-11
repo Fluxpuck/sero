@@ -15,7 +15,8 @@ module.exports = async (client, applications) => {
                 const application = applications.get(commandId);
                 try {
                     const result = await application.delete();
-                    console.log(result);
+                    console.log(`Application Deleted: ${application.name} | ${application.id}`)
+                    // console.log(`DEBUG: ${result}`);
                 } catch (error) {
                     console.log(error)
                 }
@@ -55,7 +56,7 @@ module.exports = async (client, applications) => {
                             interactionOptions: interactionOptions,
                             private: private,
                         });
-                        console.log(result);
+                        // console.log(`DEBUG: ${result}`);
 
                     }).catch((error) => {
                         console.error(`[Error editing (${commandName})]: `, error);
@@ -83,8 +84,7 @@ module.exports = async (client, applications) => {
                         interactionOptions: interactionOptions,
                         private: private,
                     });
-
-                    console.log(result);
+                    // console.log(`DEBUG: ${result}`);
 
                 }).catch((error) => {
                     console.error(`[Error creating (${commandName})]: `, error);
