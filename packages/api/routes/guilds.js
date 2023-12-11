@@ -5,7 +5,7 @@ const { sequelize } = require('../database/sequelize');
 const { createError } = require('../utils/ClassManager');
 
 /**
- * @router GET api/guild
+ * @router GET api/guilds
  * @description Get all Guilds
  */
 router.get("/", async (req, res, next) => {
@@ -27,7 +27,7 @@ router.get("/", async (req, res, next) => {
 });
 
 /**
- * @router GET api/guild/:guildId
+ * @router GET api/guilds/:guildId
  * @description Get a specific Guild
  */
 router.get("/:guildId", async (req, res, next) => {

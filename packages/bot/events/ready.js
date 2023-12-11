@@ -27,8 +27,11 @@ module.exports = async (client) => {
     await displayWelcomeMessage(client);
 
     // Set global guild active setting
-    if (client.config.saveClientGuilds === true) {
-        Array.from(client.guilds.cache.values()).forEach(async guild => {
+    Array.from(client.guilds.cache.values()).forEach(async guild => {
+        const { data } = await getRequest(`/guilds/${guild.id}`);
+        guild.active = data[0].active === true;
+
+        if (client.config.saveClientGuilds === true) {
             await postRequest(`/guilds/${guild.id}`, {
                 guild: {
                     guildId: guild.id,
@@ -36,9 +39,7 @@ module.exports = async (client) => {
                     active: true
                 }
             })
+        }
+    });
 
-            const { data } = await getRequest(`/guilds/${guild.id}`);
-            guild.active = data.active === true;
-        });
-    }
 }
