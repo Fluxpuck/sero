@@ -3,15 +3,15 @@ const { generateUniqueHash } = require('../utils/FunctionManager');
 
 class User extends Model {
     static associate(models) {
-        this.belongsTo(models.Guild, { foreignKey: 'guildId' });
-        this.hasMany(models.Messages, { foreignKey: 'userId' });
-        this.hasMany(models.AuditLogs, { foreignKey: 'userId' });
+        // this.belongsTo(models.Guild, { foreignKey: 'guildId' });
+        // this.hasMany(models.Messages, { foreignKey: 'userId' });
+        // this.hasMany(models.AuditLogs, { foreignKey: 'userId' });
     }
 }
 
 module.exports = sequelize => {
     User.init({
-        userKey: {
+        userHash: {
             type: DataTypes.STRING,
             primaryKey: true,
             unique: true,
@@ -51,8 +51,8 @@ module.exports = sequelize => {
                     throw new Error('User with the same guildId and userId already exists.');
                 }
 
-                // Generate a unique token for userKey based on userId
-                user.userKey = generateUniqueHash(user.userId, user.guildId);
+                // Generate a unique token for userHash based on userId
+                user.userHash = generateUniqueHash(user.userId, user.guildId);
             },
         },
     });

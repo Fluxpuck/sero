@@ -10,7 +10,7 @@ module.exports = async (client) => {
 
     // Attach config settings to the client
     const clientConfig = await fetchConfig();
-    client.config = clientConfig ?? Object.keys(clientConfig).length === 0 ? configFile : clientConfig;
+    client.config = clientConfig || Object.keys(clientConfig).length === 0 ? configFile : clientConfig;
 
     // Sets the bot's presence to indicate that it is listening to a user with the username 'Fluxpuck#0001'.
     client.user.setPresence({ activities: [{ type: 'LISTENING', name: 'Fluxpuck#0001' }], status: 'online' });

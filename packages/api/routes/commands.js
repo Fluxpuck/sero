@@ -54,7 +54,7 @@ router.get("/:commandId", async (req, res, next) => {
 
 
 // Setup Attributes for this Route
-const requiredProperties = ['commandName', 'commandId'];
+const requiredProperties = ['commandName'];
 
 /**
  * @router POST api/commands/:commandName

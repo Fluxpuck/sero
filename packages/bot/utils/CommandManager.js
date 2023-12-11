@@ -50,13 +50,14 @@ module.exports = {
                         const { commandName, description, usage } = command.props;
                         const { type = 1, options } = command.props?.interaction;
 
+                        console.log(`Saving command: ${commandName}`);
+
                         postCommands(command.props.commandName, {
                             commandName: commandName,
                             interactionType: type,
                             interactionOptions: options,
                             description: description,
                             usage: usage,
-                            clientId: client.user.id
                         });
                     }
                 }

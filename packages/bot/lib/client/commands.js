@@ -3,13 +3,13 @@ const { postRequest, getRequest } = require('../../database/connection');
 async function fetchCommands(commandId) {
     try {
         // Update the endpoint URL based on the presence of commandId
-        const endpoint = commandId ? `/command:${commandId}` : `/commands`;
+        const endpoint = commandId ? `/commands/${commandId}` : `/commands`;
         // Make the getRequest with the updated endpoint
         const response = await getRequest(endpoint);
         if (response.status >= 200 && response.status <= 299) {
             return response.data;
         } else {
-            throw new Error(`Request failed with status ${response.status}`);
+            return [];
         }
     } catch (error) {
         console.error("fetchCommands", error);
@@ -26,7 +26,7 @@ async function postCommands(commandName, data) {
         if (response.status >= 200 && response.status <= 299) {
             return response.data;
         } else {
-            throw new Error(`Request failed with status ${response.status}`);
+            throw new Error(`Request failed with status ${response.status}, ${response.message}`);
         }
     } catch (error) {
         console.error("postCommands", commandName, error);

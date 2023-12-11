@@ -2,8 +2,8 @@ const { Model, DataTypes } = require('sequelize');
 
 class AuditLogs extends Model {
     static associate(models) {
-        this.belongsTo(models.Guild, { foreignKey: 'guildId' });
-        this.belongsTo(models.User, { foreignKey: 'userKey' });
+        // this.belongsTo(models.Guild, { foreignKey: 'guildId' });
+        // this.belongsTo(models.User, { foreignKey: 'userHash' });
     }
 }
 

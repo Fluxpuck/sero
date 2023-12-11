@@ -96,7 +96,7 @@ router.post('/:guildId/:userId', async (req, res, next) => {
     // Check if the user already has levels
     const levels = await Levels.findOne({
       where: {
-        userKey: user.userKey,
+        userHash: user.userHash,
         userId: userId,
         guildId: guildId,
       },

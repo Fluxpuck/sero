@@ -15,7 +15,7 @@ async function fetchConfig(name) {
 
             return transformedData;
         } else {
-            throw new Error(`Request failed with status ${response.status}`);
+            return {}; // Return an empty object if the request fails
         }
     } catch (error) {
         console.error("fetchConfig", error);

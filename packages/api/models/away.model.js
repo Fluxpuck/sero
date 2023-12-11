@@ -3,16 +3,16 @@ const { Model, DataTypes } = require('sequelize');
 class Away extends Model {
     static associate(models) {
         // this.belongsToMany(models.Guild, {
-        //     foreignKey: 'userKey', // This should match the foreign key in the Moderator model
+        //     foreignKey: 'userHash', // This should match the foreign key in the Moderator model
         //     otherKey: 'guildId', // Foreign key for the Guild model
         // });
         // this.belongsToMany(models.User, {
-        //     foreignKey: 'userKey', // This should match the foreign key in the Moderator model
+        //     foreignKey: 'userHash', // This should match the foreign key in the Moderator model
         //     otherKey: 'userId', // Foreign key for the Guild model
         // });
         // this.belongsTo(models.User, {
-        //     foreignKey: 'userKey', // This should match the foreign key in the User model (userKey)
-        //     targetKey: 'userKey', // This should match the target key in the User model (userKey)
+        //     foreignKey: 'userHash', // This should match the foreign key in the User model (userHash)
+        //     targetKey: 'userHash', // This should match the target key in the User model (userHash)
         // });
     }
 }

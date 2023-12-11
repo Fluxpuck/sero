@@ -2,11 +2,11 @@ const { Model, DataTypes } = require("sequelize");
 
 class Guild extends Model {
   static associate(models) {
-    this.hasMany(models.User, { foreignKey: 'guildId' });
-    this.hasMany(models.Messages, { foreignKey: 'guildId' });
-    this.hasMany(models.EventChannels, { foreignKey: 'guildId' });
-    this.hasMany(models.AuditLogs, { foreignKey: 'guildId' });
-    this.hasMany(models.EventChannels, { foreignKey: 'guildId' });
+    // this.hasMany(models.User, { foreignKey: 'guildId' });
+    // this.hasMany(models.Messages, { foreignKey: 'guildId' });
+    // this.hasMany(models.EventChannels, { foreignKey: 'guildId' });
+    // this.hasMany(models.AuditLogs, { foreignKey: 'guildId' });
+    // this.hasMany(models.EventChannels, { foreignKey: 'guildId' });
   }
 }
 

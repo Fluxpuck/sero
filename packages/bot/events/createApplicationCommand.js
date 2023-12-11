@@ -48,12 +48,11 @@ module.exports = async (client, applications) => {
                         postCommands(application.name, {
                             commandId: application.id,
                             commandName: application.name,
-                            interactionType: interactionType,
-                            interactionOptions: interactionOptions,
                             description: description,
                             usage: usage,
+                            interactionType: interactionType,
+                            interactionOptions: interactionOptions,
                             private: private,
-                            clientId: client.user.id
                         });
                     }).catch((error) => {
                         console.error(`[Error editing (${commandName})]: `, error);
@@ -74,12 +73,11 @@ module.exports = async (client, applications) => {
                     postCommands(application.name, {
                         commandId: application.id,
                         commandName: application.name,
-                        interactionType: interactionType,
-                        interactionOptions: interactionOptions,
                         description: description,
                         usage: usage,
+                        interactionType: interactionType,
+                        interactionOptions: interactionOptions,
                         private: private,
-                        clientId: client.user.id
                     });
                 }).catch((error) => {
                     console.error(`[Error creating (${commandName})]: `, error);
