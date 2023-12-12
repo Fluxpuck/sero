@@ -1,6 +1,6 @@
 const fs = require('fs');
 const { join, dirname, basename } = require('path');
-const { postCommands } = require('../lib/commands/clientCommands');
+const { postCommands } = require('../lib/client/commands');
 
 function isDir(filePath) {
     // Check if the path exists and is a directory.
@@ -50,13 +50,14 @@ module.exports = {
                         const { commandName, description, usage } = command.props;
                         const { type = 1, options } = command.props?.interaction;
 
+                        console.log(`Saving command: ${commandName}`);
+
                         postCommands(command.props.commandName, {
                             commandName: commandName,
                             interactionType: type,
                             interactionOptions: options,
                             description: description,
                             usage: usage,
-                            clientId: client.user.id
                         });
                     }
                 }

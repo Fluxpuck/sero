@@ -3,8 +3,8 @@ const { calculateLevel } = require('../utils/levelManager');
 
 class Levels extends Model {
     static associate(models) {
-        this.belongsTo(models.User, { foreignKey: 'userKey', otherKey: 'userId' });
-        this.belongsTo(models.Guild, { foreignKey: 'guildId' });
+        // this.belongsTo(models.User, { foreignKey: 'userHash', otherKey: 'userId' });
+        // this.belongsTo(models.Guild, { foreignKey: 'guildId' });
     }
 }
 
@@ -17,8 +17,18 @@ module.exports = sequelize => {
             allowNull: false
         },
         userId: {
+            type: DataTypes.BIGINT,
+            allowNull: false,
+            validate: {
+                is: /^\d{17,20}$/ //Discord Snowflake
+            }
+        },
+        guildId: {
             type: DataTypes.STRING,
-            allowNull: false
+            allowNull: false,
+            validate: {
+                is: /^\d{17,20}$/ //Discord Snowflake
+            }
         },
         experience: {
             type: DataTypes.INTEGER,
@@ -66,7 +76,7 @@ module.exports = sequelize => {
         level.setDataValue('nextLevelExp', calculatedLevel.nextLevelExp);
         level.setDataValue('remainingExp', calculatedLevel.remainingExp);
     });
-    
+
     return Levels;
 }
 

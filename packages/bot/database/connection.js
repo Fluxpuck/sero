@@ -18,7 +18,7 @@ module.exports = {
             const response = await instance.get(endpoint);
             return response;
         } catch (error) {
-            return error.response.data.error;
+            return error?.response?.data.error
         }
     },
 
@@ -32,7 +32,7 @@ module.exports = {
             const response = await instance.post(endpoint, data);
             return response;
         } catch (error) {
-            return error.response.data.error;
+            return error?.response?.data.error
         }
     },
 
@@ -45,7 +45,7 @@ module.exports = {
             const response = await instance.delete(endpoint);
             return response;
         } catch (error) {
-            return error.response.data.error;
+            return error?.response?.data.error
         }
     }
 

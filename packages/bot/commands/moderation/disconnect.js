@@ -20,6 +20,10 @@ module.exports.run = async (client, interaction) => {
     const targetMember = await interaction.guild.members.fetch(targetUser.value);
 
     if (targetMember?.voice.channel) {
+        // Set a disconnected flag on the member object
+        targetMember.voice.disconnected = true;
+
+        // Disconnect the member from the voicechannel
         await targetMember.voice.disconnect();
         return interaction.reply({
             content: `Successfully disconnected <@${targetMember.id}>`,

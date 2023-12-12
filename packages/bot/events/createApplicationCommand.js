@@ -1,5 +1,5 @@
 const { PermissionFlagsBits } = require('discord.js');
-const { fetchCommands, postCommands } = require("../lib/commands/clientCommands");
+const { fetchCommands, postCommands } = require("../lib/client/commands");
 
 module.exports = async (client, applications) => {
     const commands = await fetchCommands();
@@ -14,8 +14,9 @@ module.exports = async (client, applications) => {
             if (commandMismatch) {
                 const application = applications.get(commandId);
                 try {
-                    console.log("Delete Application: " + application.name);
-                    application.delete();
+                    const result = await application.delete();
+                    console.log(`Application Deleted: ${application.name} | ${application.id}`)
+                    // console.log(`DEBUG: ${result}`);
                 } catch (error) {
                     console.log(error)
                 }
@@ -36,25 +37,27 @@ module.exports = async (client, applications) => {
                 const { commandId, commandName, description, usage, interactionType, interactionOptions, private } = command;
 
                 if (commandId === key || commandName === value.name) {
-                    await client.application?.commands.edit(commandId, {
+                    await client.application?.commands.edit(key, {
                         name: commandName,
                         description: description,
                         type: interactionType,
                         options: interactionOptions,
                         defaultMemberPermissions: [PermissionFlagsBits.KickMembers],
-                    }).then((application) => {
-                        console.log("Updated Application: " + application.name);
+                    }).then(async (application) => {
 
-                        postCommands(application.name, {
+                        console.log(`Application Updated: ${application.name} | ${application.id}`)
+
+                        const result = await postCommands(application.name, {
                             commandId: application.id,
                             commandName: application.name,
-                            interactionType: interactionType,
-                            interactionOptions: interactionOptions,
                             description: description,
                             usage: usage,
+                            interactionType: interactionType,
+                            interactionOptions: interactionOptions,
                             private: private,
-                            clientId: client.user.id
                         });
+                        // console.log(`DEBUG: ${result}`);
+
                     }).catch((error) => {
                         console.error(`[Error editing (${commandName})]: `, error);
                     });
@@ -68,19 +71,21 @@ module.exports = async (client, applications) => {
                     type: interactionType,
                     options: interactionOptions,
                     defaultMemberPermissions: [PermissionFlagsBits.KickMembers],
-                }).then((application) => {
-                    console.log("Created Application: " + application.name);
+                }).then(async (application) => {
 
-                    postCommands(application.name, {
+                    console.log(`Application Created: ${application.name} | ${application.id}`)
+
+                    const result = await postCommands(application.name, {
                         commandId: application.id,
                         commandName: application.name,
-                        interactionType: interactionType,
-                        interactionOptions: interactionOptions,
                         description: description,
                         usage: usage,
+                        interactionType: interactionType,
+                        interactionOptions: interactionOptions,
                         private: private,
-                        clientId: client.user.id
                     });
+                    // console.log(`DEBUG: ${result}`);
+
                 }).catch((error) => {
                     console.error(`[Error creating (${commandName})]: `, error);
                 });

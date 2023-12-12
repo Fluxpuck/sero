@@ -2,8 +2,8 @@ const { Model, DataTypes } = require('sequelize');
 
 class Messages extends Model {
     static associate(models) {
-        this.belongsTo(models.User, { foreignKey: 'userKey' });
-        this.belongsTo(models.Guild, { foreignKey: 'guildId' });
+        // this.belongsTo(models.User, { foreignKey: 'userHash' });
+        // this.belongsTo(models.Guild, { foreignKey: 'guildId' });
     }
 }
 
@@ -24,13 +24,27 @@ module.exports = sequelize => {
             validate: {
                 is: /^\d{17,20}$/ //Discord Snowflake
             }
-        }
+        },
+        userId: {
+            type: DataTypes.BIGINT,
+            allowNull: false,
+            validate: {
+                is: /^\d{17,20}$/ //Discord Snowflake
+            }
+        },
+        guildId: {
+            type: DataTypes.STRING,
+            allowNull: false,
+            validate: {
+                is: /^\d{17,20}$/ //Discord Snowflake
+            }
+        },
     }, {
         sequelize,
         modelName: 'messages',
         timestamps: true,
         createdAt: true
     });
-    
+
     return Messages;
 }

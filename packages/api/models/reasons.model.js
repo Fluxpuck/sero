@@ -1,51 +1,46 @@
 const { Model, DataTypes } = require('sequelize');
 
-class AuditLogs extends Model {
+class Reasons extends Model {
     static associate(models) {
         // this.belongsTo(models.Guild, { foreignKey: 'guildId' });
-        // this.belongsTo(models.User, { foreignKey: 'userHash' });
     }
 }
 
 module.exports = sequelize => {
-    AuditLogs.init({
+    Reasons.init({
         id: {
             type: DataTypes.INTEGER,
             primaryKey: true,
             autoIncrement: true,
         },
-        type: {
+        guildId: {
             type: DataTypes.STRING,
             allowNull: false,
-        },
-        targetId: {
-            type: DataTypes.BIGINT,
-            allowNull: false,
             validate: {
-                is: /^\d{17,20}$/ //Discord Snowflake
-            }
+                is: /^\d{17,20}$/
+            },
+        },
+        name: {
+            type: DataTypes.STRING,
+            allowNull: false,
         },
         reason: {
             type: DataTypes.STRING,
-            allowNull: true,
+            allowNull: false,
         },
-        executorId: {
-            type: DataTypes.BIGINT,
+        type: {
+            type: DataTypes.STRING,
             allowNull: false,
             validate: {
-                is: /^\d{17,20}$/ //Discord Snowflake
+                isIn: [['ban', 'kick', 'warn']]
             }
-        },
-        duration: {
-            type: DataTypes.INTEGER,
-            allowNull: true,
         },
     }, {
         sequelize,
-        modelName: 'auditlogs',
+        modelName: 'reasons',
         timestamps: true,
         createdAt: true
     });
 
-    return AuditLogs;
-}
+    return Reasons;
+};
