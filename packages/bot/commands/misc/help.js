@@ -1,5 +1,5 @@
 const { ActionRowBuilder, ComponentType, } = require('discord.js');
-const { capitalize } = require('../../lib/text/text-modifications');
+const { capitalize } = require('../../lib/helpers/StringHelpers/stringHelper');
 const { createCustomEmbed } = require('../../assets/embed');
 const { createCustomDropdown } = require('../../assets/embed-dropdowns');
 

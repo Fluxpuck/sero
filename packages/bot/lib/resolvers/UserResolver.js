@@ -1,8 +1,21 @@
-const { GuildMemberManager } = require('discord.js')
+/**
+ * @file UserResolver.js
+ * @description This file contains the UserResolver module, which provides functions for finding users in a guild based on different identifiers.
+ */
+
+const { regEscape } = require('../helpers/StringHelpers/stringHelper');
 
 module.exports = {
 
-	findUser: (findUser = (guild, user, exact) => {
+	/**
+	 * Finds a user in a guild based on a user identifier.
+	 * The identifier can be a mention, username#discriminator, user ID, or username.
+	 * @param {Guild} guild - The guild to search for the user in.
+	 * @param {any} user - The user identifier. can be mention, Id, or username.
+	 * @param {boolean} exact - Whether to perform an exact match for the username.
+	 * @returns {User|null} - The found user or null if not found.
+	 */
+	findUser: (guild, user, exact) => {
 		if (!user) return null;
 
 		// check if it's a mention
@@ -12,7 +25,7 @@ module.exports = {
 			return guild.members.cache.find(u => u.user.id === mentionId[1]);
 		}
 
-		// check if it's username#1337
+		// check if it's username#1337 (Discrim to search for users who haven't updated their username)
 		if (user.indexOf('#') > -1) {
 			let [name, discrim] = user.split('#'),
 				nameDiscrimSearch = guild.members.cache.find(
@@ -33,7 +46,7 @@ module.exports = {
 		if (exactNameSearch) return exactNameSearch;
 
 		if (!exact) {
-			const escapedUser = this.regEscape(user)
+			const escapedUser = regEscape(user)
 			// username match
 			let userNameSearch = guild.members.cache.find(u =>
 				u.user.username.match(new RegExp(`^${escapedUser}.*`, 'i'))
@@ -42,21 +55,26 @@ module.exports = {
 		}
 
 		return null;
-	}),
+	},
 
 	/**
-	 * @property {GuildMemberManager} guild.members
+	 * Finds users in a guild based on a partial username match.
+	 * @param {Guild} guild - The guild to search for the users in.
+	 * @param {string} user - The partial username to search for.
+	 * @param {boolean} fetchFromCache - Whether to fetch the members from cache or not.
+	 * @returns {Promise<Array<User>>} - A promise that resolves to an array of found users.
 	 */
-	findUserFromName: (findUserFromName = (guild, user) => {
+	findUsersFromName: async (guild, user, fetchFromCache = true) => {
 
 		if (!user) return null;
 
-		let members = guild.members.search({
+		let members = await guild.members.search({
 			limit: 10,
 			query: user,
-			cache: true
+			cache: fetchFromCache
 		})
 
-		console.log(members);
-	}),
+		console.log(members);	
+		return members;
+	},
 }

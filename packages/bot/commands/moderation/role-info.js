@@ -1,5 +1,5 @@
 const { createCustomEmbed } = require("../../assets/embed")
-const { normalizeText } = require("../../lib/text/normalizeText")
+const { normalizeText } = require('../../lib/helpers/StringHelpers/stringHelper');
 
 module.exports.props = {
     commandName: "role-info",
