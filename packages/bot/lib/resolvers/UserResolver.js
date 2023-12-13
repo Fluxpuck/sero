@@ -3,13 +3,14 @@
  * @description This file contains the UserResolver module, which provides functions for finding users in a guild based on different identifiers.
  */
 
+const { Guild } = require('discord.js');
 const { regEscape } = require('../helpers/StringHelpers/stringHelper');
 
 module.exports = {
 
 	/**
 	 * Finds a user in a guild based on a user identifier.
-	 * The identifier can be a mention, username#discriminator, user ID, or username.
+	 * The identifier can be a mention, user ID, or username.
 	 * @param {Guild} guild - The guild to search for the user in.
 	 * @param {any} user - The user identifier. can be mention, Id, or username.
 	 * @param {boolean} exact - Whether to perform an exact match for the username.
@@ -23,15 +24,6 @@ module.exports = {
 
 		if (mentionId && mentionId.length > 1) {
 			return guild.members.cache.find(u => u.user.id === mentionId[1]);
-		}
-
-		// check if it's username#1337 (Discrim to search for users who haven't updated their username)
-		if (user.indexOf('#') > -1) {
-			let [name, discrim] = user.split('#'),
-				nameDiscrimSearch = guild.members.cache.find(
-					u => u.user.username === name && u.user.discriminator === discrim
-				);
-			if (nameDiscrimSearch) return nameDiscrimSearch;
 		}
 
 		// check if it's an id
@@ -69,12 +61,11 @@ module.exports = {
 		if (!user) return null;
 
 		let members = await guild.members.search({
-			limit: 10,
+			limit: 6,
 			query: user,
 			cache: fetchFromCache
-		})
+		}).catch((error) => { return console.error(error); });
 
-		console.log(members);	
 		return members;
 	},
 }
