@@ -6,6 +6,7 @@ const { createCustomEmbed } = require('../../assets/embed');
 const { createCustomDropdown } = require('../../assets/embed-dropdowns');
 const { ERROR, BASE_COLOR } = require('../../assets/embed-colors');
 const { SEARCH, INFO } = require('../../assets/embed-buttons');
+const { formatMemberRoles, getMemberJoinOrder, getMemberJoinPosition } = require('../../lib/helpers/DiscordHelpers/MemberHelper');
 
 // Button IDs
 const SEARCH_BUTTON_ID = 'search';
@@ -110,8 +111,14 @@ module.exports.run = async (client, interaction) => {
  * @param {GuildMember} member - The member that was found.
  */
 const searchCommandInteractionCollector = async (commandInteraction, embed, row, searchButton, infoButton, memberListDropdown, userToSearch, member, members) => {
+	
+	// collector filter options
+	const collectorFilter = (i) => {
+		i.deferUpdate();
+		return i.user.id === commandInteraction.user.id;
+	}
 	// These are the options for the response collector
-	const responseCollectorOptions = { componentType: [ComponentType.Button, ComponentType.StringSelect], idle: 300_000, time: 3_600_000 };
+	const responseCollectorOptions = { componentType: [ComponentType.Button, ComponentType.StringSelect], idle: 300_000, time: 3_600_000, filter: collectorFilter };
 	const responseCollector = commandInteraction.createMessageComponentCollector({ responseCollectorOptions });
 
 	// This event is triggered when the user interacts with the bot
@@ -127,13 +134,13 @@ const searchCommandInteractionCollector = async (commandInteraction, embed, row,
 				embed.setDescription(`I looked up \`${userToSearch}\` but I couldn't find any users that match your search query. Make sure the user exists in the server.`);
 				embed.setColor(ERROR);
 
-				// Disable the search button
-				await searchButton.setDisabled(true);
+				// Remove the buttons and dropdown
+				row.components = [];
 
 				// Update the interaction with the new embed and components
 				return await interaction.update({
 					embeds: [embed],
-					components: [row]
+					components: []
 				}).catch((error) => { return error; });
 			}
 
@@ -163,21 +170,30 @@ const searchCommandInteractionCollector = async (commandInteraction, embed, row,
 		} else if ((interaction.customId === 'selectMember' && interaction.isStringSelectMenu()) || (interaction.customId === INFO_BUTTON_ID && interaction.isButton())) {
 			// If the user selected a member from the dropdown or clicked the info button
 			// Get the selected member
-			const currentMember = interaction.isButton() ? member : members.find(m => m.user.username === interaction.values[0]);
+			const currentMember = interaction.isButton() ? member : members.find(m => m.user.username === interaction.values[0]),
+				  memberRoles = formatMemberRoles(currentMember),
+				  memberJoinPosition = getMemberJoinPosition(currentMember),
+				  memberJoinOrder = getMemberJoinOrder(interaction.guild, currentMember.user.id, 1),
+				  memberRolesCount = currentMember.roles.cache.filter(r => r.id !== currentMember.guild.id).size;
 
 			// Update the embed with the member's info
 			embed.data.title = `User Info | ${currentMember.user.username}`;
 			embed.data.description = `${currentMember.toString()} - \`${currentMember.user.id}\``;
-			embed.data.color = currentMember.displayColor ? currentMember.displayColor : BASE_COLOR;
+			embed.data.color = currentMember.displayHexColor ? currentMember.displayColor : BASE_COLOR;
 			embed.data.thumbnail = { url: currentMember.user.displayAvatarURL({ dynamic: true, size: 1024 }) };
 			embed.data.fields = [
-				{ name: "Joined Discord", value: `\`\`\`${currentMember.user.createdAt.toUTCString()}\`\`\``, inline: true },
-				{ name: "Joined Server", value: `\`\`\`${currentMember.joinedAt.toUTCString()}\`\`\``, inline: true },
-				{ name: "Roles", value: currentMember.roles.cache.map(r => r.toString()).join(' '), inline: false },
+				{ name: `Joined Discord`, value: `\`\`\`${currentMember.user.createdAt.toUTCString()}\`\`\``, inline: true },
+				{ name: `Joined Server`, value: `\`\`\`${currentMember.joinedAt.toUTCString()}\`\`\``, inline: true },
+				{ name: `Roles [${memberRolesCount}]`, value: `${memberRoles}`, inline: false },
 			];
 			embed.data.footer = { text: `Requested by ${interaction.user.username}`, icon_url: interaction.user.displayAvatarURL({ dynamic: true }) };
 			embed.data.timestamp = new Date();
 			embed.data.author = { name: interaction.guild.name, icon_url: interaction.guild.iconURL({ dynamic: true }) };
+
+			// Add additional fields based on conditions.
+			if (memberJoinOrder) {
+				embed.data.fields.push({ name: "Join Position", value: `\n**#${memberJoinPosition}/#${currentMember.guild.members.cache.size}**\n${memberJoinOrder}`, inline: false })
+			}
 
 			// Disable the dropdown
 			memberListDropdown.setDisabled(true);
@@ -192,10 +208,8 @@ const searchCommandInteractionCollector = async (commandInteraction, embed, row,
 
 	// This event is triggered when the response collector expires
 	responseCollector.on('end', async (interaction) => {
-		// Disable the buttons and dropdown
-		searchButton.setDisabled(true);
-		infoButton.setDisabled(true);
-		memberListDropdown.setDisabled(true);
+		// Remove the buttons and dropdown
+		row.components = [];
 
 		// Update the interaction with the new components
 		return await interaction.update({
