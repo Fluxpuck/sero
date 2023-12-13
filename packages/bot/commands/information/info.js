@@ -1,6 +1,6 @@
 const { EmbedBuilder, version: discordVersion } = require('discord.js');
 const { version: botVersion } = require('../../package.json');
-const { formatTime } = require('../../lib/time/formattime');
+const { formatTime } = require('../../lib/helpers/StringHelpers/stringHelper');
 
 module.exports.props = {
     commandName: "info",
