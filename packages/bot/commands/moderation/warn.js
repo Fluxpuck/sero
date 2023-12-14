@@ -1,7 +1,7 @@
 module.exports.props = {
     commandName: "warn",
     description: "Send a warning to a user in their DMs",
-    usage: "/warn [user] (pre-reason) (reason)",
+    usage: "/warn [user] [reason]",
     interaction: {
         type: 1,
         options: [
@@ -67,7 +67,7 @@ module.exports.props = {
 };
 
 module.exports.run = async (client, interaction) => {
-    
+
     const targetUser = interaction.options.get("user").user;
     const message = "Dear user, you have been warned for the following reason: " + interaction.options.get("reason").value;
 
