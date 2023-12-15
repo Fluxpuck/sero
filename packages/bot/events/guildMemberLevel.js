@@ -2,11 +2,12 @@
 module.exports = async (client, message, oldLevel, newLevel) => {
     if (!oldLevel || !newLevel) return;
 
-    /*
-    @TODO IS TO GET THE TARGET CHANNEL FROM THE DATABASE? OR JUST REPLY TO THE USER IN THE VC
-    */
+    /**
+     * @TODO Get Channel from the Database
+     * Else reply to the message channel
+     */
 
-    const targetChannel = message.guild.channels.cache.get("1181313001232543804");
+    const targetChannel = message.channel;
 
     /**
      *  If the new level is higher than the old level, then the user has leveled up 
