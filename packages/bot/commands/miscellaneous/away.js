@@ -9,9 +9,9 @@ module.exports.props = {
                 name: "time",
                 type: 10,
                 description: "The amount (in minutes) of time you want to be away for",
-                required: true,
-                minValues: 5,
-                maxValues: 720,
+                required: false,
+                minValue: 5,
+                maxValue: 720,
             },
         ],
     }
@@ -19,7 +19,15 @@ module.exports.props = {
 
 module.exports.run = async (client, interaction) => {
 
-    console.log(interaction)
+    // const timeOption = interaction.options.get("time").user;
+    // const timeInMilliseconds = timeOptionInMinutes ? timeOptionInMinutes * 60000 : null;
+
+
+    return interaction.reply({
+        content: "SHADE IS A LITTLE BITCH",
+        ephemeral: true,
+    }).catch((err) => { throw err });
+
 
 
 }
