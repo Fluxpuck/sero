@@ -24,8 +24,4 @@ module.exports = async (client, message, oldLevel, newLevel) => {
             .catch(console.error);
 
     }
-
-    console.log(newLevel)
-
-
 }
