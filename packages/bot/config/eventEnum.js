@@ -7,6 +7,7 @@ const eventEnum = {
     GUILD_MEMBER_REMOVE: 'guildMemberRemove',
     INTERACTION_CREATE: 'interactionCreate',
     MESSAGE_CREATE: 'messageCreate',
+    GUILD_MEMBER_LEVEL: 'guildMemberLevel',
 };
 
 module.exports = eventEnum;
