@@ -62,7 +62,7 @@ module.exports = async (client, message) => {
             client.emit(eventEnum.GUILD_MEMBER_LEVEL, message, oldMember, newMember);
 
             // Add the user to the cooldowns Collection
-            client.cooldowns.set(cooldownKey, message, 60)
+            // client.cooldowns.set(cooldownKey, message, 60)
         }
 
     }
