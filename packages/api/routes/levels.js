@@ -6,7 +6,7 @@ const { CreateError } = require('../utils/ClassManager');
 const { calculateXP } = require('../utils/levelManager');
 
 /**
- * @router GET api/leaderboard/:guildId	
+ * @router GET api/levels/:guildId	
  * @description Get all Levels
  */
 router.get("/:guildId	", async (req, res, next) => {
