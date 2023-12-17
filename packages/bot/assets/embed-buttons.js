@@ -34,6 +34,18 @@ const ClientButtonsEnum = {
         .setLabel('Invite Me')
         .setURL('https://discord.com/')
         .setDisabled(false),
+
+    INFO: new ButtonBuilder()
+        .setStyle(ButtonStyle.Secondary)
+        .setEmoji('ℹ️')
+        .setCustomId('info')
+        .setDisabled(false),
+
+    SEARCH: new ButtonBuilder()
+        .setStyle(ButtonStyle.Secondary)
+        .setEmoji('🔍')
+        .setCustomId('search')
+        .setDisabled(false),
 };
 
 module.exports = ClientButtonsEnum;

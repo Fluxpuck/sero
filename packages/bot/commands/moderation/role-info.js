@@ -1,5 +1,5 @@
 const { createCustomEmbed } = require("../../assets/embed")
-const { normalizeText } = require("../../lib/text/text-modifications")
+const { normalizeText } = require('../../lib/helpers/StringHelpers/stringHelper');
 
 module.exports.props = {
     commandName: "role-info",
@@ -56,6 +56,7 @@ module.exports.run = async (client, interaction) => {
     const role_colour = role.hexColor;
     const role_id = role.id
     const role_members = role.members.size;
+    const role_permission = `${role.position}/`;
     const role_name = role.name;
     const role_mention = `<@&${role_id}>`
     // → Build embed fields:
@@ -81,7 +82,6 @@ module.exports.run = async (client, interaction) => {
             value: `${extractedPerms}`,
         },
     ]
-
 
     // Construct the Embed
     const embed = createCustomEmbed({ title: `${role_name} | ${role.position}/${interaction.guild.roles.cache.size}`, color: role_colour, fields: embed_fields })
