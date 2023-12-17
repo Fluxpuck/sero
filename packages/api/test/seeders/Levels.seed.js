@@ -6,18 +6,15 @@ module.exports.run = async () => {
         {   // FLUXPUCK
             userId: "270640827787771943",
             guildId: "660103319557111808",
-            userHash: "1236681046",
             experience: 6543
         },
         {   // FLUXPUCK, GUILD 2
             userId: "738358458826489896",
             guildId: "660103319557111808",
-            userHash: "1422411162"
         },
         {   // ZAKARIA, GUILD 1
             userId: "377842014290575361",
             guildId: "660103319557111808",
-            userHash: "561291069",
             experience: 238
         }
     ]
