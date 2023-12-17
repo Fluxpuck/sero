@@ -6,7 +6,9 @@ async function fetchCommands(commandId) {
         const endpoint = commandId ? `/commands/${commandId}` : `/commands`;
         // Make the getRequest with the updated endpoint
         const response = await getRequest(endpoint);
-        if (response.status >= 200 && response.status <= 299) {
+
+        // Check if response is defined before accessing its status
+        if (response && response.status >= 200 && response.status <= 299) {
             return response.data;
         } else {
             return [];
@@ -23,10 +25,12 @@ async function postCommands(commandName, data) {
 
         // Make the postRequest with the updated endpoint
         const response = await postRequest(endpoint, data);
-        if (response.status >= 200 && response.status <= 299) {
+
+        // Check if response is defined before accessing its status
+        if (response && response.status >= 200 && response.status <= 299) {
             return response.data;
         } else {
-            throw new Error(`Request failed with status ${response.status}, ${response.message}`);
+            throw new Error(`Request failed with status ${response ? response.status : 'unknown'}, ${response ? response.message : 'No response message'}`);
         }
     } catch (error) {
         console.error("postCommands", commandName, error);
