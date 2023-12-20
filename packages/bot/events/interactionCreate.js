@@ -6,11 +6,10 @@ module.exports = async (client, interaction) => {
     });;
 
     try {
+        // Check if the interaction has an autocomplete function
         if (interaction.isAutocomplete()) {
             const commandFile = client.commands.get(interaction.commandName);
-            if (commandFile) {
-                commandFile.autocomplete(client, interaction);
-            }
+            if (commandFile) commandFile.autocomplete(client, interaction);
         }
 
         // Check if the interaction is a command
@@ -20,7 +19,6 @@ module.exports = async (client, interaction) => {
         const commandFile = client.commands.get(interaction.commandName);
         if (commandFile) {
 
-            // Check if the command is private
             const { ownerIds } = require('../config/config.json');
             if (commandFile.private === true && !ownerIds.includes(interaction.user.id)) return interaction.reply({ content: '*This command is private.*', ephemeral: true });
 
