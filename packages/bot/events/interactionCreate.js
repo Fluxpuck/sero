@@ -6,6 +6,13 @@ module.exports = async (client, interaction) => {
     });;
 
     try {
+        if (interaction.isAutocomplete()) {
+            const commandFile = client.commands.get(interaction.commandName);
+            if (commandFile) {
+                commandFile.autocomplete(client, interaction);
+            }
+        }
+
         // Check if the interaction is a command
         if (!interaction.isCommand()) return;
 
