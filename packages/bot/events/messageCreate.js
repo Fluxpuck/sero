@@ -46,7 +46,6 @@ module.exports = async (client, message) => {
             const result = await getRequest(`/levels/${message.guildId}/${message.author.id}`);
             if (result) { oldMember = result.data ? result.data[0] : null }
 
-
             // If 404 error, create a new entry
             if (result.status == 404) {
                 // Create a new entry in the leaderboard for the user and guild
