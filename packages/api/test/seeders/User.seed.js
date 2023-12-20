@@ -30,6 +30,11 @@ module.exports.run = async () => {
             guildId: "660103319557111808"
         },
         {
+            userId: "438054607571386378",
+            userName: "zeusgmj",
+            guildId: "660103319557111808"
+        },
+        {
             userId: "562233152827817984",
             userName: "thefallenshade",
             active: false,

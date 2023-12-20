@@ -3,7 +3,7 @@ module.exports = {
     // → Function to calculate the level from the experience
     calculateLevel(experience) {
         const baseExp = 80; //amount of experience points required to reach level 1
-        const expMultiplier = 1.05; //factor by which the amount of experience points required to level up increases
+        const expMultiplier = 1.15; //factor by which the amount of experience points required to level up increases
 
         const level = Math.floor(Math.log((experience / baseExp) * (expMultiplier - 1) + 1) / Math.log(expMultiplier)) + 1; //calculate current level
         const currentLevelExp = Math.floor(baseExp * (Math.pow(expMultiplier, level - 1) - 1) / (expMultiplier - 1)); //calculate experience points required to reach current level
