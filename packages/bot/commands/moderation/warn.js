@@ -40,27 +40,28 @@ module.exports.autocomplete = async (client, interaction) => {
 
 
 module.exports.run = async (client, interaction) => {
+    // Get User details from the interaction options
     const targetUser = interaction.options.get("user").user;
-    const message =
-        "Dear user, you have been warned for the following reason: " + interaction.options.get("reason").value;
 
-    try {
-        return targetUser
-            .send(message)
-            .then(() => {
-                return interaction.reply({
-                    content: `Successfully warned <@${targetUser.id}> with the following message \n ${message}`,
-                    ephemeral: false,
-                });
-            })
-            .catch(err => {
-                return interaction.reply({
-                    content: `Could not warn <@${targetUser.id}>, please try again later.`,
-                    ephemeral: true,
-                });
+    // Create the private warning message
+    const privateMessage = `<@${targetUser.id}>, you have been warned in **${interaction.guild.name}** for the following reason: ${interaction.options.get("reason").value}`;
+
+    /**
+     * @TODO - Add a warning to the database
+     */
+
+    // Send the private warning message to the target user
+    return targetUser.send(privateMessage)
+        .then(() => {
+            return interaction.reply({
+                content: `Successfully warned <@${targetUser.id}> with the following message \n ${privateMessage}`,
+                ephemeral: false,
             });
-    } catch (error) {
-        console.log(error)
-    }
-
+        })
+        .catch(err => {
+            return interaction.reply({
+                content: `Could not warn <@${targetUser.id}>, but warning has been logged`,
+                ephemeral: true,
+            });
+        });
 };
