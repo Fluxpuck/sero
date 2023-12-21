@@ -1,5 +1,5 @@
 const { PermissionFlagsBits } = require('discord.js');
-const { fetchCommands, postCommands } = require("../lib/client/commands");
+const { fetchCommands, postCommands, deleteCommands } = require("../lib/client/commands");
 
 module.exports = async (client, applications) => {
     const commands = await fetchCommands();
@@ -15,13 +15,13 @@ module.exports = async (client, applications) => {
                 const application = applications.get(commandId);
                 try {
                     const result = await application.delete();
+
                     console.log(`Application Deleted: ${application.name} | ${application.id}`)
-                    // console.log(`DEBUG: ${result}`);
+                    // console.log("DEBUG: ", result)
                 } catch (error) {
                     console.log(error)
                 }
             }
-
         }
     }
 
