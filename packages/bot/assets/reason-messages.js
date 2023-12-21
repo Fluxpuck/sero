@@ -1,14 +1,14 @@
 const KICK_PREREASONS = {
-    IMPERSONATION: "%user% was kicked for impersonation.",
-    INAPPROPRIATE_USENRNAME: "%user% was kicked for having an innapropriate username.",
-    ALT_ACCOUNT: "%user% was kicked for having an alt account."
+    IMPERSONATION: "impersonation.",
+    INAPPROPRIATE_USENRNAME: " having an innapropriate username.",
+    ALT_ACCOUNT: "having an alt account."
 }
 const BAN_PREREASONS = {
-    MULTIPLE_VIOLATIONS: "%user% was banned for multiple server rule infringements.",
-    RACIAL_SLURS: "%user% was banned for using racial slurs in chat.",
-    DISCORD_TOS_VIOLATION: "%user% was banned for violating Discord Terms of Service",
-    NSFW_VIOLATION: "%user% was banned for posting NSFW content.",
-    UNDERAGE_USER: "%user% was banned for being under the age of 12, violating Discord ToS."
+    MULTIPLE_VIOLATIONS: "multiple server rule infringements.",
+    RACIAL_SLURS: "saying racial slurs in a chat.",
+    DISCORD_TOS_VIOLATION: "was banned for violating Discord Terms of Service.",
+    NSFW_VIOLATION: "was banned for NSFW violations.",
+    UNDERAGE_USER: "was banned for being under the age of 12 violating Discord Terms of Service."
 }
 
 const WARN_PREREASONS = {
@@ -21,5 +21,14 @@ const WARN_PREREASONS = {
     NSFW_VIOLATION: "Posting NSFW content.",
     UNDERAGE_USER: "Being under the age of 12, violating Discord ToS."
 }
+const MUTE_PREREASONS = {
+    SPAMMING:  "for spamming the chat.",
+    CURSING: "for cursing excessively in chat.",
+    BULLYING: "for bullying another member.",
+    FOREIGN_LANGUAGE: "for speaking in a foreign language.",
+    MINI_MODDING: "for mini-modding.",
+    CREATING_DRAMA: "for creating drama in the chat."
+}
 
-module.exports = { KICK_PREREASONS, BAN_PREREASONS, WARN_PREREASONS }
+
+module.exports = { KICK_PREREASONS, BAN_PREREASONS, WARN_PREREASONS, MUTE_PREREASONS }

@@ -1,72 +1,49 @@
 const { KICK_PREREASONS } = require("../../assets/reason-messages");
+const { formatExpression } = require("../../lib/helpers/StringHelpers/StringHelper")
 
 module.exports.props = {
     commandName: "kick",
-    description: "Kick a user from the server.",
-    usage: "/kick [user] [reason] [prereason?]",
-    private: true,
+    description: "Kicks a user from the server.",
+    usage: "/kick [user] (reason)",
     interaction: {
-        type: 1, // → https://discord-api-types.dev/api/discord-api-types-v10/enum/ApplicationCommandType
-        options: // → https://discord-api-types.dev/api/discord-api-types-v10/enum/ApplicationCommandOptionType 
-            [
-                {
-                    name: "member",
-                    type: 6,
-                    description: "The user you want to kick.",
-                    required: true
+        type: 1,
+        options: [
+            {
+                name: "user",
+                description: "Select a user to warn",
+                type: 6,
+                required: true,
+            },
+            {
+                name: "reason",
+                description: "Type a reason to warn the user",
+                type: 3,
+                required: true,
+                autocomplete: true,
+            },
+        ],
+    },
+};
+module.exports.autocomplete = async(client, interaction) => {
+    const focusedReason = interaction.options.getFocused();
 
-                },
-                {
-                    name: "reason",
-                    type: 3,
-                    description: "User set reason.",
-                    required: false,
-                },
-                {
-                    name: "prereason",
-                    type: 3,
-                    description: "A list of predetermined reasons.",
-                    choices: [
-                        { name: "Impersonation", value: "IMPERSONATION" },
-                        { name: "Inappropriate User", value: "INAPPROPRIATE_USER" },
-                        { name: "Alt Account", value: "ALT_ACCOUNT" },
-                    ],
-                    required: false
-                },
+    // Get and format the pre-reasons
+    const reasons = Object.keys(KICK_PREREASONS).map(reason =>
+        ({ name: formatExpression(reason), value: KICK_PREREASONS[reason] })
+    );
 
-            ],
-    }
+    // Get the focussed reason && return the filtered reason
+    const filteredReasons = reasons.filter(reason => reason.name.toLowerCase().includes(focusedReason.toLowerCase()));
+    interaction.respond(filteredReasons);
 }
 
 module.exports.run = async (client, interaction) => {
-    const apiUser = interaction.options.get("member").user;
+    const apiUser = interaction.options.get("user").user;
     const member = interaction.guild.members.cache.find(user => user.id === apiUser.id)
     if (!member) interaction.reply({ content: `The member you provided was not a proper member.` });
-    const preReasonOption = interaction.options.get("prereason");
-    const user_reason = interaction.options.get("reason");
-
-    if (user_reason && prereasonopt) {
-        interaction.reply({ content: `There can only be one reason.` })
-    }
-    switch (preReasonOption.value) {
-        case "IMPERSONATION":
-            member.kick(KICK_PREREASONS.IMPERSONATION.replace("%user%", "{FLUX}"))
-            interaction.reply({ content: `${KICK_PREREASONS.IMPERSONATION.replace('%user%', `${member}`)}` })
-            break;
-        case "INNAPROPRIATE_USER":
-            member.kick(KICK_PREREASONS.INAPPROPRIATE_USER.replace("%user%", `{FLUX}`))
-            interaction.reply({ content: `${KICK_PREREASONS.INAPPROPRIATE_USENRNAME.replace(`%user%`, `${member}`)}` })
-            break;
-        case "ALT_ACCOUNT":
-            member.kick(KICK_PREREASONS.ALT_ACCOUNT.replace("%user%", `{FLUX}`))
-            interaction.reply({ content: `${KICK_PREREASONS.ALT_ACCOUNT.replace('%user%', `${member}`)}` })
-            break;
-        default:
-            member.kick(user_reason)
-            interaction.reply({ content: `Kicked ${member} for ${user_reason}` })
-    }
-
-
-
-
+    const reason = interaction.options.get("reason").value;
+    if(apiUser.id === interaction.user.id) { return interaction.reply({ content: `You cannot kick yourself.` })}
+    
+    member.kick(reason)
+    interaction.reply({ content: `${apiUser} was kicked for ${reason}`})
 }
