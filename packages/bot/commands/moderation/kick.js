@@ -4,7 +4,7 @@ const { formatExpression } = require("../../lib/helpers/StringHelpers/StringHelp
 module.exports.props = {
     commandName: "kick",
     description: "Kicks a user from the server.",
-    usage: "/kick [user] (reason)",
+    usage: "/kick [user] [reason]",
     interaction: {
         type: 1,
         options: [

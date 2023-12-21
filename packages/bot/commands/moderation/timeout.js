@@ -64,5 +64,5 @@ const muteTime = Number(time.value.replace('m', ''));
 const duration = Number.isInteger(muteTime) ? muteTime * 60 * 1000 : false
 
 member.timeout(duration, `${reason}`)
-interaction.reply({ content: `Muted <@${apiUser.id}> for ${muteTime} minutes ${reason}`})
+interaction.reply({ content: `Muted <@${apiUser.id}> for **${muteTime} minutes** with the reason ${reason}`})
 }

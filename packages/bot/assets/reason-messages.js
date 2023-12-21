@@ -1,7 +1,7 @@
 const KICK_PREREASONS = {
-    IMPERSONATION: "impersonation.",
-    INAPPROPRIATE_USENRNAME: " having an innapropriate username.",
-    ALT_ACCOUNT: "having an alt account."
+    IMPERSONATION: "impersonating another staff member or celebrity.",
+    INAPPROPRIATE_USENRNAME: "innapropriate username.",
+    ALT_ACCOUNT: "alt account."
 }
 const BAN_PREREASONS = {
     MULTIPLE_VIOLATIONS: "multiple server rule infringements.",
@@ -22,12 +22,12 @@ const WARN_PREREASONS = {
     UNDERAGE_USER: "Being under the age of 12, violating Discord ToS."
 }
 const MUTE_PREREASONS = {
-    SPAMMING:  "for spamming the chat.",
-    CURSING: "for cursing excessively in chat.",
-    BULLYING: "for bullying another member.",
-    FOREIGN_LANGUAGE: "for speaking in a foreign language.",
-    MINI_MODDING: "for mini-modding.",
-    CREATING_DRAMA: "for creating drama in the chat."
+    SPAMMING:  "spamming excessively in a chat.",
+    CURSING: "cursing excessively in a chat.",
+    BULLYING: "bullying another member.",
+    FOREIGN_LANGUAGE: "speaking in a foreign language.",
+    MINI_MODDING: "mini-modding.",
+    CREATING_DRAMA: "creating drama in the chat."
 }
 
 
