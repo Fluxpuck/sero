@@ -21,7 +21,7 @@ module.exports = async (client) => {
 
     // Create Client Application Commands through a seperate event
     const applications = await client.application.commands.fetch();
-    client.emit(events.CREATE_APPLICATION_COMMAND, applications);
+    client.emit(events.APPLICATION_CREATE, applications);
 
     // Displays a welcome message in the console to indicate that the bot has successfully started up.
     await displayWelcomeMessage(client);
