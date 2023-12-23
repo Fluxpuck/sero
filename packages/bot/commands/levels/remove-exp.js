@@ -1,3 +1,5 @@
+const { postRequest } = require("../../database/connection");
+
 module.exports.props = {
     commandName: "remove-exp",
     description: "Remove experience from a user",
@@ -24,11 +26,24 @@ module.exports.props = {
 }
 
 module.exports.run = async (client, interaction) => {
+    // Get User && Amount details from the interaction options
+    const targetUser = interaction.options.get("user").user;
+    const targetAmount = interaction.options.get("amount").value;
 
+    // Give the user the experience
+    const result = await postRequest(`/levels/add/${interaction.guildId}/${targetUser.id}`, { experience: -targetAmount });
+    console.log(result)
 
-
-
-
-
-
+    // If the request was not successful, return an error
+    if (result.status !== 200) {
+        return interaction.reply({
+            content: "Something went wrong while giving experience to the user",
+            ephemeral: true
+        })
+    } else {
+        return interaction.reply({
+            content: `${targetAmount} experience was removed from <@${targetUser.id}>!`,
+            ephemeral: false
+        })
+    }
 }

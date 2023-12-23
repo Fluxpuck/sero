@@ -2,23 +2,14 @@
     // Use IntelliSense to learn about possible attributes.
     // Hover to view descriptions of existing attributes.
     // For more information, visit: https://go.microsoft.com/fwlink/?linkid=830387
-    "version": "0.2.0",
+    "version": "2.0.0",
     "configurations": [
-        {
-            "name": "Launch Development",
-            "type": "node",
-            "configurations": [
-                "Launch API",
-                "Launch bot"
-            ]
-        },
         {
             "name": "Launch API",
             "type": "node",
             "request": "launch",
             "program": "${workspaceFolder}/packages/api/app.js",
             "cwd": "${workspaceFolder}",
-            "protocol": "inspector",
             "runtimeExecutable": "node"
         },
         {
@@ -27,20 +18,7 @@
             "request": "launch",
             "program": "${workspaceFolder}/packages/bot/bot.js",
             "cwd": "${workspaceFolder}",
-            "protocol": "inspector",
             "runtimeExecutable": "node"
-        },
-        {
-            "name": "Docker Compose Up",
-            "type": "shell",
-            "command": "docker-compose",
-            "args": [
-                "up",
-                "-d"
-            ],
-            "cwd": "${workspaceFolder}",
-            "env": {},
-            "terminal": "integratedTerminal"
         },
         {
             "name": "Run SeedManager",
@@ -48,7 +26,6 @@
             "request": "launch",
             "program": "${workspaceFolder}/packages/api/test/_seedManager.js",
             "cwd": "${workspaceFolder}",
-            "protocol": "inspector",
             "runtimeExecutable": "node"
         },
     ]
