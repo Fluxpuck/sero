@@ -41,7 +41,7 @@ module.exports.run = async (client, interaction) => {
         })
     } else {
         return interaction.reply({
-            content: `<@${targetUser.id}> has recieved ${targetAmount} experience!`,
+            content: `<@${targetUser.id}> has recieved **${targetAmount}** experience!`,
             ephemeral: false
         })
     }

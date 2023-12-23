@@ -61,7 +61,7 @@ router.get("/:guildId/:userId", async (req, res, next) => {
 
 
 // Setup Attributes for this Route
-const requiredProperties = ['userId', 'guildId', 'duration'];
+const requiredProperties = ['duration'];
 
 /**
  * @router POST api/away/:guildId/userId
@@ -88,7 +88,7 @@ router.post("/:guildId/:userId", async (req, res, next) => {
     }
 
     // Check if the user is already away
-    const request = await Away.findOne({
+    const levels = await Away.findOne({
       where: {
         guildId: guildId,
         userId: userId
@@ -97,12 +97,18 @@ router.post("/:guildId/:userId", async (req, res, next) => {
     });
 
     // Update or Create the request
-    if (request) {
-      await request.update(updateData, { transaction: t });
-      res.status(200).send(`Away status for ${guildId}/${userId} updated successfully`);
+    if (levels) {
+      await levels.update(updateData, { transaction: t });
+      res.status(200).json({
+        message: `Away status for ${guildId}/${userId} updated successfully`,
+        data: levels
+      });
     } else {
-      await Away.create(updateData, { transaction: t });
-      res.status(200).send(`Away status for ${guildId}/${userId} created successfully`);
+      const request = await Away.create(updateData, { transaction: t });
+      res.status(200).json({
+        message: `Away status for ${guildId}/${userId} created successfully`,
+        data: request
+      });
     }
 
     // Commit and finish the transaction

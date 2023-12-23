@@ -41,7 +41,7 @@ module.exports.run = async (client, interaction) => {
         })
     } else {
         return interaction.reply({
-            content: `${targetAmount} experience was removed from <@${targetUser.id}>!`,
+            content: `**${targetAmount}** experience was removed from <@${targetUser.id}>!`,
             ephemeral: false
         })
     }

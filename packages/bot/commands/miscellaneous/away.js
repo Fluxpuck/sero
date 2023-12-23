@@ -1,3 +1,5 @@
+const { postRequest } = require("../../database/connection");
+
 module.exports.props = {
     commandName: "away",
     description: "Let everyone know you're away",
@@ -18,16 +20,25 @@ module.exports.props = {
 }
 
 module.exports.run = async (client, interaction) => {
+    // Get Away time value from the interaction options
+    const timeOption = interaction.options.get("time")?.value;
+    const timeInMinutes = timeOption ?? 5; // Default to 5 minutes
 
-    // const timeOption = interaction.options.get("time").user;
-    // const timeInMilliseconds = timeOptionInMinutes ? timeOptionInMinutes * 60000 : null;
+    // Give the user the experience
+    const result = await postRequest(`/away/${interaction.guildId}/${interaction.user.id}`, { duration: timeInMinutes });
 
-
-    return interaction.reply({
-        content: "SHADE IS A LITTLE BITCH",
-        ephemeral: true,
-    }).catch((err) => { throw err });
-
+    // If the request was not successful, return an error
+    if (result.status !== 200) {
+        return interaction.reply({
+            content: "Something went wrong setting your away status",
+            ephemeral: true
+        })
+    } else {
+        return interaction.reply({
+            content: `<@${interaction.user.id}> is now away for **${timeInMinutes}** minutes!`,
+            ephemeral: false
+        })
+    }
 
 
 }

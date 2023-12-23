@@ -46,17 +46,24 @@ module.exports = sequelize => {
         },
         expireAt: {
             type: DataTypes.DATE,
-            allowNull: false,
+            allowNull: true,
         },
     }, {
         sequelize,
         modelName: 'away',
         timestamps: true,
         createdAt: true,
+        updatedAt: true,
         hooks: {
             beforeCreate: (away, options) => {
                 // Calculate expireAt based on duration and createdAt
                 const expireAt = new Date(away.createdAt);
+                expireAt.setMinutes(expireAt.getMinutes() + away.duration);
+                away.expireAt = expireAt;
+            },
+            beforeUpdate: (away, options) => {
+                // Calculate expireAt based on duration and createdAt
+                const expireAt = new Date(away.updatedAt);
                 expireAt.setMinutes(expireAt.getMinutes() + away.duration);
                 away.expireAt = expireAt;
             },
