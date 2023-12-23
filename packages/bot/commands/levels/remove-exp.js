@@ -32,7 +32,6 @@ module.exports.run = async (client, interaction) => {
 
     // Give the user the experience
     const result = await postRequest(`/levels/add/${interaction.guildId}/${targetUser.id}`, { experience: -targetAmount });
-    console.log(result)
 
     // If the request was not successful, return an error
     if (result.status !== 200) {
