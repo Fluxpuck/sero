@@ -8,21 +8,21 @@ module.exports = async (client, message) => {
     if (message.author.bot) return;
 
     /**
-     * Check if User has been flagged
+     * Check if User has a userHash
      * If not, create/update User in the database
      */
     if (!message.author?.userHash) {
         // Get User from database
-        const result = await getRequest(`/users/${message.guildId}/${message.author.id}`);
+        const userResult = await getRequest(`/users/${message.guildId}/${message.author.id}`);
         // If User is not in the Database, store it
-        if (result.status == 404) {
+        if (userResult.status == 404) {
             await postRequest(`/users/${message.guildId}/${message.author.id}`, {
                 userName: message.author.username,
             });
         }
 
         // Add the userHash to the User object
-        message.author.userHash = result.data[0]?.userHash
+        message.author.userHash = userResult.data[0]?.userHash
 
     } else {
 
@@ -31,6 +31,16 @@ module.exports = async (client, message) => {
             messageId: message.id,
             channelId: message.channelId
         });
+
+        /**
+         * Check if User has been Away
+         * If so, remove the Away status and return an update message
+         */
+        const awayResult = await getRequest(`/away/${message.guildId}/${message.author.id}`);
+        console.log(awayResult)
+
+
+
 
         /**
          * This code will get a message per 60 seconds cooldown
