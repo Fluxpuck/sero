@@ -8,21 +8,21 @@ module.exports = async (client, message) => {
     if (message.author.bot) return;
 
     /**
-     * Check if User has been flagged
+     * Check if User has a userHash
      * If not, create/update User in the database
      */
     if (!message.author?.userHash) {
         // Get User from database
-        const result = await getRequest(`/users/${message.guildId}/${message.author.id}`);
+        const userResult = await getRequest(`/users/${message.guildId}/${message.author.id}`);
         // If User is not in the Database, store it
-        if (result.status == 404) {
+        if (userResult.status == 404) {
             await postRequest(`/users/${message.guildId}/${message.author.id}`, {
                 userName: message.author.username,
             });
         }
 
         // Add the userHash to the User object
-        message.author.userHash = result.data[0]?.userHash
+        message.author.userHash = userResult.data[0]?.userHash
 
     } else {
 
@@ -31,6 +31,9 @@ module.exports = async (client, message) => {
             messageId: message.id,
             channelId: message.channelId
         });
+
+        // Always trigger the guildMemberAway Event
+        client.emit(eventEnum.GUILD_MEMBER_AWAY, message);
 
         /**
          * This code will get a message per 60 seconds cooldown
@@ -61,10 +64,7 @@ module.exports = async (client, message) => {
             client.emit(eventEnum.GUILD_MEMBER_LEVEL, message, oldMember, newMember);
 
             // Add the user to the cooldowns Collection
-            client.cooldowns.set(cooldownKey, message, 60)
+            return client.cooldowns.set(cooldownKey, message, 60)
         }
-
     }
-
-    return;
 }
