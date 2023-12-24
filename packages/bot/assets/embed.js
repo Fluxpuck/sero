@@ -18,13 +18,13 @@ module.exports = {
         const messageEmbed = new EmbedBuilder()
         if (title) messageEmbed.setTitle(title);
         if (description) messageEmbed.setDescription(description);
-        if (author) messageEmbed.setAuthor(author?.name, author?.iconURL, author?.url);
+        if (author) messageEmbed.setAuthor(author);
         if (url) messageEmbed.setURL(url);
         if (thumbnail) messageEmbed.setThumbnail(thumbnail);
         if (timestamp) messageEmbed.setTimestamp(timestamp);
         if (color) messageEmbed.setColor(color);
         if (image) messageEmbed.setImage(image);
-        if (footer) messageEmbed.setFooter(footer?.text, footer?.iconURL);
+        if (footer) messageEmbed.setFooter(footer);
 
         if (fields && Array.isArray(fields)) {
             fields.forEach((field) => {

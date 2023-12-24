@@ -35,7 +35,7 @@ module.exports = async (client) => {
             await postRequest(`/guilds/${guild.id}`, {
                 guildId: guild.id,
                 guildName: guild.name,
-                active: true
+                active: false
             })
         }
     });

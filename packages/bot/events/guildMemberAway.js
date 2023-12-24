@@ -1,4 +1,6 @@
-const { getRequest } = require("../database/connection");
+const moment = require('moment');
+const { createCustomEmbed } = require("../assets/embed");
+const { getRequest, deleteRequest } = require("../database/connection");
 
 module.exports = async (client, message) => {
 
@@ -7,49 +9,41 @@ module.exports = async (client, message) => {
      * If it is mentioning someone, check if the mentioned user is away
      */
     const messageMention = message.mentions.users.first();
-    if (messageMention) {
-        // Check if the mentioned user is away
-        const awayResult = await getRequest(`/away/${message.guildId}/${messageMention.id}`);
-        if (awayResult.status == 200) {
+    const memberId = messageMention ? messageMention.id : message.author.id
 
+    // Check if the author is away
+    const awayResult = await getRequest(`/away/${message.guildId}/${memberId}`);
+    if (awayResult.status == 200) {
 
-            console.log("This member is away!")
-
-
-        }
-        return
-    } else {
-
-
-        // Get the away status of the author
-        const awayResult = await getRequest(`/away/${message.guildId}/${message.author.id}`);
-        if (awayResult.status == 200) {
-            // Trigger guildMemberLevel event
-            client.emit(eventEnum.GUILD_MEMBER_LEVEL, message, oldMember, newMember);
+        // If the user is the same as the author, remove away from database
+        if (memberId === message.author.id) {
+            return deleteRequest(`/away/${message.guildId}/${memberId}`);
         }
 
+        /**
+         * This code will only execute per 1 minute
+         */
+        const cooldownKey = memberId + message.guildId
+        if (client.cooldowns.has(cooldownKey) === false) {
+
+            // Calculate time difference
+            const timeDifference = moment().diff(awayResult.data.updatedAt, 'minutes');
+
+            // Construct message Embed
+            const messageEmbed = createCustomEmbed({
+                description: `<@${memberId}> is currently away...`,
+                footer: {
+                    text: `left ${timeDifference} minute${timeDifference === 1 ? "" : "s"} ago`
+                }
+            })
+
+            // Return the message
+            message.channel.send({
+                embeds: [messageEmbed]
+            });
+
+            // Add the user to the cooldowns Collection
+            return client.cooldowns.set(cooldownKey, message, 60)
+        }
     }
-
-
-    /* 
-    Check if there is a mention in the message
-    If there is, check if the mentioned user is away
-    Else, check if the author is away
-    If the user was away, remove the away status
-    */
-
-
-
-
-
-
-
-
-
-    console.log(awayResult)
-
-
-
-
-
 }
