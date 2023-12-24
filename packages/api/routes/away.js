@@ -39,7 +39,7 @@ router.get("/:guildId/:userId", async (req, res, next) => {
     const { guildId, userId } = req.params;
 
     // Check for results related to the guildId and userId
-    const result = await Away.findAll({
+    const result = await Away.findOne({
       where: {
         guildId: guildId,
         userId: userId

@@ -32,15 +32,8 @@ module.exports = async (client, message) => {
             channelId: message.channelId
         });
 
-        /**
-         * Check if User has been Away
-         * If so, remove the Away status and return an update message
-         */
-        const awayResult = await getRequest(`/away/${message.guildId}/${message.author.id}`);
-        console.log(awayResult)
-
-
-
+        // Always trigger the guildMemberAway Event
+        client.emit(eventEnum.GUILD_MEMBER_AWAY, message);
 
         /**
          * This code will get a message per 60 seconds cooldown
@@ -71,10 +64,7 @@ module.exports = async (client, message) => {
             client.emit(eventEnum.GUILD_MEMBER_LEVEL, message, oldMember, newMember);
 
             // Add the user to the cooldowns Collection
-            client.cooldowns.set(cooldownKey, message, 60)
+            return client.cooldowns.set(cooldownKey, message, 60)
         }
-
     }
-
-    return;
 }

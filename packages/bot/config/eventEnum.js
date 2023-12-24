@@ -1,5 +1,5 @@
 const eventEnum = {
-    CREATE_APPLICATION_COMMAND: 'createApplicationCommand',
+    APPLICATION_CREATE: 'applicationCreate',
     GUILD_AUDIT_LOG_ENTRY_CREATE: 'guildAuditLogEntryCreate',
     GUILD_CREATE: 'guildCreate',
     GUILD_DELETE: 'guildDelete',
@@ -8,6 +8,7 @@ const eventEnum = {
     INTERACTION_CREATE: 'interactionCreate',
     MESSAGE_CREATE: 'messageCreate',
     GUILD_MEMBER_LEVEL: 'guildMemberLevel',
+    GUILD_MEMBER_AWAY: 'guildMemberAway',
 };
 
 module.exports = eventEnum;

@@ -81,8 +81,8 @@ module.exports = sequelize => {
         };
     });
 
-    // Clean up expired records every midnight
-    cron.schedule('0 0 * * *', async () => {
+    // Clean up expired records every hour
+    cron.schedule('0 * * * *', async () => {
         try {
             await Away.destroy({
                 where: {
