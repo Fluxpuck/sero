@@ -1,5 +1,5 @@
 const { WARN_PREREASONS } = require("../../assets/reason-messages");
-const { formatExpression } = require("../../lib/helpers/StringHelpers/stringHelper");
+const { formatExpression } = require("../../lib/helpers/StringHelpers/StringHelper");
 
 module.exports.props = {
     commandName: "warn",
