@@ -1,8 +1,8 @@
 const express = require("express");
 const router = express.Router();
-const { Away } = require("../../database/models");
-const { sequelize } = require('../../database/sequelize');
-const { CreateError } = require('../../utils/ClassManager');
+const { Away } = require("../database/models");
+const { sequelize } = require('../database/sequelize');
+const { CreateError } = require('../utils/ClassManager');
 
 /**
  * @router GET api/away/:guildId
