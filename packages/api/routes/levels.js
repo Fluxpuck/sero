@@ -234,15 +234,15 @@ router.post('/reset/:guildId/:userId', async (req, res, next) => {
     });
 
     // Reset EXP of the user
-    level.experience = 0;
-    level.level = 0;
-    level.currentLevelExp = 0;
-    level.nextLevelExp = 0;
-    level.remainingExp = 0;
+    levels.experience = 0;
+    levels.level = 0;
+    levels.currentLevelExp = 0;
+    levels.nextLevelExp = 0;
+    levels.remainingExp = 0;
 
     // Save the changes
     await levels.save({ transaction: t });
-    res.status(200).send(`User ${guildId}/${userId} gained ${EXP_GAIN} experience points.`);
+    res.status(200).send(`User ${guildId}/${userId} experience points are reset`);
 
     //commit transaction
     return t.commit();
