@@ -41,5 +41,34 @@ module.exports = {
 		const words = str.split('_');
 		const formattedString = words.map(word => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase()).join(' ');
 		return formattedString;
-	}
+	},
+
+	/**
+	 * Formats a number where 3 digits are as it is, and the rest is then made as K, M, B, etc. (e.g. 1,000,000 becomes 1M)
+	 * @param {number} exp - The number to be formatted.
+	 * @returns {string} - The formatted number.
+	 * @example formatExp(1000) // 1K
+	 * @example formatExp(10000) // 10K
+	 * @example formatExp(100000) // 100K
+	 * @example formatExp(1000000) // 1M
+	 * @example formatExp(10000000) // 10M
+	 * @example formatExp(100000000) // 100M
+	 */
+	formatNumberWithSuffix: (num) => {
+
+		if (isNaN(num)) return num;
+
+		if (num < 1000) {
+			return num.toString();
+		} else if (num < 1000000) {
+			const result = Math.round((num / 1000) * 10) / 10;
+			return result % 1 === 0 ? result.toFixed(0) + "K" : result + "K";
+		} else if (num < 1000000000) {
+			const result = Math.round((num / 1000000) * 10) / 10;
+			return result % 1 === 0 ? result.toFixed(0) + "M" : result + "M";
+		} else if (num < 1000000000000) {
+			const result = Math.round((num / 1000000000) * 10) / 10;
+			return result % 1 === 0 ? result.toFixed(0) + "B" : result + "B";
+		}
+	},
 };
