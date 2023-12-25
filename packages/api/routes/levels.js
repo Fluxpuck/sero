@@ -287,7 +287,3 @@ router.delete("/:guildId/:userId", async (req, res, next) => {
 
 // → Export Router to App
 module.exports = router;
-
-
-
-

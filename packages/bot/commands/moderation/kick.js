@@ -24,7 +24,8 @@ module.exports.props = {
         ],
     },
 };
-module.exports.autocomplete = async(client, interaction) => {
+
+module.exports.autocomplete = async (client, interaction) => {
     const focusedReason = interaction.options.getFocused();
 
     // Get and format the pre-reasons
@@ -38,12 +39,32 @@ module.exports.autocomplete = async(client, interaction) => {
 }
 
 module.exports.run = async (client, interaction) => {
-    const apiUser = interaction.options.get("user").user;
-    const member = interaction.guild.members.cache.find(user => user.id === apiUser.id)
-    if (!member) interaction.reply({ content: `The member you provided was not a proper member.` });
-    const reason = interaction.options.get("reason").value;
-    if(apiUser.id === interaction.user.id) { return interaction.reply({ content: `You cannot kick yourself.` })}
-    
-    member.kick(reason)
-    interaction.reply({ content: `${apiUser} was kicked for ${reason}`})
+    // Get User && Reason details from the interaction options
+    const targetUser = interaction.options.get("user").user;
+    const violationReason = interaction.options.get("reason").value;
+
+    // If the targetUser === Author, return message
+    if (targetUser.id === interaction.user.id) return interaction.reply({
+        content: "You cannot kick yourself!",
+        ephemeral: true
+    })
+
+    /**
+     * @TODO - Add a warning to the database
+     */
+
+    // Kick the target user with reason
+    return targetUser.kick(violationReason)
+        .then(() => {
+            return interaction.reply({
+                content: `Successfully kicked **${targetUser.username}** (${targetUser.id}) for: \n ${violationReason}`,
+                ephemeral: false,
+            });
+        })
+        .catch(err => {
+            return interaction.reply({
+                content: `Could not kick **${targetUser.username}** (${targetUser.id}), but a log was created`,
+                ephemeral: true,
+            });
+        });
 }
