@@ -85,7 +85,7 @@ module.exports.run = async (client, interaction) => {
 
 	// Create the canvas
 	const canvas = createCanvas(1000, 300),
-		  ctx = canvas.getContext('2d');
+		ctx = canvas.getContext('2d');
 
 	// Load the background image
 	const background = await loadImageforCanvas('./packages/bot/assets/images/sero_rank_card.png');
@@ -129,69 +129,14 @@ module.exports.run = async (client, interaction) => {
 	ctx.drawImage(avatar, 50, 50, 200, 200);
 	ctx.restore(); // Restore the previous state
 
-	// Draw the user's presence icon
-	// Check if member has a presence
-	if (member.presence != undefined) {
+	// Draw the username
+	ctx.font = 'semi-bold 32px Arial Unicode MS';
+	ctx.fillStyle = RANK_CARD_COLORS.white;
 
-		// Check if the user is offline
-		if (member.presence?.clientStatus === null || Object.keys(member.presence.clientStatus).length === 0 && member.presence.clientStatus.constructor === Object) {
-			// If the user is offline, draw the offline icon
-			const offlineIcon = await loadImageforCanvas(`${presenceIconsFilePath}offline.png`);
-
-			if (!offlineIcon) {
-				return sendErrorEmbed(interaction, ERROR_MESSAGES.RANK_CARD_ERROR);
-			}
-
-			ctx.drawImage(offlineIcon, 295, 65, 50, 50);
-
-			// Draw the username
-			ctx.font = 'semi-bold 32px Arial Unicode MS';
-			ctx.fillStyle = RANK_CARD_COLORS.white;
-
-			// If the username is too long, shorten it and add ellipsis
-			if (ctx.measureText(member.user.username).width > 300) {
-				ctx.fillText(member.user.username.substring(0, 20) + '...', 350, 100);
-			} else {
-				ctx.fillText(member.user.username, 350, 100);
-			}
-
-		} else {
-			// Choose the first status the user has and draw the icon
-			const entries = Object.entries(member.presence.clientStatus);
-			if (entries.length > 0) {
-				const currentMemberPresence = entries[0][0] + entries[0][1];
-
-				const presenceIcon = await loadImageforCanvas(`${presenceIconsFilePath}/${currentMemberPresence}.png`);
-
-				if (!presenceIcon) {
-					return sendErrorEmbed(interaction, ERROR_MESSAGES.RANK_CARD_ERROR);
-				}
-
-				ctx.drawImage(presenceIcon, 295, 65, 50, 50);
-
-				// Draw the username
-				ctx.font = 'semi-bold 32px Arial Unicode MS';
-				ctx.fillStyle = RANK_CARD_COLORS.white;
-
-				// If the username is too long, shorten it and add ellipsis
-				if (ctx.measureText(member.user.username).width > 300) {
-					ctx.fillText(member.user.username.substring(0, 20) + '...', 350, 100);
-				} else {
-					ctx.fillText(member.user.username, 350, 100);
-				}
-			}
-		}
-	} else { // Post the username if the user has no presence
-		// Draw the username
-		ctx.font = 'semi-bold 32px Arial Unicode MS';
-		ctx.fillStyle = RANK_CARD_COLORS.white;
-
-		// If the username is too long, shorten it and add ellipsis
-		if (ctx.measureText(member.user.username).width > 300) {
-			ctx.fillText(member.user.username.substring(0, 20) + '...', 300, 100);
-		} else {
-			ctx.fillText(member.user.username, 300, 100);
-		}
+	if (ctx.measureText(member.user.username).width > 300) {
+		ctx.fillText(member.user.username.substring(0, 20) + '...', 300, 100);
+	} else {
+		ctx.fillText(member.user.username, 300, 100);
 	}
 
 	// Filling the level details
