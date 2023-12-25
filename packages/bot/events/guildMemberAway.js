@@ -40,6 +40,10 @@ module.exports = async (client, message) => {
             // Return the message
             message.channel.send({
                 embeds: [messageEmbed]
+            }).then(msg => {
+                setTimeout(() => {
+                    msg.delete();
+                }, 3000); // 3 seconds
             });
 
             // Add the user to the cooldowns Collection
