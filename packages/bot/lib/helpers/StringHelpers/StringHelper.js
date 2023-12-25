@@ -1,8 +1,3 @@
-/**
- * A collection of string helper functions.
- * @module stringHelper
- */
-
 module.exports = {
 	/**
 	 * Normalizes the text by adding a space between lowercase and uppercase letters.
@@ -36,4 +31,15 @@ module.exports = {
 	regEscape: (str) => {
 		return str.replace(/[-\/\\^$*+?.()|[\]{}]/g, '\\$&');
 	},
+
+	/**
+	 * Formats a string to be used as a regular expression pattern.
+	 * @param {string} str - The input string to be formatted.
+	 * @returns {string} - The formatted string.
+	 */
+	formatExpression: (str) => {
+		const words = str.split('_');
+		const formattedString = words.map(word => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase()).join(' ');
+		return formattedString;
+	}
 };
