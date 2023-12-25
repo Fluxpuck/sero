@@ -1,26 +1,44 @@
-const { readdirSync } = require('fs');
+const { readdirSync, statSync } = require('fs');
 const { join } = require('path');
 const { authenticate } = require('./authentication');
 
+function loadRoutes(app, basePath, currentPath = '') {
+    const fullPath = join(basePath, currentPath);
+    const files = readdirSync(fullPath);
+
+    files.forEach((file) => {
+        const filePath = join(currentPath, file);
+        const fullFilePath = join(fullPath, file);
+        const isDirectory = statSync(fullFilePath).isDirectory();
+
+        if (isDirectory) {
+            // Recursively load routes from nested folders
+            loadRoutes(app, basePath, filePath);
+        } else {
+            const api = require(fullFilePath);
+            const apiPath = `/api/${filePath.replace('.js', '')}`;
+            app.use(apiPath, authenticate, api);
+        }
+    });
+}
+
 module.exports.run = (app) => {
+    // Set directory path to routes and read files
+    const basePath = join(__dirname, '..', 'routes');
 
-    //set directory path to routes and read files
-    const filePath = join(__dirname, '..', 'routes')
-    const routeFiles = readdirSync(filePath);
+    // Dynamically load routes
+    loadRoutes(app, basePath);
 
-    //go through all routes files and bind to App
-    for (const route of routeFiles) {
-        const api = require(`${filePath}/${route}`);
-        const apiName = route.split('.').shift();
-        app.use(`/api/${apiName}`, authenticate, api);
-    }
-
-    //catch all other routes
+    // Catch all other routes
     app.use((req, res, next) => {
         const error = new Error('Sorry, that route does not exist.');
-        error.status = 400;
-        error.stack = req;
+        error.status = 404; // Use 404 for not found routes
         next(error);
     });
 
-}
+    // Error handling middleware
+    app.use((err, req, res, next) => {
+        console.error(err.stack);
+        res.status(err.status || 500).json({ error: err.message });
+    });
+};
