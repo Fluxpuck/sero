@@ -186,6 +186,20 @@ router.put("/:logId", async (req, res, next) => {
  */
 router.delete("/:logId", async (req, res, next) => {
     try {
+        const { logId } = req.params;
+
+        // Check if the log exists && If no log found, trigger error
+        const log = await Logs.findByPk(logId);
+        if (!log) { throw new CreateError(404, 'Log not found') };
+
+        // Delete the log
+        await log.destroy();
+
+        // Return success
+        res.status(200).json({
+            message: `Log was deleted successfully`,
+            data: log
+        });
 
     } catch (error) {
         await rollback();
