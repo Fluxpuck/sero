@@ -1,6 +1,7 @@
 const { Model, DataTypes } = require('sequelize');
+const { SnowflakeUtil } = require('discord.js');
 
-class AuditLogs extends Model {
+class Logs extends Model {
     static associate(models) {
         // this.belongsTo(models.Guild, { foreignKey: 'guildId' });
         // this.belongsTo(models.User, { foreignKey: 'userHash' });
@@ -8,11 +9,12 @@ class AuditLogs extends Model {
 }
 
 module.exports = sequelize => {
-    AuditLogs.init({
+    Logs.init({
         id: {
             type: DataTypes.INTEGER,
             primaryKey: true,
             autoIncrement: true,
+            defaultValue: () => SnowflakeUtil.generate(),
         },
         type: {
             type: DataTypes.STRING,
@@ -42,10 +44,11 @@ module.exports = sequelize => {
         },
     }, {
         sequelize,
-        modelName: 'auditlogs',
+        modelName: 'logs',
         timestamps: true,
-        createdAt: true
+        createdAt: true,
+        updatedAt: true
     });
 
-    return AuditLogs;
+    return Logs;
 }
