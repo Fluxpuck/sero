@@ -52,14 +52,24 @@ router.get("/:guildId/:userId", async (req, res, next) => {
       throw new CreateError(404, 'No levels found for this user');
     }
 
-    // Return the results
-    return res.status(200).json(result);
+    // Calculate the position based on experience for the guild
+    const position = await Levels.count({
+      where: {
+        guildId: guildId,
+        experience: { [Op.gt]: userLevel.experience }
+      }
+    });
+
+    // Return the user's level and position
+    return res.status(200).json({
+      userLevel,
+      position: position + 1
+    });
 
   } catch (error) {
     next(error);
   }
 });
-
 
 /**
  * @router POST api/levels/:guildId/:userId
@@ -117,7 +127,6 @@ router.post('/:guildId/:userId', async (req, res, next) => {
     next(error);
   }
 });
-
 
 /**
  * @router POST api/levels/add/:guildId/:userId
@@ -283,7 +292,6 @@ router.delete("/:guildId/:userId", async (req, res, next) => {
     next(error);
   }
 });
-
 
 // → Export Router to App
 module.exports = router;
