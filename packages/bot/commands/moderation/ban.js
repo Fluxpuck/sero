@@ -1,22 +1,22 @@
-const { KICK_PREREASONS } = require("../../assets/reason-messages");
+const { BAN_PREREASONS } = require("../../assets/reason-messages");
 const { formatExpression } = require("../../lib/helpers/StringHelpers/StringHelper")
 
 module.exports.props = {
-    commandName: "kick",
-    description: "Kicks a user from the server.",
-    usage: "/kick [user] [reason]",
+    commandName: "ban",
+    description: "Ban a user from the server.",
+    usage: "/ban [user] [reason]",
     interaction: {
         type: 1,
         options: [
             {
                 name: "user",
-                description: "Select a user to kick",
+                description: "Select a user to ban",
                 type: 6,
                 required: true,
             },
             {
                 name: "reason",
-                description: "Type a reason to kick the user",
+                description: "Type a reason to ban the user",
                 type: 3,
                 required: true,
                 autocomplete: true,
@@ -29,8 +29,8 @@ module.exports.autocomplete = async (client, interaction) => {
     const focusedReason = interaction.options.getFocused();
 
     // Get and format the pre-reasons
-    const reasons = Object.keys(KICK_PREREASONS).map(reason =>
-        ({ name: formatExpression(reason), value: KICK_PREREASONS[reason] })
+    const reasons = Object.keys(BAN_PREREASONS).map(reason =>
+        ({ name: formatExpression(reason), value: BAN_PREREASONS[reason] })
     );
 
     // Get the focussed reason && return the filtered reason
@@ -45,31 +45,25 @@ module.exports.run = async (client, interaction) => {
 
     // If the targetUser === Author, return message
     if (targetUser.id === interaction.user.id) return interaction.reply({
-        content: "You cannot kick yourself!",
+        content: "You cannot ban yourself!",
         ephemeral: true
     })
-    // If the targetUser has permission "ModerateMembers" do not ban.
-    if(member.permissions.has(PermissionFlagsBits.ModerateMembers)) return interaction.reply({
-        content: `${member.user.username} is a moderator.`,
-        ephemeral: true
-    })
-    
 
     /**
-     * @TODO - Add a kick to the database
+     * @TODO - Add a ban to the database
      */
 
-    // Kick the target user with reason
-    return targetUser.kick(violationReason)
+    // Ban the target user with reason
+    return targetUser.ban(violationReason)
         .then(() => {
             return interaction.reply({
-                content: `Successfully kicked **${targetUser.username}** (${targetUser.id}) for: \n ${violationReason}`,
+                content: `Successfully banned **${targetUser.username}** (${targetUser.id}) for: \n ${violationReason}`,
                 ephemeral: false,
             });
         })
         .catch(err => {
             return interaction.reply({
-                content: `Could not kick **${targetUser.username}** (${targetUser.id}), but a log was created`,
+                content: `Could not ban **${targetUser.username}** (${targetUser.id}), but a log was created`,
                 ephemeral: true,
             });
         });

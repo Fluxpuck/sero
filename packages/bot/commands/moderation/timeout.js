@@ -1,4 +1,5 @@
 const {MUTE_PREREASONS} = require("../../assets/reason-messages");
+const { PermissionFlagsBits } = require("discord.js")
 const {formatExpression} = require("../../lib/helpers/StringHelpers/StringHelper")
 module.exports.props = {
     commandName: "timeout",
@@ -58,6 +59,19 @@ module.exports.run = async (client, interaction) => {
 const apiUser = interaction.options.get("member").user;
 const member = interaction.guild.members.cache.find(user => user.id === apiUser.id)
 if(!member) interaction.reply({ content: `The member you provided was not a proper member.` });
+
+// If the member === author, return the message and do not ban.
+if(member.user.id === interaction.user.id) return interaction.reply({
+    content: `You cannot kick yourself.`,
+    ephemeral: true
+})
+
+    // If the targetUser has permission "ModerateMembers" do not ban.
+if(member.permissions.has(PermissionFlagsBits.ModerateMembers)) return interaction.reply({ 
+    content: `${member.user.username} is a moderator.`,
+    ephemeral: true
+})
+
 const time = interaction.options.get("time")
 const reason = interaction.options.get("reason").value;
 const muteTime = Number(time.value.replace('m', ''));
