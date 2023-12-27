@@ -19,6 +19,12 @@ module.exports.run = async (client, interaction) => {
     const targetUser = interaction.options.get("user");
     const targetMember = await interaction.guild.members.fetch(targetUser.value);
 
+    // Check if the mentioned user is not the author and then return.
+    if(targetMember.user.id === interaction.user.id) return interaction.reply({
+        content: `You cannot disconnect yourself.`,
+        ephemeral: true
+    })
+    
     if (targetMember?.voice.channel) {
         // Set a disconnected flag on the member object
         targetMember.voice.disconnected = true;

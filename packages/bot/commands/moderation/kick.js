@@ -48,6 +48,12 @@ module.exports.run = async (client, interaction) => {
         content: "You cannot kick yourself!",
         ephemeral: true
     })
+    // If the targetUser has permission "ModerateMembers" do not ban.
+    if(member.permissions.has(PermissionFlagsBits.ModerateMembers)) return interaction.reply({
+        content: `${member.user.username} is a moderator.`,
+        ephemeral: true
+    })
+    
 
     /**
      * @TODO - Add a kick to the database
