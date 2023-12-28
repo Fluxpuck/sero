@@ -22,6 +22,7 @@ module.exports.props = {
                 autocomplete: true,
             },
         ],
+        defaultMemberPermissions: ['KickMembers'],
     },
 };
 

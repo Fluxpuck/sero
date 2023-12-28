@@ -1,44 +1,39 @@
-const {MUTE_PREREASONS} = require("../../assets/reason-messages");
+const { MUTE_PREREASONS } = require("../../assets/reason-messages");
 const { PermissionFlagsBits } = require("discord.js")
-const {formatExpression} = require("../../lib/helpers/StringHelpers/StringHelper")
+const { formatExpression } = require("../../lib/helpers/StringHelpers/StringHelper")
+
 module.exports.props = {
     commandName: "timeout",
-    description: "Puts a user into a muted state, and does not allow them to chat.",
+    description: "Timeout a user in the server",
     usage: "/mute [user] [time] [reason]",
     private: true,
     interaction: {
-        type: 1, // → https://discord-api-types.dev/api/discord-api-types-v10/enum/ApplicationCommandType
-        options: // → https://discord-api-types.dev/api/discord-api-types-v10/enum/ApplicationCommandOptionType 
+        type: 1,
+        options:
             [
                 {
-                    name: "member",
+                    name: "user",
                     type: 6,
-                    description: "The user you want to mute.",
+                    description: "User to timeout",
                     required: true
 
                 },
                 {
                     name: "time",
-                    type: 3,
-                    description: "Predetermined times to mute this user.",
-                    choices: [
-                        { name: "5 Minutes", value: "5m"},
-                        { name: "10 Minutes", value: "10m" },
-                        { name: "20 Minutes", value: "20m"},
-                        { name: "1 Hour", value: "60m" },
-                        { name: "12 Hours", value: "720m" },
-                        { name: "1 day", value: "1440m" }
-                    ],
-                    required: true
+                    type: 10,
+                    description: "Duration (in minutes) of the timeout",
+                    required: true,
+                    autocomplete: true
                 },
                 {
                     name: "reason",
                     type: 3,
-                    description: "User set reason.",
+                    description: "Reason for the timeout",
                     required: true,
                     autocomplete: true
                 },
             ],
+        defaultMemberPermissions: ['KickMembers'],
     }
 }
 module.exports.autocomplete = async (client, interaction) => {
@@ -56,27 +51,44 @@ module.exports.autocomplete = async (client, interaction) => {
 
 
 module.exports.run = async (client, interaction) => {
-const apiUser = interaction.options.get("member").user;
-const member = interaction.guild.members.cache.find(user => user.id === apiUser.id)
-if(!member) interaction.reply({ content: `The member you provided was not a proper member.` });
+    // Get User details from the interaction options
+    const targetUser = interaction.options.get("user").user;
 
-// If the member === author, return the message and do not ban.
-if(member.user.id === interaction.user.id) return interaction.reply({
-    content: `You cannot kick yourself.`,
-    ephemeral: true
-})
+    // Prevent the author from muting themselves
+    if (targetUser.id === interaction.user.id) return interaction.reply({
+        content: `You cannot kick yourself.`,
+        ephemeral: true
+    });
 
-    // If the targetUser has permission "ModerateMembers" do not ban.
-if(member.permissions.has(PermissionFlagsBits.ModerateMembers)) return interaction.reply({ 
-    content: `${member.user.username} is a moderator.`,
-    ephemeral: true
-})
+    // Prevent the author from muting a moderator
+    if (targetUser.permissions.has(PermissionFlagsBits.ModerateMembers)) return interaction.reply({
+        content: `You cannot mute a moderator.`,
+        ephemeral: true
+    });
 
-const time = interaction.options.get("time")
-const reason = interaction.options.get("reason").value;
-const muteTime = Number(time.value.replace('m', ''));
-const duration = Number.isInteger(muteTime) ? muteTime * 60 * 1000 : false
+    // Get the duration && reason from the interaction options
+    const targetDuration = interaction.options.get("time").value;
+    const targetReason = interaction.options.get("reason").value;
 
-member.timeout(duration, `${reason}`)
-interaction.reply({ content: `Muted <@${apiUser.id}> for **${muteTime} minutes** with the reason ${reason}`})
+    // Convert the duration to milliseconds
+    const duration = targetDuration * 60000;
+
+    /**
+     * @TODO - Add a warning to the database
+     */
+
+    // Mute the target user with reason
+    targetUser.timeout(duration, `${targetReason}`)
+        .then(() => {
+            return interaction.reply({
+                content: `Successfully muted <@${targetUser.id}> for: \n ${targetReason}}`,
+                ephemeral: false,
+            });
+        })
+        .catch(err => {
+            return interaction.reply({
+                content: `Could not mute <@${targetUser.id}>!`,
+                ephemeral: true,
+            });
+        });
 }

@@ -1,27 +1,29 @@
+const { PermissionFlagsBits } = require("discord.js");
 const { BAN_PREREASONS } = require("../../assets/reason-messages");
 const { formatExpression } = require("../../lib/helpers/StringHelpers/StringHelper")
 
 module.exports.props = {
     commandName: "ban",
-    description: "Ban a user from the server.",
+    description: "Ban a user from the server",
     usage: "/ban [user] [reason]",
     interaction: {
         type: 1,
         options: [
             {
                 name: "user",
-                description: "Select a user to ban",
+                description: "User to ban",
                 type: 6,
                 required: true,
             },
             {
                 name: "reason",
-                description: "Type a reason to ban the user",
+                description: "Reason for the ban",
                 type: 3,
                 required: true,
                 autocomplete: true,
             },
         ],
+        defaultMemberPermissions: ['KickMembers'],
     },
 };
 
@@ -48,6 +50,11 @@ module.exports.run = async (client, interaction) => {
         content: "You cannot ban yourself!",
         ephemeral: true
     })
+    // If the targetUser has permission "ModerateMembers" do not ban.
+    if (member.permissions.has(PermissionFlagsBits.ModerateMembers)) return interaction.reply({
+        content: `${member.user.username} is a moderator!`,
+        ephemeral: true
+    })
 
     /**
      * @TODO - Add a ban to the database
@@ -63,7 +70,7 @@ module.exports.run = async (client, interaction) => {
         })
         .catch(err => {
             return interaction.reply({
-                content: `Could not ban **${targetUser.username}** (${targetUser.id}), but a log was created`,
+                content: `Could not ban **${targetUser.username}** (${targetUser.id})!`,
                 ephemeral: true,
             });
         });

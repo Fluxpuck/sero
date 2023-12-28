@@ -1,28 +1,30 @@
+const { PermissionFlagsBits } = require("discord.js");
 const { KICK_PREREASONS } = require("../../assets/reason-messages");
 const { formatExpression } = require("../../lib/helpers/StringHelpers/StringHelper")
 
 module.exports.props = {
     commandName: "kick",
-    description: "Kicks a user from the server.",
+    description: "Kick a user from the server",
     usage: "/kick [user] [reason]",
     interaction: {
         type: 1,
         options: [
             {
                 name: "user",
-                description: "Select a user to kick",
+                description: "User to kick",
                 type: 6,
                 required: true,
             },
             {
                 name: "reason",
-                description: "Type a reason to kick the user",
+                description: "Reason for the kick",
                 type: 3,
                 required: true,
                 autocomplete: true,
             },
         ],
     },
+    defaultMemberPermissions: ['KickMembers'],
 };
 
 module.exports.autocomplete = async (client, interaction) => {
@@ -49,11 +51,11 @@ module.exports.run = async (client, interaction) => {
         ephemeral: true
     })
     // If the targetUser has permission "ModerateMembers" do not ban.
-    if(member.permissions.has(PermissionFlagsBits.ModerateMembers)) return interaction.reply({
-        content: `${member.user.username} is a moderator.`,
+    if (member.permissions.has(PermissionFlagsBits.ModerateMembers)) return interaction.reply({
+        content: `${member.user.username} is a moderator!`,
         ephemeral: true
     })
-    
+
 
     /**
      * @TODO - Add a kick to the database
@@ -69,7 +71,7 @@ module.exports.run = async (client, interaction) => {
         })
         .catch(err => {
             return interaction.reply({
-                content: `Could not kick **${targetUser.username}** (${targetUser.id}), but a log was created`,
+                content: `Could not kick **${targetUser.username}** (${targetUser.id})!`,
                 ephemeral: true,
             });
         });
