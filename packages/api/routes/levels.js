@@ -2,6 +2,7 @@ const express = require('express');
 const router = express.Router();
 const { Levels, User, Guild } = require("../database/models");
 const { sequelize } = require('../database/sequelize');
+const { Op } = require('sequelize');
 const { CreateError } = require('../utils/ClassManager');
 const { calculateXP } = require('../utils/levelManager');
 
@@ -40,7 +41,7 @@ router.get("/:guildId/:userId", async (req, res, next) => {
     const { guildId, userId } = req.params;
 
     // Check for results related to the guildId
-    const result = await Levels.findAll({
+    const result = await Levels.findOne({
       where: {
         guildId: guildId,
         userId: userId
@@ -56,14 +57,14 @@ router.get("/:guildId/:userId", async (req, res, next) => {
     const position = await Levels.count({
       where: {
         guildId: guildId,
-        experience: { [Op.gt]: userLevel.experience }
+        experience: { [Op.gt]: result.experience }
       }
     });
 
     // Return the user's level and position
     return res.status(200).json({
-      userLevel,
-      position: position + 1
+      userLevel: result,
+      position: position + 1,
     });
 
   } catch (error) {

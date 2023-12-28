@@ -1,42 +1,5 @@
-const { AttachmentBuilder } = require('discord.js');
-const { createCustomEmbed } = require('../../assets/embed');
 const { getRequest } = require("../../database/connection");
-const { createCanvas, loadImage, registerFont } = require('canvas');
-const { formatNumberWithSuffix } = require('../../lib/helpers/StringHelpers/stringHelper');
-const ClientEmbedColors = require('../../assets/embed-colors');
-
-// Register the font
-registerFont('./packages/bot/assets/fonts/Arial Unicode MS.ttf', {
-	family: 'sans serif'
-});
-
-// Path to the presence icons
-const presenceIconsFilePath = './packages/bot/assets/images/icons_png';
-
-/* 
-	The colors used in the rank card. Note: These colors are based on the Sero theme. 
-	The accent can be changed later to match different backgrounds?
-*/
-const RANK_CARD_COLORS = {
-	main: "#F6C020",
-	main_rgb: "246, 192, 32",
-	white: "#ffffff",
-	white_rgb: "255, 255, 255",
-	black: "#000000",
-	black_rgb: "0, 0, 0",
-}
-
-/*
-	Error messages for the rank command.
-	@Fluxpuck - I'm not sure if this is the best way to handle error messages, but it's the best I could think of. Maybe we can move this to a separate file?
-*/
-const ERROR_MESSAGES = {
-	USER_NOT_FOUND: "User `{{userName}}` not found.",
-	USER_NOT_RANKED: "User {{userName}} is not ranked yet.",
-	USER_RANK_ERROR: "An error occurred while getting the {{userName}}'s rank.",
-	RANK_CARD_ERROR: "An error occurred while generating the rank card!",
-	RANK_CMD_ERROR: "An error occurred while executing the rank command!",
-}
+const { createRankCard } = require("../../lib/canvas/rank");
 
 module.exports.props = {
 	commandName: "rank",
@@ -46,9 +9,9 @@ module.exports.props = {
 		type: 1,
 		options: [
 			{
-				name: "member",
+				name: "user",
 				type: 6,
-				description: "The user you want to get the rank of.",
+				description: "The user you want to get the rank of",
 				required: false,
 			},
 		],
@@ -57,167 +20,52 @@ module.exports.props = {
 
 module.exports.run = async (client, interaction) => {
 
-	// Get the member from the interaction or the member who ran the interaction if no member was mentioned
-	const member = interaction.options.get("member") || interaction.member,
-		guildId = interaction.guildId;
-
-	let memberRankResponse;
-
-	// Get the user's rank
-	try {
-		memberRankResponse = await getRequest(`/levels/${guildId}/${member.user.id}`);
-	} catch (error) {
-		console.error(error);
-		return sendErrorEmbed(interaction, ERROR_MESSAGES.RANK_CMD_ERROR);
+	// Get User details from the interaction options
+	const targetUser = interaction.options.get("user")?.user || interaction.user;
+	if (!targetUser) {
+		return interaction.reply({
+			content: "Oops! Something went wrong while trying to fetch the user",
+			ephemeral: true
+		})
 	}
 
-	if (memberRankResponse.status === 404) {
-		return sendErrorEmbed(interaction, ERROR_MESSAGES.USER_NOT_RANKED.replace('{{userName}}', member.user.toString()));
+	// Get the user experience
+	const result = await getRequest(`/levels/${interaction.guildId}/${targetUser.id}`);
+
+	// If the request was not successful, return an error
+	if (result.status !== 200) {
+		return interaction.reply({
+			content: "Oops! Something went wrong while trying to fetch the rank",
+			ephemeral: true
+		})
 	}
 
-	if (memberRankResponse.status !== 200) {
-		return sendErrorEmbed(interaction, ERROR_MESSAGES.USER_RANK_ERROR.replace('{{user}}', member.user.username));
-	}
+	// Get request details
+	const { userLevel, position } = result.data;
+	const { level, experience, nextLevelExp, currentLevelExp } = userLevel;
 
-	const currentLevelExp = memberRankResponse.data[0].currentLevelExp,
-		nextLevelExp = memberRankResponse.data[0].nextLevelExp,
-		currentLevel = memberRankResponse.data[0].level;
-
-	// Create the canvas
-	const canvas = createCanvas(1000, 300),
-		ctx = canvas.getContext('2d');
-
-	// Load the background image
-	const background = await loadImageforCanvas('./packages/bot/assets/images/sero_rank_card.png');
-
-	// if loadImageforCanvas returns null, send an error embed and return
-	if (!background) {
-		return sendErrorEmbed(interaction, ERROR_MESSAGES.RANK_CARD_ERROR);
-	}
-
-	// Draw the background image
-	ctx.drawImage(background, 0, 0, canvas.width, canvas.height);
-
-	// Load the user's avatar
-	const avatar = await loadImageforCanvas(member.user.displayAvatarURL({ extension: 'png', size: 1024 }));
-
-	// if loadImageforCanvas returns null, send an error embed and return
-	if (!avatar) {
-		return sendErrorEmbed(interaction, ERROR_MESSAGES.RANK_CARD_ERROR);
-	}
-
-	// Draw circle to clip the avatar
-	ctx.beginPath();
-	ctx.arc(150, 150, 100, 0, Math.PI * 2);
-	ctx.fillStyle = `rgba(${RANK_CARD_COLORS.black_rgb}, 0.5)`;
-	ctx.fill();
-
-	// Add a border to the avatar
-	ctx.strokeStyle = RANK_CARD_COLORS.main;
-	ctx.lineWidth = 2;
-	ctx.stroke();
-	ctx.closePath();
-
-	// Clip the avatar
-	ctx.save(); // Save the current state
-	ctx.beginPath();
-	ctx.arc(150, 150, 100, 0, Math.PI * 2);
-	ctx.closePath();
-	ctx.clip();
-
-	// Draw the user's avatar
-	ctx.drawImage(avatar, 50, 50, 200, 200);
-	ctx.restore(); // Restore the previous state
-
-	// Draw the username
-	ctx.font = 'semi-bold 32px Arial Unicode MS';
-	ctx.fillStyle = RANK_CARD_COLORS.white;
-
-	if (ctx.measureText(member.user.username).width > 300) {
-		ctx.fillText(member.user.username.substring(0, 20) + '...', 300, 100);
-	} else {
-		ctx.fillText(member.user.username, 300, 100);
-	}
-
-	// Filling the level details
-	// Draw the level
-	ctx.font = 'normal 32px Arial Unicode MS';
-	ctx.fillStyle = RANK_CARD_COLORS.white;
-	ctx.fillText(`Level`, canvas.width - 210, 100);
-
-	// Draw the level number
-	ctx.font = 'bold 52px Arial Unicode MS';
-	ctx.fillStyle = RANK_CARD_COLORS.white;
-	ctx.fillText(currentLevel, (canvas.width - 260) + ctx.measureText('Level').width, 100);
-
-	// Draw the experience bar
-	ctx.lineJoin = 'round';
-	ctx.lineWidth = 40;
-
-	// Shadow of the xp bar
-	ctx.strokeStyle = `rgba(${RANK_CARD_COLORS.black_rgb}, 0.8)`;
-	ctx.strokeRect(319, canvas.height - 151, 602, 2);
-
-	// Empty bar
-	ctx.strokeStyle = `rgba(${RANK_CARD_COLORS.main_rgb}, 0.2)`;
-	ctx.strokeRect(320, canvas.height - 150, 600, 0);
-
-	// Filled bar
-	ctx.strokeStyle = `rgba(${RANK_CARD_COLORS.main_rgb}, 1)`;
-	ctx.strokeRect(320, canvas.height - 150, (600 * (currentLevelExp / nextLevelExp)), 0);
-
-	// Draw the experience
-	ctx.font = 'normal 32px Arial Unicode MS';
-	ctx.fillStyle = RANK_CARD_COLORS.white;
-	let currentExpText = `${formatNumberWithSuffix(currentLevelExp)}`;
-	ctx.fillText(`${currentExpText}`, canvas.width - 250, canvas.height - 80);
-
-
-	// Draw the experience number
-	ctx.font = 'bold 32px Arial Unicode MS';
-	ctx.fillStyle = RANK_CARD_COLORS.white;
-	let nextExpText = `${formatNumberWithSuffix(nextLevelExp)}`;
-	ctx.fillText('/ ' + nextExpText, (canvas.width - 250) + ctx.measureText(currentExpText).width, canvas.height - 80);
-
-	// Send the image
-	const attachment = new AttachmentBuilder(
-		canvas.toBuffer('image/png', { compressionLevel: 1, resolution: 1, }),
-		{
-			name: `${member.user.id}_rank.png`,
-			description: `Rank card for ${member.user.username}`,
-		}
+	// Get the user's rank card
+	const rankCard = await createRankCard(
+		targetUser.id,
+		targetUser.username,
+		targetUser.displayAvatarURL({ forceStatic: true, extension: "png", size: 1024 }),
+		position,
+		experience,
+		level,
+		nextLevelExp,
+		currentLevelExp
 	);
 
-	interaction.reply({
-		files: [attachment]
-	});
-}
-
-/*
-	Loads an image for the canvas. Returns null if the image could not be loaded.
-*/
-const loadImageforCanvas = async (img) => {
-	try {
-		const image = await loadImage(img);
-		return image;
-	} catch (error) {
-		console.error(error);
-		return null;
+	// If creating the rank card was not successful, return an error
+	if (!rankCard) {
+		return interaction.reply({
+			content: "Oops! Something went wrong creating your rank card",
+			ephemeral: true
+		})
 	}
-}
 
-/*
-	Sends an error embed to the user.
-	@Fluxpuck - Suggestions on where we can move this function?
-*/
-const sendErrorEmbed = async (interaction, error) => {
-	const errorEmbed = createCustomEmbed({
-		color: ClientEmbedColors.ERROR,
-		title: '<:red_cross:662323115917049876> | Uh oh!',
-		description: error
-	});
-
-	await interaction.reply({
-		embeds: [errorEmbed],
-	});
+	// Return embed with rank details
+	return interaction.reply(
+		{ files: [rankCard] }
+	)
 }

@@ -62,13 +62,13 @@ module.exports = {
 			return num.toString();
 		} else if (num < 1000000) {
 			const result = Math.round((num / 1000) * 10) / 10;
-			return result % 1 === 0 ? result.toFixed(0) + "K" : result + "K";
+			return result % 1 === 0 ? result.toFixed(0) + " K" : result + " K";
 		} else if (num < 1000000000) {
 			const result = Math.round((num / 1000000) * 10) / 10;
-			return result % 1 === 0 ? result.toFixed(0) + "M" : result + "M";
+			return result % 1 === 0 ? result.toFixed(0) + " M" : result + " M";
 		} else if (num < 1000000000000) {
 			const result = Math.round((num / 1000000000) * 10) / 10;
-			return result % 1 === 0 ? result.toFixed(0) + "B" : result + "B";
+			return result % 1 === 0 ? result.toFixed(0) + " B" : result + " B";
 		}
 	},
 };
