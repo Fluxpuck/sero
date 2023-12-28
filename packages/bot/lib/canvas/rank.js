@@ -1,5 +1,4 @@
 const { AttachmentBuilder } = require('discord.js');
-const dominantColor = require('dominant-color');
 const { createCanvas, loadImage, registerFont } = require('canvas');
 const { formatNumberWithSuffix, capitalize } = require('../../lib/helpers/StringHelpers/stringHelper');
 const RankCardColors = require('../../assets/rankCard');
@@ -69,10 +68,15 @@ async function createRankCard(
 
         // Define the position for the text
         const username_textX = 105;
-        const username_textY = 50;
+        const username_textY = 55;
 
         // Draw the username on the canvas
-        ctx.fillText(userName, username_textX, username_textY);
+        // If the username is longer than 140px, we need to truncate it and add ellipsis
+        if (ctx.measureText(userName).width > 140) {
+            ctx.fillText(userName.substring(0, 10) + '...', username_textX, username_textY);
+        } else {
+            ctx.fillText(userName, username_textX, username_textY);
+        }
         ctx.save();
 
         /**
@@ -86,7 +90,7 @@ async function createRankCard(
         const barWidth = 280;
         const barHeight = 18;
         const barX = 105;
-        const barY = 60;
+        const barY = 70;
 
         // Update the experience bar
         const progressBarWidth = (experience / nextLevelExp) * barWidth;
@@ -100,32 +104,34 @@ async function createRankCard(
         ctx.restore();
 
         // Define the position for the text
-        const experience_textX = canvas.width - 85;
-        const experience_textY = 50;
+        const experience_textX = canvas.width - 14;
+        const experience_textY = 55;
 
         // Draw the text on the canvas
-        ctx.font = '13px Roboto Medium';
+        ctx.font = '14px Roboto medium';
         ctx.textAlign = 'right';
         const experienceText = `${formatNumberWithSuffix(experience)} of ${formatNumberWithSuffix(nextLevelExp)}`;
 
         const drawExperienceText = (text) => {
             // Split the text into two parts based on separator
-            const [firstPart, secondPart] = text.split(' of ');
+            const [currentExp, nextExp] = text.split(' of ');
 
             // Set color for the first part of the text
-            ctx.fillStyle = RankCardColors.WHITE;
-            ctx.fillText(firstPart, experience_textX, experience_textY);
+            ctx.fillStyle = RankCardColors.YELLOW;
+            ctx.fillText(nextExp, experience_textX, experience_textY);
 
-            // Measure the width of the second part to determine the position for the first part
-            const secondPartWidth = ctx.measureText(secondPart).width;
-            const firstPartX = experience_textX - ctx.measureText(' of ').width + secondPartWidth + 4;
+            const nextExpWidth = ctx.measureText(nextExp).width;
+            const nextExpX = (experience_textX - nextExpWidth) - 6;
 
             // Draw the divider
-            ctx.fillText(' of ', firstPartX + ctx.measureText(firstPart).width, experience_textY);
+            ctx.fillStyle = `rgba(${RankCardColors.WHITE_RGB}, 0.5)`
+            ctx.fillText('of', nextExpX, experience_textY);
+
+            const currentExpOffset = (nextExpX - ctx.measureText('of').width) - 6;
 
             // Set color for the second part of the text
-            ctx.fillStyle = RankCardColors.YELLOW;
-            ctx.fillText(secondPart, firstPartX + ctx.measureText(firstPart).width + ctx.measureText(' of ').width + 4, experience_textY);
+            ctx.fillStyle = RankCardColors.WHITE;
+            ctx.fillText(currentExp, currentExpOffset, experience_textY);
         }
 
 
@@ -138,61 +144,93 @@ async function createRankCard(
         ctx.restore();
 
         // Define the position for the text
-        const rank_textX = canvas.width - 130;
-        const level_textX = canvas.width - 80;
-        const RL_textY = 25;
+        const level_textX = canvas.width - 12;
+        const RL_textY = 30;
 
-        const drawRankText = (text) => {
+        const drawRankText = (text, levelTextWidth) => {
             // Split the text into two parts based on separator
-            const [firstPart, secondPart] = text.split('-');
+            const [rankSymbol, rankNumber] = text.split('-');
 
-            // Set color for the first part of the text
+            // Set color for the rankNumer
+            ctx.font = '24px Roboto Bold';
+            ctx.fillStyle = RankCardColors.YELLOW;
+
+            const offsetFromLevelText = level_textX - levelTextWidth - 30;
+            let levelTextOffset = offsetFromLevelText;
+
+            // If the levelTextWidth is greater than 20, we need to adjust the offset
+            if (levelTextWidth.toFixed(0) >= 20) {
+                levelTextOffset -= (levelTextWidth - 2) * 0.275; // Adjust the offset based on the width of the levelText
+            }
+
+            ctx.fillText(rankNumber, levelTextOffset + 4, RL_textY);
+
+            // Set color for the rankNumber first and draw it
             ctx.font = '16px Roboto Medium';
             ctx.fillStyle = RankCardColors.WHITE;
-            ctx.fillText(firstPart, rank_textX, RL_textY);
 
-            // Measure the width of the first part to determine the position for the second part
-            const firstPartWidth = ctx.measureText(firstPart).width;
-            const secondPartX = rank_textX + firstPartWidth + ctx.measureText('-').width;
+            const rankNumberWidth = ctx.measureText(rankNumber).width;
+            const offsetFromRankNumber = levelTextOffset + 4 - ctx.measureText(rankNumber).width - 8;
+            let rankNumberOffset = offsetFromRankNumber;
 
-            // Set color for the second part of the text
-            ctx.font = '24px Roboto Bold';
-            ctx.fillStyle = RankCardColors.YELLOW;
-            ctx.fillText(secondPart, secondPartX, RL_textY);
+            if (rankNumberWidth.toFixed(0) >= 10 && rankNumberWidth.toFixed(0) < 20) {
+                rankNumberOffset -= (rankNumberWidth - 2) * 0.275;
+            } else if (rankNumberWidth.toFixed(0) >= 20) {
+                rankNumberOffset -= (rankNumberWidth - 4) * 0.5;
+            }
+
+            // Draw the text on the canvas
+            ctx.fillText(rankSymbol, rankNumberOffset, RL_textY);  
         }
 
-        const drawLevelText = (text, rankTextWidth) => {
+        const drawLevelText = (text) => {
             // Split the text into two parts based on separator
-            const [firstPart, secondPart] = text.split('-');
+            const [levelText, levelNumber] = text.split('-');
 
-            // Set color for the first part of the text
-            ctx.font = '14px Roboto Medium';
-            ctx.fillStyle = RankCardColors.WHITE;
+            // We then measure the width of the first part to determine the position for the second part
+            const levelNumberWidth = ctx.measureText(levelNumber).width;
 
-            // Calculate the position for the first part based on the rank text width
-            const levelFirstPartX = rank_textX + rankTextWidth - ctx.measureText(firstPart).width;
-            ctx.fillText(firstPart, levelFirstPartX, RL_textY);
-
-            // Measure the width of the first part to determine the position for the second part
-            const firstPartWidth = ctx.measureText(firstPart).width;
-            const secondPartX = levelFirstPartX + firstPartWidth + ctx.measureText('-').width;
-
-            // Set color for the second part of the text
+            // Set color of the levelNumber first and draw it
             ctx.font = '24px Roboto Bold';
             ctx.fillStyle = RankCardColors.YELLOW;
-            ctx.fillText(secondPart, secondPartX, RL_textY);
+            ctx.fillText(levelNumber, level_textX, RL_textY);
+
+            // Set color of levelText and draw it
+            ctx.font = '16px Roboto Medium';
+            ctx.fillStyle = RankCardColors.WHITE;
+
+            const offsetFromLevelNumber = level_textX - levelNumberWidth - 15; // 20 is the space between the level number and the first part
+
+            // Calculate the offset based on the levelNumberWidth
+            let offset = offsetFromLevelNumber;
+
+            // If the levelNumberWidth is greater than 10 (i.e. 2 digits), we need to adjust the offset
+            if (levelNumberWidth.toFixed(0) >= 10 && levelNumberWidth.toFixed(0) < 20) {
+
+                // Adjust the offset based on the width of the levelNumber
+                offset -= (levelNumberWidth - 2) * 0.275;
+
+            } else if (levelNumberWidth.toFixed(0) >= 20) { // If the levelNumberWidth is greater than 20 (i.e. 3 digits), we need to adjust the offset
+                
+                // Adjust the offset based on the width of the levelNumber
+                offset -= (levelNumberWidth - 2) * 0.5; 
+
+            }
+
+            // Draw the text on the canvas
+            ctx.fillText(levelText, offset, RL_textY);
         }
 
         // Define text for the rank and level
         const levelText = `Level-${level}`;
         const rankText = `#-${position}`;
 
-        // Measure the width of the rank text
-        const rankTextWidth = ctx.measureText(rankText).width;
+        // Measure the width of the levelText
+        const levelTextWidth = ctx.measureText(levelText).width;
 
         // Draw the text on the canvas
-        drawRankText(rankText);
-        drawLevelText(levelText, rankTextWidth);
+        drawLevelText(levelText);
+        drawRankText(rankText, levelTextWidth);
 
         ctx.save();
 

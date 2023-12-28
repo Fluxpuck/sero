@@ -5,6 +5,8 @@ const RankCardColors = {
     YELLOW: "#FECA2C",      // Yellow
     WHITE: "#FFFFFF",       // White
 
+    // RGBs
+    WHITE_RGB: '255, 255, 255',
 }
 
 module.exports = RankCardColors;
