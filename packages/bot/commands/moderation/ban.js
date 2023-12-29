@@ -41,36 +41,33 @@ module.exports.autocomplete = async (client, interaction) => {
 }
 
 module.exports.run = async (client, interaction) => {
-    // Get User && Reason details from the interaction options
+    // Get User && Reason details from the interaction options && convert user into a member
     const targetUser = interaction.options.get("user").user;
+    const targetMember = await interaction.guild.members.fetch(targetUser.id)
     const violationReason = interaction.options.get("reason").value;
 
-    // If the targetUser === Author, return message
-    if (targetUser.id === interaction.user.id) return interaction.reply({
+    // If the targetMember === Author, return message
+    if (targetMember.user.id === interaction.user.id) return interaction.reply({
         content: "You cannot ban yourself!",
         ephemeral: true
     })
-    // If the targetUser has permission "ModerateMembers" do not ban.
-    if (member.permissions.has(PermissionFlagsBits.ModerateMembers)) return interaction.reply({
-        content: `${member.user.username} is a moderator!`,
-        ephemeral: true
-    })
+
 
     /**
      * @TODO - Add a ban to the database
      */
 
     // Ban the target user with reason
-    return targetUser.ban(violationReason)
+     targetMember.ban({ reason: violationReason, days: null })
         .then(() => {
             return interaction.reply({
-                content: `Successfully banned **${targetUser.username}** (${targetUser.id}) for: \n ${violationReason}`,
+                content: `Successfully banned **${targetMember.user.username}** (${targetUser.id}) for: \n ${violationReason}`,
                 ephemeral: false,
             });
         })
         .catch(err => {
             return interaction.reply({
-                content: `Could not ban **${targetUser.username}** (${targetUser.id})!`,
+                content: `Could not ban **${targetMember.user.username}** (${targetUser.id})!`,
                 ephemeral: true,
             });
         });

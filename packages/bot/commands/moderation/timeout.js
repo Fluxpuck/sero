@@ -66,15 +66,16 @@ module.exports.autocomplete = async (client, interaction) => {
 module.exports.run = async (client, interaction) => {
     // Get User details from the interaction options
     const targetUser = interaction.options.get("user").user;
+    const targetMember = await interaction.guild.members.fetch(targetUser.id)
 
     // Prevent the author from muting themselves
-    if (targetUser.id === interaction.user.id) return interaction.reply({
+    if (targetMember.user.id === interaction.user.id) return interaction.reply({
         content: `You cannot kick yourself.`,
         ephemeral: true
     });
 
     // Prevent the author from muting a moderator
-    if (targetUser.permissions.has(PermissionFlagsBits.ModerateMembers)) return interaction.reply({
+    if (targetMember.permissions.has(PermissionFlagsBits.ModerateMembers)) return interaction.reply({
         content: `You cannot mute a moderator.`,
         ephemeral: true
     });
@@ -91,16 +92,16 @@ module.exports.run = async (client, interaction) => {
      */
 
     // Mute the target user with reason
-    targetUser.timeout(duration, `${targetReason}`)
+    targetMember.timeout(duration, `${targetReason}`)
         .then(() => {
             return interaction.reply({
-                content: `Successfully muted <@${targetUser.id}> for: \n ${targetReason}}`,
+                content: `Successfully muted <@${targetMember.user.id}> for: \n ${targetReason}}`,
                 ephemeral: false,
             });
         })
         .catch(err => {
             return interaction.reply({
-                content: `Could not mute <@${targetUser.id}>!`,
+                content: `Could not mute <@${targetMember.user.id}>!`,
                 ephemeral: true,
             });
         });
