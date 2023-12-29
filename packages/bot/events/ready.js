@@ -1,7 +1,6 @@
 const { join } = require('path');
 const { loadCommands } = require("../utils/CommandManager");
 const { fetchConfig } = require('../lib/client/config');
-const { displayWelcomeMessage } = require('../utils/ConsoleManager');
 const { postRequest, getRequest } = require('../database/connection');
 const events = require('../config/eventEnum');
 const configFile = require('../config/config.json');
@@ -24,7 +23,20 @@ module.exports = async (client) => {
     client.emit(events.APPLICATION_CREATE, applications);
 
     // Displays a welcome message in the console to indicate that the bot has successfully started up.
-    await displayWelcomeMessage(client);
+    console.log(`
+     _______ _______ _______   _______ 
+    |       |       |    _  \\ |       |
+    |  _____|    ___|   | |  ||   _   |
+    | |_____|   |___|   |_| /_|  | |  |
+    |_____  |    ___|    __   |  |_|  |
+     _____| |   |___|   |  |  |       |
+    |_______|_______|___|  |__|_______|
+
+    Discord bot - Startup details:
+    > ${new Date().toUTCString()}
+    > NODE_ENV: ${process.env.NODE_ENV}
+    > ${client.user.tag}
+`);
 
     // Set global guild active setting
     Array.from(client.guilds.cache.values()).forEach(async guild => {

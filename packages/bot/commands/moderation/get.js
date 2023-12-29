@@ -7,19 +7,20 @@ module.exports.props = {
         options: [
             {
                 name: "user",
-                description: "Select a user to get information on",
+                description: "User to get information about",
                 type: 6,
                 required: true,
             },
         ],
     },
+    defaultMemberPermissions: ['KickMembers'],
 };
 
 module.exports.run = async (client, interaction) => {
     // Get User details from the interaction options
     const targetUser = interaction.options.get("user").user;
 
-    
+
 
 
 
