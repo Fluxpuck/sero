@@ -35,6 +35,7 @@ module.exports.props = {
         defaultMemberPermissions: ['KickMembers'],
     }
 }
+
 module.exports.autocomplete = async (client, interaction) => {
     const focusedReason = interaction.options.getFocused();
 
@@ -62,20 +63,21 @@ module.exports.autocomplete = async (client, interaction) => {
     return interaction.respond(filteredReasons);
 }
 
-
 module.exports.run = async (client, interaction) => {
     // Get User details from the interaction options && convert user into a member object.
     const targetUser = interaction.options.get("user").user;
-    const targetMember = await interaction.guild.members.fetch(targetUser.id)
+
+    // Fetch the user by userId
+    const member = await interaction.guild.members.fetch(targetUser.id)
 
     // Prevent the author from muting themselves
-    if (targetMember.user.id === interaction.user.id) return interaction.reply({
+    if (member.user.id === interaction.user.id) return interaction.reply({
         content: `You cannot kick yourself.`,
         ephemeral: true
     });
 
     // Prevent the author from muting a moderator
-    if (targetMember.permissions.has(PermissionFlagsBits.ModerateMembers)) return interaction.reply({
+    if (member.permissions.has(PermissionFlagsBits.ModerateMembers)) return interaction.reply({
         content: `You cannot mute a moderator.`,
         ephemeral: true
     });
@@ -92,16 +94,16 @@ module.exports.run = async (client, interaction) => {
      */
 
     // Mute the target user with reason
-    targetMember.timeout(duration, `${targetReason}`)
+    member.timeout(duration, `${targetReason}`)
         .then(() => {
             return interaction.reply({
-                content: `Successfully muted <@${targetMember.user.id}> for: \n ${targetReason}`,
+                content: `Successfully muted <@${member.user.id}> for: \n > ${targetReason}`,
                 ephemeral: false,
             });
         })
         .catch(err => {
             return interaction.reply({
-                content: `Could not mute <@${targetMember.user.id}>!`,
+                content: `Could not mute <@${member.user.id}>!`,
                 ephemeral: true,
             });
         });

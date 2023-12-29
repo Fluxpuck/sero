@@ -43,31 +43,32 @@ module.exports.autocomplete = async (client, interaction) => {
 module.exports.run = async (client, interaction) => {
     // Get User && Reason details from the interaction options && convert user into a member
     const targetUser = interaction.options.get("user").user;
-    const targetMember = await interaction.guild.members.fetch(targetUser.id)
     const violationReason = interaction.options.get("reason").value;
 
-    // If the targetMember === Author, return message
-    if (targetMember.user.id === interaction.user.id) return interaction.reply({
+    // Fetch the user by userId
+    const member = await interaction.guild.members.fetch(targetUser.id)
+
+    // If the member === Author, return message
+    if (member.user.id === interaction.user.id) return interaction.reply({
         content: "You cannot ban yourself!",
         ephemeral: true
     })
-
 
     /**
      * @TODO - Add a ban to the database
      */
 
     // Ban the target user with reason
-     targetMember.ban({ reason: violationReason, days: null })
+    member.ban({ reason: violationReason, days: null })
         .then(() => {
             return interaction.reply({
-                content: `Successfully banned **${targetMember.user.username}** (${targetUser.id}) for: \n ${violationReason}`,
+                content: `Successfully banned **${member.user.username}** (${member.user.id}) for: \n > ${violationReason}`,
                 ephemeral: false,
             });
         })
         .catch(err => {
             return interaction.reply({
-                content: `Could not ban **${targetMember.user.username}** (${targetUser.id})!`,
+                content: `Could not ban **${member.user.username}** (${member.user.id})!`,
                 ephemeral: true,
             });
         });

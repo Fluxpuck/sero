@@ -43,17 +43,19 @@ module.exports.autocomplete = async (client, interaction) => {
 module.exports.run = async (client, interaction) => {
     // Get User && Member && Reason details from the interaction options
     const targetUser = interaction.options.get("user").user;
-    const targetMember = await interaction.guild.members.fetch(targetUser.id)
     const violationReason = interaction.options.get("reason").value;
 
-    // If the targetMember === Author, return message
-    if (targetMember.user.id === interaction.user.id) return interaction.reply({
+    // Fetch the user by userId
+    const member = await interaction.guild.members.fetch(targetUser.id)
+
+    // If the member === Author, return message
+    if (member.user.id === interaction.user.id) return interaction.reply({
         content: "You cannot kick yourself!",
         ephemeral: true
     })
-    // If the targetMember has permission "ModerateMembers" do not ban.
-    if (targetMember.permissions.has(PermissionFlagsBits.ModerateMembers)) return interaction.reply({
-        content: `${targetMember.user.username} is a moderator!`,
+    // If the member has permission "ModerateMembers" do not ban.
+    if (member.permissions.has(PermissionFlagsBits.ModerateMembers)) return interaction.reply({
+        content: `${member.user.username} is a moderator!`,
         ephemeral: true
     })
 
@@ -63,16 +65,16 @@ module.exports.run = async (client, interaction) => {
      */
 
     // Kick the target member with reason
-    return targetMember.kick(violationReason)
+    return member.kick(violationReason)
         .then(() => {
             return interaction.reply({
-                content: `Successfully kicked **${targetMember.user.username}** (${targetMember.user.id}) for: \n ${violationReason}`,
+                content: `Successfully kicked **${member.user.username}** (${member.user.id}) for: \n > ${violationReason}`,
                 ephemeral: false,
             });
         })
         .catch(err => {
             return interaction.reply({
-                content: `Could not kick **${targetMember.user.username}** (${targetMember.user.id})!`,
+                content: `Could not kick **${member.user.username}** (${member.user.id})!`,
                 ephemeral: true,
             });
         });

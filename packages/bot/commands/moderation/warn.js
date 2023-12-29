@@ -44,24 +44,27 @@ module.exports.run = async (client, interaction) => {
     // Get User details from the interaction options
     const targetUser = interaction.options.get("user").user;
 
+    // Fetch the user by userId
+    const member = await interaction.guild.members.fetch(targetUser.id)
+
     // Create the private warning message
-    const privateMessage = `<@${targetUser.id}>, you have been warned in **${interaction.guild.name}** for the following reason: ${interaction.options.get("reason").value}`;
+    const privateMessage = `<@${member.user.id}>, you have been warned in **${interaction.guild.name}** for the following reason: ${interaction.options.get("reason").value}`;
 
     /**
      * @TODO - Add a warning to the database
      */
 
     // Send the private warning message to the target user
-    return targetUser.send(privateMessage)
+    return member.send(privateMessage)
         .then(() => {
             return interaction.reply({
-                content: `Successfully warned <@${targetUser.id}> with the following message \n ${privateMessage}`,
+                content: `Successfully warned <@${member.user.id}> with the following message \n > ${privateMessage}`,
                 ephemeral: false,
             });
         })
         .catch(err => {
             return interaction.reply({
-                content: `Could not warn <@${targetUser.id}>, but warning has been logged`,
+                content: `Could not warn <@${member.user.id}>, but warning has been logged`,
                 ephemeral: true,
             });
         });
