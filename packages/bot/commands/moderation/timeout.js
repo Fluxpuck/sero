@@ -87,7 +87,7 @@ module.exports.run = async (client, interaction) => {
     const duration = targetDuration * 60000;
 
     /**
-     * @TODO - Add a warning to the database
+     * @TODO - Add a mute to the database
      */
 
     // Mute the target user with reason
