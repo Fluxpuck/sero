@@ -42,12 +42,12 @@ module.exports.autocomplete = async (client, interaction) => {
     if (interaction.options.getFocused(true).name === "time") {
         // We could put this somewhere else, but I'll leave it here for now
         var time = [
-            { name: "5 Minutes", value: 5 },
-            { name: "10 Minutes", value: 10 },
-            { name: "20 Minutes", value: 20},
-            { name: "30 Minutes", value: 30 },
-            { name: "1 Hour", value: 60 },
-            { name: "2 Hours", value: 120 }
+            { name: "5 Minutes", value: "5" },
+            { name: "10 Minutes", value: "10" },
+            { name: "20 Minutes", value: "20" },
+            { name: "30 Minutes", value: "30" },
+            { name: "1 Hour", value: "60" },
+            { name: "2 Hours", value: "120" }
         ]
         return interaction.respond(time.filter(time => time.name.toLowerCase().includes(focusedReason)));
     }
@@ -64,7 +64,7 @@ module.exports.autocomplete = async (client, interaction) => {
 
 
 module.exports.run = async (client, interaction) => {
-    // Get User details from the interaction options
+    // Get User details from the interaction options && convert user into a member object.
     const targetUser = interaction.options.get("user").user;
     const targetMember = await interaction.guild.members.fetch(targetUser.id)
 
@@ -85,7 +85,7 @@ module.exports.run = async (client, interaction) => {
     const targetReason = interaction.options.get("reason").value;
 
     // Convert the duration to milliseconds
-    const duration = targetDuration * 60000;
+    const duration = parseFloat(targetDuration) * 60 * 1000;
 
     /**
      * @TODO - Add a warning to the database
@@ -95,7 +95,7 @@ module.exports.run = async (client, interaction) => {
     targetMember.timeout(duration, `${targetReason}`)
         .then(() => {
             return interaction.reply({
-                content: `Successfully muted <@${targetMember.user.id}> for: \n ${targetReason}}`,
+                content: `Successfully muted <@${targetMember.user.id}> for: \n ${targetReason}`,
                 ephemeral: false,
             });
         })
