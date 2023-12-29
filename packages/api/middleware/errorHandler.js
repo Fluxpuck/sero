@@ -16,7 +16,9 @@ module.exports = {
         };
 
         // Log the error to the console → for debugging purposes only!
-        console.error("[API ErrorHandler]: ", ErrorResponse);
+        if (process.env.NODE_ENV === "development") {
+            console.error("[API ErrorHandler]: ", ErrorResponse);
+        }
 
         // Send the error response to the client
         return res.status(err.status).json({
