@@ -41,16 +41,19 @@ module.exports.autocomplete = async (client, interaction) => {
 }
 
 module.exports.run = async (client, interaction) => {
-    // Get User && Reason details from the interaction options
+    // Get User && Member && Reason details from the interaction options
     const targetUser = interaction.options.get("user").user;
     const violationReason = interaction.options.get("reason").value;
 
-    // If the targetUser === Author, return message
-    if (targetUser.id === interaction.user.id) return interaction.reply({
+    // Fetch the user by userId
+    const member = await interaction.guild.members.fetch(targetUser.id)
+
+    // If the member === Author, return message
+    if (member.user.id === interaction.user.id) return interaction.reply({
         content: "You cannot kick yourself!",
         ephemeral: true
     })
-    // If the targetUser has permission "ModerateMembers" do not ban.
+    // If the member has permission "ModerateMembers" do not ban.
     if (member.permissions.has(PermissionFlagsBits.ModerateMembers)) return interaction.reply({
         content: `${member.user.username} is a moderator!`,
         ephemeral: true
@@ -61,17 +64,17 @@ module.exports.run = async (client, interaction) => {
      * @TODO - Add a kick to the database
      */
 
-    // Kick the target user with reason
-    return targetUser.kick(violationReason)
+    // Kick the target member with reason
+    return member.kick(violationReason)
         .then(() => {
             return interaction.reply({
-                content: `Successfully kicked **${targetUser.username}** (${targetUser.id}) for: \n ${violationReason}`,
+                content: `Successfully kicked **${member.user.username}** (${member.user.id}) for: \n > ${violationReason}`,
                 ephemeral: false,
             });
         })
         .catch(err => {
             return interaction.reply({
-                content: `Could not kick **${targetUser.username}** (${targetUser.id})!`,
+                content: `Could not kick **${member.user.username}** (${member.user.id})!`,
                 ephemeral: true,
             });
         });

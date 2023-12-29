@@ -35,6 +35,7 @@ module.exports.props = {
         defaultMemberPermissions: ['KickMembers'],
     }
 }
+
 module.exports.autocomplete = async (client, interaction) => {
     const focusedReason = interaction.options.getFocused();
 
@@ -42,12 +43,12 @@ module.exports.autocomplete = async (client, interaction) => {
     if (interaction.options.getFocused(true).name === "time") {
         // We could put this somewhere else, but I'll leave it here for now
         var time = [
-            { name: "5 Minutes", value: 5 },
-            { name: "10 Minutes", value: 10 },
-            { name: "20 Minutes", value: 20},
-            { name: "30 Minutes", value: 30 },
-            { name: "1 Hour", value: 60 },
-            { name: "2 Hours", value: 120 }
+            { name: "5 Minutes", value: "5" },
+            { name: "10 Minutes", value: "10" },
+            { name: "20 Minutes", value: "20" },
+            { name: "30 Minutes", value: "30" },
+            { name: "1 Hour", value: "60" },
+            { name: "2 Hours", value: "120" }
         ]
         return interaction.respond(time.filter(time => time.name.toLowerCase().includes(focusedReason)));
     }
@@ -62,19 +63,21 @@ module.exports.autocomplete = async (client, interaction) => {
     return interaction.respond(filteredReasons);
 }
 
-
 module.exports.run = async (client, interaction) => {
-    // Get User details from the interaction options
+    // Get User details from the interaction options && convert user into a member object.
     const targetUser = interaction.options.get("user").user;
 
+    // Fetch the user by userId
+    const member = await interaction.guild.members.fetch(targetUser.id)
+
     // Prevent the author from muting themselves
-    if (targetUser.id === interaction.user.id) return interaction.reply({
+    if (member.user.id === interaction.user.id) return interaction.reply({
         content: `You cannot kick yourself.`,
         ephemeral: true
     });
 
     // Prevent the author from muting a moderator
-    if (targetUser.permissions.has(PermissionFlagsBits.ModerateMembers)) return interaction.reply({
+    if (member.permissions.has(PermissionFlagsBits.ModerateMembers)) return interaction.reply({
         content: `You cannot mute a moderator.`,
         ephemeral: true
     });
@@ -84,23 +87,23 @@ module.exports.run = async (client, interaction) => {
     const targetReason = interaction.options.get("reason").value;
 
     // Convert the duration to milliseconds
-    const duration = targetDuration * 60000;
+    const duration = parseFloat(targetDuration) * 60 * 1000;
 
     /**
      * @TODO - Add a mute to the database
      */
 
     // Mute the target user with reason
-    targetUser.timeout(duration, `${targetReason}`)
+    member.timeout(duration, `${targetReason}`)
         .then(() => {
             return interaction.reply({
-                content: `Successfully muted <@${targetUser.id}> for: \n ${targetReason}}`,
+                content: `Successfully muted <@${member.user.id}> for: \n > ${targetReason}`,
                 ephemeral: false,
             });
         })
         .catch(err => {
             return interaction.reply({
-                content: `Could not mute <@${targetUser.id}>!`,
+                content: `Could not mute <@${member.user.id}>!`,
                 ephemeral: true,
             });
         });

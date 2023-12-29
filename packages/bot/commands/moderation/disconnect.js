@@ -19,21 +19,22 @@ module.exports.props = {
 module.exports.run = async (client, interaction) => {
     // Get User details from the interaction options
     const targetUser = interaction.options.get("user").user;
+    const member = await interaction.guild.members.fetch(targetUser.id)
 
     // If the user is in a voicechannel, disconnect them
-    if (targetUser?.voice.channel) {
+    if (member?.voice.channel) {
 
         // Disconnect the member from the voicechannel
-        await targetUser.voice.disconnect();
+        await member.voice.disconnect();
 
         // Send the success message
         return interaction.reply({
-            content: `Successfully disconnected <@${targetUser.id}>`,
+            content: `Successfully disconnected <@${member.user.id}>`,
             ephemeral: false,
         });
     } else {
         return interaction.reply({
-            content: `<@${targetUser.id}> is not in a voicechannel`,
+            content: `<@${member.user.id}> is not in a voicechannel`,
             ephemeral: true
         });
     }

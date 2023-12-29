@@ -29,7 +29,6 @@ module.exports.run = async (client, interaction) => {
     const rolePermissions = targetRole.permissions.toArray().join(', ')
         || "This role has no permissions";
 
-
     // Get relevant role information
     const { id, name, members, position, icon, hexColor } = targetRole;
     const guildRoles = interaction.guild.roles.cache;
