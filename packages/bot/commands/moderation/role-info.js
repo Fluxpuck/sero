@@ -3,87 +3,69 @@ const { normalizeText } = require('../../lib/helpers/StringHelpers/StringHelper'
 
 module.exports.props = {
     commandName: "role-info",
-    description: "Get info on a role.",
+    description: "Get info on a role",
     usage: "/role-info [role]",
     interaction: {
-        type: 1, // → https://discord-api-types.dev/api/discord-api-types-v10/enum/ApplicationCommandType
-        permissionType: [], // → https://discord-api-types.dev/api/discord-api-types-v10/enum/ApplicationCommandPermissionType  
+        type: 1,
+        permissionType: [],
         options: [
             {
                 name: "role",
                 type: 8,
-                description: "The role that you wish to get information on.",
+                description: "Role to get information about",
                 required: true
             }
-        ], // → https://discord-api-types.dev/api/discord-api-types-v10/enum/ApplicationCommandOptionType 
-    }
-
+        ],
+    },
+    defaultMemberPermissions: ['KickMembers'],
 }
 
 // → Constructing the command and exporting
 module.exports.run = async (client, interaction) => {
+    // Get details from the interaction options
+    const targetRole = interaction.options.get("role").role;
 
-    // Grab the API role ID, then convert into an actual role object.
-    const APIRole = interaction.options.get("role").role.id;
-    const role = interaction.guild.roles.cache.find((role) => role.id === APIRole);
+    // Map the role permissions to an array of strings
+    const rolePermissions = targetRole.permissions.toArray().join(', ')
+        || "This role has no permissions";
 
-    /** Makes an array with the following permissions in Bits
-     * Administrator,
-     * UseSoundboard,
-     * ManageMessages,
-     * ModerateMembers,
-     * UseEmbeddedActivities
-     */
-    const permissionsArray = [
-        'Administrator',
-        'UseSoundboard',
-        'ManageMessages',
-        'ModerateMembers',
-        'UseEmbeddedActivities',
-        "UseApplicationCommands",
-    ]
-    // → Turn role permissions into an array, filter permissions to get the permissions listed above.
-    const rolePermissions = role.permissions.toArray();
-    const extractedPerms = rolePermissions
-        .filter((permission) => permissionsArray.includes(permission))
-        .map((permission) => `${normalizeText(permission)}`)
-    if (!extractedPerms) {
-        "This role has no permissions."
-    }
+    // Get relevant role information
+    const { id, name, members, position, icon, hexColor } = targetRole;
+    const guildRoles = interaction.guild.roles.cache;
 
+    // Create a new embed
+    const messageEmbed = createCustomEmbed({
+        title: `${name}`,
+        description: `<@&${id}> | ${id}`,
+        thumbnail: icon,
+        fields: [
+            {
+                name: "Color:",
+                value: hexColor.toString().toUpperCase(),
+                inline: true
+            },
+            {
+                name: "Position:",
+                value: `Role ${position} of ${guildRoles.size}`,
+                inline: true
+            },
+            {
+                name: "Membercount:",
+                value: `${members.size} member${members.size === 1 ? '' : 's'}`,
+                inline: true
+            },
+            {
+                name: "Permissions:",
+                value: rolePermissions.toString(),
+                inline: false
+            },
+        ],
+    });
 
-    // → Fetch desired role information
-    const role_colour = role.hexColor;
-    const role_id = role.id
-    const role_members = role.members.size;
-    const role_permission = `${role.position}/`;
-    const role_name = role.name;
-    const role_mention = `<@&${role_id}>`
-    // → Build embed fields:
-    const embed_fields = [
-        {
-            name: `Members in Role:`,
-            value: `${role_members}`,
-        },
-        {
-            name: "Hex Color",
-            value: `${role_colour}`
-        },
-        {
-            name: `Role ID:`,
-            value: `${role_id}`,
-        },
-        {
-            name: `Role Mention:`,
-            value: `${role_mention}`
-        },
-        {
-            name: "Role Permissions:",
-            value: `${extractedPerms}`,
-        },
-    ]
+    // Send the embed
+    return interaction.reply({
+        embeds: [messageEmbed],
+        ephemeral: false,
+    });
 
-    // Construct the Embed
-    const embed = createCustomEmbed({ title: `${role_name} | ${role.position}/${interaction.guild.roles.cache.size}`, color: role_colour, fields: embed_fields })
-    interaction.reply({ embeds: [embed] })
 }
