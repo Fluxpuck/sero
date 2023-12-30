@@ -22,7 +22,8 @@ module.exports.props = {
                 maxValue: 1000000,
             },
         ],
-    }
+    },
+    defaultMemberPermissions: ['KickMembers'],
 }
 
 module.exports.run = async (client, interaction) => {

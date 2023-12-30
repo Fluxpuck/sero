@@ -21,7 +21,7 @@ module.exports = async (client, message) => {
         }
 
         /**
-         * This code will only execute per 1 minute
+         * This code whas a one minute cooldown per user
          */
         const cooldownKey = memberId + message.guildId
         if (client.cooldowns.has(cooldownKey) === false) {
