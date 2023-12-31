@@ -70,15 +70,15 @@ module.exports.run = async (client, interaction) => {
     // Fetch the user by userId
     const member = await interaction.guild.members.fetch(targetUser.id)
 
-    // Prevent the author from muting themselves
+    // If the target is the author, return message
     if (member.user.id === interaction.user.id) return interaction.reply({
-        content: `You cannot kick yourself.`,
+        content: "You cannot mute yourself!",
         ephemeral: true
     });
 
-    // Prevent the author from muting a moderator
-    if (member.permissions.has(PermissionFlagsBits.ModerateMembers)) return interaction.reply({
-        content: `You cannot mute a moderator.`,
+    // If the member is not moderatable, return message
+    if (!member.moderatable) return interaction.reply({
+        content: `<@${member.user.id}> is a moderator!`,
         ephemeral: true
     });
 

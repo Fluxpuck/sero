@@ -41,10 +41,18 @@ const ClientButtonsEnum = {
         .setCustomId('info')
         .setDisabled(false),
 
-    SEARCH: new ButtonBuilder()
-        .setStyle(ButtonStyle.Secondary)
+    LOGS: new ButtonBuilder()
+        .setStyle(ButtonStyle.Danger)
         .setEmoji('🔍')
-        .setCustomId('search')
+        .setLabel('Logs')
+        .setCustomId('logs')
+        .setDisabled(false),
+
+    AVATAR: new ButtonBuilder()
+        .setStyle(ButtonStyle.Primary)
+        .setEmoji('🖼️')
+        .setLabel('Avatar')
+        .setCustomId('avatar')
         .setDisabled(false),
 };
 

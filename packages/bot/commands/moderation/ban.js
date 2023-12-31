@@ -1,4 +1,3 @@
-const { PermissionFlagsBits } = require("discord.js");
 const { BAN_PREREASONS } = require("../../assets/reason-messages");
 const { formatExpression } = require("../../lib/helpers/StringHelpers/StringHelper")
 
@@ -48,15 +47,17 @@ module.exports.run = async (client, interaction) => {
     // Fetch the user by userId
     const member = await interaction.guild.members.fetch(targetUser.id)
 
-    // If the member === Author, return message
+    // If the target is the author, return message
     if (member.user.id === interaction.user.id) return interaction.reply({
         content: "You cannot ban yourself!",
         ephemeral: true
-    })
+    });
 
-    /**
-     * @TODO - Add a ban to the database
-     */
+    // If the member is not moderatable, return message
+    if (!member.moderatable) return interaction.reply({
+        content: `<@${member.user.id}> is a moderator!`,
+        ephemeral: true
+    });
 
     // Ban the target user with reason
     member.ban({ reason: violationReason, days: null })

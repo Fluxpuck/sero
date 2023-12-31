@@ -47,12 +47,20 @@ module.exports.run = async (client, interaction) => {
     // Fetch the user by userId
     const member = await interaction.guild.members.fetch(targetUser.id)
 
+    // If the target is the author, return message
+    if (member.user.id === interaction.user.id) return interaction.reply({
+        content: "You cannot warn yourself!",
+        ephemeral: true
+    });
+
+    // If the member is not moderatable, return message
+    if (!member.moderatable) return interaction.reply({
+        content: `<@${member.user.id}> is a moderator!`,
+        ephemeral: true
+    });
+
     // Create the private warning message
     const privateMessage = `<@${member.user.id}>, you have been warned in **${interaction.guild.name}** for the following reason: ${interaction.options.get("reason").value}`;
-
-    /**
-     * @TODO - Add a warning to the database
-     */
 
     // Send the private warning message to the target user
     return member.send(privateMessage)

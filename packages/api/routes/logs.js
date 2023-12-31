@@ -35,7 +35,7 @@ router.get("/:guildId", async (req, res, next) => {
  * @router GET api/logs/:guildId/:userId
  * @description Get all Logs from a specific user
  */
-router.get(":guildId/userId", async (req, res, next) => {
+router.get("/:guildId/:userId", async (req, res, next) => {
     try {
         const { guildId, userId } = req.params;
 
@@ -95,7 +95,7 @@ const requiredProperties = ['type', 'targetId', 'executorId'];
  * @router POST api/logs/:guildId/:userId
  * @description Create a new Log
  */
-router.post(":guildId/userId", async (req, res, next) => {
+router.post("/:guildId/:userId", async (req, res, next) => {
     const t = await sequelize.transaction();
     try {
         const { body, params } = req;
