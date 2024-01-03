@@ -9,6 +9,7 @@ const eventEnum = {
     MESSAGE_CREATE: 'messageCreate',
     GUILD_MEMBER_LEVEL: 'guildMemberLevel',
     GUILD_MEMBER_AWAY: 'guildMemberAway',
+    BUTTON_INTERACTION: 'buttonInteraction',
 };
 
 module.exports = eventEnum;

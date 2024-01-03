@@ -89,10 +89,6 @@ module.exports.run = async (client, interaction) => {
     // Convert the duration to milliseconds
     const duration = parseFloat(targetDuration) * 60 * 1000;
 
-    /**
-     * @TODO - Add a mute to the database
-     */
-
     // Mute the target user with reason
     member.timeout(duration, `${targetReason}`)
         .then(() => {

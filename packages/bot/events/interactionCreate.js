@@ -1,3 +1,5 @@
+const eventEnum = require('../config/eventEnum');
+
 module.exports = async (client, interaction) => {
     // Return if guild is not active!
     if (!interaction.guild.active) return interaction.reply({
@@ -12,20 +14,21 @@ module.exports = async (client, interaction) => {
             if (commandFile) commandFile.autocomplete(client, interaction);
         }
 
-        // Check if the interaction is a command
-        if (!interaction.isCommand()) return;
-
-        // Find and execute the command
-        const commandFile = client.commands.get(interaction.commandName);
-        if (commandFile) {
-
-            const { ownerIds } = require('../config/config.json');
-            if (commandFile.private === true && !ownerIds.includes(interaction.user.id)) return interaction.reply({ content: '*This command is private.*', ephemeral: true });
-
-            // Run the command
-            commandFile.run(client, interaction);
-
+        // Check if the interaction is a button
+        if (interaction.isButton()) {
+            client.emit(eventEnum.BUTTON_INTERACTION, interaction);
         }
+
+        // Check if the interaction is a command
+        if (interaction.isCommand()) {
+            const commandFile = client.commands.get(interaction.commandName);
+            if (commandFile) {
+                // Run the command
+                commandFile.run(client, interaction);
+            }
+        }
+
+
     } catch (error) {
         // Handle errors with detailed information
         console.error(`Error in command execution for "${interaction.commandName}":`, error);
