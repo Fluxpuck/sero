@@ -1,20 +1,22 @@
 const ButtonInteractions = {
-    "logs": require("../commands/moderation/ban"),
-    "avatar": require("../commands/miscellaneous/ping")
+    "button": "BUTTON_CLICK",
+    /**
+     * @OPTIONAL - It's possible to execute a command (without params)...
+     * "ping": require("../commands/miscellaneous/ping")
+     */
 }
 
 module.exports = async (client, interaction) => {
 
+    /**
+     * Check for button interactions that have to do with /get
+     * @ButtonInteractions {Object} 
+     */
+    switch (ButtonInteractions[interaction.customId]) {
+        case "BUTTON_CLICK":
 
-    console.log("Button Interaction")
-    console.log(interaction)
+            // PERFORM ACTIONS HERE
 
-    console.log(interaction.customId)
-
-    const commandFile = ButtonInteractions[interaction.customId];
-    console.log(commandFile)
-
-    commandFile.run(client, interaction);
-
-
+            break;
+    }
 }
