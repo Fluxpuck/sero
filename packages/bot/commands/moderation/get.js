@@ -1,4 +1,4 @@
-const { ActionRowBuilder } = require("discord.js");
+const { ActionRowBuilder, ComponentType } = require("discord.js");
 const { createCustomEmbed } = require("../../assets/embed");
 const { getRequest } = require("../../database/connection");
 const ClientButtonsEnum = require("../../assets/embed-buttons");
@@ -42,7 +42,7 @@ module.exports.run = async (client, interaction, AuditLogs = []) => {
     // Create embed fields for the logs
     const logFields = sortLogs.map(log => {
         return {
-            name: `${log.type}`,
+            name: `${log.type} | ${log.id}`,
             value: `
         **Reason:** ${log.reason ? log.reason : "No reason provided."}
         **Executor:** <@${log.executorId}> | ${log.executorId}
@@ -52,18 +52,9 @@ module.exports.run = async (client, interaction, AuditLogs = []) => {
         };
     });
 
-    // If there are more than 3 logs, add a field with the amount of logs left
-    if (AuditLogs.length > 3) {
-        logFields.push({
-            name: "...",
-            value: `**${AuditLogs.length - 3}** more log${AuditLogs.length > 1 ? "s" : ""}...`,
-            inline: false
-        })
-    }
-
     // Construct message Embed
     const messageEmbed = createCustomEmbed({
-        title: "Member Information",
+        title: "Member Information for " + targetUser.tag,
         description: `<@${targetUser.id}> - ${targetUser.id}`,
         thumbnail: targetUser.displayAvatarURL({ dynamic: true }),
         fields: [
@@ -79,6 +70,12 @@ module.exports.run = async (client, interaction, AuditLogs = []) => {
             },
             ...logFields
         ],
+        footer: {
+            // If there are more than 3 logs, add a footer with the amount of logs left
+            text: AuditLogs.length > 3
+                ? `${AuditLogs.length - 3} more log${AuditLogs.length > 1 ? "s" : ""}...`
+                : "This user has no logs..."
+        }
     })
 
     // Construct message components
@@ -89,11 +86,55 @@ module.exports.run = async (client, interaction, AuditLogs = []) => {
             ClientButtonsEnum.AVATAR
         );
 
+    //make sure to RESET the disabled state of the buttons
+    messageComponents.components.forEach(button => button.data.disabled = false)
+
     // Return the message
-    return interaction.reply({
+    const response = await interaction.reply({
         embeds: [messageEmbed],
         components: [messageComponents],
         ephemeral: false
-    })
+    });
 
+    // Collect the dropdownMenu selection
+    const options = { componentType: ComponentType.Button, idle: 300_000, time: 3_600_000 }
+    const collector = response.createMessageComponentCollector({ options });
+    collector.on('collect', async i => {
+
+        const selectedButton = i.customId;
+
+        /**
+         * @selectedButton - Avatar
+         * Return the avatar in an embedded message
+         */
+        if (selectedButton === "avatar") {
+
+            // Construct the avatar embed
+            const avatarEmbed = createCustomEmbed({
+                title: "Member Avatar of " + targetUser.tag,
+                description: `<@${targetUser.id}> - ${targetUser.id}`,
+                image: targetUser.displayAvatarURL({ dynamic: true, extension: "png", size: 512 }),
+            })
+
+            // Disable the Avatar button and update the interaction
+            const avatarIndex = messageComponents.components.findIndex(button => button.data.custom_id === "avatar");
+            messageComponents.components[avatarIndex].data.disabled = true;
+
+            // Update the interaction, disabling the Avatar button
+            await i.update({ components: [messageComponents] })
+
+            // Send the avatar embed
+            await i.followUp({ embeds: [avatarEmbed] })
+
+        }
+
+        /**
+         * @selectedButton - Logs
+         * Execute the /logs command
+         */
+        if (selectedButton === "logs") {
+
+
+        }
+    })
 }

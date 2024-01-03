@@ -44,7 +44,7 @@ const ClientButtonsEnum = {
     LOGS: new ButtonBuilder()
         .setStyle(ButtonStyle.Danger)
         .setEmoji('🔍')
-        .setLabel('Logs')
+        .setLabel('All Logs')
         .setCustomId('logs')
         .setDisabled(false),
 

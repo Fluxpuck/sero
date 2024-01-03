@@ -28,7 +28,6 @@ module.exports = async (client, interaction) => {
             }
         }
 
-
     } catch (error) {
         // Handle errors with detailed information
         console.error(`Error in command execution for "${interaction.commandName}":`, error);

@@ -53,7 +53,7 @@ module.exports.run = async (client, interaction) => {
         embeds: [messageEmbed],
         components: [embedActionRow],
         ephemeral: false
-    }).catch((error) => { return error; });
+    })
 
     // Collect the dropdownMenu selection
     const options = { componentType: ComponentType.StringSelect, idle: 300_000, time: 3_600_000 }
