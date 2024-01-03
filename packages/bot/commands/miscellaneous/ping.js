@@ -7,11 +7,7 @@ module.exports.props = {
 
 module.exports.run = async (client, interaction) => {
 
-    // Set timer for message reply
-    const wait = require('node:timers/promises').setTimeout;
-    await wait(800); //wait before giving a reply
-
     // Reply with Discord Latency
-    return interaction.reply(`Pong! → \ ${Math.round(client.ws.ping)}ms`)
-        .catch((err) => { throw err });
+    const message = await interaction.reply({ content: 'Pinging...', fetchReply: true });
+    return interaction.editReply(`Pong! → ${message.createdTimestamp - interaction.createdTimestamp}ms`);
 }
