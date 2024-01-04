@@ -15,7 +15,7 @@ const ClientButtonsEnum = {
         .setStyle(ButtonStyle.Secondary)
         .setLabel('< Previous')
         .setCustomId('previous_pg')
-        .setDisabled(false),
+        .setDisabled(true),
 
     AGREE: new ButtonBuilder()
         .setStyle(ButtonStyle.Success)

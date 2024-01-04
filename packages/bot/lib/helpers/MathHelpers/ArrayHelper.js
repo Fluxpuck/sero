@@ -26,4 +26,16 @@ function calculateDifferences(arr1, arr2) {
     return differences;
 }
 
-module.exports = { calculateDifferences };
+/** slice array in chunks
+ * @param {Array} array Lenghy array
+ * @param {Number} chunk Chunk size
+ */
+function chunk(array, chunk) {
+    let i, j, temp, returnArray = [];
+    for (i = 0, j = array.length; i < j; i += chunk) {
+        returnArray.push(temp = array.slice(i, i + chunk));
+    }
+    return returnArray;
+}
+
+module.exports = { calculateDifferences, chunk };
