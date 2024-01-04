@@ -48,7 +48,7 @@ module.exports.run = async (client, interaction, AuditLogs = []) => {
         **Executor:** <@${log.executorId}> | ${log.executorId}
         ${log.duration ? `**Duration:** ${log.duration}` : ""}
         `,
-            inline: false
+            inline: true
         };
     });
 
@@ -116,7 +116,7 @@ module.exports.run = async (client, interaction, AuditLogs = []) => {
                 image: targetUser.displayAvatarURL({ dynamic: true, extension: "png", size: 512 }),
             })
 
-            // Disable the Avatar button and update the interaction
+            // Disable the Avatar button
             const avatarIndex = messageComponents.components.findIndex(button => button.data.custom_id === "avatar");
             messageComponents.components[avatarIndex].data.disabled = true;
 
@@ -134,7 +134,39 @@ module.exports.run = async (client, interaction, AuditLogs = []) => {
          */
         if (selectedButton === "logs") {
 
+            // Remove the logs button
+            const logsIndex = messageComponents.components.findIndex(button => button.data.custom_id === "logs");
+            if (logsIndex !== -1) messageComponents.components.splice(logsIndex, 1);
+
+            // Construct Pagination Buttons
+            messageComponents.addComponents(
+                ClientButtonsEnum.PREVIOUS_PAGE,
+                ClientButtonsEnum.NEXT_PAGE
+            );
+
+            // Find the index of the Avatar button, Remove it and add it to the end
+            const avatarIndex = messageComponents.components.findIndex(button => button.data.custom_id === "avatar");
+            if (avatarIndex !== -1) {
+                const avatarButton = messageComponents.components.splice(avatarIndex, 1)[0];
+                messageComponents.components.push(avatarButton);
+            }
+
+            // Update the interaction components
+            await i.update({ components: [messageComponents] })
 
         }
+
+        /**
+         * @selectedButton - Logs
+         * Scroll through the log pages
+         */
+        if (selectedButton === "previous_pg" || selectedButton === "next_pg") {
+
+
+
+
+
+        }
+
     })
 }

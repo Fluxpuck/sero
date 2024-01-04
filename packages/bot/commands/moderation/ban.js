@@ -1,5 +1,5 @@
 const { BAN_PREREASONS } = require("../../assets/reason-messages");
-const { formatExpression } = require("../../lib/helpers/StringHelpers/StringHelper")
+const { formatExpression } = require("../../lib/helpers/StringHelpers/stringHelper");
 
 module.exports.props = {
     commandName: "ban",
@@ -20,6 +20,7 @@ module.exports.props = {
                 type: 3,
                 required: true,
                 autocomplete: true,
+                maxLength: 100,
             },
         ],
         defaultMemberPermissions: ['KickMembers'],

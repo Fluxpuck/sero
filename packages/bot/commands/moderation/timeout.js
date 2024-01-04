@@ -1,6 +1,5 @@
 const { MUTE_PREREASONS } = require("../../assets/reason-messages");
-const { PermissionFlagsBits } = require("discord.js")
-const { formatExpression } = require("../../lib/helpers/StringHelpers/StringHelper")
+const { formatExpression } = require("../../lib/helpers/StringHelpers/stringHelper");
 
 module.exports.props = {
     commandName: "timeout",
@@ -29,7 +28,8 @@ module.exports.props = {
                     type: 3,
                     description: "Reason for the timeout",
                     required: true,
-                    autocomplete: true
+                    autocomplete: true,
+                    maxLength: 100
                 },
             ],
         defaultMemberPermissions: ['KickMembers'],
