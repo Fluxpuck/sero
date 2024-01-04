@@ -15,7 +15,7 @@ const ClientButtonsEnum = {
         .setStyle(ButtonStyle.Secondary)
         .setLabel('< Previous')
         .setCustomId('previous_pg')
-        .setDisabled(false),
+        .setDisabled(true),
 
     AGREE: new ButtonBuilder()
         .setStyle(ButtonStyle.Success)
@@ -41,10 +41,18 @@ const ClientButtonsEnum = {
         .setCustomId('info')
         .setDisabled(false),
 
-    SEARCH: new ButtonBuilder()
-        .setStyle(ButtonStyle.Secondary)
+    LOGS: new ButtonBuilder()
+        .setStyle(ButtonStyle.Danger)
         .setEmoji('🔍')
-        .setCustomId('search')
+        .setLabel('All Logs')
+        .setCustomId('logs')
+        .setDisabled(false),
+
+    AVATAR: new ButtonBuilder()
+        .setStyle(ButtonStyle.Primary)
+        .setEmoji('🖼️')
+        .setLabel('Avatar')
+        .setCustomId('avatar')
         .setDisabled(false),
 };
 

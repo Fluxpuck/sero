@@ -1,6 +1,5 @@
-const { PermissionFlagsBits } = require("discord.js");
 const { KICK_PREREASONS } = require("../../assets/reason-messages");
-const { formatExpression } = require("../../lib/helpers/StringHelpers/StringHelper")
+const { formatExpression } = require("../../lib/helpers/StringHelpers/stringHelper");
 
 module.exports.props = {
     commandName: "kick",
@@ -21,6 +20,7 @@ module.exports.props = {
                 type: 3,
                 required: true,
                 autocomplete: true,
+                maxLength: 100
             },
         ],
     },
@@ -48,21 +48,17 @@ module.exports.run = async (client, interaction) => {
     // Fetch the user by userId
     const member = await interaction.guild.members.fetch(targetUser.id)
 
-    // If the member === Author, return message
+    // If the target is the author, return message
     if (member.user.id === interaction.user.id) return interaction.reply({
         content: "You cannot kick yourself!",
         ephemeral: true
-    })
-    // If the member has permission "ModerateMembers" do not ban.
-    if (member.permissions.has(PermissionFlagsBits.ModerateMembers)) return interaction.reply({
-        content: `${member.user.username} is a moderator!`,
+    });
+
+    // If the member is not moderatable, return message
+    if (!member.moderatable) return interaction.reply({
+        content: `<@${member.user.id}> is a moderator!`,
         ephemeral: true
-    })
-
-
-    /**
-     * @TODO - Add a kick to the database
-     */
+    });
 
     // Kick the target member with reason
     return member.kick(violationReason)

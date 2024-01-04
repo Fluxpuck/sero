@@ -15,18 +15,23 @@ module.exports = {
         footer
     }) {
 
-        const messageEmbed = new EmbedBuilder()
+        const messageEmbed = new EmbedBuilder();
 
         try {
-            if (title) messageEmbed.setTitle(title);
-            if (description) messageEmbed.setDescription(description);
-            if (author) messageEmbed.setAuthor(author);
-            if (url) messageEmbed.setURL(url);
-            if (thumbnail) messageEmbed.setThumbnail(thumbnail);
-            if (timestamp) messageEmbed.setTimestamp(timestamp);
-            if (color) messageEmbed.setColor(color);
-            if (image) messageEmbed.setImage(image);
-            if (footer) messageEmbed.setFooter(footer);
+            if (typeof title !== 'undefined') messageEmbed.setTitle(title);
+            if (typeof description !== 'undefined') messageEmbed.setDescription(description);
+            if (typeof author !== 'undefined') messageEmbed.setAuthor(author);
+            if (typeof url !== 'undefined') messageEmbed.setURL(url);
+            if (typeof thumbnail !== 'undefined') messageEmbed.setThumbnail(thumbnail);
+            if (typeof timestamp !== 'undefined') messageEmbed.setTimestamp(timestamp);
+            if (typeof color !== 'undefined') messageEmbed.setColor(color);
+            if (typeof image !== 'undefined') messageEmbed.setImage(image);
+
+            if (footer && typeof footer === 'object') {
+                const footerText = footer.text ?? null;
+                const iconURL = footer.iconURL ?? null;
+                messageEmbed.setFooter({ text: footerText, iconURL: iconURL });
+            }
 
             if (fields && Array.isArray(fields)) {
                 fields.forEach((field) => {
@@ -36,9 +41,11 @@ module.exports = {
                 });
             }
         } catch (error) {
-            console.log(error)
+            console.log(error);
+            // Handle error: Maybe return a default embed or send an error message
         }
 
         return messageEmbed;
+
     }
 }

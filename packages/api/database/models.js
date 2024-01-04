@@ -11,7 +11,7 @@ const models = {
     Messages: require('../models/messages.model')(sequelize),
     Levels: require('../models/levels.model')(sequelize),
     EventChannels: require('../models/eventchannels.model')(sequelize),
-    AuditLogs: require('../models/auditlogs.model')(sequelize),
+    Logs: require('../models/logs.model')(sequelize),
 }
 
 Object.values(models)

@@ -1,6 +1,5 @@
 const { MUTE_PREREASONS } = require("../../assets/reason-messages");
-const { PermissionFlagsBits } = require("discord.js")
-const { formatExpression } = require("../../lib/helpers/StringHelpers/StringHelper")
+const { formatExpression } = require("../../lib/helpers/StringHelpers/stringHelper");
 
 module.exports.props = {
     commandName: "timeout",
@@ -29,7 +28,8 @@ module.exports.props = {
                     type: 3,
                     description: "Reason for the timeout",
                     required: true,
-                    autocomplete: true
+                    autocomplete: true,
+                    maxLength: 100
                 },
             ],
         defaultMemberPermissions: ['KickMembers'],
@@ -70,15 +70,15 @@ module.exports.run = async (client, interaction) => {
     // Fetch the user by userId
     const member = await interaction.guild.members.fetch(targetUser.id)
 
-    // Prevent the author from muting themselves
+    // If the target is the author, return message
     if (member.user.id === interaction.user.id) return interaction.reply({
-        content: `You cannot kick yourself.`,
+        content: "You cannot mute yourself!",
         ephemeral: true
     });
 
-    // Prevent the author from muting a moderator
-    if (member.permissions.has(PermissionFlagsBits.ModerateMembers)) return interaction.reply({
-        content: `You cannot mute a moderator.`,
+    // If the member is not moderatable, return message
+    if (!member.moderatable) return interaction.reply({
+        content: `<@${member.user.id}> is a moderator!`,
         ephemeral: true
     });
 
@@ -88,10 +88,6 @@ module.exports.run = async (client, interaction) => {
 
     // Convert the duration to milliseconds
     const duration = parseFloat(targetDuration) * 60 * 1000;
-
-    /**
-     * @TODO - Add a mute to the database
-     */
 
     // Mute the target user with reason
     member.timeout(duration, `${targetReason}`)
