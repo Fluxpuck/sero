@@ -45,10 +45,10 @@ module.exports.run = async (client, interaction, AuditLogs = []) => {
         // Set the log title and value
         const logTitle = `Log: ${log.id}`
         const logValue = `
-            **Type** - ${log.type} ${log.duration ? ` / ${log.duration} minutes` : ""}
-            **Reason** - ${log.reason ? log.reason : "No reason provided."}
-            **Executor** - <@${log.executorId}> | ${log.executorId}
-            **Created** - ${new Date(log.createdAt).toUTCString()}
+**Type** - ${log.type} ${log.duration ? ` / ${log.duration} minutes` : ""}
+**Reason** - ${log.reason ? log.reason : "No reason provided."}
+**Executor** - <@${log.executorId}> | ${log.executorId}
+**Created** - ${new Date(log.createdAt).toUTCString()}
         `
         return {
             name: logTitle,
