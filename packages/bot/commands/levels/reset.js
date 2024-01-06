@@ -14,7 +14,8 @@ module.exports.props = {
                 required: true
             }
         ],
-    }
+    },
+    defaultMemberPermissions: ['KickMembers'],
 }
 
 module.exports.run = async (client, interaction) => {
