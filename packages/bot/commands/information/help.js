@@ -29,7 +29,7 @@ module.exports.run = async (client, interaction) => {
     const messageEmbed = createCustomEmbed({
         title: `${client.user.username} | Help`,
         thumbnail: client.user.displayAvatarURL({ dynamic: false }),
-        description: "Use the dropdown menu to get information on specific commands.",
+        description: "Use the dropdown menu to get information on specific categories.",
         fields: categoryEmbedFields
     });
 
