@@ -106,7 +106,7 @@ module.exports.run = async (client, interaction, AuditLogs = []) => {
             ClientButtonsEnum.AVATAR
         );
 
-    //make sure to RESET the disabled state of the buttons
+    // Make sure to RESET the disabled state of the buttons
     messageComponents.components.forEach(button => button.data.disabled = false)
 
     // Return the message
@@ -211,7 +211,7 @@ module.exports.run = async (client, interaction, AuditLogs = []) => {
 
             // Update embed Footer && Fields
             messageEmbed.setFooter({ text: `Log page ${page + 1} of ${maxpages + 1}` });
-            messageEmbed.data.fields = [];
+            messageEmbed.data.fields = []; // Empty current fields
             messageEmbed.setFields(
                 [
                     {
