@@ -16,6 +16,20 @@ module.exports = {
         const seconds = Math.floor(timeInSeconds % 60);
         // Return a string that represents the time in the format of "HH:MM:SS"
         return `${pad(hours)}:${pad(minutes)}:${pad(seconds)}`;
-    }
+    },
 
+    /**
+     * Get the duration in minutes between a timestamp and the current time.
+     * @param {timestamp} timestamp - The timestamp to calculate the duration of. 
+     * @returns {number} - The duration in minutes, rounded up.
+     */
+    calculateRoundedDuration: (timestamp) => {
+        const newTimestamp = new Date(timestamp).getTime();
+        const now = Date.now(); // Current time in milliseconds
+
+        const differenceInMillis = Math.abs(now - newTimestamp); // Absolute difference
+        const differenceInMinutes = Math.ceil(differenceInMillis / (1000 * 60));
+
+        return differenceInMinutes;
+    }
 };

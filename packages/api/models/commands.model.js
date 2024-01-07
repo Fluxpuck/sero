@@ -14,9 +14,12 @@ module.exports = sequelize => {
             autoIncrement: true,
         },
         commandId: {
-            type: DataTypes.STRING,
+            type: DataTypes.BIGINT,
             unique: true,
             allowNull: true,
+            validate: {
+                is: /^\d{17,20}$/ //Discord Snowflake
+            }
         },
         commandName: {
             type: DataTypes.STRING,

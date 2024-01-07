@@ -16,7 +16,7 @@ function getEventName(eventNumber) {
         21: "MemberPrune",
         22: "MemberBanAdd",
         23: "MemberBanRemove",
-        24: "MemberUpdate",
+        24: "MemberTimeOut", // Originally MemberUpdate
         25: "MemberRoleUpdate",
         26: "MemberMove",
         27: "MemberDisconnect",
@@ -68,58 +68,73 @@ function getEventName(eventNumber) {
  * @param {*} eventCategory - The event category to get the name of.
  * @returns - The name of the event category.
  */
-function getEventCategory(eventNumber, eventCategory = undefined) {
-    // Cluster event numbers into different groups
-    const memberEvents = [20, 21, 22, 23, 24, 25, 26, 27];
-    const channelEvents = [10, 11, 12];
-    const emojiEvents = [60, 61, 62];
-    const roleEvents = [30, 31, 32];
-    const messageEvents = [72, 73, 74, 75];
-    const stickerEvents = [90, 91, 92];
-    const inviteEvents = [40, 41, 42];
-    const eventEvents = [100, 101, 102];
-    const autoModEvents = [140, 141, 142, 143, 144, 145];
-    const applicationCommandEvents = [121];
+function getEventCategory(eventNumber) {
+    // Define event categories and their associated numbers
+    const eventCategories = {
+        memberEvents: [20, 21, 22, 23, 24, 25, 26, 27],
+        channelEvents: [10, 11, 12],
+        emojiEvents: [60, 61, 62],
+        roleEvents: [30, 31, 32],
+        messageEvents: [72, 73, 74, 75],
+        stickerEvents: [90, 91, 92],
+        inviteEvents: [40, 41, 42],
+        eventEvents: [100, 101, 102],
+        autoModEvents: [140, 141, 142, 143, 144, 145],
+        applicationCommandEvents: [121],
+    };
 
-    // Switch statement to handle each group of events separately
-    switch (true) {
-        case memberEvents.includes(eventNumber):
-            eventCategory = 'memberEvents';
-            break;
-        case channelEvents.includes(eventNumber):
-            eventCategory = 'channelEvents';
-            break;
-        case emojiEvents.includes(eventNumber):
-            eventCategory = 'emojiEvents';
-            break;
-        case roleEvents.includes(eventNumber):
-            eventCategory = 'roleEvents';
-            break;
-        case messageEvents.includes(eventNumber):
-            eventCategory = 'messageEvents';
-            break;
-        case stickerEvents.includes(eventNumber):
-            eventCategory = 'stickerEvents';
-            break;
-        case inviteEvents.includes(eventNumber):
-            eventCategory = 'inviteEvents';
-            break;
-        case eventEvents.includes(eventNumber):
-            eventCategory = 'eventEvents';
-            break;
-        case autoModEvents.includes(eventNumber):
-            eventCategory = 'autoModEvents';
-            break;
-        case applicationCommandEvents.includes(eventNumber):
-            eventCategory = 'applicationCommandEvents';
-            break;
-        default:
-            eventCategory = 'UnknownEvent';
-            break;
+    // Find the matching category for the event number
+    let eventCategory = Object.keys(eventCategories).find(category =>
+        eventCategories[category].includes(eventNumber)
+    );
+
+    // If no matching category found, set it as UnknownEvent
+    if (!eventCategory) {
+        eventCategory = 'UnknownEvent';
     }
 
-    // Return the event name
+    // Return the event category
     return eventCategory;
 }
 
-module.exports = { getEventName, getEventCategory };
+
+/**
+ * Returns true if the event is a moderation action, false if not.
+ * @param {*} eventNumber - The event number to check
+ * @returns - True or false
+ */
+function checkModerationAction(eventNumber) {
+    const moderationActions = {
+        20: "MemberKick",
+        22: "MemberBanAdd",
+        23: "MemberBanRemove",
+        24: "MemberUpdate",
+        27: "MemberDisconnect",
+    };
+
+    return !!moderationActions[eventNumber];
+}
+
+/**
+ * Returns the name of the moderation action based on the event number.
+ * @param {*} eventNumber - The event number to check
+ * @returns - The name of the moderation action
+ */
+function getAuditActionName(eventNumber) {
+    const moderationActionName = {
+        20: "Kick",
+        22: "Ban",
+        23: "Unban",
+        24: "Timeout",
+        27: "Disconnect",
+    };
+
+    return moderationActionName[eventNumber] || "Unknown";
+};
+
+module.exports = {
+    getEventName,
+    getEventCategory,
+    checkModerationAction,
+    getAuditActionName
+};

@@ -28,7 +28,7 @@ module.exports = sequelize => {
             }
         },
         guildId: {
-            type: DataTypes.STRING,
+            type: DataTypes.BIGINT,
             allowNull: false,
             validate: {
                 is: /^\d{17,20}$/ //Discord Snowflake

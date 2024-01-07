@@ -39,7 +39,7 @@ module.exports.run = async (client, interaction) => {
         return interaction.channel.bulkDelete(messageCollection)
             .then(() => {
                 return interaction.reply({
-                    content: `Successfully deleted ${messageCollection.size} messages ${targetUser ? `from ${targetUser.tag}` : ""}`,
+                    content: `Deleting ${messageCollection.size} messages ${targetUser ? `from ${targetUser.tag}` : ""}`,
                     ephemeral: true,
                 });
             })

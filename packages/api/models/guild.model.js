@@ -13,7 +13,7 @@ class Guild extends Model {
 module.exports = sequelize => {
   Guild.init({
     guildId: {
-      type: DataTypes.STRING,
+      type: DataTypes.BIGINT,
       primaryKey: true,
       allowNull: false,
       unique: true,

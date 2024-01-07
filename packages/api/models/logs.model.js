@@ -11,17 +11,28 @@ class Logs extends Model {
 module.exports = sequelize => {
     Logs.init({
         id: {
-            type: DataTypes.INTEGER,
+            type: DataTypes.BIGINT,
+            allowNull: false,
             primaryKey: true,
-            autoIncrement: true,
-            defaultValue: () => SnowflakeUtil.generate(),
+            unique: true,
+            validate: {
+                is: /^\d{17,20}$/ //Discord Snowflake
+            }
         },
-        type: {
+        auditAction: {
+            type: DataTypes.INTEGER,
+            allowNull: false,
+        },
+        auditType: {
+            type: DataTypes.STRING,
+            allowNull: false,
+        },
+        auditCategory: {
             type: DataTypes.STRING,
             allowNull: false,
         },
         guildId: {
-            type: DataTypes.STRING,
+            type: DataTypes.BIGINT,
             allowNull: false,
             validate: {
                 is: /^\d{17,20}$/ //Discord Snowflake
@@ -48,7 +59,7 @@ module.exports = sequelize => {
         duration: {
             type: DataTypes.INTEGER,
             allowNull: true,
-        },
+        }
     }, {
         sequelize,
         modelName: 'logs',

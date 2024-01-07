@@ -3,6 +3,7 @@ const { createCustomEmbed } = require("../../assets/embed");
 const { getRequest } = require("../../database/connection");
 const { chunk } = require("../../lib/helpers/MathHelpers/ArrayHelper");
 const ClientButtonsEnum = require("../../assets/embed-buttons");
+const { getAuditActionName } = require("../../lib/discord/auditlogevent");
 
 module.exports.props = {
     commandName: "get",
@@ -45,7 +46,7 @@ module.exports.run = async (client, interaction, AuditLogs = []) => {
         // Set the log title and value
         const logTitle = `Log: ${log.id}`
         const logValue = `
-**Type** - ${log.type} ${log.duration ? ` / ${log.duration} minutes` : ""}
+**Type** - ${getAuditActionName(log.auditAction)} ${log.duration ? ` / ${log.duration} minutes` : ""}
 **Reason** - ${log.reason ? log.reason : "No reason provided."}
 **Executor** - <@${log.executorId}> | ${log.executorId}
 **Created** - ${new Date(log.createdAt).toUTCString()}
@@ -93,7 +94,7 @@ module.exports.run = async (client, interaction, AuditLogs = []) => {
             text: remainingLogs > 0
                 ? `${remainingLogs} more log${remainingLogs > 1 ? "s" : ""}...`
                 : hasLogs
-                    ? `These are all ${logCount} logs...`
+                    ? `These are all ${logCount} log${logCount !== 1 ? "s" : ""}...`
                     : "This user has no logs..."
         }
     })

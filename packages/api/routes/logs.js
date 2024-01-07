@@ -89,7 +89,7 @@ router.get("/:logId", async (req, res, next) => {
 });
 
 // Setup Attributes for this Route
-const requiredProperties = ['type', 'targetId', 'executorId'];
+const requiredProperties = ['auditAction', 'auditType', 'auditCategory', 'targetId', 'executorId'];
 
 /**
  * @router POST api/logs/:guildId/:userId
@@ -110,16 +110,15 @@ router.post("/:guildId/:userId", async (req, res, next) => {
         const guild = await Guild.findByPk(guildId);
         if (!guild) { throw new CreateError(404, 'Guild not found') };
 
-        // Check if the user exists && If no user found, trigger error
-        const user = await User.findOne({ where: { userId: userId, guildId: guildId } });
-        if (!user) { throw new CreateError(404, 'User not found') }
-
         // Get the data from request body && create object
-        const { type, targetId, reason, executorId, duration } = body;
+        const { id, auditAction, auditType, auditCategory, targetId, reason, executorId, duration } = body;
 
         // Create the new Log
         const request = await Logs.create({
-            type: type,
+            id: id,
+            auditAction: auditAction,
+            auditType: auditType,
+            auditCategory: auditCategory,
             targetId: targetId,
             reason: reason ?? null,
             executorId: executorId,
@@ -137,7 +136,7 @@ router.post("/:guildId/:userId", async (req, res, next) => {
         await t.commit();
 
     } catch (error) {
-        await rollback();
+        await t.rollback();
         next(error);
     }
 });
@@ -174,7 +173,7 @@ router.put("/:logId", async (req, res, next) => {
 
 
     } catch (error) {
-        await rollback();
+        await t.rollback();
         next(error);
     }
 });
@@ -202,7 +201,7 @@ router.delete("/:logId", async (req, res, next) => {
         });
 
     } catch (error) {
-        await rollback();
+        await t.rollback();
         next(error);
     }
 });

@@ -33,7 +33,8 @@ module.exports = async (client, message) => {
             const messageEmbed = createCustomEmbed({
                 description: `<@${memberId}> is currently away...`,
                 footer: {
-                    text: `left ${timeDifference} minute${timeDifference === 1 ? "" : "s"} ago`
+                    text: `${timeDifference} minute${timeDifference === 1 ? "" : "s"} ago`,
+                    iconURL: messageMention ? messageMention.avatarURL() : message.author.avatarURL()
                 }
             })
 
@@ -43,7 +44,7 @@ module.exports = async (client, message) => {
             }).then(msg => {
                 setTimeout(() => {
                     msg.delete();
-                }, 3000); // 3 seconds
+                }, 5000); // 5 seconds
             });
 
             // Add the user to the cooldowns Collection
