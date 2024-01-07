@@ -40,6 +40,11 @@ module.exports = async (client, auditLog, guild) => {
         // Save the audit log to the database
         const request = await postRequest(`/logs/${guild.id}/${auditLog.targetId}`, auditLogData)
         if (request.status !== 200) return console.log(request)
+        else {
+            console.log("Audit log saved to database:")
+            console.log(request)
+        }
+
 
     }
 
