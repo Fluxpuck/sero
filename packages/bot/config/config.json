@@ -1,6 +1,6 @@
 {
-    "applicationRefresh": false,
-    "applicationInitialize": false,
-    "saveFileCommands": false,
-    "saveClientGuilds": false
+    "applicationRefresh": true,
+    "applicationInitialize": true,
+    "saveFileCommands": true,
+    "saveClientGuilds": true
 }

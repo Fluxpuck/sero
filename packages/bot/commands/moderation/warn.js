@@ -67,7 +67,7 @@ module.exports.run = async (client, interaction) => {
     return member.send(privateMessage)
         .then(() => {
             return interaction.reply({
-                content: `Successfully warned <@${member.user.id}> with the following message \n ${privateMessage}`,
+                content: `Successfully warned <@${member.user.id}> with the following message:\n> ${privateMessage}`,
                 ephemeral: false,
             });
         })
