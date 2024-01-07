@@ -6,7 +6,7 @@ module.exports = async (client, applications) => {
     if (!commands) return;
 
     // Refresh all unused commands
-    if (client.config?.applicationRefresh === true) {
+    if (process.env.APPLICATION_REFRESH === true) {
         for (const [commandId, { name }] of applications) {
 
             const commandMismatch = !commands.some(command => command.commandName === name);
@@ -26,7 +26,7 @@ module.exports = async (client, applications) => {
     }
 
     // Create or Update application commands
-    if (client.config?.applicationInitialize === true) {
+    if (process.env.APPLICATION_INITIALIZE === true) {
         for (const command of commands) {
             const commandKey = command.commandId || command.commandName;
 
