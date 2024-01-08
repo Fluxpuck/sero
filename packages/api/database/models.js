@@ -1,7 +1,6 @@
 const { sequelize } = require('../database/sequelize')
 
 const models = {
-    ConfigFlags: require('../models/config.model')(sequelize),
     Commands: require('../models/commands.model')(sequelize),
     Guild: require('../models/guild.model')(sequelize),
     User: require('../models/user.model')(sequelize),
