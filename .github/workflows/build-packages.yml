@@ -15,15 +15,16 @@ jobs:
 
       - name: Build and push api Docker image
         run: |
-          docker build -t api-image -f packages/api/Dockerfile .
+          docker build -t api-image -f ${{ github.workspace }}/packages/api/Dockerfile ${{ github.workspace }}
           docker login -u ${{ secrets.DOCKER_USERNAME }} -p ${{ secrets.DOCKER_PASSWORD }}
           docker push api-image
 
       - name: Restart api container
         run: |
-          docker stop api-container || true
-          docker rm api-container || true
-          docker run -d --name api-container api-image
+         docker stop api-container || true
+         docker rm api-container || true
+         docker run -d --name api-container ${{ secrets.DOCKER_USERNAME }}/api-image
+
 
   bot-job:
     needs: api-job
@@ -35,7 +36,7 @@ jobs:
 
       - name: Build and push bot Docker image
         run: |
-          docker build -t bot-image -f packages/bot/Dockerfile .
+          docker build -t bot-image -f ${{ github.workspace }}/packages/bot/Dockerfile ${{ github.workspace }}
           docker login -u ${{ secrets.DOCKER_USERNAME }} -p ${{ secrets.DOCKER_PASSWORD }}
           docker push bot-image
 
@@ -43,4 +44,5 @@ jobs:
         run: |
           docker stop bot-container || true
           docker rm bot-container || true
-          docker run -d --name bot-container --link api-container:api bot-image
+          docker run -d --name bot-container --link api-container:api ${{ secrets.DOCKER_USERNAME }}/bot-image
+
