@@ -15,7 +15,7 @@ jobs:
 
       - name: Build and push api Docker image
         run: |
-          docker build -t api-image packages/api
+          docker build -t api-image -f packages/api/Dockerfile .
           docker login -u ${{ secrets.DOCKER_USERNAME }} -p ${{ secrets.DOCKER_PASSWORD }}
           docker push api-image
 
@@ -35,7 +35,7 @@ jobs:
 
       - name: Build and push bot Docker image
         run: |
-          docker build -t bot-image packages/bot
+          docker build -t bot-image -f packages/bot/Dockerfile .
           docker login -u ${{ secrets.DOCKER_USERNAME }} -p ${{ secrets.DOCKER_PASSWORD }}
           docker push bot-image
 
