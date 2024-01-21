@@ -31,16 +31,19 @@ function createSequelizeInstance() {
 // Function to check the database connection
 async function checkDatabaseConnection(sequelize) {
     try {
+        // Connect to the database
         await sequelize.authenticate();
+
+        // Synchronize the database schema with the models
+        await sequelize.sync({ alter: true });
+
     } catch (error) {
         throw new Error(`Unable to connect to the database: ${error.message}`);
     }
 }
 
-// Create Sequelize instance
+// Create Sequelize instance && check connection
 const sequelize = createSequelizeInstance();
-
-// Check database connection
 checkDatabaseConnection(sequelize);
 
 module.exports = { sequelize };
