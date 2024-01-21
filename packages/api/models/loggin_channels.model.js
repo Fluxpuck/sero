@@ -1,16 +1,32 @@
 const { Model, DataTypes } = require('sequelize');
 
-class EventChannels extends Model {
+class LogChannels extends Model {
     static associate(models) {
     }
 }
 
 module.exports = sequelize => {
-    EventChannels.init({
+    LogChannels.init({
         id: {
             type: DataTypes.INTEGER,
             primaryKey: true,
             autoIncrement: true,
+        },
+        guildId: {
+            type: DataTypes.BIGINT,
+            primaryKey: true,
+            allowNull: false,
+            validate: {
+                is: /^\d{17,20}$/ //Discord Snowflake
+            }
+        },
+        channelId: {
+            type: DataTypes.BIGINT,
+            primaryKey: true,
+            allowNull: true,
+            validate: {
+                is: /^\d{17,20}$/ //Discord Snowflake
+            }
         },
         category: {
             type: DataTypes.STRING,
@@ -26,17 +42,14 @@ module.exports = sequelize => {
                 ]],
             },
         },
-        channelId: {
-            type: DataTypes.STRING,
-            allowNull: false,
-        },
     }, {
         sequelize,
-        modelName: 'eventchannels',
+        modelName: 'logging_channels',
         timestamps: true,
         createdAt: true,
     }, {
-        // Add a unique constraint on guildId and category to prevent multiple entries for the same category
+        /* Add a unique constraint on guildId and category
+        This to prevent multiple entries for the same combination */
         indexes: [
             {
                 unique: true,
@@ -45,5 +58,5 @@ module.exports = sequelize => {
         ],
     });
 
-    return EventChannels;
+    return LogChannels;
 }
