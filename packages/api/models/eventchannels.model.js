@@ -2,7 +2,6 @@ const { Model, DataTypes } = require('sequelize');
 
 class EventChannels extends Model {
     static associate(models) {
-        // this.belongsTo(models.Guild, { foreignKey: 'guildId' });
     }
 }
 
