@@ -151,7 +151,7 @@ module.exports.run = async (client, interaction, AuditLogs = []) => {
 
         /**
          * @selectedButton - Logs
-         * Execute the /logs command
+         * Update the embed to show the logs
          */
         if (selectedButton === "logs") {
 
@@ -184,7 +184,7 @@ module.exports.run = async (client, interaction, AuditLogs = []) => {
         }
 
         /**
-         * @selectedButton - Logs
+         * @selectedButton - Pagination
          * Scroll through the log pages
          */
         if (selectedButton === "previous_pg" || selectedButton === "next_pg") {
