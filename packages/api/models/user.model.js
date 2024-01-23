@@ -31,6 +31,11 @@ module.exports = sequelize => {
                 is: /^\d{17,20}$/ //Discord Snowflake
             }
         },
+        moderator: {
+            type: DataTypes.BOOLEAN,
+            allowNull: false,
+            defaultValue: false
+        },
         active: {
             type: DataTypes.BOOLEAN,
             allowNull: false,

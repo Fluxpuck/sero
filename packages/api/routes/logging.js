@@ -3,7 +3,6 @@ const router = express.Router();
 const { LoggingChannels } = require("../database/models");
 const { sequelize } = require('../database/sequelize');
 const { CreateError } = require('../utils/ClassManager');
-const { validateParams, validateData } = require('../utils/FunctionManager');
 
 
 /**
