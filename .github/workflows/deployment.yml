@@ -1,0 +1,53 @@
+name: Build and Deploy
+
+on:
+  push:
+    branches:
+      - test-deploy
+  pull_request:
+    branches:
+      - test-deploy
+
+jobs:
+  build-api:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v2
+
+      - name: Set up Docker Hub credentials
+        run: echo "${{ secrets.DOCKER_USERNAME }}\n${{ secrets.DOCKER_SECRET }}" > ~/.docker/config.json
+
+      - name: Log in to Docker Hub
+        run: docker login -u ${{ secrets.DOCKER_USERNAME }} -p ${{ secrets.DOCKER_SECRET }}
+
+      - name: Build and push Docker image
+        run: |
+          cd packages/api
+          docker build -t ${{ secrets.DOCKER_USERNAME }}/flux:latest .
+          docker push ${{ secrets.DOCKER_USERNAME }}/flux:latest
+
+      - name: Deploy to Debian server
+        run: |
+          ssh user@10.0.0.153 "docker login -u ${{ secrets.DOCKER_USERNAME }} -p ${{ secrets.DOCKER_SECRET }}"
+          ssh user@10.0.0.153 "docker pull ${{ secrets.DOCKER_USERNAME }}/flux:latest"
+          ssh user@10.0.0.153 "docker run -d -p 80:3000 ${{ secrets.DOCKER_USERNAME }}/flux:latest"
+
+  build-bot:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v2
+
+      # Add steps specific to the second job here...
+
+      - name: Example Step
+        run: echo "This is an example step for the second job."
+
+      # Add more steps as needed...
+
+      - name: Final Step
+        run: echo "This is the final step for the second job."
+
