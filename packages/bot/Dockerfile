@@ -2,16 +2,16 @@
 FROM node:latest
 
 # Set the working directory inside the container
-WORKDIR /usr/src/app
+WORKDIR /usr/src/app/packages/bot
 
 # Copy package.json and package-lock.json (if available)
-COPY packages/bot/package*.json ./
+COPY package*.json ./
 
 # Install dependencies
 RUN npm install
 
 # Copy the rest of the application files
-COPY packages/bot/ ./
+COPY . .
 
-# Command to start the bot
+# Command to start the API
 CMD ["node", "bot.js"]
