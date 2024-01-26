@@ -1,8 +1,8 @@
-name: "CodeQL"
+name: "CodeQL Code-check"
 
 on:
   push:
-    branches: [ main, production, development, test-deploy ]
+    branches: [ main ] # Temp disabled by only checking main branch
 
 jobs:
   analyze:
