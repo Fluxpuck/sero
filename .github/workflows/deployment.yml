@@ -30,9 +30,9 @@ jobs:
 
       - name: Deploy to Debian server
         run: |
-          ssh user@10.0.0.153 "docker login -u ${{ secrets.DOCKER_USERNAME }} -p ${{ secrets.DOCKER_SECRET }}"
-          ssh user@10.0.0.153 "docker pull ${{ secrets.DOCKER_USERNAME }}/flux:latest"
-          ssh user@10.0.0.153 "docker run -d -p 80:3000 ${{ secrets.DOCKER_USERNAME }}/flux:latest"
+          ssh flux@${{ secrets.SERVER_HOST }} "docker login -u ${{ secrets.DOCKER_USERNAME }} -p ${{ secrets.DOCKER_SECRET }}"
+          ssh flux@${{ secrets.SERVER_HOST }} "docker pull ${{ secrets.DOCKER_USERNAME }}/flux:latest"
+          ssh flux@${{ secrets.SERVER_HOST }} "docker run -d -p 80:3000 ${{ secrets.DOCKER_USERNAME }}/flux:latest"
 
   build-bot:
     runs-on: ubuntu-latest
