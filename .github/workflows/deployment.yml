@@ -24,7 +24,7 @@ jobs:
 
       - name: Build and push Docker image
         run: |
-          cd packages/api
+          cd ./packages/api
           docker build -t ${{ secrets.DOCKER_USERNAME }}/flux:latest .
           docker push ${{ secrets.DOCKER_USERNAME }}/flux:latest
 
