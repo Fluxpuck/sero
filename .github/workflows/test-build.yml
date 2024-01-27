@@ -1,0 +1,22 @@
+name: Test build Docker containers
+
+on:
+  push:
+    branches: [development]
+  pull_request:
+    types: [closed]
+
+jobs:
+  build-api:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - name: Test Build API
+        run: docker build ./packages/api --file ./packages/api/Dockerfile --tag flux-api:$(date +%s)
+
+  build-bot:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - name: Test Build Bot
+        run: docker build ./packages/bot --file ./packages/bot/Dockerfile --tag flux-bot:$(date +%s)

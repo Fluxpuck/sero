@@ -1,16 +1,9 @@
 {
-  "name": "flux-api",
+  "name": "sero-api",
   "version": "v1.0.0",
-  "description": "A restful API, made in Node.js",
-  "main": "app.js",
   "scripts": {
     "start": "node app.js"
   },
-  "author": {
-    "name": "Fluxpuck",
-    "email": "info@fluxpuck.com"
-  },
-  "license": "ISC",
   "dependencies": {
     "axios": "^1.3.3",
     "body-parser": "^1.20.1",
@@ -18,17 +11,13 @@
     "express": "^4.18.2",
     "helmet": "^6.0.1",
     "morgan": "^1.10.0",
-    "mysql2": "^3.1.2",
     "rotating-file-stream": "^3.1.0",
-    "sequelize": "^6.29.0"
-  },
-  "devDependencies": {
-    "prettier": "^2.8.4",
-    "sqlite3": "^5.1.5"
+    "sequelize": "^6.29.0",
+    "pg": "^8.11.3"
   },
   "github": {
     "user": "Fluxpuck",
-    "repository": "flux-api",
-    "url": "https://github.com/Fluxpuck/flux-api"
+    "repository": "flux",
+    "url": "https://github.com/Fluxpuck/flux"
   }
 }
