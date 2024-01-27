@@ -2,7 +2,7 @@ name: Test build Docker containers
 
 on:
   push:
-    branches: [ development ]
+    branches: [development]
   pull_request:
     types: [closed]
 

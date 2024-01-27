@@ -2,7 +2,7 @@ name: "CodeQL Code-check"
 
 on:
   push:
-    branches: []
+    branches: [main]
 
 jobs:
   analyze:
