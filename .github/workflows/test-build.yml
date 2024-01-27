@@ -1,8 +1,8 @@
-name: Test build API & Bot
+name: Test build Docker containers
 
 on:
   push:
-    branches: [development, test-deploy]
+    branches: []
   pull_request:
     types: [closed]
 
@@ -11,18 +11,12 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
-      - name: Test build Docker image API
+      - name: Test Build API
         run: docker build ./packages/api --file ./packages/api/Dockerfile --tag flux-api:$(date +%s)
-
-      - name: Success Message API
-        run: echo "API Build successful!"
 
   build-bot:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
-      - name: Test build Docker image API
+      - name: Test Build Bot
         run: docker build ./packages/bot --file ./packages/bot/Dockerfile --tag flux-bot:$(date +%s)
-
-      - name: Success Message Bot
-        run: echo "Bot Build successful!"

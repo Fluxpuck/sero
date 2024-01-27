@@ -2,7 +2,7 @@ name: "CodeQL Code-check"
 
 on:
   push:
-    branches: [ main ] # Temp disabled by only checking main branch
+    branches: []
 
 jobs:
   analyze:
