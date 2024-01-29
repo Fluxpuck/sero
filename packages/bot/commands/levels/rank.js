@@ -29,20 +29,18 @@ module.exports.run = async (client, interaction) => {
 		})
 	}
 
-	// interaction.deferReply();
-
 	// Get the user experience
 	const result = await getRequest(`/levels/${interaction.guildId}/${targetUser.id}`);
 
 	// If status code is 404, return an error saying the user is not ranked yet
 	if (result.status === 404) {
 		return interaction.reply({
-			content: `Uh oh! The user ${targetUser.username} is not ranked yet!`,
+			content: `Uh oh! The user ${targetUser.username} is no rank yet!`,
 			ephemeral: true
 		})
 	} else if (result.status !== 200) { // If the status code is not 200, return an error that something went wrong
 		return interaction.reply({
-			content: "Oops! Something went wrong while trying to fetch the rank",
+			content: "Oops! Something went wrong while trying to fetch the rank!",
 			ephemeral: true
 		})
 	}
@@ -66,7 +64,7 @@ module.exports.run = async (client, interaction) => {
 	// If creating the rank card was not successful, return an error
 	if (!rankCard) {
 		return interaction.reply({
-			content: "Oops! Something went wrong creating your rank card",
+			content: "Oops! Something went wrong creating your rank card!",
 			ephemeral: true
 		})
 	}
@@ -74,5 +72,5 @@ module.exports.run = async (client, interaction) => {
 	// Return embed with rank details
 	return interaction.reply(
 		{ files: [rankCard] }
-	)	
+	)
 }

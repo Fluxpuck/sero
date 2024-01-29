@@ -3,8 +3,6 @@ const { SnowflakeUtil } = require('discord.js');
 
 class Logs extends Model {
     static associate(models) {
-        // this.belongsTo(models.Guild, { foreignKey: 'guildId' });
-        // this.belongsTo(models.User, { foreignKey: 'userHash' });
     }
 }
 

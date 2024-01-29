@@ -3,9 +3,6 @@ const { generateUniqueHash } = require('../utils/FunctionManager');
 
 class User extends Model {
     static associate(models) {
-        // this.belongsTo(models.Guild, { foreignKey: 'guildId' });
-        // this.hasMany(models.Messages, { foreignKey: 'userId' });
-        // this.hasMany(models.AuditLogs, { foreignKey: 'userId' });
     }
 }
 
@@ -33,6 +30,11 @@ module.exports = sequelize => {
             validate: {
                 is: /^\d{17,20}$/ //Discord Snowflake
             }
+        },
+        moderator: {
+            type: DataTypes.BOOLEAN,
+            allowNull: false,
+            defaultValue: false
         },
         active: {
             type: DataTypes.BOOLEAN,

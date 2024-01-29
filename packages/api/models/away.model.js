@@ -3,18 +3,6 @@ const cron = require('node-cron');
 
 class Away extends Model {
     static associate(models) {
-        // this.belongsToMany(models.Guild, {
-        //     foreignKey: 'userHash', // This should match the foreign key in the Moderator model
-        //     otherKey: 'guildId', // Foreign key for the Guild model
-        // });
-        // this.belongsToMany(models.User, {
-        //     foreignKey: 'userHash', // This should match the foreign key in the Moderator model
-        //     otherKey: 'userId', // Foreign key for the Guild model
-        // });
-        // this.belongsTo(models.User, {
-        //     foreignKey: 'userHash', // This should match the foreign key in the User model (userHash)
-        //     targetKey: 'userHash', // This should match the target key in the User model (userHash)
-        // });
     }
 }
 

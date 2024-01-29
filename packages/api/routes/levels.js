@@ -21,7 +21,7 @@ router.get("/:guildId	", async (req, res, next) => {
 
     // If no results found, trigger error
     if (!result || result.length === 0) {
-      throw new CreateError(404, 'No levels found for this guild.');
+      throw new CreateError(404, 'This user has no levels yet');
     }
 
     // Return the results
@@ -50,7 +50,7 @@ router.get("/:guildId/:userId", async (req, res, next) => {
 
     // If no results found, trigger error
     if (!result || result.length === 0) {
-      throw new CreateError(404, 'No levels found for this user');
+      throw new CreateError(404, 'This user has no levels yet');
     }
 
     // Calculate the position based on experience for the guild
@@ -149,7 +149,7 @@ router.post('/add/:guildId/:userId', async (req, res, next) => {
     });
 
     if (!levels) {
-      throw new CreateError(404, 'No levels found for this user');
+      throw new CreateError(404, 'This user has no levels yet');
     };
 
     // Get the experience from the request body
@@ -197,7 +197,7 @@ router.post('/gain/:guildId/:userId', async (req, res, next) => {
     });
 
     if (!levels) {
-      throw new CreateError(404, 'No levels found for this user');
+      throw new CreateError(404, 'This user has no levels yet');
     };
 
     // Calculate the XP
@@ -211,7 +211,7 @@ router.post('/gain/:guildId/:userId', async (req, res, next) => {
     // Update the level
     const request = await levels.save({ transaction: t });
     res.status(200).json({
-      message: `User ${guildId}/${userId} gained ${EXP_GAIN} experience points.`,
+      message: `User ${guildId}/${userId} gained ${EXP_GAIN} experience points`,
       data: request
     });
 
@@ -279,7 +279,7 @@ router.delete("/:guildId/:userId", async (req, res, next) => {
         userId: userId
       }
     });
-    if (!request) throw new CreateError(404, 'Level was not found.');
+    if (!request) throw new CreateError(404, 'No levels were found for this user');
 
     // Delete level data
     await request.destroy({ transaction: t });

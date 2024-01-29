@@ -10,7 +10,6 @@ module.exports = sequelize => {
         id: {
             type: DataTypes.INTEGER,
             primaryKey: true,
-            unique: true,
             autoIncrement: true,
         },
         commandId: {
@@ -23,7 +22,6 @@ module.exports = sequelize => {
         },
         commandName: {
             type: DataTypes.STRING,
-            unique: true,
             allowNull: false,
         },
         description: {

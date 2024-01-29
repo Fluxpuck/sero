@@ -2,8 +2,6 @@ const { Model, DataTypes } = require('sequelize');
 
 class Messages extends Model {
     static associate(models) {
-        // this.belongsTo(models.User, { foreignKey: 'userHash' });
-        // this.belongsTo(models.Guild, { foreignKey: 'guildId' });
     }
 }
 
