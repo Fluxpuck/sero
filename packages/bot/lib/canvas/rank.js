@@ -1,14 +1,14 @@
 const { AttachmentBuilder } = require('discord.js');
 const { createCanvas, loadImage, registerFont } = require('canvas');
-const { formatNumberWithSuffix, capitalize } = require('../../lib/helpers/StringHelpers/stringHelper');
+const { formatNumberWithSuffix } = require('../helpers/StringHelpers/stringHelper');
 const RankCardColors = require('../../assets/rankCard');
 
 // Register multiple fonts
 const fontsToRegister = [
-    { path: './packages/bot/assets/fonts/Roboto-Regular.ttf', family: 'roboto-regular' },
-    { path: './packages/bot/assets/fonts/Roboto-Medium.ttf', family: 'roboto-medium' },
-    { path: './packages/bot/assets/fonts/Roboto-Black.ttf', family: 'roboto-black' },
-    { path: './packages/bot/assets/fonts/Roboto-Bold.ttf', family: 'roboto-bold' },
+    { path: './assets/fonts/Roboto-Black.ttf', family: 'roboto-black' },
+    { path: './assets/fonts/Roboto-Bold.ttf', family: 'roboto-bold' },
+    { path: './assets/fonts/Roboto-Medium.ttf', family: 'roboto-medium' },
+    { path: './assets/fonts/Roboto-Regular.ttf', family: 'roboto-regular' },
 ];
 
 // Loop through the fonts array and register each font
@@ -24,11 +24,9 @@ async function createRankCard(
     experience,
     level,
     nextLevelExp,
-    currentLevelExp
 ) {
 
     try {
-
         // Initialize the canvas
         const canvas = createCanvas(400, 100);
         const ctx = canvas.getContext('2d');
@@ -180,7 +178,7 @@ async function createRankCard(
             }
 
             // Draw the text on the canvas
-            ctx.fillText(rankSymbol, rankNumberOffset, RL_textY);  
+            ctx.fillText(rankSymbol, rankNumberOffset, RL_textY);
         }
 
         const drawLevelText = (text) => {
@@ -211,9 +209,9 @@ async function createRankCard(
                 offset -= (levelNumberWidth - 2) * 0.275;
 
             } else if (levelNumberWidth.toFixed(0) >= 20) { // If the levelNumberWidth is greater than 20 (i.e. 3 digits), we need to adjust the offset
-                
+
                 // Adjust the offset based on the width of the levelNumber
-                offset -= (levelNumberWidth - 2) * 0.5; 
+                offset -= (levelNumberWidth - 2) * 0.5;
 
             }
 
@@ -248,119 +246,7 @@ async function createRankCard(
 
     } catch (error) {
         console.log(error)
-
         return undefined
     }
-
-
-
 }
-
 module.exports = { createRankCard };
-
-
-/*
-
-
-
-    const currentLevelExp = memberRankResponse.data[0].currentLevelExp,
-        nextLevelExp = memberRankResponse.data[0].nextLevelExp,
-        currentLevel = memberRankResponse.data[0].level;
-
-    // Create the canvas
-    const canvas = createCanvas(1000, 300),
-        ctx = canvas.getContext('2d');
-
-    // Load the background image
-    const background = await loadImageforCanvas('./packages/bot/assets/images/sero_rank_card.png');
-
-    // if loadImageforCanvas returns null, send an error embed and return
-    if (!background) {
-        return sendErrorEmbed(interaction, ERROR_MESSAGES.RANK_CARD_ERROR);
-    }
-
-    // Draw the background image
-    ctx.drawImage(background, 0, 0, canvas.width, canvas.height);
-
-    // Load the user's avatar
-    const avatar = await loadImageforCanvas(member.user.displayAvatarURL({ extension: 'png', size: 1024 }));
-
-    // if loadImageforCanvas returns null, send an error embed and return
-    if (!avatar) {
-        return sendErrorEmbed(interaction, ERROR_MESSAGES.RANK_CARD_ERROR);
-    }
-
-    // Draw circle to clip the avatar
-    ctx.beginPath();
-    ctx.arc(150, 150, 100, 0, Math.PI * 2);
-    ctx.fillStyle = `rgba(${RANK_CARD_COLORS.black_rgb}, 0.5)`;
-    ctx.fill();
-
-    // Add a border to the avatar
-    ctx.strokeStyle = RANK_CARD_COLORS.main;
-    ctx.lineWidth = 2;
-    ctx.stroke();
-    ctx.closePath();
-
-    // Clip the avatar
-    ctx.save(); // Save the current state
-    ctx.beginPath();
-    ctx.arc(150, 150, 100, 0, Math.PI * 2);
-    ctx.closePath();
-    ctx.clip();
-
-    // Draw the user's avatar
-    ctx.drawImage(avatar, 50, 50, 200, 200);
-    ctx.restore(); // Restore the previous state
-
-    // Draw the username
-    ctx.font = 'semi-bold 32px Arial Unicode MS';
-    ctx.fillStyle = RANK_CARD_COLORS.white;
-
-    if (ctx.measureText(member.user.username).width > 300) {
-        ctx.fillText(member.user.username.substring(0, 20) + '...', 300, 100);
-    } else {
-        ctx.fillText(member.user.username, 300, 100);
-    }
-
-    // Filling the level details
-    // Draw the level
-    ctx.font = 'normal 32px Arial Unicode MS';
-    ctx.fillStyle = RANK_CARD_COLORS.white;
-    ctx.fillText(`Level`, canvas.width - 210, 100);
-
-    // Draw the level number
-    ctx.font = 'bold 52px Arial Unicode MS';
-    ctx.fillStyle = RANK_CARD_COLORS.white;
-    ctx.fillText(currentLevel, (canvas.width - 260) + ctx.measureText('Level').width, 100);
-
-    // Draw the experience bar
-    ctx.lineJoin = 'round';
-    ctx.lineWidth = 40;
-
-    // Shadow of the xp bar
-    ctx.strokeStyle = `rgba(${RANK_CARD_COLORS.black_rgb}, 0.8)`;
-    ctx.strokeRect(319, canvas.height - 151, 602, 2);
-
-    // Empty bar
-    ctx.strokeStyle = `rgba(${RANK_CARD_COLORS.main_rgb}, 0.2)`;
-    ctx.strokeRect(320, canvas.height - 150, 600, 0);
-
-    // Filled bar
-    ctx.strokeStyle = `rgba(${RANK_CARD_COLORS.main_rgb}, 1)`;
-    ctx.strokeRect(320, canvas.height - 150, (600 * (currentLevelExp / nextLevelExp)), 0);
-
-    // Draw the experience
-    ctx.font = 'normal 32px Arial Unicode MS';
-    ctx.fillStyle = RANK_CARD_COLORS.white;
-    let currentExpText = `${formatNumberWithSuffix(currentLevelExp)}`;
-    ctx.fillText(`${currentExpText}`, canvas.width - 250, canvas.height - 80);
-
-
-    // Draw the experience number
-    ctx.font = 'bold 32px Arial Unicode MS';
-    ctx.fillStyle = RANK_CARD_COLORS.white;
-    let nextExpText = `${formatNumberWithSuffix(nextLevelExp)}`;
-    ctx.fillText('/ ' + nextExpText, (canvas.width - 250) + ctx.measureText(currentExpText).width, canvas.height - 80);
-
-    */

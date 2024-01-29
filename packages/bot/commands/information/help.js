@@ -1,7 +1,7 @@
 const { ActionRowBuilder, ComponentType, } = require('discord.js');
-const { capitalize } = require('../../lib/helpers/StringHelpers/stringHelper');
 const { createCustomEmbed } = require('../../assets/embed');
 const { createCustomDropdown } = require('../../assets/embed-dropdowns');
+const { capitalize } = require('../../lib/helpers/StringHelpers/stringHelper');
 
 module.exports.props = {
     commandName: "help",
