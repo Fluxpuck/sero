@@ -4,12 +4,19 @@ const { formatNumberWithSuffix } = require('../helpers/StringHelpers/stringHelpe
 const RankCardColors = require('../../assets/rankCard');
 
 // Register multiple fonts
-const fontsToRegister = [
-    { path: './assets/fonts/Roboto-Black.ttf', family: 'roboto-black' },
-    { path: './assets/fonts/Roboto-Bold.ttf', family: 'roboto-bold' },
-    { path: './assets/fonts/Roboto-Medium.ttf', family: 'roboto-medium' },
-    { path: './assets/fonts/Roboto-Regular.ttf', family: 'roboto-regular' },
-];
+const fontsToRegister = process.env.NODE_ENV === 'production' ?
+    [
+        { path: './assets/fonts/Roboto-Black.ttf', family: 'roboto-black' },
+        { path: './assets/fonts/Roboto-Bold.ttf', family: 'roboto-bold' },
+        { path: './assets/fonts/Roboto-Medium.ttf', family: 'roboto-medium' },
+        { path: './assets/fonts/Roboto-Regular.ttf', family: 'roboto-regular' },
+    ] :
+    [
+        { path: './packages/bot/assets/fonts/Roboto-Regular.ttf', family: 'roboto-regular' },
+        { path: './packages/bot/assets/fonts/Roboto-Medium.ttf', family: 'roboto-medium' },
+        { path: './packages/bot/assets/fonts/Roboto-Black.ttf', family: 'roboto-black' },
+        { path: './packages/bot/assets/fonts/Roboto-Bold.ttf', family: 'roboto-bold' },
+    ]
 
 // Loop through the fonts array and register each font
 fontsToRegister.forEach(font => {
