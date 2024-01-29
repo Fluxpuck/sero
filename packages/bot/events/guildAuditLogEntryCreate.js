@@ -1,6 +1,6 @@
 const { postRequest } = require("../database/connection");
 const { getEventName, getEventCategory, checkModerationAction } = require("../lib/discord/auditlogevent");
-const { calculateRoundedDuration } = require("../lib/helpers/TimeDateHelpers/timeDateHelpers");
+const { calculateRoundedDuration } = require("../lib/helpers/TimeDateHelpers/timeHelper");
 
 module.exports = async (client, auditLog, guild) => {
     if (!guild.active) return;
