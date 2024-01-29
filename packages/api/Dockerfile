@@ -13,5 +13,8 @@ RUN npm install
 # Copy the rest of the application files
 COPY . .
 
+# Expose the port the app runs on
+EXPOSE 3336
+
 # Command to start the API
 CMD ["node", "app.js"]

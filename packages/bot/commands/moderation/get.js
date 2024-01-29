@@ -1,7 +1,7 @@
 const { ActionRowBuilder, ComponentType } = require("discord.js");
 const { createCustomEmbed } = require("../../assets/embed");
 const { getRequest } = require("../../database/connection");
-const { chunk } = require("../../lib/helpers/MathHelpers/ArrayHelper");
+const { chunk } = require("../../lib/helpers/MathHelpers/arrayHelper");
 const ClientButtonsEnum = require("../../assets/embed-buttons");
 const { getAuditActionName } = require("../../lib/discord/auditlogevent");
 
