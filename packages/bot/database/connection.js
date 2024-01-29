@@ -1,6 +1,7 @@
 const axios = require('axios');
+const { NODE_ENV, PROD_API_URL, DEV_API_URL } = process.env;
 const instance = axios.create({
-    baseURL: process.env.API_URL,
+    baseURL: NODE_ENV === 'production' ? PROD_API_URL : DEV_API_URL,
     headers: {
         'Authorization': process.env.API_MASTER_KEY,
         "Content-type": "application/json"
@@ -8,7 +9,6 @@ const instance = axios.create({
 });
 
 module.exports = {
-
     /**
      * GET request to the API
      * @param {string} endpoint - The endpoint to make the request to
@@ -48,6 +48,4 @@ module.exports = {
             return error?.response?.data.error
         }
     }
-
-
 };

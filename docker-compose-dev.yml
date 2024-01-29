@@ -8,8 +8,9 @@ services:
     ports:
       - "5433:5432" # Map port 5433 on the host to port 5432 in the container
     environment:
+      - POSTGRES_USER=postgres
       - POSTGRES_PASSWORD=postgres
-      - POSTGRES_DB=dev_api_flux
+      - POSTGRES_DB=postgres
     labels:
       NAME: "flux-pg"
     volumes:
