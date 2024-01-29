@@ -9,7 +9,6 @@ const instance = axios.create({
 });
 
 module.exports = {
-
     /**
      * GET request to the API
      * @param {string} endpoint - The endpoint to make the request to
@@ -49,6 +48,4 @@ module.exports = {
             return error?.response?.data.error
         }
     }
-
-
 };
