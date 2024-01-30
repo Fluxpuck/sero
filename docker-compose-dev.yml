@@ -11,6 +11,7 @@ services:
       - POSTGRES_USER=postgres
       - POSTGRES_PASSWORD=postgres
       - POSTGRES_DB=postgres
+      - TZ=Europe/Paris
     labels:
       NAME: "flux-pg"
     volumes:

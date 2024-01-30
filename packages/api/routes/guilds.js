@@ -54,7 +54,7 @@ router.get("/:guildId", async (req, res, next) => {
 
 
 // Setup Attributes for this Route
-const requiredProperties = ['guildId', 'guildName'];
+const guildProperties = ['guildId', 'guildName'];
 
 /**
  * @router POST api/guild/:guildId
@@ -67,7 +67,7 @@ router.post('/:guildId', async (req, res, next) => {
     const { guildId } = params;
 
     // Check if the request body has all required properties
-    if (!body || Object.keys(body).length === 0 || requiredProperties.some(prop => body[prop] === undefined)) {
+    if (!body || Object.keys(body).length === 0 || guildProperties.some(prop => body[prop] === undefined)) {
       throw new CreateError(400, 'Invalid or missing data for this request');
     }
 
@@ -94,6 +94,46 @@ router.post('/:guildId', async (req, res, next) => {
       await Guild.create(updateData, { transaction: t });
       res.status(200).send(`Guild ${guildId} was created successfully`);
     }
+
+    // Commit and finish the transaction
+    return t.commit();
+
+  } catch (error) {
+    await t.rollback();
+    next(error);
+  }
+});
+
+
+// Setup Attributes for this Route
+const boostProperties = ['modifier'];
+
+/**
+ * @router POST api/guild/:guildId
+ * @description Create or update a Guild
+ */
+router.post('/boost/:guildId', async (req, res, next) => {
+  const t = await sequelize.transaction();
+  try {
+    const { body, params } = req;
+    const { guildId } = params;
+
+    // Check if the request body has all required properties
+    if (!body || Object.keys(body).length === 0 || boostProperties.some(prop => body[prop] === undefined)) {
+      throw new CreateError(400, 'Invalid or missing data for this request');
+    }
+
+    // Check if the guild exists
+    const request = await Guild.findByPk(guildId);
+    if (!request) throw new CreateError(404, 'Guild was not found.');
+
+    // Set duration based request body
+    const duration = body.duration ?? 1;
+    const { modifier } = body;
+
+    // Set modifier the guild
+    await request.update({ modifier: modifier, duration: duration }, { transaction: t });
+    res.status(200).send(`Guild ${guildId} activated succesfully`);
 
     // Commit and finish the transaction
     return t.commit();
