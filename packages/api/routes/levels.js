@@ -200,9 +200,16 @@ router.post('/gain/:guildId/:userId', async (req, res, next) => {
       throw new CreateError(404, 'This user has no levels yet');
     };
 
+    // Get guild modifier & personal modifier
+    const guild = await Guild.findByPk(guildId);
+    const serverModifier = guild.modifier ?? 1;
+    const user = await User.findOne({ where: { userId: userId, guildId: guildId } });
+    const personalModifier = user.modifier ?? 1;
+
+    console.log("serverModifier", serverModifier)
+    console.log("personalModifier", personalModifier)
+
     // Calculate the XP
-    let personalModifier = 1; //TODO: add personal modifier, based on personal settings?
-    let serverModifier = 1; //TODO: add server modifier, based on guild settings?
     const EXP_GAIN = calculateXP(personalModifier, serverModifier);
 
     // Add EXP to the user's experience
