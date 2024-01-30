@@ -44,7 +44,7 @@ module.exports.run = async (client, interaction) => {
         // If either request was not successful, return an error
         if (removeResult.status !== 200 || addResult.status !== 200) {
             interaction.reply({
-                content: "Something went wrong while transferring experience to the user",
+                content: "Something went wrong while transferring experience to the user.",
                 ephemeral: true
             })
         } else {

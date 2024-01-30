@@ -24,7 +24,7 @@ module.exports.run = async (client, interaction) => {
 	const targetUser = interaction.options.get("user")?.user || interaction.user;
 	if (!targetUser) {
 		return interaction.reply({
-			content: "Oops! Something went wrong while trying to fetch the user",
+			content: "Oops! Something went wrong while trying to fetch the user.",
 			ephemeral: true
 		})
 	}
@@ -84,7 +84,7 @@ module.exports.run = async (client, interaction) => {
 		return client.cooldowns.set(cooldownKey, interaction, 0 * 2 * 60) // 2 minutes
 	} else {
 		return interaction.reply({
-			content: `You can only transfer experience once per day!`,
+			content: `You can only check your rank every 2 minutes!`,
 			ephemeral: true
 		})
 	}
