@@ -17,6 +17,7 @@ services:
       context: ./packages/api
     env_file:
       - ./packages/api/config/.env
+    restart: unless-stopped
     ports:
       - "3336:3336"
     depends_on:
@@ -27,6 +28,7 @@ services:
       context: ./packages/bot
     env_file:
       - ./packages/bot/config/.env
+    restart: unless-stopped
     depends_on:
       - api
 
