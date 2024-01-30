@@ -24,7 +24,16 @@ module.exports = sequelize => {
       type: DataTypes.BOOLEAN,
       allowNull: false,
       defaultValue: true
-    }
+    },
+    modifier: {
+      type: DataTypes.FLOAT,
+      allowNull: false,
+      defaultValue: 1,
+      validate: {
+        min: 0.5,
+        max: 5,
+      },
+    },
   },
     {
       sequelize,
