@@ -34,7 +34,7 @@ module.exports.run = async (client, interaction) => {
         });
     } else {
         return interaction.reply({
-            content: `<@${member.user.id}> is not in a voicechannel`,
+            content: `<@${member.user.id}> is not in a voice channel.`,
             ephemeral: true
         });
     }

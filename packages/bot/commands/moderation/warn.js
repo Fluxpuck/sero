@@ -73,7 +73,7 @@ module.exports.run = async (client, interaction) => {
         })
         .catch(err => {
             return interaction.reply({
-                content: `Could not warn <@${member.user.id}>, but warning has been logged`,
+                content: `Could not warn <@${member.user.id}>, but a warning has been logged.`,
                 ephemeral: true,
             });
         });

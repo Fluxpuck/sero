@@ -28,7 +28,7 @@ module.exports.run = async (client, interaction) => {
     // If the request was not successful, return an error
     if (result.status !== 200) {
         return interaction.reply({
-            content: "Something went wrong while resetting the user",
+            content: "Something went wrong while resetting the users experience.",
             ephemeral: true
         })
     } else {
