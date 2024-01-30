@@ -1,4 +1,5 @@
-const { Model, DataTypes } = require("sequelize");
+const { Model, DataTypes, Sequelize } = require("sequelize");
+const cron = require('node-cron');
 
 class Guild extends Model {
   static associate(models) {
@@ -13,7 +14,7 @@ module.exports = sequelize => {
       allowNull: false,
       unique: true,
       validate: {
-        is: /^\d{17,20}$/ //Discord Snowflake
+        is: /^\d{17,20}$/ // Discord Snowflake
       }
     },
     guildName: {
@@ -34,14 +35,56 @@ module.exports = sequelize => {
         max: 5,
       },
     },
+    duration: {
+      type: DataTypes.INTEGER,
+      allowNull: true,
+      validate: {
+        min: 1,
+        max: 168,
+      },
+    },
+    expireAt: {
+      type: DataTypes.DATE,
+      allowNull: true,
+    },
   },
     {
       sequelize,
       modelName: 'guild',
       timestamps: true,
-      createdAt: true
-    },
-  );
+      createdAt: true,
+      updatedAt: true,
+      hooks: {
+        beforeCreate: (guild, options) => {
+          // Calculate expireAt based on duration and createdAt
+          const expireAt = new Date(guild.createdAt);
+          expireAt.setHours(expireAt.getHours() + guild.duration);
+          guild.expireAt = expireAt;
+        },
+        beforeUpdate: (guild, options) => {
+          // Calculate expireAt based on duration and updatedAt
+          const expireAt = new Date(guild.updatedAt);
+          expireAt.setHours(expireAt.getHours() + guild.duration);
+          guild.expireAt = expireAt;
+        },
+      },
+    });
+
+  // Update expired records every hour
+  cron.schedule('0 * * * *', async () => {
+    try {
+      await Guild.update({ modifier: 1 },
+        {
+          where: {
+            expireAt: {
+              [Sequelize.Op.lt]: new Date(), // Select records where expireAt is in the past
+            },
+          },
+        });
+    } catch (error) {
+      console.error('Error cleaning up expired records:', error);
+    }
+  });
 
   return Guild;
-}
+};
