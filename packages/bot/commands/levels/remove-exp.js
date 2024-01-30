@@ -37,7 +37,7 @@ module.exports.run = async (client, interaction) => {
     // If the request was not successful, return an error
     if (result.status !== 200) {
         return interaction.reply({
-            content: "Something went wrong while giving experience to the user",
+            content: "Something went wrong while remivubg experience to the user.",
             ephemeral: true
         })
     } else {
