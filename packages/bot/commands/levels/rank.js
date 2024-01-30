@@ -24,7 +24,7 @@ module.exports.run = async (client, interaction) => {
 	const targetUser = interaction.options.get("user")?.user || interaction.user;
 	if (!targetUser) {
 		return interaction.reply({
-			content: "Oops! Something went wrong while trying to fetch the user",
+			content: "Oops! Something went wrong while trying to fetch the user.",
 			ephemeral: true
 		})
 	}
@@ -41,12 +41,12 @@ module.exports.run = async (client, interaction) => {
 		// If status code is 404, return an error saying the user is not ranked yet
 		if (result.status === 404) {
 			return interaction.reply({
-				content: `Uh oh! The user ${targetUser.username} is no rank yet!`,
+				content: `Uh oh! The user ${targetUser.username} does not have a rank yet.`,
 				ephemeral: true
 			})
 		} else if (result.status !== 200) { // If the status code is not 200, return an error that something went wrong
 			return interaction.reply({
-				content: "Oops! Something went wrong while trying to fetch the rank!",
+				content: "Oops! Something went wrong while trying to fetch the users rank!",
 				ephemeral: true
 			})
 		}
