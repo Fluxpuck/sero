@@ -31,12 +31,14 @@ module.exports = sequelize => {
         experience: {
             type: DataTypes.INTEGER,
             allowNull: false,
-            defaultValue: 0
+            defaultValue: 0,
+            min: 0,
         },
         level: {
             type: DataTypes.INTEGER,
             allowNull: false,
-            defaultValue: 0
+            defaultValue: 0,
+            min: 0
         },
         currentLevelExp: {
             type: DataTypes.INTEGER,
