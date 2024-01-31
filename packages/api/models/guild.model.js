@@ -64,6 +64,7 @@ module.exports = sequelize => {
       },
     });
 
+
   // Update expired records every 5 minutes
   cron.schedule('*/5 * * * *', async () => {
     try {
