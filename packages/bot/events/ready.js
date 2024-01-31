@@ -42,7 +42,6 @@ module.exports = async (client) => {
                 guildId: guild.id,
                 guildName: guild.name
             })
-            console.log(result)
         }
     });
 
