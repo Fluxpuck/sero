@@ -9,11 +9,8 @@ module.exports.run = async () => {
         },
         {
             guildId: "552953312073220096",
-            guildName: "SSundee"
-        },
-        {
-            guildId: "738358458826489896",
-            guildName: "Flux-bot Support"
+            guildName: "SSundee",
+            active: false
         },
         {
             guildId: "253740950315204608",

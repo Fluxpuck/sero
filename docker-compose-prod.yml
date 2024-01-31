@@ -7,7 +7,6 @@ services:
       POSTGRES_USER: admin
       POSTGRES_PASSWORD: curlywire90
       POSTGRES_DB: sero_database
-      TZ: 'Europe/Paris'
     ports:
       - "5432:5432"
     volumes:

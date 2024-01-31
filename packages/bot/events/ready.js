@@ -38,11 +38,11 @@ module.exports = async (client) => {
         if (data) guild.active = data[0]?.active === true;
 
         if (process.env.SAVE_CLIENT_GUILDS === "true") {
-            await postRequest(`/guilds/${guild.id}`, {
+            const result = await postRequest(`/guilds/${guild.id}`, {
                 guildId: guild.id,
-                guildName: guild.name,
-                active: false
+                guildName: guild.name
             })
+            console.log(result)
         }
     });
 
