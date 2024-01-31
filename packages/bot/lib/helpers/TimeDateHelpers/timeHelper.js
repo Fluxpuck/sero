@@ -1,21 +1,25 @@
 module.exports = {
 
     /**
-    * Format a time duration in seconds as a string in the format "hh:mm:ss".
-    * @param {number} timeInSeconds - The time duration in seconds.
+    * Format a time duration in milliseconds as a string in the format "<day(s)>d <hr>h <min>m <s>s".
+    * @param {number} timeInMilliseconds - The time duration in milliseconds.
     * @returns {string} The formatted time string.
     */
-    formatTime: (timeInSeconds) => {
-        // Define a helper function to pad numbers with leading zeros
-        const pad = (num) => String(num).padStart(2, '0');
-        // Calculate the number of hours in the time and round down to the nearest integer
-        const hours = Math.floor(timeInSeconds / 3600);
-        // Calculate the number of minutes in the time and round down to the nearest integer
-        const minutes = Math.floor((timeInSeconds % 3600) / 60);
-        // Calculate the number of seconds in the time and round down to the nearest integer
-        const seconds = Math.floor(timeInSeconds % 60);
-        // Return a string that represents the time in the format of "HH:MM:SS"
-        return `${pad(hours)}:${pad(minutes)}:${pad(seconds)}`;
+    formatTime: (timeInMilliseconds) => {
+       // Calculate the number of days, hours, minutes, and seconds
+       const days = Math.floor(timeInMilliseconds / 86400000);
+       const hours = Math.floor(timeInMilliseconds / 3600000) % 24;
+       const minutes = Math.floor(timeInMilliseconds / 60000) % 60;
+       const seconds = Math.floor(timeInMilliseconds / 1000) % 60;
+
+       // Create a display string for each unit of time
+       const dDisplay = days > 0 ? `${days}d` : '';
+       const hDisplay = hours > 0 ? `${hours}h ` : '';
+       const mDisplay = minutes > 0 ? `${minutes}m ` : '';
+       const sDisplay = seconds > 0 ? `${seconds}s` : '';
+
+       // Return the combined display string
+       return `${dDisplay}${hDisplay}${mDisplay}${sDisplay}`;
     },
 
     /**
@@ -31,5 +35,5 @@ module.exports = {
         const differenceInMinutes = Math.ceil(differenceInMillis / (1000 * 60));
 
         return differenceInMinutes;
-    }
+    },
 };
