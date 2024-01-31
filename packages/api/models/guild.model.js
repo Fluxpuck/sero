@@ -55,12 +55,6 @@ module.exports = sequelize => {
       createdAt: true,
       updatedAt: true,
       hooks: {
-        beforeCreate: (guild, options) => {
-          // Calculate expireAt based on duration and createdAt
-          const expireAt = new Date(guild.createdAt);
-          expireAt.setHours(expireAt.getHours() + guild.duration);
-          guild.expireAt = expireAt;
-        },
         beforeUpdate: (guild, options) => {
           // Calculate expireAt based on duration and updatedAt
           const expireAt = new Date(guild.updatedAt);
@@ -70,8 +64,9 @@ module.exports = sequelize => {
       },
     });
 
-  // Update expired records every hour
-  cron.schedule('0 * * * *', async () => {
+
+  // Update expired records every 5 minutes
+  cron.schedule('*/5 * * * *', async () => {
     try {
       await Guild.update({ modifier: 1 },
         {
@@ -82,7 +77,7 @@ module.exports = sequelize => {
           },
         });
     } catch (error) {
-      console.error('Error cleaning up expired records:', error);
+      console.error('Error updating expired records:', error);
     }
   });
 

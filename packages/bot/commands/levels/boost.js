@@ -42,12 +42,12 @@ module.exports.run = async (client, interaction) => {
     // If the request was not successful, return an error
     if (result.status !== 200) {
         return interaction.reply({
-            content: `Uh oh! The modifier has not been set.`,
+            content: `Uh oh! Something went wrong and the modifier has not been set.`,
             ephemeral: true
         })
     } else {
         return interaction.reply({
-            content: `The guild experience rate will be boosted by **${targetModifier}** for **${duration} hour${duration === 1 ? "" : "s"}**!`,
+            content: `Boosting the experience with **${targetModifier}X** for **${duration} hour${duration === 1 ? "" : "s"}**!`,
             ephemeral: false
         })
     }

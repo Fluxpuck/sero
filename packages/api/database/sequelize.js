@@ -34,13 +34,17 @@ function createSequelizeInstance() {
 async function checkDatabaseConnection(sequelize) {
     try {
         // Connect to the database
-        await sequelize.authenticate();
+        await sequelize.authenticate().catch(error => {
+            throw new Error(`Error connecting to the database: ${error.message}`);
+        });
 
         // Synchronize the database schema with the models
-        await sequelize.sync({ alter: true });
+        await sequelize.sync({ alter: true }).catch(error => {
+            throw new Error(`Error synchronizing the database: ${error.message}`);
+        });
 
     } catch (error) {
-        throw new Error(`Unable to connect to the database: ${error.message}`);
+        console.log(error.message);
     }
 }
 
