@@ -1,5 +1,4 @@
 const { postRequest, getRequest } = require("../../database/connection");
-const interactionCreate = require("../../events/interactionCreate");
 
 module.exports.props = {
     commandName: "remove-exp",

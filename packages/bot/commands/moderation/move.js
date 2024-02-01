@@ -1,4 +1,3 @@
-const { CommandInteraction, ChannelType } = require("discord.js")
 module.exports.props = {
     commandName: "move",
     description: "Move ALL users from a voice channel into another.",
