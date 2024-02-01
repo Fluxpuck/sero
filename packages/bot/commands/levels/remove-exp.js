@@ -1,4 +1,5 @@
-const { postRequest } = require("../../database/connection");
+const { postRequest, getRequest } = require("../../database/connection");
+const interactionCreate = require("../../events/interactionCreate");
 
 module.exports.props = {
     commandName: "remove-exp",
@@ -29,17 +30,25 @@ module.exports.props = {
 module.exports.run = async (client, interaction) => {
     // Get User && Amount details from the interaction options
     const targetUser = interaction.options.get("user").user;
-    const targetAmount = interaction.options.get("amount").value;
+    const targetAmount = interaction.options.get("amount").value || 0;
 
-    // Give the user the experience
-    const result = await postRequest(`/levels/add/${interaction.guildId}/${targetUser.id}`, { experience: -targetAmount });
 
-    // If the request was not successful, return an error
-    if (result.status !== 200) {
-        return interaction.reply({
+    // Get the user's the experience && check if the user has experience.
+    const currentUser = await getRequest(`/levels/${interaction.guildId}/${targetUser.id}`);
+    const currentExperience = currentUser ? currentUser.experience : 0;
+
+    // Check if the user has the proper amount of experience.
+    if(currentExperience < targetAmount) {
+        await postRequest(`/levels/add/${interaction.guildId}/${targetUser.id}`, { experience: -currentExperience })
+    }
+        // Remove the user's experience if has proper amount.
+        const result = await postRequest(`/levels/add/${interaction.guildId}/${targetUser.id}`, { experience: -targetAmount });
+        if (result && result.status !== 200) {
+            interaction.reply({
             content: "Something went wrong while removing experience from the user.",
             ephemeral: true
         })
+        
     } else {
         return interaction.reply({
             content: `**${targetAmount}** experience was removed from <@${targetUser.id}>!`,
