@@ -28,7 +28,6 @@ module.exports.props = {
  * @param {CommandInteraction} interaction 
  */
 module.exports.run = async (client, interaction) => {
-    let person = 0;
     const firstChannel = interaction.options.get("voice-channel").value;
     const targetChannel = interaction.options.get("target-channel").value;
 

@@ -23,7 +23,6 @@ module.exports.run = async () => {
             experience: 6969
         },
         {
-            // SEVEN [ALT ACCOUNT] GUILD 1
             userId: "1138091030713995344",
             guildId: "660103319557111808",
             experience: 700
