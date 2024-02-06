@@ -9,9 +9,16 @@ const { CreateError } = require('../utils/ClassManager');
  * @description Get all Guilds
  */
 router.get("/", async (req, res, next) => {
+
+  const limit = req.query.limit || 1000;
+
   try {
     // Find all guilds
-    const result = await Guild.findAll();
+    const result = await Guild.findAll(
+      {
+        limit: limit
+      }
+    );
 
     // If no results found, trigger error
     if (!result || result.length === 0) {
@@ -35,7 +42,7 @@ router.get("/:guildId", async (req, res, next) => {
     const { guildId } = req.params;
 
     // Check for results related to the guildId
-    const result = await Guild.findAll({
+    const result = await Guild.findOne({
       where: { guildId: guildId },
     });
 

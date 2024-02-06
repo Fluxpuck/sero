@@ -11,10 +11,12 @@ const { CreateError } = require('../utils/ClassManager');
 router.get("/", async (req, res, next) => {
     try {
         const { guildId } = req.params;
+        const limit = req.query.limit || 200000;
 
         // Find all users
         const result = await User.findAll({
             where: { guildId: guildId },
+            limit: limit,
         });
 
         // If no results found, trigger error
@@ -39,7 +41,7 @@ router.get("/:guildId/:userId", async (req, res, next) => {
         const { guildId, userId } = req.params;
 
         // Check for results related to the guildId
-        const result = await User.findAll({
+        const result = await User.findOne({
             where: {
                 guildId: guildId,
                 userId: userId
