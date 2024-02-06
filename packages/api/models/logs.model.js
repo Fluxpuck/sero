@@ -38,7 +38,7 @@ module.exports = sequelize => {
         },
         targetId: {
             type: DataTypes.BIGINT,
-            allowNull: false,
+            allowNull: true,
             validate: {
                 is: /^\d{17,20}$/ //Discord Snowflake
             }
