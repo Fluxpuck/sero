@@ -22,7 +22,7 @@ module.exports = async (client, message) => {
         }
 
         // Add the userHash to the User object
-        message.author.userHash = userResult.data[0]?.userHash
+        message.author.userHash = userResult.data?.userHash
 
     } else {
 
