@@ -7,7 +7,7 @@ const models = {
     Away: require('../models/away.model')(sequelize),
     Messages: require('../models/messages.model')(sequelize),
     Levels: require('../models/levels.model')(sequelize),
-    LoggingChannels: require('../models/loggin_channels.model')(sequelize),
+    LogChannels: require('../models/logchannels.model')(sequelize),
     Logs: require('../models/logs.model')(sequelize),
 }
 

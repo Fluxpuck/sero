@@ -1,25 +1,25 @@
 const express = require("express");
 const router = express.Router();
-const { Away } = require("../database/models");
+const { LogChannels } = require("../database/models");
 const { sequelize } = require('../database/sequelize');
 const { CreateError } = require('../utils/ClassManager');
 
 /**
- * @router GET api/away/:guildId
- * @description Get all Away statusses for a specific guild
+ * @router GET api/logchannels/:guildId
+ * @description Get all logchannels for a specific guild
  */
 router.get("/:guildId", async (req, res, next) => {
   try {
     const { guildId } = req.params;
 
     // Check for results related to the guildId
-    const result = await Away.findAll({
+    const result = await LogChannels.findAll({
       where: { guildId: guildId },
     });
 
     // If no results found, trigger error
     if (!result || result.length === 0) {
-      throw new CreateError(404, 'No Away status for this guildId found.');
+      throw new CreateError(404, 'No logchannels for this guildId found.');
     }
 
     // Return the results
@@ -31,24 +31,24 @@ router.get("/:guildId", async (req, res, next) => {
 });
 
 /**
- * @router GET api/away/:guildId/userId
- * @description Get the Away status from a specific user from a specific guild
+ * @router GET api/logchannels/:guildId/:category
+ * @description Get the logchannel for a specific category from a guildId
  */
-router.get("/:guildId/:userId", async (req, res, next) => {
+router.get("/:guildId/:category", async (req, res, next) => {
   try {
-    const { guildId, userId } = req.params;
+    const { guildId, category } = req.params;
 
-    // Check for results related to the guildId and userId
-    const result = await Away.findOne({
+    // Check if the category is already in LogChannels
+    const result = await LogChannels.findOne({
       where: {
         guildId: guildId,
-        userId: userId
+        category: category
       },
     });
 
     // If no results found, trigger error
     if (!result || result.length === 0) {
-      throw new CreateError(404, 'No Away status for this combination of guildId and userId found.');
+      throw new CreateError(404, 'No logchannel for this category and guildId found.');
     }
 
     // Return the results
@@ -61,18 +61,18 @@ router.get("/:guildId/:userId", async (req, res, next) => {
 
 
 // Setup Attributes for this Route
-const requiredProperties = ['duration'];
+const requiredProperties = ['channelId'];
 
 /**
- * @router POST api/away/:guildId/userId
- * @description Save the Away status from a specific user from a specific guild
+ * @router POST api/logchannels/:guildId/:category
+ * @description Save the logchannel for a specific category from a guildId
  */
-router.post("/:guildId/:userId", async (req, res, next) => {
+router.post("/:guildId/:category", async (req, res, next) => {
   const t = await sequelize.transaction();
 
   try {
     const { body, params } = req;
-    const { guildId, userId } = params;
+    const { guildId, category } = params;
 
     // Check if the request body has all required properties
     if (!body || Object.keys(body).length === 0 || requiredProperties.some(prop => body[prop] === undefined)) {
@@ -80,33 +80,33 @@ router.post("/:guildId/:userId", async (req, res, next) => {
     }
 
     // Get the data from the request body && create object
-    const { duration } = body;
+    const { channelId } = body;
     const updateData = {
-      userId: userId,
       guildId: guildId,
-      duration: duration
+      category: category,
+      channelId: channelId
     }
 
-    // Check if the user is already away
-    const levels = await Away.findOne({
+    // Check if the category is already in LogChannels
+    const logchannels = await LogChannels.findOne({
       where: {
         guildId: guildId,
-        userId: userId
+        category: category,
       },
       transaction: t
     });
 
     // Update or Create the request
-    if (levels) {
-      await levels.update(updateData, { transaction: t });
+    if (logchannels) {
+      await logchannels.update(updateData, { transaction: t });
       res.status(200).json({
-        message: `Away status for ${guildId}/${userId} updated successfully`,
-        data: levels
+        message: `Logchannel for ${guildId}/${category} updated successfully`,
+        data: logchannels
       });
     } else {
-      const request = await Away.create(updateData, { transaction: t });
+      const request = await LogChannels.create(updateData, { transaction: t });
       res.status(200).json({
-        message: `Away status for ${guildId}/${userId} created successfully`,
+        message: `Logchannel status for ${guildId}/${category} created successfully`,
         data: request
       });
     }
@@ -124,31 +124,31 @@ router.post("/:guildId/:userId", async (req, res, next) => {
 
 
 /**
- * @router DELETE api/away/:guildId/userId
- * @description Delete the Away status from a specific user from a specific guild
+ * @router DELETE api/logchannels/:guildId/:category
+ * @description Delete the logchannel to a specific category from a specific guild
  */
-router.delete("/:guildId/:userId", async (req, res, next) => {
+router.delete("/:guildId/:category", async (req, res, next) => {
   try {
-    const { guildId, userId } = req.params;
+    const { guildId, category } = req.params;
 
-    // Check if the user is away
-    const request = await Away.findOne({
+    // Check if the category is already in LogChannels
+    const request = await LogChannels.findOne({
       where: {
         guildId: guildId,
-        userId: userId
+        category: category
       },
     });
 
     // If no results found, trigger error
     if (!request || request.length === 0) {
-      throw new CreateError(404, 'No Away status for this combination of guildId and userId found.');
+      throw new CreateError(404, 'No logchannel for this combination of guildId and category found.');
     }
 
     // Delete the request
     await request.destroy();
 
     // Return the results
-    return res.status(200).json(`The Away status for ${guildId}/${userId} was deleted successfully`);
+    return res.status(200).json(`The logchannel for ${guildId}/${category} was deleted successfully`);
 
   } catch (error) {
     next(error);
