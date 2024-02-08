@@ -16,6 +16,15 @@ module.exports.run = async (client, interaction) => {
     // Get all levels for a specific guild from the database
     const result = await getRequest(`/levels/${interaction.guildId}`);
 
+    console.log(result)
+
+    const leaderboard = result.data
+
+    console.log(leaderboard)
+
+
+
+
     // If status code is 404, return an error
     // if (result.status === 404) {
     //     return interaction.reply({
@@ -29,6 +38,5 @@ module.exports.run = async (client, interaction) => {
     //     })
     // }
 
-    console.log(result)
 
 }
