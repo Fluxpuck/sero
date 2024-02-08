@@ -10,7 +10,7 @@ const { calculateXP } = require('../utils/levelManager');
  * @router GET api/levels/:guildId	
  * @description Get all Guild Levels
  */
-router.get("/:guildId	", async (req, res, next) => {
+router.get("/:guildId", async (req, res, next) => {
   try {
     const { guildId } = req.params;
     const limit = req.query.limit || 100;
