@@ -37,12 +37,12 @@ module.exports.run = async (client, interaction, AuditLogs = []) => {
     }
 
     // Filter memberLogs from new to old
-    const sortLogs = AuditLogs.sort((a, b) => {
+    const sortedLogs = AuditLogs.sort((a, b) => {
         return new Date(b.createdAt) - new Date(a.createdAt);
     })
 
     // Setup the log fields
-    const logFields = sortLogs.map(log => {
+    const logFields = sortedLogs.map(log => {
         // Set the log title and value
         const logTitle = `Log: ${log.id}`
         const logValue = `
