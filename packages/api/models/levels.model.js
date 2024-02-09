@@ -3,6 +3,8 @@ const { calculateLevel } = require('../utils/levelManager');
 
 class Levels extends Model {
     static associate(models) {
+        this.belongsTo(models.User, { foreignKey: 'userId' })
+        this.belongsTo(models.Guild, { foreignKey: 'guildId' })
     }
 }
 
