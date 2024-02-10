@@ -2,6 +2,7 @@ const { Model, DataTypes } = require('sequelize');
 
 class LogChannels extends Model {
     static associate(models) {
+        this.belongsTo(models.Guild, { foreignKey: 'guildId' })
     }
 }
 
