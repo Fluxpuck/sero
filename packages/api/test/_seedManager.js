@@ -43,7 +43,7 @@ const { finished } = require('stream');
     const files = fs.readdirSync(directoryPath);
 
     // Set the desired order for the files to be executed in...
-    const desiredOrder = ['Client.seed.js', 'Guild.seed.js', 'User.seed.js'];
+    const desiredOrder = ['Guild.seed.js', 'User.seed.js'];
     const desiredFilesMap = new Map(desiredOrder.map((fileName, index) => [fileName, index]));
 
     // Sort the files based on their presence in the desiredOrder

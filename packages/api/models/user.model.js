@@ -12,18 +12,13 @@ class User extends Model {
 
 module.exports = sequelize => {
     User.init({
-        id: {
-            type: DataTypes.INTEGER,
-            autoIncrement: true,
-            primaryKey: true,
-            unique: true,
-        },
         userName: {
             type: DataTypes.STRING,
             allowNull: false
         },
         userId: {
             type: DataTypes.BIGINT,
+            primaryKey: true,
             allowNull: false,
             validate: {
                 is: /^\d{17,20}$/ //Discord Snowflake
@@ -31,6 +26,7 @@ module.exports = sequelize => {
         },
         guildId: {
             type: DataTypes.BIGINT,
+            primaryKey: true,
             allowNull: false,
             validate: {
                 is: /^\d{17,20}$/ //Discord Snowflake

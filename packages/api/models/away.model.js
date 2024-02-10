@@ -10,14 +10,9 @@ class Away extends Model {
 
 module.exports = sequelize => {
     Away.init({
-        id: {
-            type: DataTypes.INTEGER,
-            autoIncrement: true,
-            primaryKey: true,
-            unique: true,
-        },
         userId: {
             type: DataTypes.BIGINT,
+            primaryKey: true,
             allowNull: false,
             validate: {
                 is: /^\d{17,20}$/ //Discord Snowflake
@@ -25,6 +20,7 @@ module.exports = sequelize => {
         },
         guildId: {
             type: DataTypes.BIGINT,
+            primaryKey: true,
             allowNull: false,
             validate: {
                 is: /^\d{17,20}$/ // Discord Snowflake

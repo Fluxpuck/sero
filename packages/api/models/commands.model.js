@@ -7,13 +7,6 @@ class Commands extends Model {
 
 module.exports = sequelize => {
     Commands.init({
-        id: {
-            type: DataTypes.INTEGER,
-            autoIncrement: true,
-            primaryKey: true,
-            unique: true,
-            field: 'custom_sequence_name_here_2' // Use a different name
-        },
         commandId: {
             type: DataTypes.BIGINT,
             unique: true,
@@ -24,6 +17,8 @@ module.exports = sequelize => {
         },
         commandName: {
             type: DataTypes.STRING,
+            primaryKey: true,
+            unique: true,
             allowNull: false,
         },
         description: {
