@@ -1,8 +1,8 @@
 const { ActionRowBuilder, ComponentType } = require("discord.js");
-const { createCustomEmbed } = require("../../assets/embed");
-const { getRequest } = require("../../database/connection");
-const { chunk } = require("../../lib/helpers/MathHelpers/arrayHelper");
 const ClientButtonsEnum = require("../../assets/embed-buttons");
+const { createCustomEmbed } = require("../../assets/embed");
+const { chunk } = require("../../lib/helpers/MathHelpers/arrayHelper");
+const { getRequest } = require("../../database/connection");
 const { getAuditActionName } = require("../../lib/discord/auditlogevent");
 
 module.exports.props = {
@@ -37,12 +37,12 @@ module.exports.run = async (client, interaction, AuditLogs = []) => {
     }
 
     // Filter memberLogs from new to old
-    const sortLogs = AuditLogs.sort((a, b) => {
+    const sortedLogs = AuditLogs.sort((a, b) => {
         return new Date(b.createdAt) - new Date(a.createdAt);
     })
 
     // Setup the log fields
-    const logFields = sortLogs.map(log => {
+    const logFields = sortedLogs.map(log => {
         // Set the log title and value
         const logTitle = `Log: ${log.id}`
         const logValue = `
@@ -117,7 +117,7 @@ module.exports.run = async (client, interaction, AuditLogs = []) => {
         ephemeral: false
     });
 
-    // Collect the dropdownMenu selection
+    // Collect the button selection
     const options = { componentType: ComponentType.Button, idle: 300_000, time: 3_600_000 }
     const collector = response.createMessageComponentCollector({ options });
     collector.on('collect', async i => {

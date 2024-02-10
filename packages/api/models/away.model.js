@@ -3,29 +3,27 @@ const cron = require('node-cron');
 
 class Away extends Model {
     static associate(models) {
+        this.belongsTo(models.User, { foreignKey: 'userId' })
+        this.belongsTo(models.Guild, { foreignKey: 'guildId' })
     }
 }
 
 module.exports = sequelize => {
     Away.init({
-        id: {
-            type: DataTypes.INTEGER,
-            autoIncrement: true,
-            primaryKey: true,
-            unique: true,
-        },
         userId: {
             type: DataTypes.BIGINT,
+            primaryKey: true,
             allowNull: false,
             validate: {
                 is: /^\d{17,20}$/ //Discord Snowflake
             }
         },
         guildId: {
-            type: DataTypes.STRING,
+            type: DataTypes.BIGINT,
+            primaryKey: true,
             allowNull: false,
             validate: {
-                is: /^\d{17,20}$/ //Discord Snowflake
+                is: /^\d{17,20}$/ // Discord Snowflake
             }
         },
         duration: {

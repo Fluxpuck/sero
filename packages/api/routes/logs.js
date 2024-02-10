@@ -12,10 +12,12 @@ const { CreateError } = require('../utils/ClassManager');
 router.get("/:guildId", async (req, res, next) => {
     try {
         const { guildId } = req.params;
+        const limit = req.query.limit || 100;
 
         // Find all logs per guild
         const result = await Logs.findAll({
-            where: { guildId: guildId }
+            where: { guildId: guildId },
+            limit: limit,
         });
 
         // If no results found, trigger error

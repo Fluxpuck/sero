@@ -31,7 +31,7 @@ module.exports = async (client, auditLog, guild) => {
             auditAction: auditLog.action,
             auditType: getEventName(auditLog.action),
             auditCategory: getEventCategory(auditLog.action),
-            targetId: auditLog.targetId,
+            targetId: auditLog.targetId ?? null,
             reason: auditLog.reason ?? undefined,
             executorId: auditLog.executorId,
             duration: auditLog.duration ?? undefined,

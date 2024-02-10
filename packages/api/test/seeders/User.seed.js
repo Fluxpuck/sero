@@ -40,6 +40,11 @@ module.exports.run = async () => {
             active: false,
             guildId: "660103319557111808"
         },
+        {
+            userId: "1138091030713995344",
+            guildId: "660103319557111808",
+            userName: "seven",
+        }
     ]
 
     for (const userInfo of userData) {

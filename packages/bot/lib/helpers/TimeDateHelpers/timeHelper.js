@@ -6,20 +6,20 @@ module.exports = {
     * @returns {string} The formatted time string.
     */
     formatTime: (timeInMilliseconds) => {
-       // Calculate the number of days, hours, minutes, and seconds
-       const days = Math.floor(timeInMilliseconds / 86400000);
-       const hours = Math.floor(timeInMilliseconds / 3600000) % 24;
-       const minutes = Math.floor(timeInMilliseconds / 60000) % 60;
-       const seconds = Math.floor(timeInMilliseconds / 1000) % 60;
+        // Calculate the number of days, hours, minutes, and seconds
+        const days = Math.floor(timeInMilliseconds / 86400000);
+        const hours = Math.floor(timeInMilliseconds / 3600000) % 24;
+        const minutes = Math.floor(timeInMilliseconds / 60000) % 60;
+        const seconds = Math.floor(timeInMilliseconds / 1000) % 60;
 
-       // Create a display string for each unit of time
-       const dDisplay = days > 0 ? `${days}d` : '';
-       const hDisplay = hours > 0 ? `${hours}h ` : '';
-       const mDisplay = minutes > 0 ? `${minutes}m ` : '';
-       const sDisplay = seconds > 0 ? `${seconds}s` : '';
+        // Create a display string for each unit of time
+        const dDisplay = days > 0 ? `${days}d ` : '';
+        const hDisplay = hours > 0 ? `${hours}h ` : '';
+        const mDisplay = minutes > 0 ? `${minutes}m ` : '';
+        const sDisplay = seconds > 0 ? `${seconds}s` : '';
 
-       // Return the combined display string
-       return `${dDisplay}${hDisplay}${mDisplay}${sDisplay}`;
+        // Return the combined display string
+        return `${dDisplay}${hDisplay}${mDisplay}${sDisplay}`;
     },
 
     /**

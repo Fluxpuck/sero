@@ -1,24 +1,24 @@
 const { Model, DataTypes } = require('sequelize');
-const { generateUniqueHash } = require('../utils/FunctionManager');
 
 class User extends Model {
     static associate(models) {
+        this.belongsTo(models.Guild, { foreignKey: 'guildId' })
+        this.hasMany(models.Levels, { foreignKey: 'userId' })
+        this.hasMany(models.Logs, { foreignKey: 'userId' })
+        this.hasMany(models.Messages, { foreignKey: 'userId' })
+        this.hasMany(models.Away, { foreignKey: 'userId' })
     }
 }
 
 module.exports = sequelize => {
     User.init({
-        userHash: {
-            type: DataTypes.STRING,
-            primaryKey: true,
-            unique: true,
-        },
         userName: {
             type: DataTypes.STRING,
             allowNull: false
         },
         userId: {
             type: DataTypes.BIGINT,
+            primaryKey: true,
             allowNull: false,
             validate: {
                 is: /^\d{17,20}$/ //Discord Snowflake
@@ -26,6 +26,7 @@ module.exports = sequelize => {
         },
         guildId: {
             type: DataTypes.BIGINT,
+            primaryKey: true,
             allowNull: false,
             validate: {
                 is: /^\d{17,20}$/ //Discord Snowflake
@@ -46,24 +47,7 @@ module.exports = sequelize => {
         modelName: 'user',
         timestamps: true,
         createdAt: true,
-        hooks: {
-            beforeCreate: async (user, options) => {
-                // Check if a user with the same guildId and userId already exists
-                const existingUser = await User.findOne({
-                    where: {
-                        guildId: user.guildId,
-                        userId: user.userId,
-                    },
-                });
-
-                if (existingUser) {
-                    throw new Error('User with the same guildId and userId already exists.');
-                }
-
-                // Generate a unique token for userHash based on userId
-                user.userHash = generateUniqueHash(user.userId, user.guildId);
-            },
-        },
+        updatedAt: true,
     });
 
     return User;

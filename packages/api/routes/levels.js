@@ -10,13 +10,19 @@ const { calculateXP } = require('../utils/levelManager');
  * @router GET api/levels/:guildId	
  * @description Get all Guild Levels
  */
-router.get("/:guildId	", async (req, res, next) => {
+router.get("/:guildId", async (req, res, next) => {
   try {
     const { guildId } = req.params;
+    const limit = req.query.limit || 100;
 
     // Check for results related to the guildId
     const result = await Levels.findAll({
       where: { guildId: guildId },
+      limit: limit,
+      include: [{
+        model: User,
+        where: { guildId: guildId }
+      }]
     });
 
     // If no results found, trigger error
@@ -46,6 +52,13 @@ router.get("/:guildId/:userId", async (req, res, next) => {
         guildId: guildId,
         userId: userId
       },
+      include: [{
+        model: User,
+        where: {
+          guildId: guildId,
+          userId: userId
+        },
+      }]
     });
 
     // If no results found, trigger error

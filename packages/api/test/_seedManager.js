@@ -1,7 +1,6 @@
 const fs = require('fs');
-const { join, resolve } = require('path');
+const { join } = require('path');
 const { sequelize } = require('../database/sequelize');
-const { finished } = require('stream');
 
 (async () => {
 
@@ -43,7 +42,7 @@ const { finished } = require('stream');
     const files = fs.readdirSync(directoryPath);
 
     // Set the desired order for the files to be executed in...
-    const desiredOrder = ['Client.seed.js', 'Guild.seed.js', 'User.seed.js'];
+    const desiredOrder = ['Guild.seed.js', 'User.seed.js'];
     const desiredFilesMap = new Map(desiredOrder.map((fileName, index) => [fileName, index]));
 
     // Sort the files based on their presence in the desiredOrder
@@ -61,7 +60,7 @@ const { finished } = require('stream');
     });
 
     // Iterate over files array
-    for (const file of sortedFiles) {
+    for await (const file of sortedFiles) {
 
         // Get the full path of the file
         const filePath = join(directoryPath, file);
@@ -81,4 +80,8 @@ const { finished } = require('stream');
             }
         }
     }
+
+    return setTimeout(() => {
+        process.exit(0);
+    }, 5000);
 })()

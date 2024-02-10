@@ -3,19 +3,16 @@ const { calculateLevel } = require('../utils/levelManager');
 
 class Levels extends Model {
     static associate(models) {
+        this.belongsTo(models.User, { foreignKey: { name: 'userId', allowNull: false } });
+        this.belongsTo(models.Guild, { foreignKey: { name: 'guildId', allowNull: false } });
     }
 }
 
 module.exports = sequelize => {
     Levels.init({
-        levelId: {
-            type: DataTypes.INTEGER,
-            primaryKey: true,
-            autoIncrement: true,
-            allowNull: false
-        },
         userId: {
             type: DataTypes.BIGINT,
+            primaryKey: true,
             allowNull: false,
             validate: {
                 is: /^\d{17,20}$/ //Discord Snowflake
@@ -23,6 +20,7 @@ module.exports = sequelize => {
         },
         guildId: {
             type: DataTypes.BIGINT,
+            primaryKey: true,
             allowNull: false,
             validate: {
                 is: /^\d{17,20}$/ //Discord Snowflake
@@ -31,12 +29,14 @@ module.exports = sequelize => {
         experience: {
             type: DataTypes.INTEGER,
             allowNull: false,
-            defaultValue: 0
+            defaultValue: 0,
+            min: 0,
         },
         level: {
             type: DataTypes.INTEGER,
             allowNull: false,
-            defaultValue: 0
+            defaultValue: 0,
+            min: 0
         },
         currentLevelExp: {
             type: DataTypes.INTEGER,
