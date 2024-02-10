@@ -121,7 +121,7 @@ module.exports.run = async (client, interaction, leaderboard = []) => {
             // Update embed Footer && Fields
             messageEmbed.setFooter({ text: `Leaderboard page ${page + 1} of ${maxpages + 1}` });
             messageEmbed.data.fields = []; // Empty current fields
-            messageEmbed.setFields([...descriptionPages[page]]);
+            messageEmbed.setFields([...leaderboardPages[page]]);
 
             // Update the interaction components
             await i.update({
