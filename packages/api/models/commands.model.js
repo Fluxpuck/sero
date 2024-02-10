@@ -12,6 +12,7 @@ module.exports = sequelize => {
             autoIncrement: true,
             primaryKey: true,
             unique: true,
+            field: 'custom_sequence_name_here_2' // Use a different name
         },
         commandId: {
             type: DataTypes.BIGINT,

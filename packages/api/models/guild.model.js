@@ -7,7 +7,8 @@ class Guild extends Model {
     this.hasMany(models.Levels, { foreignKey: 'guildId' })
     this.hasMany(models.Logs, { foreignKey: 'guildId' })
     this.hasMany(models.Messages, { foreignKey: 'guildId' })
-    this.hasMany(models.logChannel, { foreignKey: 'guildId' })
+    this.hasMany(models.LogChannels, { foreignKey: 'guildId' })
+    this.hasMany(models.Away, { foreignKey: 'guildId' })
   }
 }
 
