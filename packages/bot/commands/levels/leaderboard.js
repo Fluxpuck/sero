@@ -42,7 +42,13 @@ module.exports.run = async (client, interaction, leaderboard = []) => {
     // Setup embed description
     const leaderboardValues = sortedLeaderboard.map((level, index) => {
         const user = level.user;
-        const leaderboardTitle = `${index + 1}${[1, 2, 3].includes(index + 1) ? "#" : "."} ${user.userName}`
+
+        // Setup the Ranking
+        const rankings = ["🥇", "🥈", "🥉"];
+        let ranking = rankings[index] || `${index + 1}.`;
+
+        // Construct the leaderboard fields
+        const leaderboardTitle = `${ranking} \`${user.userName}\``
         const leaderboardValue = `*Level ${level.level} / ${level.experience} EXP*`
         return {
             name: leaderboardTitle,
