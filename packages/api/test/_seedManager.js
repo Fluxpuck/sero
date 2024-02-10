@@ -1,7 +1,6 @@
 const fs = require('fs');
-const { join, resolve } = require('path');
+const { join } = require('path');
 const { sequelize } = require('../database/sequelize');
-const { finished } = require('stream');
 
 (async () => {
 
@@ -61,7 +60,7 @@ const { finished } = require('stream');
     });
 
     // Iterate over files array
-    for (const file of sortedFiles) {
+    for await (const file of sortedFiles) {
 
         // Get the full path of the file
         const filePath = join(directoryPath, file);
@@ -81,4 +80,8 @@ const { finished } = require('stream');
             }
         }
     }
+
+    return setTimeout(() => {
+        process.exit(0);
+    }, 5000);
 })()
