@@ -23,9 +23,6 @@ module.exports.run = async (client, interaction, leaderboard = []) => {
         leaderboard = result.data
     }
 
-
-    console.log(leaderboard)
-
     // If status code is 404, return an error
     if (result.status === 404) {
         return interaction.reply({
@@ -45,7 +42,13 @@ module.exports.run = async (client, interaction, leaderboard = []) => {
     // Setup embed description
     const leaderboardValues = sortedLeaderboard.map((level, index) => {
         const user = level.user;
-        return `**${index + 1}${[1, 2, 3].includes(index + 1) ? "#" : "."} ${user.userName}** - Level ${level.level} / ${level.experience} EXP`
+        const leaderboardTitle = `${index + 1}${[1, 2, 3].includes(index + 1) ? "#" : "."} ${user.userName}`
+        const leaderboardValue = `*Level ${level.level} / ${level.experience} EXP*`
+        return {
+            name: leaderboardTitle,
+            value: leaderboardValue,
+            inline: false
+        }
     });
 
     // Slice the leaderboard in chunks of 20
@@ -58,7 +61,9 @@ module.exports.run = async (client, interaction, leaderboard = []) => {
     // Construct message Embed
     const messageEmbed = createCustomEmbed({
         title: "Leaderboard",
-        description: hasLeaderboard ? leaderboardPages[page].join("\n") : "No users on the leaderboard yet!",
+        description: `${hasLeaderboard ? `Here are the top ${leaderboardValues.length} users on the leaderboard!` : "Uh oh! There are no users on the leaderboard yet!"}`,
+        fields: [...(leaderboardPages.length > 0 ? leaderboardPages[page] : [])],
+        thumbnail: interaction.guild.iconURL({ dynamic: true }),
     });
 
     // Construct Pagination Buttons
@@ -115,7 +120,8 @@ module.exports.run = async (client, interaction, leaderboard = []) => {
 
             // Update embed Footer && Fields
             messageEmbed.setFooter({ text: `Leaderboard page ${page + 1} of ${maxpages + 1}` });
-            messageEmbed.setDescription(leaderboardPages[page].join("\n"));
+            messageEmbed.data.fields = []; // Empty current fields
+            messageEmbed.setFields([...descriptionPages[page]]);
 
             // Update the interaction components
             await i.update({
@@ -124,7 +130,5 @@ module.exports.run = async (client, interaction, leaderboard = []) => {
             })
 
         }
-
     });
-
 }
