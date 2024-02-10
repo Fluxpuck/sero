@@ -19,7 +19,10 @@ router.get("/:guildId", async (req, res, next) => {
     const result = await Levels.findAll({
       where: { guildId: guildId },
       limit: limit,
-      include: [User]
+      include: [{
+        model: User,
+        where: { guildId: guildId }
+      }]
     });
 
     // If no results found, trigger error
@@ -49,7 +52,13 @@ router.get("/:guildId/:userId", async (req, res, next) => {
         guildId: guildId,
         userId: userId
       },
-      include: [User]
+      include: [{
+        model: User,
+        where: {
+          guildId: guildId,
+          userId: userId
+        },
+      }]
     });
 
     // If no results found, trigger error
