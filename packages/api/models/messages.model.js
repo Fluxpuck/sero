@@ -46,5 +46,8 @@ module.exports = sequelize => {
         createdAt: true
     });
 
+
+    // @TODO: ADD A HOOK TO REMOVE MESSAGES OLDER THAN 3 to 12 MONTHS
+
     return Messages;
 }
