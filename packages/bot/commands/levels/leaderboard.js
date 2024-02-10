@@ -51,8 +51,8 @@ module.exports.run = async (client, interaction, leaderboard = []) => {
         }
     });
 
-    // Slice the leaderboard in chunks of 20
-    const leaderboardPages = chunk(leaderboardValues, 20);
+    // Slice the leaderboard in chunks of 10
+    const leaderboardPages = chunk(leaderboardValues, 10);
     let page = 0, maxpages = leaderboardPages.length - 1;
 
     // Check if there are more than 3 logs
