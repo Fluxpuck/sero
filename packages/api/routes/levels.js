@@ -18,11 +18,12 @@ router.get("/:guildId", async (req, res, next) => {
     // Check for results related to the guildId
     const result = await Levels.findAll({
       where: { guildId: guildId },
-      limit: limit,
       include: [{
         model: User,
         where: { guildId: guildId }
-      }]
+      }],
+      order: [['experience', 'DESC']],
+      limit: limit
     });
 
     // If no results found, trigger error

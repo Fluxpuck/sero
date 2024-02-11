@@ -36,11 +36,8 @@ module.exports.run = async (client, interaction, leaderboard = []) => {
         })
     }
 
-    // Sort the leaderboard by level
-    const sortedLeaderboard = leaderboard.sort((a, b) => b.experience - a.experience);
-
     // Setup embed description
-    const leaderboardValues = sortedLeaderboard.map((level, index) => {
+    const leaderboardValues = leaderboard.map((level, index) => {
         const user = level.user;
 
         // Setup the Ranking
