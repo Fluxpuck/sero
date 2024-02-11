@@ -220,9 +220,6 @@ router.post('/gain/:guildId/:userId', async (req, res, next) => {
     const user = await User.findOne({ where: { userId: userId, guildId: guildId } });
     const personalModifier = user.modifier ?? 1;
 
-    console.log("serverModifier", serverModifier)
-    console.log("personalModifier", personalModifier)
-
     // Calculate the XP
     const EXP_GAIN = calculateXP(personalModifier, serverModifier);
 
