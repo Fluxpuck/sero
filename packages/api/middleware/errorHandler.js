@@ -12,6 +12,11 @@ module.exports = {
                 url: req.originalUrl,
                 method: req.method,
                 timestamp: new Date()
+            },
+            request: {
+                headers: req.headers,
+                body: req.body,
+                query: req.query
             }
         };
 
