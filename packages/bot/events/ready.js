@@ -5,17 +5,6 @@ const events = require('../config/eventEnum');
 
 module.exports = async (client) => {
 
-    // Sets the bot's presence to indicate that it is listening to a user with the username 'Fluxpuck#0001'.
-    client.user.setPresence({ activities: [{ type: 'LISTENING', name: 'Fluxpuck#0001' }], status: 'online' });
-
-    // Sets the directory path to the folder containing the bot's commands, and loads the commands into memory using the loadCommands function.
-    const filePath = join(__dirname, '..', 'commands');
-    await loadCommands(client, filePath);
-
-    // Create Client Application Commands through a seperate event
-    const applications = await client.application.commands.fetch();
-    client.emit(events.APPLICATION_CREATE, applications);
-
     // Displays a welcome message in the console to indicate that the bot has successfully started up.
     console.log(`
      _______ _______ _______   _______ 
@@ -31,6 +20,17 @@ module.exports = async (client) => {
     > NODE_ENV: ${process.env.NODE_ENV}
     > ${client.user.tag}
 `);
+
+    // Sets the bot's presence to indicate that it is listening to a user with the username 'Fluxpuck#0001'.
+    client.user.setPresence({ activities: [{ type: 'LISTENING', name: 'Fluxpuck#0001' }], status: 'online' });
+
+    // Sets the directory path to the folder containing the bot's commands, and loads the commands into memory using the loadCommands function.
+    const filePath = join(__dirname, '..', 'commands');
+    await loadCommands(client, filePath);
+
+    // Create Client Application Commands through a seperate event
+    const applications = await client.application.commands.fetch();
+    client.emit(events.APPLICATION_CREATE, applications);
 
     // Set global guild active setting
     Array.from(client.guilds.cache.values()).forEach(async guild => {
