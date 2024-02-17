@@ -10,6 +10,7 @@ class Guild extends Model {
     this.hasMany(models.Messages, { foreignKey: 'guildId' })
     this.hasMany(models.LogChannels, { foreignKey: 'guildId' })
     this.hasMany(models.Away, { foreignKey: 'guildId' })
+    this.hasMany(models.Careers, { foreignKey: 'guildId' })
   }
 }
 

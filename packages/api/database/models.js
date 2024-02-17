@@ -10,6 +10,8 @@ const models = {
     Balance: require('../models/balance.model')(sequelize),
     LogChannels: require('../models/logchannels.model')(sequelize),
     Logs: require('../models/logs.model')(sequelize),
+    Jobs: require('../models/jobs.model')(sequelize),
+    Careers: require('../models/careers.model')(sequelize),
 }
 
 Object.values(models)
