@@ -25,7 +25,7 @@ module.exports.run = async () => {
             jobId: "4",
             name: "Accountant",
             description: "Manages financial records and prepares reports.",
-            wage: 50000,
+            wage: 55000,
         },
         {
             jobId: "5",
@@ -37,7 +37,7 @@ module.exports.run = async () => {
             jobId: "6",
             name: "Teacher",
             description: "Educates students in various subjects.",
-            wage: 40000,
+            wage: 45000,
         },
         {
             jobId: "7",
@@ -61,7 +61,7 @@ module.exports.run = async () => {
             jobId: "10",
             name: "Athlete",
             description: "Competes in sports professionally.",
-            wage: 25000,
+            wage: 30000,
         },
         {
             jobId: "11",
@@ -85,7 +85,7 @@ module.exports.run = async () => {
             jobId: "14",
             name: "Artist",
             description: "Creates visual or performing arts.",
-            wage: 45000,
+            wage: 35000,
         },
         {
             jobId: "15",
@@ -103,6 +103,12 @@ module.exports.run = async () => {
             jobId: "17",
             name: "Plumber",
             description: "Installs and repairs plumbing systems.",
+            wage: 40000,
+        },
+        {
+            jobId: "18",
+            name: "Electrician",
+            description: "Installs and repairs electrical systems.",
             wage: 40000,
         },
     ];
