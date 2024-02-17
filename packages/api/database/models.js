@@ -12,6 +12,7 @@ const models = {
     Logs: require('../models/logs.model')(sequelize),
     Jobs: require('../models/jobs.model')(sequelize),
     Careers: require('../models/careers.model')(sequelize),
+    Work_snapshot: require('../models/work_snapshot.model')(sequelize),
 }
 
 Object.values(models)
