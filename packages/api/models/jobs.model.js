@@ -27,6 +27,12 @@ module.exports = sequelize => {
             min: 0,
             max: 200_000
         },
+        raise: {
+            type: DataTypes.DECIMAL(3, 1),
+            allowNull: false,
+            min: 0,
+            max: 10
+        },
     }, {
         sequelize,
         modelName: 'jobs',

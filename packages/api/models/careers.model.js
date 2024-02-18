@@ -30,11 +30,12 @@ module.exports = sequelize => {
             type: DataTypes.INTEGER,
             allowNull: false,
         },
-        raise: {
-            type: DataTypes.FLOAT,
+        level: {
+            type: DataTypes.INTEGER,
             allowNull: false,
-            min: 100,
-            max: 200
+            defaultValue: 0,
+            min: 0,
+            max: 100
         },
     }, {
         sequelize,
