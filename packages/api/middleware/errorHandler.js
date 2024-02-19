@@ -17,7 +17,8 @@ module.exports = {
                 headers: req.headers,
                 body: req.body,
                 query: req.query
-            }
+            },
+            stack: formatStack(err.stack)
         };
 
         // Log the error to the console → for debugging purposes only!
@@ -39,4 +40,11 @@ module.exports = {
         });
 
     }
+}
+
+function formatStack(stack) {
+    const stackLines = stack.split('\n');
+    // Limit the depth to the top 10 frames
+    const truncatedStack = stackLines.slice(0, 10);
+    return truncatedStack;
 }
