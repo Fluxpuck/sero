@@ -99,16 +99,16 @@ router.post('/:guildId/:userId', async (req, res, next) => {
 
         // Update or Create the request
         if (request) {
-            await request.update(updateData, { transaction: t });
+            const result = await request.update(updateData, { transaction: t });
             res.status(200).json({
                 message: `User ${userId} was updated successfully`,
-                data: request
+                data: result
             });
         } else {
-            await User.create(updateData, { transaction: t });
+            const result = await User.create(updateData, { transaction: t });
             res.status(200).json({
                 message: `User ${userId} was created successfully`,
-                data: request
+                data: result
             });
         }
 

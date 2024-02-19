@@ -8,38 +8,45 @@ module.exports = async (client, message) => {
     if (message.author.bot) return;
 
     /**
-     * Check if User has a userHash
-     * If not, create/update User in the database
+     * Check if the message author, the User, is is stored
+     * If not, check if the User is in the database
+     * If not, create the User in the database
      */
-    if (!message.author?.userHash) {
-        // Get User from database
-        const userResult = await getRequest(`/users/${message.guildId}/${message.author.id}`);
-        // If User is not in the Database, store it
-        if (userResult.status == 404) {
-            await postRequest(`/users/${message.guildId}/${message.author.id}`, {
+    if (!message.author.storage) {
+
+        // Setup the User Storage Object
+        let userStorage = {};
+
+        // Get the User from the database
+        const getUserResult = await getRequest(`/users/${message.guildId}/${message.author.id}`);
+
+        // If the User is not in the Database, store it
+        if (getUserResult.status == 404) {
+            const saveUserResult = await postRequest(`/users/${message.guildId}/${message.author.id}`, {
                 userName: message.author.username,
             });
+
+            if (saveUserResult.status == 200) {
+                userStorage = saveUserResult.data.data;
+            };
         }
 
-        // Add the userHash to the User object
-        message.author.userHash = userResult.data?.userHash
+        if (getUserResult.status == 200) {
+            userStorage = getUserResult.data;
+        }
+
+        // Add the userStorage to the User object
+        if (userStorage) message.author.storage = userStorage;
 
     } else {
 
-        // Store the messageId and channelId
-        await postRequest(`/messages/${message.guildId}/${message.author.id}`, {
-            messageId: message.id,
-            channelId: message.channelId
-        });
-
-        // Always trigger the guildMemberAway Event
-        client.emit(eventEnum.GUILD_MEMBER_AWAY, message);
+        // Create a cooldownKey based on the userId and guildId
+        const cooldownKey = `${message.author.id}_${message.guildId}`;
 
         /**
          * This code will get a message per 60 seconds cooldown
          * And will add experience to the user's level
          */
-        const cooldownKey = message.author.userHash
         if (client.cooldowns.has(cooldownKey) === false) {
 
             // Setup variables for guildMemberLevel event
