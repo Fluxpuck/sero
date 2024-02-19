@@ -29,7 +29,7 @@ module.exports = sequelize => {
         experience: {
             type: DataTypes.INTEGER,
             allowNull: false,
-            defaultValue: 0,
+            defaultValue: 100,
             min: 0,
         },
         level: {
@@ -38,20 +38,15 @@ module.exports = sequelize => {
             defaultValue: 0,
             min: 0
         },
-        currentLevelExp: {
+        nextLevelExp: {
             type: DataTypes.INTEGER,
             allowNull: false,
             defaultValue: 0
         },
-        nextLevelExp: {
-            type: DataTypes.INTEGER,
-            allowNull: false,
-            defaultValue: 100
-        },
         remainingExp: {
             type: DataTypes.INTEGER,
             allowNull: false,
-            defaultValue: 100
+            defaultValue: 0
         },
         modifyer: {
             type: DataTypes.INTEGER,
