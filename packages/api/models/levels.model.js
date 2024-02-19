@@ -29,7 +29,7 @@ module.exports = sequelize => {
         experience: {
             type: DataTypes.INTEGER,
             allowNull: false,
-            defaultValue: 100,
+            defaultValue: 0,
             min: 0,
         },
         level: {
@@ -65,7 +65,6 @@ module.exports = sequelize => {
         let exp = level.getDataValue('experience');
         let calculatedLevel = calculateLevel(exp);
         level.setDataValue('level', calculatedLevel.level);
-        level.setDataValue('currentLevelExp', calculatedLevel.currentLevelExp);
         level.setDataValue('nextLevelExp', calculatedLevel.nextLevelExp);
         level.setDataValue('remainingExp', calculatedLevel.remainingExp);
     });
