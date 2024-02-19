@@ -21,13 +21,13 @@ module.exports = {
         adjustedMultiplier = Math.max(adjustedMultiplier, MIN_MULTIPLIER);
 
         // Calculate the level using the logarithmic scale
-        const level = Math.floor(Math.log(experience / BASE_EXP) / Math.log(adjustedMultiplier)) + 1;
+        const level = Math.max(0, Math.floor(Math.log(experience / BASE_EXP) / Math.log(adjustedMultiplier)) + 1);
 
         // Calculate current level's experience
-        const currentLevelExp = Math.floor(BASE_EXP * Math.pow(adjustedMultiplier, level - 1));
+        const currentLevelExp = Math.floor(BASE_EXP * Math.pow(adjustedMultiplier, level));
 
         // Calculate next level's experience
-        const nextLevelExp = Math.floor(BASE_EXP * Math.pow(adjustedMultiplier, level));
+        const nextLevelExp = Math.floor(BASE_EXP * Math.pow(adjustedMultiplier, level + 1));
 
         // Calculate remaining experience to reach the next level
         const remainingExp = nextLevelExp - experience;
