@@ -41,7 +41,7 @@ module.exports.run = async () => {
                     guildId: userDataItem.guildId,
                     experience: userDataItem.experience
                 }, { where: { userId: userDataItem.userId, guildId: userDataItem.guildId } });
-                console.log("\x1b[34m", ` → Added level for ${userDataItem.userId} in guild ${userDataItem.guildId}`);
+                console.log("\x1b[34m", ` → Added level for ${userDataItem.userId} | ${userDataItem.guildId}`);
             }
         }
     } catch (error) {
