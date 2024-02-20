@@ -42,7 +42,14 @@ const { sequelize } = require('../database/sequelize');
     const files = fs.readdirSync(directoryPath);
 
     // Set the desired order for the files to be executed in...
-    const desiredOrder = ['Guild.seed.js', 'User.seed.js'];
+    const desiredOrder = [
+        'Commands.seed.js',
+        'Levels.seed.js',
+        'Jobs.seed.js',
+        'Guild.seed.js',
+        'User.seed.js',
+        'UserLevels.seed.js'
+    ];
     const desiredFilesMap = new Map(desiredOrder.map((fileName, index) => [fileName, index]));
 
     // Sort the files based on their presence in the desiredOrder
