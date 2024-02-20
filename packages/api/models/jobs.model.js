@@ -2,7 +2,7 @@ const { Model, DataTypes } = require('sequelize');
 
 class Jobs extends Model {
     static associate(models) {
-        this.hasMany(models.Careers, { foreignKey: 'jobId' });
+        this.hasMany(models.UserCareers, { foreignKey: 'jobId' });
     }
 }
 

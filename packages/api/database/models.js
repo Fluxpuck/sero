@@ -10,6 +10,8 @@ const models = {
     UserCareers: require('../models/user_careers.model')(sequelize),
     Away: require('../models/away.model')(sequelize),
     Messages: require('../models/messages.model')(sequelize),
+    Levels: require('../models/levels.model')(sequelize),
+    LevelRewards: require('../models/level_rewards.model')(sequelize),
     LogChannels: require('../models/log_channels.model')(sequelize),
     Logs: require('../models/logs.model')(sequelize),
     Work_snapshot: require('../models/work_snapshot.model')(sequelize),
