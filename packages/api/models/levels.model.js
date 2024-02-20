@@ -23,6 +23,8 @@ module.exports = sequelize => {
     }, {
         sequelize,
         modelName: 'levels',
+        updatedAt: false,
+        createdAt: false
     });
 
     return Levels;
