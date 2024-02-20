@@ -2,26 +2,13 @@ const { Levels } = require("../../database/models");
 
 module.exports.run = async () => {
 
+    // Load the levels data from the levels.json file
     const levelsData = require("../data/levels.json");
 
-    for (const levelInfo of levelsData) {
-        try {
-            // Check if the job already exists
-            const existingLevel = await Levels.findOne({
-                where: { level: levelInfo.level }
-            });
-
-            if (existingLevel) {
-                // Job already exists, update its data
-                await existingLevel.update(levelInfo);
-            } else {
-                // Job doesn't exist, create a new record
-                await Levels.create(levelInfo);
-            }
-        } catch (error) {
-            console.error(`Error creating/updating levels: ${error.message}`);
-        }
+    try {
+        await Levels.bulkCreate(levelsData, { updateOnDuplicate: ['level'] });
+        console.log("\x1b[34m", ` → Bulk created ${levelsData.length} levels`);
+    } catch (error) {
+        console.error(`Error bulk creating levels: ${error.message}`);
     }
-
-
 }

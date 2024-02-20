@@ -4,7 +4,7 @@ const { sequelize } = require('../database/sequelize');
 
 (async () => {
 
-    console.log("[SEEDING MANAGER]")
+    console.log("\x1b[33m", "[SERO SEEDING MANAGER - v1.0.0]")
 
     // Create database connection
     await sequelize.authenticate({ logging: false });
@@ -20,18 +20,16 @@ const { sequelize } = require('../database/sequelize');
     const tables = tablesResult.map((row) => row.table_name);
 
     try {
-
         for (const table of tables) {
             // Truncate all database tables
             await sequelize.query(`TRUNCATE TABLE ${table} CASCADE`);
         }
-
     } catch (error) {
         // Throw error o.O
         throw Error("Error Truncating Tables: ", error);
 
     } finally {
-        console.log("Truncated all database tables")
+        console.log("\x1b[34m", " → Truncated all database tables...")
         await sequelize.sync({ force: true, logging: false })
     }
 
@@ -45,10 +43,10 @@ const { sequelize } = require('../database/sequelize');
     const desiredOrder = [
         'Commands.seed.js',
         'Levels.seed.js',
-        'Jobs.seed.js',
         'Guild.seed.js',
         'User.seed.js',
-        'UserLevels.seed.js'
+        'UserLevels.seed.js',
+        'Jobs.seed.js',
     ];
     const desiredFilesMap = new Map(desiredOrder.map((fileName, index) => [fileName, index]));
 
@@ -66,29 +64,31 @@ const { sequelize } = require('../database/sequelize');
         return 1;
     });
 
-    // Iterate over files array
-    for await (const file of sortedFiles) {
-
-        // Get the full path of the file
+    // Define a function to run each seed
+    const runSeed = async (file) => {
         const filePath = join(directoryPath, file);
-
-        // If the file is a Seed file, execute
         if (file.endsWith(".seed.js")) {
-
-            // Get the Seed
             const seed = require(filePath);
-
+            console.log("\x1b[36m", `Executing ${file}:`);
             try {
-                await seed.run(); // Run Seed Files in desired Order
+                await seed.run();
             } catch (error) {
-                console.log("[Seed Manager Error]: ", { file: file, error: error })
-            } finally {
-                console.log(`Executed Seed: ${file}`)
+                console.error({ file: file, error: error });
             }
         }
-    }
+    };
 
-    return setTimeout(() => {
-        process.exit(0);
-    }, 5000);
+    // Run all seeds sequentially and wait for all to complete
+    await sortedFiles.reduce(async (previousPromise, file) => {
+        await previousPromise;
+        return runSeed(file);
+    }, Promise.resolve());
+
+    // Finally, log that the seeding is complete
+    console.log("\x1b[2m", "Seeder Completed...")
+
 })()
+
+return setTimeout(() => {
+    process.exit(0);
+}, 10_000);

@@ -49,32 +49,21 @@ module.exports.run = async () => {
 
     for (const userInfo of userData) {
         try {
-            // Check if the guild with the specified guildId exists
             const existingGuild = await Guild.findOne({
-                where: {
-                    guildId: userInfo.guildId,
-                },
+                where: { guildId: userInfo.guildId },
             });
 
             if (existingGuild) {
-                // Guild exists, proceed to create or update the user
-                const existingUser = await User.findOne({
+                await User.upsert(userInfo, {
                     where: {
                         userId: userInfo.userId,
                         guildId: userInfo.guildId,
                     },
                 });
-
-                if (existingUser) {
-                    // User already exists, update its data
-                    await existingUser.update(userInfo);
-                } else {
-                    // User doesn't exist, create a new record
-                    await User.create(userInfo);
-                }
+                console.log("\x1b[34m", ` → Created user: ${userInfo.userName} | ${userInfo.guildId}`);
             }
         } catch (error) {
-            console.error(`Error creating/updating user: ${error.message}`);
+            console.error(`Error creating user: ${error.message}`);
         }
     }
 

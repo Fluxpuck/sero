@@ -21,46 +21,31 @@ module.exports.run = async () => {
             userId: "438054607571386378",
             guildId: "660103319557111808",
             experience: 6969
-        },
-        {
-            userId: "1138091030713995344",
-            guildId: "660103319557111808",
-            experience: 700
         }
     ]
 
-    for (const userInfo of userData) {
-        try {
-            // Check if the corresponding user exists in the User table
+    try {
+        for (const userDataItem of userData) {
+            // Check if the user already exists
             const existingUser = await User.findOne({
-                where: {
-                    userId: userInfo.userId,
-                    guildId: userInfo.guildId
-                },
+                where: { userId: userDataItem.userId, guildId: userDataItem.guildId }
             });
 
-            if (existingUser) {
-                // User exists, proceed to create or update the level
-                const existingLevel = await UserLevels.findOne({
-                    where: {
-                        userId: userInfo.userId,
-                        guildId: userInfo.guildId
-                    },
-                });
-
-                if (existingLevel) {
-                    // Level already exists, update its data
-                    await existingLevel.update(userInfo);
-                } else {
-                    // Level doesn't exist, create a new record
-                    await UserLevels.create(userInfo);
-                }
-            } else {
-                console.log(`User with does not exist in the User table: ${userInfo.guildId}/${userInfo.userId}`);
+            if (!existingUser) {
+                console.error(`User with ID ${userDataItem.userId} does not exist in guild ${userDataItem.guildId}`);
             }
-        } catch (error) {
-            console.error(`Error creating/updating levels for ${userInfo.guildId}/${userInfo.userId}: ${error.message}`);
+
+            if (userDataItem.experience !== undefined) {
+                await UserLevels.upsert({
+                    userId: userDataItem.userId,
+                    guildId: userDataItem.guildId,
+                    experience: userDataItem.experience
+                }, { where: { userId: userDataItem.userId, guildId: userDataItem.guildId } });
+                console.log("\x1b[34m", ` → Added level for ${userDataItem.userId} in guild ${userDataItem.guildId}`);
+            }
         }
+    } catch (error) {
+        console.error(`Error adding levels: ${error.message}`);
     }
 
 

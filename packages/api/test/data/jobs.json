@@ -3,108 +3,126 @@
         "jobId": "1",
         "name": "Veterinarian",
         "description": "Provides medical care to animals.",
-        "wage": 60000
+        "wage": 60000,
+        "raise": 1.5
     },
     {
         "jobId": "2",
         "name": "Astronaut",
         "description": "Travels to space for scientific research or exploration.",
-        "wage": 75000
+        "wage": 75000,
+        "raise": 1.2
     },
     {
         "jobId": "3",
         "name": "Lawyer",
         "description": "Provides legal advice and representation.",
-        "wage": 60000
+        "wage": 60000,
+        "raise": 1.5
     },
     {
         "jobId": "4",
         "name": "Accountant",
         "description": "Manages financial records and prepares reports.",
-        "wage": 55000
+        "wage": 55000,
+        "raise": 1.8
     },
     {
         "jobId": "5",
         "name": "Developer",
         "description": "Creates software applications and systems.",
-        "wage": 60000
+        "wage": 60000,
+        "raise": 1.5
     },
     {
         "jobId": "6",
         "name": "Teacher",
         "description": "Educates students in various subjects.",
-        "wage": 45000
+        "wage": 45000,
+        "raise": 2.0
     },
     {
         "jobId": "7",
         "name": "Police Officer",
         "description": "Enforces laws and maintains public order.",
-        "wage": 50000
+        "wage": 50000,
+        "raise": 1.8
     },
     {
         "jobId": "8",
         "name": "Sales Person",
         "description": "Sells products or services to customers.",
-        "wage": 30000
+        "wage": 30000,
+        "raise": 2.5
     },
     {
         "jobId": "9",
         "name": "Travel Agent",
         "description": "Assists clients in planning and booking trips.",
-        "wage": 30000
+        "wage": 30000,
+        "raise": 2.5
     },
     {
         "jobId": "10",
         "name": "Athlete",
         "description": "Competes in sports professionally.",
-        "wage": 30000
+        "wage": 30000,
+        "raise": 2.5
     },
     {
         "jobId": "11",
         "name": "Youtuber",
         "description": "Creates and publishes video content on YouTube.",
-        "wage": 80000
+        "wage": 80000,
+        "raise": 1.2
     },
     {
         "jobId": "12",
         "name": "Model",
         "description": "Poses for photoshoots or walks on runways.",
-        "wage": 35000
+        "wage": 35000,
+        "raise": 2.0
     },
     {
         "jobId": "13",
         "name": "Doctor",
         "description": "Diagnoses and treats medical conditions.",
-        "wage": 90000
+        "wage": 90000,
+        "raise": 1.0
     },
     {
         "jobId": "14",
         "name": "Artist",
         "description": "Creates visual or performing arts.",
-        "wage": 35000
+        "wage": 35000,
+        "raise": 2.0
     },
     {
         "jobId": "15",
         "name": "Chef",
         "description": "Prepares and cooks food in restaurants.",
-        "wage": 35000
+        "wage": 35000,
+        "raise": 2.0
     },
     {
         "jobId": "16",
         "name": "Pilot",
         "description": "Flies aircraft to transport passengers or cargo.",
-        "wage": 85000
+        "wage": 85000,
+        "raise": 1.2
     },
     {
         "jobId": "17",
         "name": "Plumber",
         "description": "Installs and repairs plumbing systems.",
-        "wage": 40000
+        "wage": 40000,
+        "raise": 1.7
     },
     {
         "jobId": "18",
         "name": "Electrician",
         "description": "Installs and repairs electrical systems.",
-        "wage": 40000
+        "wage": 40000,
+        "raise": 1.7
     }
 ]

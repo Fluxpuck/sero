@@ -21,20 +21,10 @@ module.exports.run = async () => {
 
     for (const guildInfo of guildData) {
         try {
-            // Check if the guild already exists
-            const existingGuild = await Guild.findOne({
-                where: { guildId: guildInfo.guildId },
-            });
-
-            if (existingGuild) {
-                // Guild already exists, update its data
-                await existingGuild.update(guildInfo);
-            } else {
-                // Guild doesn't exist, create a new record
-                await Guild.create(guildInfo);
-            }
+            await Guild.upsert(guildInfo, { where: { guildId: guildInfo.guildId } });
+            console.log("\x1b[34m", ` → Created guild: ${guildInfo.guildName}`);
         } catch (error) {
-            console.error(`Error creating/updating guild: ${error.message}`);
+            console.error(`Error upserting guild: ${error.message}`);
         }
     }
 

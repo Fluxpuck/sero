@@ -35,26 +35,18 @@ async function readCommands(directoryPath) {
 
 module.exports.run = async () => {
 
+    // Set the directory path to the commands directory
     const basePath = process.cwd();
     const directoryPath = path.join(basePath, '/packages/bot/commands');
+
+    // Fetch the list of commands from the directory
     const commandList = await readCommands(directoryPath);
+    const commandInfo = commandList.map(command => ({ "commandName": command.commandName }));
 
-    for (const commandInfo of commandList) {
-        try {
-            // Check if the command already exists
-            const existingCommand = await Commands.findOne({
-                where: { commandName: commandInfo.commandName },
-            });
-
-            if (existingCommand) {
-                // Command already exists, update its data
-                await existingCommand.update(commandInfo);
-            } else {
-                // Command doesn't exist, create a new record
-                await Commands.create(commandInfo);
-            }
-        } catch (error) {
-            console.error(`Error creating/updating command: ${error.message}`);
-        }
+    try {
+        await Commands.bulkCreate(commandInfo, { updateOnDuplicate: ['commandName'] });
+        console.log("\x1b[34m", ` → Bulk created ${commandInfo.length} commands`);
+    } catch (error) {
+        console.error(`Error bulk creating commands: ${error.message}`);
     }
 }

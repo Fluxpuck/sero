@@ -1,7 +1,6 @@
 const { sequelize } = require('../database/sequelize')
 
 const models = {
-    Jobs: require('../models/jobs.model')(sequelize),
     Commands: require('../models/commands.model')(sequelize),
     Guild: require('../models/guild.model')(sequelize),
     User: require('../models/user.model')(sequelize),
@@ -9,6 +8,7 @@ const models = {
     UserBalance: require('../models/user_balance.model')(sequelize),
     UserCareers: require('../models/user_careers.model')(sequelize),
     Away: require('../models/away.model')(sequelize),
+    Jobs: require('../models/jobs.model')(sequelize),
     Messages: require('../models/messages.model')(sequelize),
     Levels: require('../models/levels.model')(sequelize),
     LevelRewards: require('../models/level_rewards.model')(sequelize),

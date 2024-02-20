@@ -8,10 +8,7 @@ module.exports.run = async () => {
         try {
             // Check if the job already exists
             const existingJob = await Jobs.findOne({
-                where: {
-                    userId: jobInfo.userId,
-                    guildId: jobInfo.guildId
-                }
+                where: { jobId: jobInfo.jobId }
             });
 
             if (existingJob) {
