@@ -1,6 +1,6 @@
 const { Model, DataTypes } = require('sequelize');
 
-class Careers extends Model {
+class UserCareers extends Model {
     static associate(models) {
         this.belongsTo(models.User, { foreignKey: { name: 'userId', allowNull: false } });
         this.belongsTo(models.Guild, { foreignKey: { name: 'guildId', allowNull: false } });
@@ -9,7 +9,7 @@ class Careers extends Model {
 }
 
 module.exports = sequelize => {
-    Careers.init({
+    UserCareers.init({
         userId: {
             type: DataTypes.BIGINT,
             primaryKey: true,
@@ -39,11 +39,11 @@ module.exports = sequelize => {
         },
     }, {
         sequelize,
-        modelName: 'careers',
+        modelName: 'user_careers',
         timestamps: true,
         updatedAt: true,
         createdAt: true
     });
 
-    return Careers;
+    return UserCareers;
 }

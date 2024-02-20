@@ -1,6 +1,6 @@
 const express = require("express");
 const router = express.Router();
-const { Balance } = require("../database/models");
+const { UserBalance } = require("../database/models");
 const { sequelize } = require('../database/sequelize');
 const { CreateError } = require('../utils/ClassManager');
 
@@ -13,7 +13,7 @@ router.get("/:guildId", async (req, res, next) => {
     const { guildId } = req.params;
 
     // Check for results related to the guildId
-    const result = await Balance.findAll({
+    const result = await UserBalance.findAll({
       where: { guildId: guildId },
     });
 
@@ -39,7 +39,7 @@ router.get("/:guildId/:userId", async (req, res, next) => {
     const { guildId, userId } = req.params;
 
     // Check for results related to the guildId and userId
-    const result = await Balance.findOne({
+    const result = await UserBalance.findOne({
       where: {
         guildId: guildId,
         userId: userId
@@ -80,7 +80,7 @@ router.post("/:guildId/:userId", async (req, res, next) => {
     }
 
     // Check if the user is already balance
-    const userBalance = await Balance.findOne({
+    const userBalance = await UserBalance.findOne({
       where: {
         guildId: guildId,
         userId: userId
@@ -101,13 +101,13 @@ router.post("/:guildId/:userId", async (req, res, next) => {
     if (userBalance) {
       await userBalance.update(updateData, { transaction: t });
       res.status(200).json({
-        message: `Balance for ${guildId}/${userId} updated successfully`,
+        message: `UserBalance for ${guildId}/${userId} updated successfully`,
         data: userBalance
       });
     } else {
-      const request = await Balance.create(updateData, { transaction: t });
+      const request = await UserBalance.create(updateData, { transaction: t });
       res.status(200).json({
-        message: `Balance for ${guildId}/${userId} created successfully`,
+        message: `UserBalance for ${guildId}/${userId} created successfully`,
         data: request
       });
     }
@@ -131,7 +131,7 @@ router.delete("/:guildId/:userId", async (req, res, next) => {
     const { guildId, userId } = req.params;
 
     // Check if the user is balance
-    const request = await Balance.findOne({
+    const request = await UserBalance.findOne({
       where: {
         guildId: guildId,
         userId: userId

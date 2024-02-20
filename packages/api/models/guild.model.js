@@ -4,13 +4,13 @@ const cron = require('node-cron');
 class Guild extends Model {
   static associate(models) {
     this.hasMany(models.User, { foreignKey: 'guildId' })
-    this.hasMany(models.Levels, { foreignKey: 'guildId' })
-    this.hasMany(models.Balance, { foreignKey: 'guildId' })
+    this.hasMany(models.UserLevels, { foreignKey: 'guildId' })
+    this.hasMany(models.UserBalance, { foreignKey: 'guildId' })
+    this.hasMany(models.UserCareers, { foreignKey: 'guildId' })
     this.hasMany(models.Logs, { foreignKey: 'guildId' })
     this.hasMany(models.Messages, { foreignKey: 'guildId' })
     this.hasMany(models.LogChannels, { foreignKey: 'guildId' })
     this.hasMany(models.Away, { foreignKey: 'guildId' })
-    this.hasMany(models.Careers, { foreignKey: 'guildId' })
     this.hasMany(models.Work_snapshot, { foreignKey: 'guildId' })
   }
 }

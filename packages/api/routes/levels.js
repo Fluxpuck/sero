@@ -1,6 +1,6 @@
 const express = require('express');
 const router = express.Router();
-const { Levels, User, Guild } = require("../database/models");
+const { UserLevels, User, Guild } = require("../database/models");
 const { sequelize } = require('../database/sequelize');
 const { Op } = require('sequelize');
 const { CreateError } = require('../utils/ClassManager');
@@ -8,7 +8,7 @@ const { calculateXP } = require('../utils/levelManager');
 
 /**
  * @router GET api/levels/:guildId	
- * @description Get all Guild Levels
+ * @description Get all Guild UserLevels
  */
 router.get("/:guildId", async (req, res, next) => {
   try {
@@ -16,7 +16,7 @@ router.get("/:guildId", async (req, res, next) => {
     const limit = req.query.limit || 100;
 
     // Check for results related to the guildId
-    const result = await Levels.findAll({
+    const result = await UserLevels.findAll({
       where: { guildId: guildId },
       include: [{
         model: User,
@@ -48,7 +48,7 @@ router.get("/:guildId/:userId", async (req, res, next) => {
     const { guildId, userId } = req.params;
 
     // Check for results related to the guildId
-    const result = await Levels.findOne({
+    const result = await UserLevels.findOne({
       where: {
         guildId: guildId,
         userId: userId
@@ -68,7 +68,7 @@ router.get("/:guildId/:userId", async (req, res, next) => {
     }
 
     // Calculate the position based on experience for the guild
-    const position = await Levels.count({
+    const position = await UserLevels.count({
       where: {
         guildId: guildId,
         experience: { [Op.gt]: result.experience }
@@ -88,7 +88,7 @@ router.get("/:guildId/:userId", async (req, res, next) => {
 
 /**
  * @router POST api/levels/:guildId/:userId
- * @description Register or update a User Levels
+ * @description Register or update a User UserLevels
  */
 router.post('/:guildId/:userId', async (req, res, next) => {
   const t = await sequelize.transaction();
@@ -111,7 +111,7 @@ router.post('/:guildId/:userId', async (req, res, next) => {
     }
 
     // Check if the user already has levels
-    const levels = await Levels.findOne({
+    const levels = await UserLevels.findOne({
       where: {
         userId: userId,
         guildId: guildId,
@@ -127,7 +127,7 @@ router.post('/:guildId/:userId', async (req, res, next) => {
         data: levels
       });
     } else {
-      const request = await Levels.create(updateData, { transaction: t });
+      const request = await UserLevels.create(updateData, { transaction: t });
       res.status(200).json({
         message: `Levels for ${guildId} / ${userId} created successfully`,
         data: request
@@ -154,7 +154,7 @@ router.post('/add/:guildId/:userId', async (req, res, next) => {
     const { guildId, userId } = params;
 
     // Get levels from the user
-    const levels = await Levels.findOne({
+    const levels = await UserLevels.findOne({
       where: {
         userId: userId,
         guildId: guildId,
@@ -202,7 +202,7 @@ router.post('/gain/:guildId/:userId', async (req, res, next) => {
     const { guildId, userId } = params;
 
     // Get levels from the user
-    const levels = await Levels.findOne({
+    const levels = await UserLevels.findOne({
       where: {
         userId: userId,
         guildId: guildId,
@@ -253,7 +253,7 @@ router.post('/reset/:guildId/:userId', async (req, res, next) => {
     const { guildId, userId } = params;
 
     // Get levels from the user
-    const levels = await Levels.findOne({
+    const levels = await UserLevels.findOne({
       where: {
         userId: userId,
         guildId: guildId,
@@ -291,7 +291,7 @@ router.delete("/:guildId/:userId", async (req, res, next) => {
     const { guildId, userId } = req.params;
 
     // Check if levels exists
-    const request = await Levels.findOne({
+    const request = await UserLevels.findOne({
       where: {
         guildId: guildId,
         userId: userId

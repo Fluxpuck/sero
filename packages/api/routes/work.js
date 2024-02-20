@@ -1,6 +1,6 @@
 const express = require("express");
 const router = express.Router();
-const { Careers } = require("../database/models");
+const { UserCareers } = require("../database/models");
 const { sequelize } = require('../database/sequelize');
 const { CreateError } = require('../utils/ClassManager');
 
@@ -13,7 +13,7 @@ router.get("/:guildId", async (req, res, next) => {
         const { guildId } = req.params;
 
         // Check for results related to the guildId
-        const result = await Careers.findAll({
+        const result = await UserCareers.findAll({
             where: { guildId: guildId },
         });
 
@@ -39,7 +39,7 @@ router.get("/:guildId/:userId", async (req, res, next) => {
         const { guildId, userId } = req.params;
 
         // Check for results related to the guildId and userId
-        const result = await Careers.findOne({
+        const result = await UserCareers.findOne({
             where: {
                 guildId: guildId,
                 userId: userId
@@ -80,7 +80,7 @@ router.post("/:guildId/:userId", async (req, res, next) => {
         }
 
         // Check if the user is already career
-        const userCareers = await Careers.findOne({
+        const userCareers = await UserCareers.findOne({
             where: {
                 guildId: guildId,
                 userId: userId
@@ -101,13 +101,13 @@ router.post("/:guildId/:userId", async (req, res, next) => {
         if (userCareers) {
             await userCareers.update(updateData, { transaction: t });
             res.status(200).json({
-                message: `Careers for ${guildId}/${userId} updated successfully`,
+                message: `UserCareers for ${guildId}/${userId} updated successfully`,
                 data: userCareers
             });
         } else {
-            const request = await Careers.create(updateData, { transaction: t });
+            const request = await UserCareers.create(updateData, { transaction: t });
             res.status(200).json({
-                message: `Careers for ${guildId}/${userId} created successfully`,
+                message: `UserCareers for ${guildId}/${userId} created successfully`,
                 data: request
             });
         }
@@ -131,7 +131,7 @@ router.delete("/:guildId/:userId", async (req, res, next) => {
         const { guildId, userId } = req.params;
 
         // Check if the user is career
-        const request = await Careers.findOne({
+        const request = await UserCareers.findOne({
             where: {
                 guildId: guildId,
                 userId: userId

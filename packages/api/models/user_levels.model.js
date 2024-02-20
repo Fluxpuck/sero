@@ -1,7 +1,7 @@
 const { Model, DataTypes } = require('sequelize');
 const { calculateLevel } = require('../utils/levelManager');
 
-class Levels extends Model {
+class UserLevels extends Model {
     static associate(models) {
         this.belongsTo(models.User, { foreignKey: { name: 'userId', allowNull: false } });
         this.belongsTo(models.Guild, { foreignKey: { name: 'guildId', allowNull: false } });
@@ -9,7 +9,7 @@ class Levels extends Model {
 }
 
 module.exports = sequelize => {
-    Levels.init({
+    UserLevels.init({
         userId: {
             type: DataTypes.BIGINT,
             primaryKey: true,
@@ -60,13 +60,13 @@ module.exports = sequelize => {
         }
     }, {
         sequelize,
-        modelName: 'levels',
+        modelName: 'user_levels',
         timestamps: true,
         updatedAt: true,
         createdAt: true
     });
 
-    Levels.beforeSave(async (level, options) => {
+    UserLevels.beforeSave(async (level, options) => {
         let exp = level.getDataValue('experience');
         let calculatedLevel = calculateLevel(exp);
         level.setDataValue('level', calculatedLevel.level);
@@ -75,6 +75,6 @@ module.exports = sequelize => {
         level.setDataValue('remainingExp', calculatedLevel.remainingExp);
     });
 
-    return Levels;
+    return UserLevels;
 }
 

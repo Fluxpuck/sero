@@ -1,6 +1,6 @@
 const { Model, DataTypes } = require('sequelize');
 
-class Balance extends Model {
+class UserBalance extends Model {
     static associate(models) {
         this.belongsTo(models.User, { foreignKey: { name: 'userId', allowNull: false } });
         this.belongsTo(models.Guild, { foreignKey: { name: 'guildId', allowNull: false } });
@@ -8,7 +8,7 @@ class Balance extends Model {
 }
 
 module.exports = sequelize => {
-    Balance.init({
+    UserBalance.init({
         userId: {
             type: DataTypes.BIGINT,
             primaryKey: true,
@@ -34,11 +34,11 @@ module.exports = sequelize => {
         },
     }, {
         sequelize,
-        modelName: 'balance',
+        modelName: 'user_balance',
         timestamps: true,
         updatedAt: true,
         createdAt: true
     });
 
-    return Balance;
+    return UserBalance;
 }

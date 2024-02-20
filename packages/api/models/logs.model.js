@@ -1,5 +1,4 @@
 const { Model, DataTypes } = require('sequelize');
-const { SnowflakeUtil } = require('discord.js');
 
 class Logs extends Model {
     static associate(models) {
