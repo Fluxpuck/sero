@@ -1,12 +1,5 @@
 module.exports = {
 
-    // → Function to calculate the level from the experience
-    calculateLevel(experience) {
-
-    },
-
-
-
     // → Function to calculate XP
     calculateXP(personalModifier = 1, serverModifier = 1) {
         let baseXP = 15;
@@ -26,5 +19,4 @@ module.exports = {
 
         return randomizedXP;
     }
-
 }

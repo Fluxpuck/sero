@@ -67,6 +67,7 @@ module.exports = sequelize => {
 
 
     const updateLevels = async (userLevel) => {
+
         const { Levels } = require('../database/models');
 
         const previousLevel = await Levels.findOne({
@@ -82,8 +83,8 @@ module.exports = sequelize => {
         });
 
         // Update the userLevel data
-        userLevel.level = previousLevel.level;
-        userLevel.currentLevelExp = previousLevel.experience;
+        userLevel.level = previousLevel ? previousLevel.level : 1;
+        userLevel.currentLevelExp = previousLevel ? previousLevel.experience : 0;
         userLevel.nextLevelExp = nextLevel.experience;
         userLevel.remainingExp = nextLevel.experience - userLevel.experience;
 

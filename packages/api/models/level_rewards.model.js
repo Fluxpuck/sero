@@ -22,12 +22,10 @@ module.exports = sequelize => {
                 is: /^\d{17,20}$/ // Discord Snowflake
             }
         },
-        experience: {
-            type: DataTypes.INTEGER,
-            allowNull: false,
-            defaultValue: 0,
-            min: 0,
-            max: 10_000_000
+        reward: {
+            type: DataTypes.JSON,
+            allowNull: true,
+            defaultValue: {},
         },
     }, {
         sequelize,
