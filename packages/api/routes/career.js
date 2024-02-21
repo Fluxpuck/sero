@@ -34,8 +34,9 @@ router.get("/:guildId/:userId", async (req, res, next) => {
  */
 router.post("/new/:guildId/:userId", async (req, res, next) => {
 
+    // Fetch a random job from the database
     const randomJob = await Jobs.findOne({
-        order: Sequelize.literal('random()'),
+        order: sequelize.literal('random()'),
         limit: 1
     });
 

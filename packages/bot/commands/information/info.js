@@ -13,9 +13,9 @@ module.exports.props = {
 module.exports.run = async (client, interaction) => {
 
 
-    // const request = await getRequest('/api/career/new/660103319557111808/270640827787771943');
+    // const request = await getRequest('/career/new/660103319557111808/270640827787771943');
 
-    const result = await postRequest('/api/career/new/660103319557111808/270640827787771943');
+    const result = await postRequest('/career/new/660103319557111808/270640827787771943');
 
 
 
