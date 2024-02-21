@@ -1,5 +1,4 @@
-const { Model, DataTypes } = require('sequelize');
-const { calculateLevel } = require('../utils/levelManager');
+const { Model, DataTypes, Op } = require('sequelize');
 
 class UserLevels extends Model {
     static associate(models) {
@@ -66,14 +65,55 @@ module.exports = sequelize => {
         createdAt: true
     });
 
-    UserLevels.beforeSave(async (level, options) => {
-        let exp = level.getDataValue('experience');
-        let calculatedLevel = calculateLevel(exp);
-        level.setDataValue('level', calculatedLevel.level);
-        level.setDataValue('currentLevelExp', calculatedLevel.currentLevelExp);
-        level.setDataValue('nextLevelExp', calculatedLevel.nextLevelExp);
-        level.setDataValue('remainingExp', calculatedLevel.remainingExp);
+
+    const updateLevels = async (userLevel) => {
+        const { Levels } = require('../database/models');
+
+        const previousLevel = await Levels.findOne({
+            where: { experience: { [Op.lt]: userLevel.experience } },
+            order: [['experience', 'DESC']],
+            limit: 1
+        });
+
+        const nextLevel = await Levels.findOne({
+            where: { experience: { [Op.gt]: userLevel.experience } },
+            order: [['experience', 'ASC']],
+            limit: 1
+        });
+
+        // Update the userLevel data
+        userLevel.level = previousLevel.level;
+        userLevel.currentLevelExp = previousLevel.experience;
+        userLevel.nextLevelExp = nextLevel.experience;
+        userLevel.remainingExp = nextLevel.experience - userLevel.experience;
+
+        return userLevel;
+    };
+
+    UserLevels.beforeSave(async (userLevel, options) => {
+        // Check if the level needs to be updated
+        const newLevel = await updateLevels(userLevel);
+        if (
+            userLevel.level !== newLevel.level ||
+            userLevel.currentLevelExp !== newLevel.currentLevelExp ||
+            userLevel.nextLevelExp !== newLevel.nextLevelExp ||
+            userLevel.remainingExp !== newLevel.remainingExp
+        ) {
+            // Set the new level information
+            userLevel.set({
+                level: newLevel.level,
+                currentLevelExp: newLevel.currentLevelExp,
+                nextLevelExp: newLevel.nextLevelExp,
+                remainingExp: newLevel.remainingExp
+            });
+
+            // Save the changes to the database
+            await userLevel.save();
+        }
     });
+
+
+
 
     return UserLevels;
 }
