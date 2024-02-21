@@ -1,67 +1,62 @@
 const express = require("express");
 const router = express.Router();
-const { UserCareers } = require("../database/models");
+const { UserCareers, Jobs } = require("../database/models");
 const { sequelize } = require('../database/sequelize');
 const { CreateError } = require('../utils/ClassManager');
 
-/**
- * @router GET api/career/:guildId
- * @description Get all careers in a specific guild
- */
-router.get("/:guildId", async (req, res, next) => {
-    try {
-        const { guildId } = req.params;
-
-        // Check for results related to the guildId
-        const result = await UserCareers.findAll({
-            where: { guildId: guildId },
-        });
-
-        // If no results found, trigger error
-        if (!result || result.length === 0) {
-            throw new CreateError(404, 'No careers for this guildId found.');
-        }
-
-        // Return the results
-        return res.status(200).json(result);
-
-    } catch (error) {
-        next(error);
-    }
-});
-
-/**
+/** 
  * @router GET api/career/:guildId/userId
- * @description Get the careers from a specific user from a specific guild
+ * @description Get the career from a specific user from a specific guild
  */
 router.get("/:guildId/:userId", async (req, res, next) => {
     try {
-        const { guildId, userId } = req.params;
-
-        // Check for results related to the guildId and userId
+        // Fetch career data related to the guildId and userId
         const result = await UserCareers.findOne({
             where: {
-                guildId: guildId,
-                userId: userId
+                guildId: req.params.guildId,
+                userId: req.params.userId
             },
         });
-
         // If no results found, trigger error
         if (!result || result.length === 0) {
-            throw new CreateError(404, 'No career for this combination of guildId and userId found.');
+            throw new CreateError(404, 'No career for this userId in this of guildId');
         }
-
-        // Return the results
         return res.status(200).json(result);
-
     } catch (error) {
         next(error);
     }
 });
 
 
+/**
+ * @router POST api/career/new/:guildId/userId
+ * @description Set a new Job career for a specific user from a specific guild
+ */
+router.post("/new/:guildId/:userId", async (req, res, next) => {
+
+    const randomJob = await Jobs.findOne({
+        order: Sequelize.literal('random()'),
+        limit: 1
+    });
+
+
+    console.log(randomJob);
+
+
+
+
+});
+
+
+
 // Setup Attributes for this Route
-const requiredProperties = ['amount'];
+const updateProperties = ['amount'];
+
+
+
+
+
+
 
 /**
  * @router POST api/career/:guildId/userId

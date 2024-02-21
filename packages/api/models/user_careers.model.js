@@ -35,7 +35,7 @@ module.exports = sequelize => {
             allowNull: false,
             defaultValue: 0,
             min: 0,
-            max: 100
+            max: 5000
         },
     }, {
         sequelize,
