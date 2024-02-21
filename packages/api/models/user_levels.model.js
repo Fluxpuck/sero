@@ -112,9 +112,6 @@ module.exports = sequelize => {
         }
     });
 
-
-
-
     return UserLevels;
 }
 
