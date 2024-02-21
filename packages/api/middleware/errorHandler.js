@@ -18,7 +18,7 @@ module.exports = {
                 body: req.body,
                 query: req.query
             },
-            stack: err.stack ? err.stack.split('\n') : null
+            stack: err.stack
         };
 
         // Log the error to the console → for debugging purposes only!
