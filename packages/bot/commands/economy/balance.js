@@ -10,8 +10,8 @@ module.exports.props = {
             {
                 name: "user",
                 type: 6,
-                description: "Select a user to reset",
-                required: true
+                description: "Select a user to get th balance of",
+                required: false
             }
         ],
     },
@@ -20,16 +20,16 @@ module.exports.props = {
 
 module.exports.run = async (client, interaction) => {
     // Get User details from the interaction options
-    const targetUser = interaction.options.get("user").user;
-
+    const targetUser = interaction.options.get("user")?.user || interaction.user;
 
     // Get the user's the experience && check if the user has experience.
     const result = await getRequest(`/balance/${interaction.guildId}/${targetUser.id}`);
-
     const { balance } = result.data;
 
     // Setup Embed:
     const embed = createCustomEmbed({
+        title: `${targetUser.username}'s balance`,
+        
         fields: [
             {
                 name: `${targetUser.username}'s balance`,
@@ -42,10 +42,3 @@ module.exports.run = async (client, interaction) => {
         embeds: [embed] 
     })
 }
-
-
-
-
-
-
-
