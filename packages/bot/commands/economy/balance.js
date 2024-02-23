@@ -1,5 +1,5 @@
 const { getRequest } = require("../../database/connection");
-const {createCustomEmbed} = require("../../assets/embed")
+const { createCustomEmbed } = require("../../assets/embed")
 module.exports.props = {
     commandName: "balance",
     description: "Get the balance of a user.",
@@ -29,16 +29,15 @@ module.exports.run = async (client, interaction) => {
     // Setup Embed:
     const embed = createCustomEmbed({
         title: `${targetUser.username}'s balance`,
-        
         fields: [
             {
                 name: `${targetUser.username}'s balance`,
-                value: `:coin: ${balance.toString()} coins`,
+                value: `:coin: ${balance.toString()} coin${balance > 1 ? "s" : ""}`,
             }
         ],
     })
 
-    interaction.reply({
-        embeds: [embed] 
+    return interaction.reply({
+        embeds: [embed]
     })
 }
