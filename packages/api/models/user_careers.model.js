@@ -33,8 +33,8 @@ module.exports = sequelize => {
         level: {
             type: DataTypes.INTEGER,
             allowNull: false,
-            defaultValue: 0,
-            min: 0,
+            defaultValue: 1,
+            min: 1,
             max: 5000
         },
     }, {
