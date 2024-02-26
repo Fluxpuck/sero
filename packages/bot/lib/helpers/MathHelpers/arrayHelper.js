@@ -26,6 +26,14 @@ function calculateDifferences(arr1, arr2) {
     return differences;
 }
 
+/**
+ * Get a random object in an array
+ * @param {Array} array
+ */
+function randomInArray(array) {
+    return array[Math.floor(Math.random() * array.length)];
+}
+
 /** slice array in chunks
  * @param {Array} array Lenghy array
  * @param {Number} chunk Chunk size
@@ -38,4 +46,4 @@ function chunk(array, chunk) {
     return returnArray;
 }
 
-module.exports = { calculateDifferences, chunk };
+module.exports = { calculateDifferences, chunk, randomInArray };

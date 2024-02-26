@@ -28,8 +28,6 @@ module.exports.run = async (client, interaction) => {
 
     // Setup Embed:
     const embed = createCustomEmbed({
-        title: `${targetUser.username}'s balance`,
-        
         fields: [
             {
                 name: `${targetUser.username}'s balance`,

@@ -4,6 +4,7 @@
         "name": "Veterinarian",
         "description": "Provides medical care to animals.",
         "wage": 60000,
+        "daily": 240,
         "raise": 1.5
     },
     {
@@ -11,6 +12,7 @@
         "name": "Astronaut",
         "description": "Travels to space for scientific research or exploration.",
         "wage": 75000,
+        "daily": 300,
         "raise": 1.2
     },
     {
@@ -18,6 +20,7 @@
         "name": "Lawyer",
         "description": "Provides legal advice and representation.",
         "wage": 60000,
+        "daily": 240,
         "raise": 1.5
     },
     {
@@ -25,12 +28,14 @@
         "name": "Accountant",
         "description": "Manages financial records and prepares reports.",
         "wage": 55000,
+        "daily": 200,
         "raise": 1.8
     },
     {
         "jobId": "5",
         "name": "Developer",
         "description": "Creates software applications and systems.",
+        "daily": 240,
         "wage": 60000,
         "raise": 1.5
     },
@@ -39,6 +44,7 @@
         "name": "Teacher",
         "description": "Educates students in various subjects.",
         "wage": 45000,
+        "daily": 160,
         "raise": 2.0
     },
     {
@@ -46,6 +52,7 @@
         "name": "Police Officer",
         "description": "Enforces laws and maintains public order.",
         "wage": 50000,
+        "daily": 200,
         "raise": 1.8
     },
     {
@@ -53,6 +60,7 @@
         "name": "Sales Person",
         "description": "Sells products or services to customers.",
         "wage": 30000,
+        "daily": 120,
         "raise": 2.5
     },
     {
@@ -60,6 +68,7 @@
         "name": "Travel Agent",
         "description": "Assists clients in planning and booking trips.",
         "wage": 30000,
+        "daily": 120,
         "raise": 2.5
     },
     {
@@ -67,12 +76,14 @@
         "name": "Athlete",
         "description": "Competes in sports professionally.",
         "wage": 30000,
+        "daily": 100,
         "raise": 2.5
     },
     {
         "jobId": "11",
         "name": "Youtuber",
         "description": "Creates and publishes video content on YouTube.",
+        "daily": 320,
         "wage": 80000,
         "raise": 1.2
     },
@@ -80,6 +91,7 @@
         "jobId": "12",
         "name": "Model",
         "description": "Poses for photoshoots or walks on runways.",
+        "daily": 140,
         "wage": 35000,
         "raise": 2.0
     },
@@ -87,6 +99,7 @@
         "jobId": "13",
         "name": "Doctor",
         "description": "Diagnoses and treats medical conditions.",
+        "daily": 360,
         "wage": 90000,
         "raise": 1.0
     },
@@ -94,6 +107,7 @@
         "jobId": "14",
         "name": "Artist",
         "description": "Creates visual or performing arts.",
+        "daily": 180,
         "wage": 35000,
         "raise": 2.0
     },
@@ -101,6 +115,7 @@
         "jobId": "15",
         "name": "Chef",
         "description": "Prepares and cooks food in restaurants.",
+        "daily": 140,
         "wage": 35000,
         "raise": 2.0
     },
@@ -108,6 +123,7 @@
         "jobId": "16",
         "name": "Pilot",
         "description": "Flies aircraft to transport passengers or cargo.",
+        "daily": 340,
         "wage": 85000,
         "raise": 1.2
     },
@@ -116,6 +132,7 @@
         "name": "Plumber",
         "description": "Installs and repairs plumbing systems.",
         "wage": 40000,
+        "daily": 160,
         "raise": 1.7
     },
     {
@@ -123,6 +140,7 @@
         "name": "Electrician",
         "description": "Installs and repairs electrical systems.",
         "wage": 40000,
+        "daily": 160,
         "raise": 1.7
     }
 ]

@@ -31,7 +31,7 @@ module.exports = sequelize => {
             defaultValue: 0,
             min: -100_000,
             max: 1_000_000_000
-        },
+        }
     }, {
         sequelize,
         modelName: 'user_balance',
