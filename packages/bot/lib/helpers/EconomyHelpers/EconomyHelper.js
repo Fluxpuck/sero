@@ -1,6 +1,7 @@
 const {jobResponses} = require("../../../assets/job-messages");
 const jsonData = require("../../../../api/test/data/jobs.json");
-const {randomInArray} = require("../MathHelpers/arrayHelper")
+const {randomInArray} = require("../MathHelpers/arrayHelper");
+
 module.exports = {
 
 /**
@@ -18,6 +19,7 @@ async generateWorkResponse(jobId) {
         return randomResponse.replace('{COIN}', jobDaily.toString());
     }
 },
+
 /**
  * Get the details of the job a user holds. Data like the daily, wage, name, && description.
  * @param {*} jobId The user's career jobId from the database
@@ -74,6 +76,7 @@ async getRandomJob() {
     return { jobId, jobName, jobDaily, jobWage, jobDescription };
 
     } else {
+        // > Throw an error if the function fails.
        console.log(`An error occured while fetching a random job!`);
        return null;
     }

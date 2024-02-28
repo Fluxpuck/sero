@@ -21,6 +21,7 @@ module.exports.run = async (client, interaction) => {
   // 24hr cooldown key
   const cooldownKey = interaction.user.id + interaction.id;
 
+  if(client.cooldowns.has(cooldownKey) === false) {
 
   // Get the user's job using endpoint && return the jobId from the result.
   const result = await getRequest(`/career/${interaction.guild.id}/${interaction.user.id}`);
@@ -185,4 +186,9 @@ module.exports.run = async (client, interaction) => {
       // Add the user to the cooldowns Collection
       return client.cooldowns.set(cooldownKey, interaction, 24 * 60 * 60) // 3600 minutes 
     }
+  } else {
+    interaction.reply({
+      content: `You are on a cooldown, you can only work once every day.`
+    })
   }
+}
