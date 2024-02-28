@@ -42,18 +42,41 @@ async getJobDetails(jobId) {
  * The wage of the job.
  */
 async getRandomJob() {
-    // Fetch the JSON data
-    const array = jsonData;
+    // > Create a Set to avoid duplicate selections.
+    const selectedJobs = new Set()
 
-    // Pluck the job out at random and return information.
+    // > Fetch the JSON data
+    const array = jsonData;
+    
+    // > Get available jobs if the Set does not contain the jobId.
+    const availableJobs = array.filter(job => !selectedJobs.has(job.jobId));
+
+    // > If we run out of jobs, clear the set and allow more objects to enter the set.
+    if(availableJobs.length === 0) {
+      selectedJobs.clear();
+    }
+
+    // > Pluck the job out at random and return information.
     const randomJob = randomInArray(array);
+
+    if(randomJob) {
+    // > Add the selected job to the Set.
+        selectedJobs.add(randomJob.jobId)
+    
+    // > Fetch all job data of the selected randomized job.
     const jobId = randomJob ? randomJob.jobId : null;
     const jobName = randomJob ? randomJob.name : null;
     const jobDaily = randomJob ? randomJob.daily : null;
     const jobWage = randomJob ? randomJob.wage : null;
     const jobDescription = randomJob ? randomJob.description : null;
-
+    
+    // Return the job details.
     return { jobId, jobName, jobDaily, jobWage, jobDescription };
+
+    } else {
+       console.log(`An error occured while fetching a random job!`);
+       return null;
+    }
 }
 
 }
