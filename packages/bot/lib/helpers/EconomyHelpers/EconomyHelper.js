@@ -31,6 +31,29 @@ async getJobDetails(jobId) {
 
     return { daily, wage, name, description };
 
+},
+
+/**
+ * Fetch a random job and get details like:
+ * The name of the job
+ * The job ID.
+ * The Description of the job.
+ * The daily wage of the job.
+ * The wage of the job.
+ */
+async getRandomJob() {
+    // Fetch the JSON data
+    const array = jsonData;
+
+    // Pluck the job out at random and return information.
+    const randomJob = randomInArray(array);
+    const jobId = randomJob ? randomJob.jobId : null;
+    const jobName = randomJob ? randomJob.name : null;
+    const jobDaily = randomJob ? randomJob.daily : null;
+    const jobWage = randomJob ? randomJob.wage : null;
+    const jobDescription = randomJob ? randomJob.description : null;
+
+    return { jobId, jobName, jobDaily, jobWage, jobDescription };
 }
 
 }
