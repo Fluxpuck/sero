@@ -1,7 +1,6 @@
 const { postRequest, getRequest } = require("../../database/connection");
 const {generateWorkResponse, getJobDetails, getRandomJob} = require("../../../bot/lib/helpers/EconomyHelpers/EconomyHelper")
-const { post } = require("../../../api/routes/career");
-const { createCustomEmbed } = require('../../assets/embed')
+const { createCustomEmbed } = require('../../assets/embed');
 const { ButtonBuilder, ActionRowBuilder, ButtonStyle, ComponentType } = require("discord.js");
 
 module.exports.props = {
