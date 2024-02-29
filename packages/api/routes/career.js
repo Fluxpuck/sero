@@ -107,10 +107,6 @@ router.post("/new/:guildId/:userId", async (req, res, next) => {
     }
 });
 
-
-
-
-
 /**
  * @router POST api/career/:guildId/userId
  * @description Save or Update the career for a specific user from a specific guild
