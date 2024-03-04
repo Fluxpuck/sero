@@ -36,4 +36,24 @@ module.exports = {
 
         return differenceInMinutes;
     },
+
+    /**
+     * Check if a timestamp is older than 24 hours.
+     * @param {timesamp} timestamp - The timestamp to check.
+     * @returns - True if the timestamp is older than 24 hours, false otherwise.
+     */
+    isOlderThan24Hours: (timestamp) => {
+        // Parse the timestamp into a JavaScript Date object
+        const parsedTimestamp = new Date(timestamp);
+
+        // Get the current time in milliseconds
+        const currentTime = Date.now();
+
+        // Calculate the difference in milliseconds between the timestamp and the current time
+        const differenceInMilliseconds = currentTime - parsedTimestamp.getTime();
+
+        // Check if the difference is greater than 24 hours (in milliseconds)
+        return differenceInMilliseconds > (24 * 60 * 60 * 1000);
+    },
+
 };
