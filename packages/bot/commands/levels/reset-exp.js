@@ -1,9 +1,9 @@
 const { postRequest } = require("../../database/connection");
 
 module.exports.props = {
-    commandName: "reset",
+    commandName: "reset-exp",
     description: "Reset all experience of a User",
-    usage: "/reset [user]",
+    usage: "/reset-exp [user]",
     interaction: {
         type: 1,
         options: [

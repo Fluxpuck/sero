@@ -33,6 +33,7 @@ router.get("/:guildId/:userId", async (req, res, next) => {
  * @description Set a new Job career for a specific user from a specific guild
  */
 router.post("/new/:guildId/:userId", async (req, res, next) => {
+    const t = await sequelize.transaction();
 
     // Fetch a random job from the database
     const randomJob = await Jobs.findOne({
@@ -40,24 +41,71 @@ router.post("/new/:guildId/:userId", async (req, res, next) => {
         limit: 1
     });
 
+    try {
+        // Setup the default values
+        const requestData = {
+            userId: req.params.userId,
+            guildId: req.params.guildId,
+            jobId: randomJob.id,
+        };
 
-    console.log(randomJob);
+        // Create or Update the request
+        const request = await UserCareers.upsert(requestData, {
+            where: {
+                userId: userInfo.userId,
+                guildId: userInfo.guildId,
+            },
+        });
 
+        // Return the results
+        return res.status(200).json({
+            message: `Career for ${guildId}/${userId} created successfully`,
+            data: request,
+            additional: randomJob
+        });
 
-
-
+    } catch (error) {
+        next(error);
+    }
 });
 
+/**
+ * @router POST api/career/level/:guildId/userId
+ * @description Update the career level for a specific user from a specific guild
+ */
+router.post("/new/:guildId/:userId", async (req, res, next) => {
+    const t = await sequelize.transaction();
 
+    try {
+        const { body, params } = req;
+        const { guildId, userId } = params;
 
-// Setup Attributes for this Route
-const updateProperties = ['amount'];
+        // Setup the default values
+        const requestData = {
+            userId: req.params.userId,
+            guildId: req.params.guildId,
+            jobId: randomJob.id,
+        };
 
+        // Create or Update the request
+        const request = await UserCareers.upsert(requestData, {
+            where: {
+                userId: userInfo.userId,
+                guildId: userInfo.guildId,
+            },
+        });
 
+        // Return the results
+        return res.status(200).json({
+            message: `Career for ${guildId}/${userId} created successfully`,
+            data: request,
+            additional: randomJob
+        });
 
-
-
-
+    } catch (error) {
+        next(error);
+    }
+});
 
 /**
  * @router POST api/career/:guildId/userId
