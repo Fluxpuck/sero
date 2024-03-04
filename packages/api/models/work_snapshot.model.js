@@ -10,9 +10,13 @@ class Work_snapshot extends Model {
 
 module.exports = sequelize => {
     Work_snapshot.init({
+        id: {
+            type: DataTypes.INTEGER,
+            primaryKey: true,
+            autoIncrement: true
+        },
         userId: {
             type: DataTypes.BIGINT,
-            primaryKey: true,
             allowNull: false,
             validate: {
                 is: /^\d{17,20}$/ //Discord Snowflake
@@ -20,7 +24,6 @@ module.exports = sequelize => {
         },
         guildId: {
             type: DataTypes.BIGINT,
-            primaryKey: true,
             allowNull: false,
             validate: {
                 is: /^\d{17,20}$/ //Discord Snowflake
@@ -29,6 +32,10 @@ module.exports = sequelize => {
         jobId: {
             type: DataTypes.INTEGER,
             allowNull: false,
+        },
+        income: {
+            type: DataTypes.INTEGER,
+            allowNull: true,
         },
     }, {
         sequelize,

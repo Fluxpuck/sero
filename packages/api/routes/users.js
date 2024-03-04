@@ -20,7 +20,7 @@ router.get("/", async (req, res, next) => {
         });
 
         // If no results found, trigger error
-        if (!result || result.length === 0) {
+        if (!result) {
             throw new CreateError(404, 'No users were found');
         }
 
@@ -49,7 +49,7 @@ router.get("/:guildId/:userId", async (req, res, next) => {
         });
 
         // If no results found, trigger error
-        if (!result || result.length === 0) {
+        if (!result) {
             throw new CreateError(404, 'User was not found');
         }
 

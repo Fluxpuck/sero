@@ -20,7 +20,7 @@ router.get("/:guildId", async (req, res, next) => {
     });
 
     // If no results found, trigger error
-    if (!result || result.length === 0) {
+    if (!result) {
       throw new CreateError(404, 'No logchannels for this guildId found.');
     }
 
@@ -49,7 +49,7 @@ router.get("/:guildId/:category", async (req, res, next) => {
     });
 
     // If no results found, trigger error
-    if (!result || result.length === 0) {
+    if (!result) {
       throw new CreateError(404, 'No logchannel for this category and guildId found.');
     }
 

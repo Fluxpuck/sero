@@ -14,7 +14,7 @@ router.get("/", async (req, res, next) => {
     const result = await Commands.findAll();
 
     // If no results found, trigger error
-    if (!result || result.length === 0) {
+    if (!result) {
       throw new CreateError(404, 'No commands were found');
     }
 
@@ -40,7 +40,7 @@ router.get("/:commandId", async (req, res, next) => {
     });
 
     // If no results found, trigger error
-    if (!result || result.length === 0) {
+    if (!result) {
       throw new CreateError(404, 'Command was not found');
     }
 

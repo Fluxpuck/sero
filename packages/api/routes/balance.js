@@ -18,7 +18,7 @@ router.get("/:guildId", async (req, res, next) => {
     });
 
     // If no results found, trigger error
-    if (!result || result.length === 0) {
+    if (!result) {
       throw new CreateError(404, 'No balances for this guildId found.');
     }
 
@@ -47,7 +47,7 @@ router.get("/:guildId/:userId", async (req, res, next) => {
     });
 
     // If no results found, trigger error
-    if (!result || result.length === 0) {
+    if (!result) {
       throw new CreateError(404, 'No balance for this combination of guildId and userId found.');
     }
 
