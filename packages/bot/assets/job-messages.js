@@ -1,4 +1,4 @@
-const jobResponses = {
+const JOB_MESSAGES = {
     1: [
         `You worked as a veternarian and saved a horse! You recieved {COIN} for your service.`,
         `You worked as a veternarian and were forced to clean up dog poop. You recieved {COIN} coins for your trouble.`,
@@ -156,4 +156,4 @@ const jobResponses = {
     ]
 }
 
-module.exports = { jobResponses }
+module.exports = { JOB_MESSAGES }
