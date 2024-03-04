@@ -10,18 +10,16 @@ const { CreateError } = require('../utils/ClassManager');
  */
 router.get("/", async (req, res, next) => {
 
-  const limit = req.query.limit || 1000;
-
   try {
     // Find all guilds
     const result = await Guild.findAll(
       {
-        limit: limit
+        limit: req.query.limit || 1000
       }
     );
 
     // If no results found, trigger error
-    if (!result || result.length === 0) {
+    if (!result) {
       throw new CreateError(404, 'No guilds were found');
     }
 
@@ -47,7 +45,7 @@ router.get("/:guildId", async (req, res, next) => {
     });
 
     // If no results found, trigger error
-    if (!result || result.length === 0) {
+    if (!result) {
       throw new CreateError(404, 'Guild was not found');
     }
 
@@ -69,6 +67,7 @@ const guildProperties = ['guildId', 'guildName'];
  */
 router.post('/:guildId', async (req, res, next) => {
   const t = await sequelize.transaction();
+
   try {
     const { body, params } = req;
     const { guildId } = params;
