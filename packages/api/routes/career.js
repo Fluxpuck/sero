@@ -189,6 +189,35 @@ router.delete("/:guildId/:userId", async (req, res, next) => {
     }
 });
 
+/**
+ * @router GET api/career/snap/:guildId/:userId
+ * @description Get the last career snapshot from a specific user from a specific guild
+ */
+router.get("/snap/:guildId/:userId", async (req, res, next) => {
+    try {
+        const { guildId, userId } = req.params;
+
+        // Fetch career data related to the guildId and userId
+        const result = await Work_snapshot.findOne({
+            where: {
+                guildId: guildId,
+                userId: userId
+            },
+            order: [['createdAt', 'DESC']],
+        });
+
+        // If no results found, trigger error
+        if (!result) {
+            throw new CreateError(404, 'No career snapshot for this userId in this of guildId');
+        }
+
+        return res.status(200).json(result);
+
+    } catch (error) {
+        next(error);
+    }
+});
+
 // Setup Attributes for this Route
 const snapProperties = ['jobId', 'income'];
 
