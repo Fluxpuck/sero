@@ -1,20 +1,20 @@
 const jobResponses = {
-    job_1: [
-    `You worked as a veternarian and saved a horse! You recieved {COIN} for your service.`,
-    `You worked as a veternarian and were forced to clean up dog poop. You recieved {COIN} coins for your trouble.`,
-    `You worked as a veternarian and found a dog injured! You recieved {COIN} coins for your service.`,
-    `You helped bathe a dog because he was covered in mud! The owner of the dog gave you {COIN} coins.`,
-    `Successfully transformed a grumpy cat into a purring ball of fluff. The owner paid the fluff tax: {COIN} coins.`,
-    `Performed a duck's annual check-up. It quacked me up! The owner paid the Duck bill: {COIN} coins.`,
-    `Your dog was mooing like a cow you said ma'am? Oh, then it probably is a dog. {COIN} coins.`,
-    `Huh, you found a dog named seven, interesting... You recieved {COIN} coins.`
-],
-    job_2: [
-    `You worked as a astronaut and found a fluxtuating planet and you recieved {COIN} coins.`,
-    `You worked as a astronaut and visited a new planet called Planet 7, very cool! {COIN} coins.`,
-    `You worked as a astronaut and visited planet Zeus. You recieved {COIN} coins!`
-],
-    job_3: [
+    1: [
+        `You worked as a veternarian and saved a horse! You recieved {COIN} for your service.`,
+        `You worked as a veternarian and were forced to clean up dog poop. You recieved {COIN} coins for your trouble.`,
+        `You worked as a veternarian and found a dog injured! You recieved {COIN} coins for your service.`,
+        `You helped bathe a dog because he was covered in mud! The owner of the dog gave you {COIN} coins.`,
+        `Successfully transformed a grumpy cat into a purring ball of fluff. The owner paid the fluff tax: {COIN} coins.`,
+        `Performed a duck's annual check-up. It quacked me up! The owner paid the Duck bill: {COIN} coins.`,
+        `Your dog was mooing like a cow you said ma'am? Oh, then it probably is a dog. {COIN} coins.`,
+        `Huh, you found a dog named seven, interesting... You recieved {COIN} coins.`
+    ],
+    2: [
+        `You worked as a astronaut and found a fluxtuating planet and you recieved {COIN} coins.`,
+        `You worked as a astronaut and visited a new planet called Planet 7, very cool! {COIN} coins.`,
+        `You worked as a astronaut and visited planet Zeus. You recieved {COIN} coins!`
+    ],
+    3: [
         `You won a high-profile case! You received {COIN} coins.`,
         `You successfully defended a client in court. You received {COIN} coins.`,
         `You spent the day researching for a case. You received {COIN} coins.`,
@@ -25,8 +25,8 @@ const jobResponses = {
         `You advised a client on their legal rights. You received {COIN} coins.`,
         `You spent the day in court, arguing a case. You received {COIN} coins.`,
         `You helped a client set up a new business. You received {COIN} coins.`,
-],
-    job_4: [
+    ],
+    4: [
         `You worked as an accountant and found a mistake in the books! You received {COIN} coins.`,
         `Balanced the books so well, they could walk a tightrope. Your reward: {COIN} coins.`,
         `You found a hidden tax deduction, it was like finding Waldo in a sea of numbers. You received {COIN} coins.`,
@@ -35,14 +35,14 @@ const jobResponses = {
         `You found an error in the financial statements that everyone else missed. Sherlock has nothing on you. You received {COIN} coins.`,
         `You check all the numbers and all seems well, there's some room to buy a new calculator. You received {COIN} coins.`,
     ],
-    job_5: [
+    5: [
         `You worked as a Developer and found a bug in the code! You received {COIN} coins.`,
         `You just sat there behind the desk and did nothing, but you still got paid {COIN} coins.`,
         `You made a new website for a client and they paid you {COIN} coins, less than you expected for all the revisions...`,
         `You decided to spend the day adding easter eggs to the company's application. You received {COIN} coins.`,
         `You found a security vulnerability in the company's application, but it's someone else's problem now. You received {COIN} coins.`
     ],
-    job_6: [
+    6: [
         `You worked as a teacher taught a student how to read! You received {COIN} coins.`,
         `You made a student cry because of your teaching methods, but you still got paid {COIN} coins.`, // Too far? maybe
         `You taught a student how to write their name! You received {COIN} coins.`,
@@ -50,7 +50,7 @@ const jobResponses = {
         `You had to raise the average grade of the class, you should probably sit on a table next time you see that class. You received {COIN} coins.`,
         `You let your students do what they wanted in class, maybe tell them to do something next time though. You received {COIN} coins.`,
     ],
-    job_7: [
+    7: [
         `You worked as a police officer and wrote a ticket for a car parked in a no parking zone. You received {COIN} coins.`,
         `Caught a jaywalker in the act, it was like a game of red light, green light. You received {COIN} coins.`,
         `You chased down a purse snatcher, felt like a scene straight out of a movie. You received {COIN} coins.`,
@@ -60,7 +60,7 @@ const jobResponses = {
         `You found a lost child in the park and reunited them with their parents. You received {COIN} coins.`,
         `You patrolled the neighborhood and it was quiet... too quiet. You received {COIN} coins.`,
     ],
-    job_8: [
+    8: [
         `You worked as a salesperson and sold a car! You received {COIN} coins.`,
         `You sold a vacuum cleaner that sucks more than a black hole. You received {COIN} coins.`,
         `You convinced a customer to buy a fridge... for their igloo. You received {COIN} coins.`,
@@ -70,7 +70,7 @@ const jobResponses = {
         `You sold a boat to a man in the desert, he said he's preparing for global warming. You received {COIN} coins.`,
         `You sold a comb to a bald man, he said it's for his cat. You received {COIN} coins.`,
     ],
-    job_9: [
+    9: [
         `You worked as a Travel Agent and booked a trip to Hawaii for a customer! You received {COIN} coins.`,
         `You booked a trip to the moon for a customer, they said they wanted to get away from it all. You received {COIN} coins.`,
         `You booked a trip to the Bermuda Triangle for a customer, they said they wanted to get lost. You received {COIN} coins.`,
@@ -80,14 +80,14 @@ const jobResponses = {
         `You booked a trip to the Great Wall of China for a customer, they said they need to stretch their legs. You received {COIN} coins.`,
         `You booked a trip to the bottom of the ocean for a customer, they said they're looking for Nemo. You received {COIN} coins.`,
     ],
-    job_10: [
+    10: [
         `You won a gold medal! You received {COIN} coins.`,
         `You won a silver medal. You received {COIN} coins.`,
         `You won a bronze medal, third times the charm, wait that's not the saying. You received {COIN} coins.`,
         `You uh, you participated, have a participation trophy. Hm? Oh, you want coins too? Fine, you received {COIN} coins.`,
         `You battle T in an e-sports game, yeah you weren't going to win that one. You received {COIN} coins for trying!`,
     ],
-    job_11:[ // Perhaps more than just Games, and maybe more related to SSundee's content or seperate job for our server?
+    11: [
         `Your Minecraft video blew up, getting over 1 million views! You received {COIN} coins.`,
         `You made a Minecraft lets play video and got 10 views, don't give up! You received {COIN} coins.`,
         `You played Among Us with some buddies, your video gets a lot of comments! You received {COIN} coins.`,
@@ -96,7 +96,7 @@ const jobResponses = {
         `You made a video on how to make a redstone contraption, featuring Zakaria. You received {COIN} coins.`,
         `You take a break from making videos, but you still get paid {COIN} coins. Thank god for ad revenue.`,
     ],
-    job_12: [
+    12: [
         `You worked as a Model and did a photoshoot for a magazine! You received {COIN} coins.`,
         `You did a photoshoot for a local clothing store called Zeus Couture, they appreciated your work and you received {COIN} coins.`,
         `You use your modeling skills to help a company rig some 3D models, you received {COIN} coins.`,
@@ -104,22 +104,22 @@ const jobResponses = {
         `You wore your best shoes for a photoshoot, but they were never in the shot :(. You received {COIN} coins.`,
         `You did a photoshoot for a company that sells sunglasses, they said you looked cool. You received {COIN} coins.`,
     ],
-    job_13: [
+    13: [
         `You did surgery on a grape! You received {COIN} coins.`,
         `You performed a heart transplant, the patient is doing well! You received {COIN} coins.`,
         `You had to test your patience with a patient, but you still got paid {COIN} coins.`,
         `When making an incision, you found a note inside the patient that said "Don't forget to feed the cat." You received {COIN} coins.`,
         `You and your your assistant Seven procrastinate on some paperwork, but you still got paid {COIN} coins.`,
     ],
-    job_14: [
+    14: [
         `You get commissioned to make a logo for a company, they loved it! You received {COIN} coins.`,
         `You had to revise a commission 7 times, but you still got paid {COIN} coins.`,
         `You created a mural on a city wall. It's the talk of the town! You received {COIN} coins.`,
         `You painted a self-portrait. It was so realistic that your mirror got jealous. You received {COIN} coins.`
-        `You tried to paint a sunset, but it ended up looking like a fruit salad. Still, you received {COIN} coins.`,
+            `You tried to paint a sunset, but it ended up looking like a fruit salad. Still, you received {COIN} coins.`,
         `You painted a masterpiece, but your dog walked across it. Now it's modern art! You received {COIN} coins.`,
     ],
-    job_15: [
+    15: [
         `You worked as a chef and made a delicious meal for a customer! You received {COIN} coins.`,
         `You made a meal for a customer, but they didn't like it. You still got paid {COIN} coins. But your self esteem is Fluxuating.`,
         `When playing with fire you eventually get burned, yeah you set the kitchen on fire. You did put it out though, you received {COIN} coins.`,
@@ -127,7 +127,7 @@ const jobResponses = {
         `You have the day off, but you're still cooking up something devine. You received {COIN} coins.`,
         `A food critic came to your restaurant, lets hope they like your food. You received {COIN} coins.`,
     ],
-    job_16: [
+    16: [
         `You did a loop-de-loop with the plane, the passengers weren't too happy about it. You received {COIN} coins.`,
         `You flew a plane over the Bermuda Triangle, how'd you even end up over there? You received {COIN} coins and an interview for somehow surviving.`,
         `You had to make an emergency landing, but everyone is safe. You received {COIN} coins.`,
@@ -135,7 +135,7 @@ const jobResponses = {
         `You had to fly through a storm, but you kept everyone safe. You received {COIN} coins.`,
         `The next flight is delayed, you get to relax for a bit. You received {COIN} coins.`,
     ],
-    job_17: [
+    17: [
         `You worked as a plumber and worked on a 7" pipe. You recieved {COIN} coins, from the homeowner.`,
         `You cleared out the clogged toilet like a superhero in a porcelain cape. You got paid {COIN}.`,
         `Whoops! You cleaned the wrong pipe in the house, it's okay though the homeowner thought you were doing her a favor so you got {COIN} coins.`,
@@ -146,7 +146,7 @@ const jobResponses = {
         `Someone dropped a massive deuce into the toilet, they're gonna need more than a plunger to get that out. The homeowner paid {COIN} coins.`,
         `How do you drop a barbie doll down the drain ma'am. The homeowner paid {COIN} coins.`,
     ],
-    job_18: [
+    18: [
         `You go through the day as an Electrician, you recieved {COIN} coins.`,
         `You got shocked while trying to fix a faulty wire, but you're okay and still got paid {COIN} coins.`,
         `You fixed a complex circuit, you feel like the Zeus of electronics. You recieved {COIN} coins.`,
@@ -154,7 +154,6 @@ const jobResponses = {
         `You rewire an old house, the homeowner will appreciate the access to electricity. You recieved {COIN} coins.`,
         `You get hit by lightning, that's unrelated to your job but it happened. You recieved {COIN} coins.`,
     ]
-// Add more responses here:
 }
 
-module.exports = {jobResponses}
+module.exports = { jobResponses }
