@@ -56,4 +56,35 @@ module.exports = {
         return differenceInMilliseconds > (24 * 60 * 60 * 1000);
     },
 
+    /**
+     * Calculate the time left in hours and minutes from a given timestamp
+     * @param {number} timestamp The timestamp in milliseconds
+     * @returns {string} A string representing the time left in hours and minutes
+     */
+    timeLeft: (timestamp) => {
+        // Convert the timestamp to a Date object
+        const targetDate = new Date(timestamp);
+
+        // Get the current date and time
+        const currentDate = new Date();
+
+        // Calculate the difference in milliseconds
+        let difference = targetDate - currentDate;
+
+        // Convert milliseconds to hours and minutes
+        const hours = Math.floor(difference / (1000 * 60 * 60));
+        difference -= hours * 1000 * 60 * 60;
+        const minutes = Math.floor(difference / (1000 * 60));
+
+        // Construct the time left string
+        let timeLeftString = '';
+        if (hours > 0) {
+            timeLeftString += `${hours} hour${hours > 1 ? 's' : ''} `;
+        }
+        timeLeftString += `${minutes} minute${minutes > 1 ? 's' : ''}`;
+
+        // Return the time left as a string
+        return timeLeftString;
+    }
+
 };

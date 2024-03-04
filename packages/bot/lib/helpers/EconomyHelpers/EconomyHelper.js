@@ -8,7 +8,8 @@ module.exports = {
      * @returns - The daily income of the user
      */
     calculateDailyIncome: (wage, raise, level) => {
-        return (wage / 365) * (level * raise);
+        const WORK_DAYS_VALUE = 365;
+        return (wage / WORK_DAYS_VALUE) * (level * raise);
     }
 
 }

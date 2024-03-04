@@ -17,6 +17,7 @@ router.get("/:guildId/:userId", async (req, res, next) => {
                 guildId: req.params.guildId,
                 userId: req.params.userId
             },
+            include: Jobs
         });
 
         // If no results found, trigger error
