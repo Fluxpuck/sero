@@ -1,126 +1,144 @@
 [
     {
         "jobId": 1,
-        "name": "💉 Veterinarian",
+        "name": "Veterinarian",
+        "emoji": "💉",
         "description": "Provides medical care to animals.",
         "wage": 60000,
         "raise": 3.33
     },
     {
         "jobId": 2,
-        "name": "🚀 Astronaut",
+        "name": "Astronaut",
+        "emoji": "🚀",
         "description": "Travels to space for scientific research or exploration.",
         "wage": 75000,
         "raise": 1.6
     },
     {
         "jobId": 3,
-        "name": "⚖️ Lawyer",
+        "name": "Lawyer",
+        "emoji": "⚖️",
         "description": "Provides legal advice and representation.",
         "wage": 60000,
         "raise": 2.5
     },
     {
         "jobId": 4,
-        "name": "💼 Accountant",
+        "name": "Accountant",
+        "emoji": "💼",
         "description": "Manages financial records and prepares reports.",
         "wage": 55000,
         "raise": 3.27
     },
     {
         "jobId": 5,
-        "name": "💻 Developer",
+        "name": "Developer",
+        "emoji": "💻",
         "description": "Creates software applications and systems.",
         "wage": 60000,
         "raise": 2.5
     },
     {
         "jobId": 6,
-        "name": "📏 Teacher",
+        "name": "Teacher",
+        "emoji": "📏",
         "description": "Educates students in various subjects.",
         "wage": 45000,
         "raise": 4.44
     },
     {
         "jobId": 7,
-        "name": "🚓 Police Officer",
+        "name": "Police Officer",
+        "emoji": "🚓",
         "description": "Enforces laws and maintains public order.",
         "wage": 50000,
         "raise": 3.6
     },
     {
         "jobId": 8,
-        "name": "📈 Sales Person",
+        "name": "Sales Person",
+        "emoji": "📈",
         "description": "Sells products or services to customers.",
         "wage": 30000,
         "raise": 8.33
     },
     {
         "jobId": 9,
-        "name": "🗺️ Travel Agent",
+        "name": "Travel Agent",
+        "emoji": "🗺️",
         "description": "Assists clients in planning and booking trips.",
         "wage": 30000,
         "raise": 8.33
     },
     {
         "jobId": 10,
-        "name": "🏃‍♂️ Athlete",
+        "name": "Athlete",
+        "emoji": "🏃‍♂️",
         "description": "Competes in sports professionally.",
         "wage": 30000,
         "raise": 8.33
     },
     {
         "jobId": 11,
-        "name": "📹 Youtuber",
+        "name": "Youtuber",
+        "emoji": "📹",
         "description": "Creates and publishes video content on YouTube.",
         "wage": 80000,
         "raise": 1.5
     },
     {
         "jobId": 12,
-        "name": "💄 Model",
+        "name": "Model",
+        "emoji": "💄",
         "description": "Poses for photoshoots or walks on runways.",
         "wage": 35000,
         "raise": 5.71
     },
     {
         "jobId": 13,
-        "name": "🩺 Doctor",
+        "name": "Doctor",
+        "emoji": "🩺",
         "description": "Diagnoses and treats medical conditions.",
         "wage": 90000,
         "raise": 1.11
     },
     {
         "jobId": 14,
-        "name": "🎨 Artist",
+        "name": "Artist",
+        "emoji": "🎨",
         "description": "Creates visual or performing arts.",
         "wage": 35000,
         "raise": 5.71
     },
     {
         "jobId": 15,
-        "name": "🍳 Chef",
+        "name": "Chef",
+        "emoji": "🍳",
         "description": "Prepares and cooks food in restaurants.",
         "wage": 35000,
         "raise": 5.71
     },
     {
         "jobId": 16,
-        "name": "✈️ Pilot",
+        "name": "Pilot",
+        "emoji": "✈️",
         "description": "Flies aircraft to transport passengers or cargo.",
         "wage": 85000,
         "raise": 1.41
     },
     {
         "jobId": 17,
-        "name": "🪠 Plumber",
+        "name": "Plumber",
+        "emoji": "🪠",
         "description": "Installs and repairs plumbing systems.",
         "wage": 40000,
         "raise": 4.25
     },
     {
         "jobId": 18,
-        "name": "⚡ Electrician",
+        "name": "Electrician",
+        "emoji": "⚡",
         "description": "Installs and repairs electrical systems.",
         "wage": 40000,
         "raise": 4.25

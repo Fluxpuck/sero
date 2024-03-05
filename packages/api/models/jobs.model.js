@@ -13,6 +13,10 @@ module.exports = sequelize => {
             primaryKey: true,
             allowNull: false,
         },
+        emoji: {
+            type: DataTypes.STRING,
+            allowNull: true,
+        },
         name: {
             type: DataTypes.STRING,
             allowNull: false,
@@ -25,13 +29,13 @@ module.exports = sequelize => {
             type: DataTypes.INTEGER,
             allowNull: false,
             min: 0,
-            max: 200_000
+            max: 100_000
         },
         raise: {
             type: DataTypes.DECIMAL(3, 1),
             allowNull: false,
             min: 0,
-            max: 10
+            max: 20
         },
     }, {
         sequelize,
