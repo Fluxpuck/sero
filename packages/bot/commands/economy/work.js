@@ -157,6 +157,14 @@ module.exports.run = async (client, interaction) => {
       const collector = response.createMessageComponentCollector({ options });
       collector.on('collect', async i => {
 
+        // Block input from other users
+        if (i.user.id !== interaction.user.id) {
+          return i.reply({
+            content: `Oops! You can't select a job for someone else.`,
+            ephemeral: true
+          })
+        }
+
         const selectedButton = i.customId;
 
         // Get the selected job
