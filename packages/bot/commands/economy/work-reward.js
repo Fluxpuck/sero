@@ -1,5 +1,3 @@
-const { getRequest } = require("../../database/connection");
-const { createCustomEmbed } = require("../../assets/embed")
 module.exports.props = {
     commandName: "work-reward",
     description: "Get a reward for completing a work-week.",

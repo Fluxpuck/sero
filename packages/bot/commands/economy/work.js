@@ -1,4 +1,4 @@
-const { ActionRowBuilder, ButtonBuilder, ComponentType } = require("discord.js");
+const { ActionRowBuilder, ButtonBuilder, ComponentType, ButtonStyle } = require("discord.js");
 const { createCustomEmbed } = require("../../assets/embed");
 const { JOB_MESSAGES } = require("../../assets/job-messages");
 const { postRequest, getRequest } = require("../../database/connection");
@@ -75,11 +75,13 @@ module.exports.run = async (client, interaction) => {
           ephemeral: false
         })
       }
-
     }
 
     // If no career, start the process of getting a job
     if (userCareerResult.status != 200) {
+
+      // Set default career level
+      const DEFAULT_CAREER_LEVEL = 1;
 
       // Get 3 random jobs
       const jobsResult = await getRequest(`/career/jobs?limit=3`);
@@ -94,9 +96,9 @@ module.exports.run = async (client, interaction) => {
       const jobButtons = [];
       jobsResult.data.forEach(job => {
         const button = new ButtonBuilder()
-          .setCustomId(job.jobId)
-          .setLabel(job.name)
-          .setStyle('PRIMARY')
+          .setCustomId(`${job.jobId}`)
+          .setLabel(`${job.name}`)
+          .setStyle(ButtonStyle.Primary)
           .setDisabled(false);
         jobButtons.push(button);
       });
@@ -108,14 +110,16 @@ module.exports.run = async (client, interaction) => {
       // Create message fields
       const jobFields = jobsResult.data.map(job => {
 
-        const income = calculateDailyIncome(job.wage, job.raise, userCareerResult.data.level);
+        // Calculate the income based on the user's career
+        const income = calculateDailyIncome(job.wage, job.raise, DEFAULT_CAREER_LEVEL);
+        console.log("income", income)
 
         return {
           name: job.name,
           value: `${job.description}
-          \nYearly Wage: $${job.wage}
-          \nDaily Income (base):${income}%
-          \nRaise (per level):${job.raise}%`,
+\nSalary: \`$${job.wage}\`
+\nDaily Income (base): \`$${income}\`
+\nRaise (per level): \`${job.raise}%\``,
           inline: false
         }
       })

@@ -33,6 +33,9 @@ module.exports.run = async (client, interaction) => {
     // Fetch the messages based on user? and amount
     const messageCollection = await fetchMessages(interaction, targetUser, targetAmount);
 
+    // TODO - Check why purge doesnt work correctly recursively
+    console.log("messageCollection", messageCollection.size)
+
     // Check if the collection is not empty
     if (messageCollection.size > 0) {
         // Delete the messages
