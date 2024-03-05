@@ -29,4 +29,3 @@ module.exports = sequelize => {
 
     return Levels;
 }
-

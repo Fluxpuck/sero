@@ -53,7 +53,7 @@ module.exports.run = async (client, interaction) => {
 
 		// Get request details
 		const { userLevel, position } = result.data;
-		const { level, experience, nextLevelExp, currentLevelExp } = userLevel;
+		const { level, experience, nextLevelExp, remainingExp } = userLevel;
 
 		// Get the user's rank card
 		const rankCard = await createRankCard(
@@ -64,7 +64,7 @@ module.exports.run = async (client, interaction) => {
 			experience,
 			level,
 			nextLevelExp,
-			currentLevelExp
+			remainingExp
 		);
 
 		// If creating the rank card was successful, return rankcard
