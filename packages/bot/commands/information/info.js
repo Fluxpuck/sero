@@ -1,6 +1,7 @@
 const { EmbedBuilder, version: discordVersion } = require('discord.js');
 const { version: botVersion } = require('../../package.json');
 const { formatTime } = require('../../lib/helpers/TimeDateHelpers/timeHelper');
+const { getRequest, postRequest } = require('../../database/connection');
 
 module.exports.props = {
     commandName: "info",
@@ -10,6 +11,16 @@ module.exports.props = {
 }
 
 module.exports.run = async (client, interaction) => {
+
+
+    // const request = await getRequest('/career/new/660103319557111808/270640827787771943');
+
+    const result = await postRequest('/career/new/660103319557111808/270640827787771943');
+
+
+
+
+    return;
 
     // Setting up the embedded message
     const messageEmbed = new EmbedBuilder()

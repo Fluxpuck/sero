@@ -1,23 +1,5 @@
 module.exports = {
 
-    // → Function to calculate the level from the experience
-    calculateLevel(experience) {
-        const BASE_EXP = 80;
-        const EXP_MULTIPLIER = 1.35;
-
-        // Calculate the level using the provided formula
-        const level = (experience < BASE_EXP) ? 1 : Math.floor(Math.log(experience / BASE_EXP) / Math.log(EXP_MULTIPLIER)) + 1;
-
-        // Calculate the experience required for the next level
-        let nextLevelExp = Math.ceil(BASE_EXP * Math.pow(EXP_MULTIPLIER, level));
-        nextLevelExp = nextLevelExp < BASE_EXP ? BASE_EXP : nextLevelExp;
-
-        // Calculate the total experience needed to reach the next level
-        const remainingExp = nextLevelExp - experience;
-
-        return { level, nextLevelExp, remainingExp };
-    },
-
     // → Function to calculate XP
     calculateXP(personalModifier = 1, serverModifier = 1) {
         let baseXP = 15;
@@ -37,5 +19,4 @@ module.exports = {
 
         return randomizedXP;
     }
-
 }

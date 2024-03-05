@@ -45,7 +45,7 @@ module.exports = sequelize => {
         },
     }, {
         sequelize,
-        modelName: 'logging_channels',
+        modelName: 'log_channels',
         timestamps: true,
         createdAt: true,
     }, {

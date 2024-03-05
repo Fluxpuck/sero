@@ -1,74 +1,31 @@
 const { Model, DataTypes } = require('sequelize');
-const { calculateLevel } = require('../utils/levelManager');
 
 class Levels extends Model {
     static associate(models) {
-        this.belongsTo(models.User, { foreignKey: { name: 'userId', allowNull: false } });
-        this.belongsTo(models.Guild, { foreignKey: { name: 'guildId', allowNull: false } });
     }
 }
 
 module.exports = sequelize => {
     Levels.init({
-        userId: {
-            type: DataTypes.BIGINT,
+        level: {
+            type: DataTypes.INTEGER,
             primaryKey: true,
             allowNull: false,
-            validate: {
-                is: /^\d{17,20}$/ //Discord Snowflake
-            }
-        },
-        guildId: {
-            type: DataTypes.BIGINT,
-            primaryKey: true,
-            allowNull: false,
-            validate: {
-                is: /^\d{17,20}$/ //Discord Snowflake
-            }
+            max: 100,
         },
         experience: {
             type: DataTypes.INTEGER,
             allowNull: false,
             defaultValue: 0,
             min: 0,
+            max: 10_000_000
         },
-        level: {
-            type: DataTypes.INTEGER,
-            allowNull: false,
-            defaultValue: 0,
-            min: 0
-        },
-        nextLevelExp: {
-            type: DataTypes.INTEGER,
-            allowNull: false,
-            defaultValue: 0
-        },
-        remainingExp: {
-            type: DataTypes.INTEGER,
-            allowNull: false,
-            defaultValue: 0
-        },
-        modifyer: {
-            type: DataTypes.INTEGER,
-            allowNull: false,
-            defaultValue: 1
-        }
     }, {
         sequelize,
         modelName: 'levels',
-        timestamps: true,
-        updatedAt: true,
-        createdAt: true
-    });
-
-    Levels.beforeSave(async (level, options) => {
-        let exp = level.getDataValue('experience');
-        let calculatedLevel = calculateLevel(exp);
-        level.setDataValue('level', calculatedLevel.level);
-        level.setDataValue('nextLevelExp', calculatedLevel.nextLevelExp);
-        level.setDataValue('remainingExp', calculatedLevel.remainingExp);
+        updatedAt: false,
+        createdAt: false
     });
 
     return Levels;
 }
-

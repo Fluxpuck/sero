@@ -3,7 +3,7 @@ const { createRankCard } = require("../../lib/canvas/rank");
 
 module.exports.props = {
 	commandName: "rank",
-	description: "Get a user's rank if user is mentioned, or get your own rank if no user is mentioned.",
+	description: "Check the rank of a user.",
 	usage: "/rank [user]",
 	interaction: {
 		type: 1,
