@@ -115,8 +115,8 @@ const JOB_MESSAGES = {
         `You get commissioned to make a logo for a company, they loved it! You received {COIN} coins.`,
         `You had to revise a commission 7 times, but you still got paid {COIN} coins.`,
         `You created a mural on a city wall. It's the talk of the town! You received {COIN} coins.`,
-        `You painted a self-portrait. It was so realistic that your mirror got jealous. You received {COIN} coins.`
-            `You tried to paint a sunset, but it ended up looking like a fruit salad. Still, you received {COIN} coins.`,
+        `You painted a self-portrait. It was so realistic that your mirror got jealous. You received {COIN} coins.`,
+        `You tried to paint a sunset, but it ended up looking like a fruit salad. Still, you received {COIN} coins.`,
         `You painted a masterpiece, but your dog walked across it. Now it's modern art! You received {COIN} coins.`,
     ],
     15: [
