@@ -21,7 +21,7 @@ module.exports.props = {
             }
         ]
     },
-    defaultMemberPermissions: ['KickMembers'],
+    defaultMemberPermissions: ['MoveMembers'],
 };
 /**
  * 
@@ -34,27 +34,27 @@ module.exports.run = async (client, interaction) => {
     const from = interaction.guild.channels.cache.get(firstChannel);
     const to = interaction.guild.channels.cache.get(targetChannel);
 
-    if(!from || !to || from.type !== 2 || to.type !== 2) {
+    if (!from || !to || from.type !== 2 || to.type !== 2) {
         return interaction.reply({
             content: `Invalid voice channels provided.`,
-            ephemeral: true 
+            ephemeral: true
         })
     }
     const voiceStates = from.members;
-    if(voiceStates.size === 0) {
+    if (voiceStates.size === 0) {
         return interaction.reply({
             content: "There are no members in the source channel."
         })
     }
 
     voiceStates.forEach((voiceState) => {
-        if(voiceState.voice) {
+        if (voiceState.voice) {
             voiceState.voice.setChannel(to);
         }
     })
     interaction.reply({
         content: `Moved all users to the <#${to.id}>.`,
-        ephemeral: true 
+        ephemeral: true
     })
 
 }

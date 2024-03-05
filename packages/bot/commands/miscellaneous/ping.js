@@ -2,7 +2,8 @@ module.exports.props = {
     commandName: "ping",
     description: "Check the client latency",
     usage: "/ping",
-    interaction: {}
+    interaction: {},
+    defaultMemberPermissions: ['SendMessages'],
 }
 
 module.exports.run = async (client, interaction) => {

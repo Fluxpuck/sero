@@ -7,7 +7,8 @@ module.exports.props = {
     commandName: "help",
     description: "Get information on the bot",
     usage: "/help",
-    interaction: {}
+    interaction: {},
+    defaultMemberPermissions: ['SendMessages'],
 }
 
 module.exports.run = async (client, interaction) => {

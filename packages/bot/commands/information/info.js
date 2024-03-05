@@ -7,21 +7,11 @@ module.exports.props = {
     commandName: "info",
     description: "Check the client information",
     usage: "/info",
-    interaction: {}
+    interaction: {},
+    defaultMemberPermissions: ['ManageMessages'],
 }
 
 module.exports.run = async (client, interaction) => {
-
-
-    // const request = await getRequest('/career/new/660103319557111808/270640827787771943');
-
-    const result = await postRequest('/career/new/660103319557111808/270640827787771943');
-
-
-
-
-    return;
-
     // Setting up the embedded message
     const messageEmbed = new EmbedBuilder()
         .setTitle(client.user.username)

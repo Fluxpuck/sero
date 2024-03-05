@@ -20,7 +20,7 @@ module.exports.props = {
             },
         ],
     },
-    defaultMemberPermissions: ['KickMembers'],
+    defaultMemberPermissions: ['ManageMessages'],
 };
 
 module.exports.run = async (client, interaction, AuditLogs = []) => {

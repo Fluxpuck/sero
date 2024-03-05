@@ -23,7 +23,7 @@ module.exports.props = {
             },
         ],
     },
-    defaultMemberPermissions: ['KickMembers'],
+    defaultMemberPermissions: ['ManageGuild'],
 }
 
 module.exports.run = async (client, interaction) => {
@@ -37,17 +37,17 @@ module.exports.run = async (client, interaction) => {
     const currentExperience = currentUser ? currentUser.experience : 0;
 
     // Check if the user has the proper amount of experience.
-    if(currentExperience < targetAmount) {
+    if (currentExperience < targetAmount) {
         await postRequest(`/levels/add/${interaction.guildId}/${targetUser.id}`, { experience: -currentExperience })
     }
-        // Remove the user's experience if has proper amount.
-        const result = await postRequest(`/levels/add/${interaction.guildId}/${targetUser.id}`, { experience: -targetAmount });
-        if (result && result.status !== 200) {
-            interaction.reply({
+    // Remove the user's experience if has proper amount.
+    const result = await postRequest(`/levels/add/${interaction.guildId}/${targetUser.id}`, { experience: -targetAmount });
+    if (result && result.status !== 200) {
+        interaction.reply({
             content: "Something went wrong while removing experience from the user.",
             ephemeral: true
         })
-        
+
     } else {
         return interaction.reply({
             content: `**${targetAmount}** experience was removed from <@${targetUser.id}>!`,

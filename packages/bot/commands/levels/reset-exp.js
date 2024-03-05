@@ -15,7 +15,7 @@ module.exports.props = {
             }
         ],
     },
-    defaultMemberPermissions: ['KickMembers'],
+    defaultMemberPermissions: ['ManageGuild'],
 }
 
 module.exports.run = async (client, interaction) => {

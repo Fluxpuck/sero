@@ -32,7 +32,7 @@ module.exports.props = {
                     maxLength: 100
                 },
             ],
-        defaultMemberPermissions: ['KickMembers'],
+        defaultMemberPermissions: ['ModerateMembers'],
     }
 }
 

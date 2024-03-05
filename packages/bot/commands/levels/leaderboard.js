@@ -8,11 +8,8 @@ module.exports.props = {
     commandName: "leaderboard",
     description: "Check the leaderboard for the guild",
     usage: "/leaderboard",
-    interaction: {
-        type: 1,
-        options: [],
-    },
-    defaultMemberPermissions: [],
+    interaction: {},
+    defaultMemberPermissions: ['SendMessages'],
 }
 
 module.exports.run = async (client, interaction, leaderboard = []) => {

@@ -16,7 +16,7 @@ module.exports.props = {
             }
         ],
     },
-    defaultMemberPermissions: ['KickMembers'],
+    defaultMemberPermissions: ['ManageGuild', 'ManageRoles'],
 }
 
 // → Constructing the command and exporting

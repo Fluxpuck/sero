@@ -23,6 +23,7 @@ module.exports.props = {
             }
         ],
     },
+    defaultMemberPermissions: ['ManageMessages'],
 }
 
 module.exports.run = async (client, interaction) => {

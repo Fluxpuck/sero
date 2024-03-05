@@ -23,7 +23,7 @@ module.exports.props = {
             },
         ],
     },
-    defaultMemberPermissions: ['KickMembers'],
+    defaultMemberPermissions: ['ManageGuild'],
 }
 
 module.exports.run = async (client, interaction) => {
@@ -37,13 +37,13 @@ module.exports.run = async (client, interaction) => {
     const currentBalance = currentUser ? currentUser.balance : 0;
 
     // Check if the user has the proper amount of money.
-    if(currentBalance < targetAmount) {
-       const result = await postRequest(`/balance/${interaction.guildId}/${targetUser.id}`, { amount: -currentBalance })
-       console.log(result.data)
+    if (currentBalance < targetAmount) {
+        const result = await postRequest(`/balance/${interaction.guildId}/${targetUser.id}`, { amount: -currentBalance })
+        console.log(result.data)
     } else {
         // Remove the user's balance if has proper amount.
-       const result = await postRequest(`/balance/${interaction.guildId}/${targetUser.id}`, { amount: -targetAmount });
-       console.log(result.data)
+        const result = await postRequest(`/balance/${interaction.guildId}/${targetUser.id}`, { amount: -targetAmount });
+        console.log(result.data)
         return interaction.reply({
             content: `**${targetAmount.toString()}** coins were removed from <@${targetUser.id}>!`,
             ephemeral: false

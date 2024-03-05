@@ -6,7 +6,7 @@ module.exports.props = {
         type: 1,
         options: [],
     },
-    defaultMemberPermissions: [],
+    defaultMemberPermissions: ['SendMessages'],
 }
 
 module.exports.run = async (client, interaction) => {

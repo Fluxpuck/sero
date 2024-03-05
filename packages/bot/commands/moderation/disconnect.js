@@ -13,7 +13,7 @@ module.exports.props = {
             }
         ]
     },
-    defaultMemberPermissions: ['KickMembers'],
+    defaultMemberPermissions: ['MuteMembers'],
 };
 
 module.exports.run = async (client, interaction) => {

@@ -9,11 +9,8 @@ module.exports.props = {
   commandName: "work",
   description: "Work to earn money!",
   usage: "/work",
-  interaction: {
-    type: 1,
-    options: [],
-  },
-  defaultMemberPermissions: [],
+  interaction: {},
+  defaultMemberPermissions: ['SendMessages'],
 }
 
 module.exports.run = async (client, interaction) => {

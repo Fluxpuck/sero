@@ -22,7 +22,8 @@ module.exports.props = {
                 maxValue: 10_000,
             },
         ],
-    }
+    },
+    defaultMemberPermissions: ['SendMessages'],
 }
 
 module.exports.run = async (client, interaction) => {
