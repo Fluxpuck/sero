@@ -29,12 +29,7 @@ module.exports.run = async (client, interaction) => {
     // Setup Embed:
     const embed = createCustomEmbed({
         title: `${targetUser.username}'s balance`,
-        fields: [
-            {
-                name: `${targetUser.username}'s balance`,
-                value: `:coin: ${balance.toString()} coin${balance > 1 ? "s" : ""}`,
-            }
-        ],
+        description: `:coin: ${balance.toString()} coin${balance > 1 ? "s" : ""}`
     })
 
     return interaction.reply({

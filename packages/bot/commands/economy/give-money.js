@@ -29,25 +29,20 @@ module.exports.props = {
 module.exports.run = async (client, interaction) => {
     // Get User && Amount details from the interaction options
     const targetUser = interaction.options.get("user").user;
-    const targetAmount = interaction.options.get("amount").value || 0;
+    const targetAmount = interaction.options.get("amount").value;
 
+    // Give the user the money
+    const result = await postRequest(`/balance/${interaction.guildId}/${targetUser.id}`, { amount: targetAmount });
 
-    // Get the user's balance && check if the user has money.
-    const currentUser = await getRequest(`/balance/${interaction.guildId}/${targetUser.id}`);
-    const currentBalance = currentUser ? currentUser.balance : 0;
-
-    // Check if the user has the proper amount of money.
-    if(currentBalance < targetAmount) {
+    // If the request was not successful, return an error
+    if (result.status !== 200) {
         return interaction.reply({
-            content: `You do not have enough money for this transaction!`,
+            content: `Uh oh! The user ${targetUser.username} has no balance yet.`,
             ephemeral: true
         })
     } else {
-        // Give money to the user && remove money from the exeuctor if the executor has proper amount.
-        await postRequest(`/balance/${interaction.guildId}/${targetUser.id}`, { amount: +targetAmount });
-        await postRequest(`/balance/${interaction.guildId}/${interaction.user.id}`, { amount: -targetAmount })
         return interaction.reply({
-            content: `**${targetAmount.toString()}** coins were given to <@${targetUser.id}>!`,
+            content: `<@${targetUser.id}> has recieved **${targetAmount}** coins!`,
             ephemeral: false
         })
     }
