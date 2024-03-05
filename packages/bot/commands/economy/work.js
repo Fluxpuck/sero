@@ -56,11 +56,26 @@ module.exports.run = async (client, interaction) => {
         description: jobMessage,
       })
 
-      // Send the message
-      return interaction.reply({
-        embeds: [embed],
-        ephemeral: false
-      })
+      // Add the work to the work snapshot
+      const snapshotDetails = { jobId: jobId, income: income };
+      const addWorkSnapshot = await postRequest(`/career/snap/${interaction.guild.id}/${interaction.user.id}`, snapshotDetails);
+
+      // If the work snapshot was not added successfully, return an error message
+      if (addWorkSnapshot.status != 200) {
+        return interaction.reply({
+          content: `Oops! Something went wrong while working. Please try again later.`,
+          ephemeral: true
+        })
+      }
+
+      // If the work snapshot was added successfully, return a message
+      if (addWorkSnapshot.status === 200) {
+        return interaction.reply({
+          embeds: [embed],
+          ephemeral: false
+        })
+      }
+
     }
 
     // If no career, start the process of getting a job
