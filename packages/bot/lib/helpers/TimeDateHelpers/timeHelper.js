@@ -36,4 +36,55 @@ module.exports = {
 
         return differenceInMinutes;
     },
+
+    /**
+     * Check if a timestamp is older than 24 hours.
+     * @param {timesamp} timestamp - The timestamp to check.
+     * @returns - True if the timestamp is older than 24 hours, false otherwise.
+     */
+    isOlderThan24Hours: (timestamp) => {
+        // Parse the timestamp into a JavaScript Date object
+        const parsedTimestamp = new Date(timestamp);
+
+        // Get the current time in milliseconds
+        const currentTime = Date.now();
+
+        // Calculate the difference in milliseconds between the timestamp and the current time
+        const differenceInMilliseconds = currentTime - parsedTimestamp.getTime();
+
+        // Check if the difference is greater than 24 hours (in milliseconds)
+        return differenceInMilliseconds > (24 * 60 * 60 * 1000);
+    },
+
+    /**
+     * Calculate the time left in hours and minutes from a given timestamp
+     * @param {number} timestamp The timestamp in milliseconds
+     * @returns {string} A string representing the time left in hours and minutes
+     */
+    timeLeft: (timestamp) => {
+        // Convert the timestamp to a Date object
+        const targetDate = new Date(timestamp);
+
+        // Get the current date and time
+        const currentDate = new Date();
+
+        // Calculate the difference in milliseconds
+        let difference = targetDate - currentDate;
+
+        // Convert milliseconds to hours and minutes
+        const hours = Math.floor(difference / (1000 * 60 * 60));
+        difference -= hours * 1000 * 60 * 60;
+        const minutes = Math.floor(difference / (1000 * 60));
+
+        // Construct the time left string
+        let timeLeftString = '';
+        if (hours > 0) {
+            timeLeftString += `${hours} hour${hours > 1 ? 's' : ''} `;
+        }
+        timeLeftString += `${minutes} minute${minutes > 1 ? 's' : ''}`;
+
+        // Return the time left as a string
+        return timeLeftString;
+    }
+
 };
