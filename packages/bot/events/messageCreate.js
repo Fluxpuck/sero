@@ -8,6 +8,17 @@ module.exports = async (client, message) => {
     if (message.author.bot) return;
 
     /**
+     * Check if the user is away.
+     */
+    if(message.mentions.users.first()) {
+        client.emit(eventEnum.GUILD_MEMBER_AWAY, message)
+    } else {
+        if(message.author && !message.author.bot) {
+            client.emit(eventEnum.GUILD_MEMBER_AWAY, message) 
+        }
+    }
+
+    /**
      * Check if the message author, the User, is is stored
      * If not, check if the User is in the database
      * If not, create the User in the database
