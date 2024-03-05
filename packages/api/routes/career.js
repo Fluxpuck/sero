@@ -22,7 +22,7 @@ router.get("/:guildId/:userId", async (req, res, next) => {
 
         // If no results found, trigger error
         if (!result) {
-            throw new CreateError(404, 'No career for this userId in this of guildId');
+            throw new CreateError(404, 'No career for this userId in this guildId');
         }
 
         return res.status(200).json(result);
@@ -47,15 +47,15 @@ router.get("/jobs", async (req, res, next) => {
 
         // Check if the request has a limit query
         if (req.query.limit) {
-            queryOptions.limit = req.query.limit;
+            queryOptions.limit = parseInt(req.query.limit);
         }
 
         // Fetch a random job from the database
-        const result = await Jobs.findOne({ queryOptions });
+        const result = await Jobs.findAll(queryOptions);
 
         // If no results found, trigger error
         if (!result) {
-            throw new CreateError(404, 'No career for this userId in this of guildId');
+            throw new CreateError(404, 'No career for this userId in this guildId');
         }
 
         return res.status(200).json(result);
@@ -69,7 +69,7 @@ router.get("/jobs", async (req, res, next) => {
 const jobProperties = ['jobId'];
 
 /**
- * @router POST api/career/:guildId/userId
+ * @router POST api/career/:guildId/:userId
  * @description Create or Update the career for a specific user from a specific guild
  */
 router.post("/:guildId/:userId", async (req, res, next) => {
@@ -88,6 +88,8 @@ router.post("/:guildId/:userId", async (req, res, next) => {
 
         // Setup default career values
         const careerInfo = {
+            userId: userId,
+            guildId: guildId,
             jobId: jobId,
             level: 1
         }
@@ -95,8 +97,8 @@ router.post("/:guildId/:userId", async (req, res, next) => {
         // Create or Update the request
         const request = await UserCareers.upsert(careerInfo, {
             where: {
-                userId: userInfo.userId,
-                guildId: userInfo.guildId,
+                userId: userId,
+                guildId: guildId,
             },
         });
 
@@ -230,8 +232,9 @@ router.post("/snap/:guildId/:userId", async (req, res, next) => {
     const t = await sequelize.transaction();
 
     try {
-        const { guildId, userId, } = req.params;
-        const { jobId, income } = params;
+        const { body, params } = req;
+        const { guildId, userId, } = params;
+        const { jobId, income } = body;
 
         // Check if the request body has all required properties
         if (!body || Object.keys(body).length === 0 || snapProperties.some(prop => body[prop] === undefined)) {
@@ -240,6 +243,8 @@ router.post("/snap/:guildId/:userId", async (req, res, next) => {
 
         // Setup default career values
         const snapInfo = {
+            userId: userId,
+            guildId: guildId,
             jobId: jobId,
             income: income
         }
@@ -247,8 +252,8 @@ router.post("/snap/:guildId/:userId", async (req, res, next) => {
         // Create or Update the request
         const request = await Work_snapshot.upsert(snapInfo, {
             where: {
-                userId: userInfo.userId,
-                guildId: userInfo.guildId,
+                userId: userId,
+                guildId: guildId,
             },
         });
 

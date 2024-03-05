@@ -2,8 +2,8 @@ const { ActionRowBuilder, ButtonBuilder, ComponentType, ButtonStyle } = require(
 const { createCustomEmbed } = require("../../assets/embed");
 const { JOB_MESSAGES } = require("../../assets/job-messages");
 const { postRequest, getRequest } = require("../../database/connection");
-const { calculateDailyIncome } = require("../../lib/helpers/EconomyHelpers/EconomyHelper");
-const { isOlderThan24Hours, timeLeft } = require("../../lib/helpers/TimeDateHelpers/timeHelper");
+const { calculateDailyIncome, calculateBaseIncome } = require("../../lib/helpers/EconomyHelpers/EconomyHelper");
+const { isOlderThan24Hours, timeLeftToNextDay } = require("../../lib/helpers/TimeDateHelpers/timeHelper");
 
 module.exports.props = {
   commandName: "work",
@@ -39,7 +39,7 @@ module.exports.run = async (client, interaction) => {
 
       // Get random job message, based on the jobId
       let idx = Math.floor(Math.random() * JOB_MESSAGES[jobId].length);
-      const jobMessage = JOB_MESSAGES[jobId][idx].replace('{COIN}', income);
+      const jobMessage = JOB_MESSAGES[jobId][idx].replace('{COIN}', `**${income}*`);
 
       // Update the user's balance
       const updateUserBalance = await postRequest(`/balance/${interaction.guild.id}/${interaction.user.id}`, { amount: income });
@@ -52,8 +52,8 @@ module.exports.run = async (client, interaction) => {
 
       // Create message embed
       const embed = createCustomEmbed({
-        title: `<@${interaction.author.id}>'s work day`,
-        description: jobMessage,
+        title: `${interaction.user.username}'s work day`,
+        description: `> ${jobMessage}`,
       })
 
       // Add the work to the work snapshot
@@ -80,21 +80,39 @@ module.exports.run = async (client, interaction) => {
     // If no career, start the process of getting a job
     if (userCareerResult.status != 200) {
 
+      // Predefine the job data
+      let randomJobData = [];
+
+      // Check if the user already has job-options
+      const userJobOptions = interaction.user?.jobOptions
+
+      if (userJobOptions) {
+
+        randomJobData = userJobOptions
+
+      } else {
+
+        // Get 3 random jobs
+        const jobsResult = await getRequest(`/career/jobs?limit=3`);
+        if (jobsResult.status != 200) {
+          return interaction.reply({
+            content: `Oops! Something went wrong while fetching available jobs. Please try again later.`,
+            ephemeral: true
+          })
+        }
+
+        randomJobData = jobsResult.data;
+      }
+
       // Set default career level
       const DEFAULT_CAREER_LEVEL = 1;
 
-      // Get 3 random jobs
-      const jobsResult = await getRequest(`/career/jobs?limit=3`);
-      if (jobsResult.status != 200) {
-        return interaction.reply({
-          content: `Oops! Something went wrong while fetching available jobs. Please try again later.`,
-          ephemeral: true
-        })
-      }
+      // Add job options to the user
+      interaction.user.jobOptions = randomJobData;
 
       // Dynamicly create buttons for the jobs
       const jobButtons = [];
-      jobsResult.data.forEach(job => {
+      randomJobData.forEach(job => {
         const button = new ButtonBuilder()
           .setCustomId(`${job.jobId}`)
           .setLabel(`${job.name}`)
@@ -108,18 +126,14 @@ module.exports.run = async (client, interaction) => {
         .addComponents(...jobButtons);
 
       // Create message fields
-      const jobFields = jobsResult.data.map(job => {
+      const jobFields = randomJobData.map(job => {
 
         // Calculate the income based on the user's career
         const income = calculateDailyIncome(job.wage, job.raise, DEFAULT_CAREER_LEVEL);
-        console.log("income", income)
 
         return {
-          name: job.name,
-          value: `${job.description}
-\nSalary: \`$${job.wage}\`
-\nDaily Income (base): \`$${income}\`
-\nRaise (per level): \`${job.raise}%\``,
+          name: `${job.emoji} - ${job.name}`,
+          value: `*${job.description}*\nSalary: \`$${job.wage}\`\nDaily Income (base): \`$${income}\`\nRaise (per level): \`${job.raise}%\``,
           inline: false
         }
       })
@@ -135,7 +149,7 @@ module.exports.run = async (client, interaction) => {
       const response = await interaction.reply({
         embeds: [messageEmbed],
         components: [messageComponents],
-        ephemeral: true
+        ephemeral: false
       })
 
       // Collect the button selection
@@ -146,27 +160,25 @@ module.exports.run = async (client, interaction) => {
         const selectedButton = i.customId;
 
         // Get the selected job
-        const selectedJob = jobsResult.data.find(job => job.jobId === selectedButton);
+        const selectedJob = randomJobData.find(job => job.jobId == selectedButton);
         const income = calculateBaseIncome(selectedJob.wage);
 
         // Update embed Footer && Fields
-        messageEmbed.setDescription(`You have selected a job!`);
+        messageEmbed.setTitle(`You have selected a job!`);
+        messageEmbed.setDescription(`You will be able to execute \`/work\` on a daily basis to earn money.`);
         messageEmbed.data.fields = []; // Empty current fields
         messageEmbed.setFields(
           [
             {
-              name: selectedJob.name,
-              value: `${selectedJob.description}
-              \nYearly Wage: $${selectedJob.wage}
-              \nDaily Income (base):${income}%
-              \nRaise (per level):${selectedJob.raise}%`,
+              name: `${selectedJob.emoji} - ${selectedJob.name}`,
+              value: `*${selectedJob.description}*\nSalary: \`$${selectedJob.wage}\`\nDaily Income (base): \`$${income}\`\nRaise (per level): \`${selectedJob.raise}%\``,
               inline: false
             }
           ]
         );
 
         // Update the user's career
-        const updateUserCareer = await postRequest(`/career/${interaction.guild.id}/${interaction.user.id}`, { jobId: selectedButton, level: 1 });
+        const updateUserCareer = await postRequest(`/career/${interaction.guild.id}/${interaction.user.id}`, { jobId: selectedJob.jobId, level: 1 });
 
         // If the user's career was updated successfully, return a message
         if (updateUserCareer.status === 200) {
@@ -188,11 +200,11 @@ module.exports.run = async (client, interaction) => {
 
   } else {
     // Calculate the time left until the user can work again
-    const timeLeft = timeLeft(snapshotResult.createdAt);
+    const remainingTime = timeLeftToNextDay(snapshotResult.data.createdAt);
 
     // return a message that the user has already worked today
     return interaction.reply({
-      content: `You have already worked today! Please try again in ${timeLeft}.`,
+      content: `You have already worked today! Please try again in ${remainingTime}.`,
       ephemeral: true
     })
   }

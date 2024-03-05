@@ -57,13 +57,14 @@ module.exports = {
     },
 
     /**
-     * Calculate the time left in hours and minutes from a given timestamp
+     * Calculate the time left in hours and minutes from a given timestamp after adding 24 hours to it
      * @param {number} timestamp The timestamp in milliseconds
      * @returns {string} A string representing the time left in hours and minutes
      */
-    timeLeft: (timestamp) => {
-        // Convert the timestamp to a Date object
+    timeLeftToNextDay: (timestamp) => {
+        // Convert the timestamp to a Date object and add 24 hours
         const targetDate = new Date(timestamp);
+        targetDate.setHours(targetDate.getHours() + 24);
 
         // Get the current date and time
         const currentDate = new Date();
@@ -86,5 +87,6 @@ module.exports = {
         // Return the time left as a string
         return timeLeftString;
     }
+
 
 };
