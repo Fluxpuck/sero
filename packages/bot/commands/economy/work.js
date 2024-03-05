@@ -39,7 +39,7 @@ module.exports.run = async (client, interaction) => {
 
       // Get random job message, based on the jobId
       let idx = Math.floor(Math.random() * JOB_MESSAGES[jobId].length);
-      const jobMessage = JOB_MESSAGES[jobId][idx].replace('{COIN}', `**${income}*`);
+      const jobMessage = JOB_MESSAGES[jobId][idx].replace('{COIN}', `**${income}**`);
 
       // Update the user's balance
       const updateUserBalance = await postRequest(`/balance/${interaction.guild.id}/${interaction.user.id}`, { amount: income });
@@ -53,7 +53,7 @@ module.exports.run = async (client, interaction) => {
       // Create message embed
       const embed = createCustomEmbed({
         title: `${interaction.user.username}'s work day`,
-        description: `> ${jobMessage}`,
+        description: `${jobMessage}`,
       })
 
       // Add the work to the work snapshot
