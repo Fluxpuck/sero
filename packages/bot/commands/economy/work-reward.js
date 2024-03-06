@@ -11,6 +11,9 @@ module.exports.props = {
 
 module.exports.run = async (client, interaction) => {
 
+
+
+
     /*
     1. Fetch the user's career snapshots & last career reward
     2. Check if the user has a streak of 5 days & the last career reward was 5+ days ago
