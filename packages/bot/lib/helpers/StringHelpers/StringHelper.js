@@ -58,7 +58,7 @@ module.exports = {
 
 		if (isNaN(num)) return num;
 
-		if (num < 1000) {
+		if (num < 10000) {
 			return num.toString();
 		} else if (num < 1000000) {
 			const result = Math.round((num / 1000) * 10) / 10;

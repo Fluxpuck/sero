@@ -57,6 +57,32 @@ module.exports = {
     },
 
     /**
+     * Check if a timestamp is from yesterday or older
+     * @param {*} timestamp - The timestamp to check
+     * @returns - True if the timestamp is from yesterday or older, false otherwise
+     */
+    isFromYesterdayOrOlder: (timestamp) => {
+        // Get current date
+        const currentDate = new Date();
+
+        // Set time to 00:00:00 for comparison
+        currentDate.setHours(0, 0, 0, 0);
+
+        // Get timestamp date
+        const timestampDate = new Date(timestamp);
+
+        // Set time to 00:00:00 for comparison
+        timestampDate.setHours(0, 0, 0, 0);
+
+        // Get yesterday's date
+        const yesterday = new Date(currentDate);
+        yesterday.setDate(currentDate.getDate() - 1);
+
+        // Compare timestamp date with yesterday's date or older
+        return timestampDate <= yesterday;
+    },
+
+    /**
      * Calculate the time left in hours and minutes from a given timestamp after adding 24 hours to it
      * @param {number} timestamp The timestamp in milliseconds
      * @returns {string} A string representing the time left in hours and minutes
@@ -85,6 +111,37 @@ module.exports = {
         timeLeftString += `${minutes} minute${minutes > 1 ? 's' : ''}`;
 
         // Return the time left as a string
+        return timeLeftString;
+    },
+
+    /**
+     * Calculate the time left in hours and minutes from a given timestamp
+     * @param {*} timestamp - The timestamp in milliseconds
+     * @returns {string} - A string representing the time left in hours and minutes
+     */
+    getTimeUntilTomorrow: (timestamp) => {
+        // Get current date
+        const currentDate = new Date();
+
+        // Set time to 00:00:00 for tomorrow
+        const tomorrow = new Date(currentDate);
+        tomorrow.setDate(currentDate.getDate() + 1);
+        tomorrow.setHours(0, 0, 0, 0);
+
+        // Calculate the difference in milliseconds between now and tomorrow
+        const timeUntilTomorrow = tomorrow - currentDate;
+
+        // Convert milliseconds to hours, minutes, and seconds
+        const hours = Math.floor(timeUntilTomorrow / (1000 * 60 * 60));
+        const minutes = Math.floor((timeUntilTomorrow % (1000 * 60 * 60)) / (1000 * 60));
+
+        // Construct the time left string
+        let timeLeftString = '';
+        if (hours > 0) {
+            timeLeftString += `${hours} hour${hours > 1 ? 's' : ''} `;
+        }
+        timeLeftString += `${minutes} minute${minutes > 1 ? 's' : ''}`;
+
         return timeLeftString;
     }
 
