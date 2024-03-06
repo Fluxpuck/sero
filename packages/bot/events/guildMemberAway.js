@@ -17,7 +17,15 @@ module.exports = async (client, message) => {
 
         // If the user is the same as the author, remove away from database
         if (memberId === message.author.id) {
-            return deleteRequest(`/away/${message.guildId}/${memberId}`);
+            await deleteRequest(`/away/${message.guildId}/${memberId}`);
+            message.reply({
+                content: `Welcome back! Your away status has been removed`,
+                ephemeral: true
+            })
+        }
+        // Return if the user mentions themselves.
+        if (memberId === message.author.id) {
+            return;
         }
 
         /**
