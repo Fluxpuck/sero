@@ -4,6 +4,10 @@ module.exports = {
         // Set default error status code to 500 (Internal Server Error)
         if (!err.status) err.status = 500;
 
+        if (!err.stack) err.stack = "No stack trace available";
+        const stackTraceString = err.stack.toString();
+        const stackTraceArray = stackTraceString.split("\n");
+
         // Build the error response
         const ErrorResponse = {
             status: err.status,
@@ -18,7 +22,7 @@ module.exports = {
                 body: req.body,
                 query: req.query
             },
-            stack: err.stack
+            stack: Array.isArray(stackTraceArray) ? stackTraceArray : stackTraceString
         };
 
         // Log the error to the console → for debugging purposes only!

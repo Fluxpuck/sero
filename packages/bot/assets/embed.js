@@ -20,12 +20,18 @@ module.exports = {
         try {
             if (typeof title !== 'undefined') messageEmbed.setTitle(title);
             if (typeof description !== 'undefined') messageEmbed.setDescription(description);
-            if (typeof author !== 'undefined') messageEmbed.setAuthor(author);
             if (typeof url !== 'undefined') messageEmbed.setURL(url);
             if (typeof thumbnail !== 'undefined') messageEmbed.setThumbnail(thumbnail);
             if (typeof timestamp !== 'undefined') messageEmbed.setTimestamp(timestamp);
             if (typeof color !== 'undefined') messageEmbed.setColor(color);
             if (typeof image !== 'undefined') messageEmbed.setImage(image);
+
+            if (author && typeof author === 'object') {
+                const authorName = author.name ?? null;
+                const authorIconURL = author.iconURL ?? null;
+                const authorURL = author.url ?? null;
+                messageEmbed.setAuthor({ name: authorName, iconURL: authorIconURL, url: authorURL });
+            }
 
             if (footer && typeof footer === 'object') {
                 const footerText = footer.text ?? null;

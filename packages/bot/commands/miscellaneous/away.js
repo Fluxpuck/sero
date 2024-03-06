@@ -36,7 +36,7 @@ module.exports.run = async (client, interaction) => {
         })
     } else {
         return interaction.reply({
-            content: `<@${interaction.user.id}> is now away for **${timeInMinutes}** minutes!`,
+            content: `<@${interaction.user.id}> will be away for **${timeInMinutes}** minutes!`,
             ephemeral: false
         })
     }

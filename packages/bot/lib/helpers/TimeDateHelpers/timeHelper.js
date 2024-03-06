@@ -1,5 +1,6 @@
-module.exports = {
+const moment = require('moment');
 
+module.exports = {
     /**
     * Format a time duration in milliseconds as a string in the format "<day(s)>d <hr>h <min>m <s>s".
     * @param {number} timeInMilliseconds - The time duration in milliseconds.
@@ -143,6 +144,22 @@ module.exports = {
         timeLeftString += `${minutes} minute${minutes > 1 ? 's' : ''}`;
 
         return timeLeftString;
+    },
+
+    /**
+     * Get the time ago from a given date in seconds or minutes
+     * @param {*} date - The date to calculate the time ago from
+     * @returns - A string representing the time ago
+     */
+    getTimeAgo: (date) => {
+        const timeDifferenceInSeconds = moment().diff(date, 'seconds');
+        const timeDifferenceInMinutes = moment().diff(date, 'minutes');
+
+        if (timeDifferenceInSeconds < 60) {
+            return `${timeDifferenceInSeconds} second${timeDifferenceInSeconds === 1 ? '' : 's'} ago`;
+        } else {
+            return `${timeDifferenceInMinutes} minute${timeDifferenceInMinutes === 1 ? '' : 's'} ago`;
+        }
     }
 
 
