@@ -58,32 +58,6 @@ module.exports = {
     },
 
     /**
-     * Check if a timestamp is from yesterday or older
-     * @param {*} timestamp - The timestamp to check
-     * @returns - True if the timestamp is from yesterday or older, false otherwise
-     */
-    isFromYesterdayOrOlder: (timestamp) => {
-        // Get current date
-        const currentDate = new Date();
-
-        // Set time to 00:00:00 for comparison
-        currentDate.setHours(0, 0, 0, 0);
-
-        // Get timestamp date
-        const timestampDate = new Date(timestamp);
-
-        // Set time to 00:00:00 for comparison
-        timestampDate.setHours(0, 0, 0, 0);
-
-        // Get yesterday's date
-        const yesterday = new Date(currentDate);
-        yesterday.setDate(currentDate.getDate() - 1);
-
-        // Compare timestamp date with yesterday's date or older
-        return timestampDate <= yesterday;
-    },
-
-    /**
      * Calculate the time left in hours and minutes from a given timestamp after adding 24 hours to it
      * @param {number} timestamp The timestamp in milliseconds
      * @returns {string} A string representing the time left in hours and minutes
@@ -117,10 +91,9 @@ module.exports = {
 
     /**
      * Calculate the time left in hours and minutes from a given timestamp
-     * @param {*} timestamp - The timestamp in milliseconds
      * @returns {string} - A string representing the time left in hours and minutes
      */
-    getTimeUntilTomorrow: (timestamp) => {
+    getTimeUntilTomorrow: () => {
         // Get current date
         const currentDate = new Date();
 
@@ -144,6 +117,31 @@ module.exports = {
         timeLeftString += `${minutes} minute${minutes > 1 ? 's' : ''}`;
 
         return timeLeftString;
+    },
+
+    /**
+     * Check if a timestamp is from today or newer
+     * @param {*} timestamp - The timestamp to check
+     * @returns - True if the timestamp is from today or newer, false otherwise
+     */
+    isTimestampFromToday: (timestamp) => {
+        // Get current date
+        const currentDate = new Date();
+
+        // Convert timestamp to Date object
+        const dateFromTimestamp = new Date(timestamp);
+
+        // Set current date time to midnight
+        currentDate.setHours(0, 0, 0, 0);
+
+        // Set date from timestamp time to midnight
+        dateFromTimestamp.setHours(0, 0, 0, 0);
+
+        // Calculate the difference in milliseconds between current date and date from timestamp
+        const difference = dateFromTimestamp.getTime() - currentDate.getTime();
+
+        // Check if the difference is greater than or equal to 0, meaning it's today or newer
+        return difference >= 0;
     },
 
     /**

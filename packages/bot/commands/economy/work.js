@@ -3,7 +3,7 @@ const { createCustomEmbed } = require("../../assets/embed");
 const { JOB_MESSAGES } = require("../../assets/job-messages");
 const { postRequest, getRequest } = require("../../database/connection");
 const { calculateDailyIncome, calculateBaseIncome } = require("../../lib/helpers/EconomyHelpers/EconomyHelper");
-const { isFromYesterdayOrOlder, getTimeUntilTomorrow } = require("../../lib/helpers/TimeDateHelpers/timeHelper");
+const { isFromYesterdayOrOlder, getTimeUntilTomorrow, isTimestampFromToday } = require("../../lib/helpers/TimeDateHelpers/timeHelper");
 
 module.exports.props = {
   commandName: "work",
@@ -19,7 +19,7 @@ module.exports.run = async (client, interaction) => {
   const snapshotResult = await getRequest(`/career/snap/${interaction.guild.id}/${interaction.user.id}`);
 
   // If no snapshot, or the snapshot is older than 1 day - 24 hours, continue
-  if (snapshotResult.status != 200 || isFromYesterdayOrOlder(snapshotResult.createdAt)) {
+  if (snapshotResult.status != 200 || isTimestampFromToday(snapshotResult.createdAt) == false) {
 
     // Fetch the user's career (job)
     const userCareerResult = await getRequest(`/career/${interaction.guild.id}/${interaction.user.id}`);
@@ -204,6 +204,7 @@ module.exports.run = async (client, interaction) => {
     }
 
   } else {
+
     // Calculate the time left until the user can work again
     const remainingTime = getTimeUntilTomorrow(snapshotResult.data.createdAt);
 
@@ -212,5 +213,6 @@ module.exports.run = async (client, interaction) => {
       content: `You have already worked today! Please try again in ${remainingTime}.`,
       ephemeral: true
     })
+
   }
 }
