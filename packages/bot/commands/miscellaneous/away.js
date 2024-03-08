@@ -38,8 +38,12 @@ module.exports.run = async (client, interaction) => {
         return interaction.reply({
             content: `<@${interaction.user.id}> will be away for **${timeInMinutes}** minutes!`,
             ephemeral: false
-        })
-    }
+        }).then(msg => {
+            setTimeout(() => {
+                msg.delete();
+            }, 8000); // 8 seconds
+        });
 
+    }
 
 }
