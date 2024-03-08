@@ -29,7 +29,7 @@ module.exports.run = async (client, interaction) => {
 
       // Calculate the income based on the user's career
       const { jobId, level, job } = userCareerResult.data;
-      const { wage, raise } = job;
+      const { emoji, name, wage, raise } = job;
 
       // Calculate the income based on the user's career
       const income = calculateDailyIncome(wage, raise, level);
@@ -51,6 +51,7 @@ module.exports.run = async (client, interaction) => {
       const embed = createCustomEmbed({
         title: `${interaction.user.username}'s work day`,
         description: `${jobMessage}`,
+        footer: { text: `${emoji} ${name}` }
       })
 
       // Add the work to the work snapshot
