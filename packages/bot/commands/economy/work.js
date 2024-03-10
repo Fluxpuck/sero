@@ -3,7 +3,7 @@ const { createCustomEmbed } = require("../../assets/embed");
 const { JOB_MESSAGES } = require("../../assets/job-messages");
 const { postRequest, getRequest } = require("../../database/connection");
 const { calculateDailyIncome, calculateBaseIncome } = require("../../lib/helpers/EconomyHelpers/EconomyHelper");
-const { isFromYesterdayOrOlder, getTimeUntilTomorrow, isTimestampFromToday } = require("../../lib/helpers/TimeDateHelpers/timeHelper");
+const { getTimeUntilTomorrow, isTimestampFromToday } = require("../../lib/helpers/TimeDateHelpers/timeHelper");
 
 module.exports.props = {
   commandName: "work",
@@ -19,7 +19,7 @@ module.exports.run = async (client, interaction) => {
   const snapshotResult = await getRequest(`/career/snap/${interaction.guild.id}/${interaction.user.id}`);
 
   // If no snapshot, or the snapshot is older than 1 day - 24 hours, continue
-  if (snapshotResult.status != 200 || isTimestampFromToday(snapshotResult.createdAt) == false) {
+  if (snapshotResult.status != 200 || isTimestampFromToday(snapshotResult?.data.createdAt) == false) {
 
     // Fetch the user's career (job)
     const userCareerResult = await getRequest(`/career/${interaction.guild.id}/${interaction.user.id}`);
