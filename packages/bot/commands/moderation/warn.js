@@ -20,7 +20,7 @@ module.exports.props = {
                 type: 3,
                 required: true,
                 autocomplete: true,
-                maxLength: 100
+                maxLength: 250,
             },
         ],
         defaultMemberPermissions: ['ModerateMembers'],
