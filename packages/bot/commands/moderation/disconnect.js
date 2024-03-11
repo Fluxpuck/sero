@@ -29,8 +29,8 @@ module.exports.run = async (client, interaction) => {
 
         // Send the success message
         return interaction.reply({
-            content: `Successfully disconnected <@${member.user.id}>`,
-            ephemeral: false,
+            content: `You successfully disconnected <@${member.user.id}>`,
+            ephemeral: true,
         });
     } else {
         return interaction.reply({

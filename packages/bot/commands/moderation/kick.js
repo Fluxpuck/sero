@@ -64,8 +64,8 @@ module.exports.run = async (client, interaction) => {
     return member.kick(violationReason)
         .then(() => {
             return interaction.reply({
-                content: `Successfully kicked **${member.user.username}** (${member.user.id}) for:\n> ${violationReason}`,
-                ephemeral: false,
+                content: `You successfully kicked **${member.user.username}** (${member.user.id}) for:\n> ${violationReason}`,
+                ephemeral: true,
             });
         })
         .catch(err => {
