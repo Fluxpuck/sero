@@ -27,36 +27,37 @@ module.exports.props = {
 }
 
 module.exports.run = async (client, interaction) => {
-    // Get User && Amount details from the interaction options
-    const targetUser = interaction.options.get("user")?.user
-    const targetAmount = interaction.options.get("amount").value;
+    try {
+        // Get User && Amount details from the interaction options
+        const targetUser = interaction.options.get("user")?.user
+        const targetAmount = interaction.options.get("amount").value;
 
-    // Fetch the messages based on user? and amount
-    const messageCollection = await fetchMessages(interaction, targetUser, targetAmount);
+        // Fetch the messages based on user? and amount
+        const messageCollection = await fetchMessages(interaction, targetUser, targetAmount);
 
-    // TODO - Check why purge doesnt work correctly recursively
-    console.log("messageCollection", messageCollection.size)
+        // Check if the collection is not empty
+        if (messageCollection.size <= 0) {
+            throw new Error(`Oops! I couldn't find any messages ${targetUser ? `from ${targetUser.user.username}` : ""} to delete!`);
+        }
 
-    // Check if the collection is not empty
-    if (messageCollection.size > 0) {
-        // Delete the messages
-        return interaction.channel.bulkDelete(messageCollection)
-            .then(() => {
-                return interaction.reply({
-                    content: `Deleting ${messageCollection.size} messages ${targetUser ? `from ${targetUser.tag}` : ""}`,
-                    ephemeral: true,
-                });
-            })
-            .catch(err => {
-                return interaction.reply({
-                    content: `Could not delete messages ${targetUser ? `from ${targetUser.tag}` : ""}!`,
-                    ephemeral: true,
-                });
-            });
-    } else {
+        // Bulk delete the messages
+        if (messageCollection >= 1) {
+            interaction.channel.bulkDelete(messageCollection)
+                .then(() => {
+                    return interaction.reply({
+                        content: `Deleting ${messageCollection.size} messages ${targetUser ? `from ${targetUser.tag}` : ""}`,
+                        ephemeral: true,
+                    });
+                })
+        }
+
+        // Clear the messageCollection
+        return messageCollection.clear();
+
+    } catch (error) {
         return interaction.reply({
-            content: `Oops! I couldn't find any messages ${targetUser ? `from ${targetUser.user.username}` : ""} to delete!`,
-            ephemeral: true,
-        });
+            content: `${error.message}`,
+            ephemeral: true
+        })
     }
 }
