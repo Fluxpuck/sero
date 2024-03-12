@@ -11,10 +11,17 @@ const { CreateError } = require('../utils/ClassManager');
 router.get("/:guildId", async (req, res, next) => {
   try {
     const { guildId } = req.params;
+    const limit = req.query.limit || 100;
 
     // Check for results related to the guildId
     const result = await UserBalance.findAll({
       where: { guildId: guildId },
+      include: [{
+        model: User,
+        where: { guildId: guildId }
+      }],
+      order: [['experience', 'DESC']],
+      limit: limit
     });
 
     // If no results found, trigger error
@@ -44,6 +51,13 @@ router.get("/:guildId/:userId", async (req, res, next) => {
         guildId: guildId,
         userId: userId
       },
+      include: [{
+        model: User,
+        where: {
+          guildId: guildId,
+          userId: userId
+        },
+      }]
     });
 
     // If no results found, trigger error
