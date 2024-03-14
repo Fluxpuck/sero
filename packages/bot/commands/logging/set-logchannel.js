@@ -49,49 +49,62 @@ module.exports.autocomplete = async (client, interaction) => {
 
 module.exports.run = async (client, interaction) => {
 
-	// Get the target log channel from the interaction options
-	const targetLogChannel = interaction.options.getChannel("channel");
-	// Get the logTypeCategory from the interaction options. 
-	const logObject = await GetLogTypeByKeyOrValue(interaction.options.get("log-type").value);
-	const logTypeCategory = Object.keys(logObject)[0];
-	const logTypeCategoryName = Object.values(logObject)[0];
+	try {
+		// Get the target log channel from the interaction options
+		const targetLogChannel = interaction.options.getChannel("channel");
+		// Get the logTypeCategory from the interaction options. 
+		const logObject = await GetLogTypeByKeyOrValue(interaction.options.get("log-type").value);
 
-	// Fetch the current guild logchannel for the logTypeCategory
-	const logChannelResponse = await getRequest(`/logchannels/${interaction.guild.id}/${logTypeCategory}`);
+		// If the logTypeCategory is not valid, return an error
+		if (!logObject) {
+			return sendErrorResponse(interaction, ":x: The log type you provided is not valid.");
+		}
 
-	// If there is no log channel for the logTypeCategory, create one
-	if (logChannelResponse.status === 404) {
+		// Get the logTypeCategory and logTypeCategoryName from the logObject
+		const logTypeCategory = Object.keys(logObject)[0];
+		const logTypeCategoryName = Object.values(logObject)[0];
 
-		const logChannelPostResponse = await postLogChannel(interaction.guild.id, logTypeCategory, targetLogChannel.id)
+		// Fetch the current guild logchannel for the logTypeCategory
+		const logChannelResponse = await getRequest(`/logchannels/${interaction.guild.id}/${logTypeCategory}`);
 
-		// If the request was successful, return success message
-		if (logChannelPostResponse.status === 200) {
+		// If there is no log channel for the logTypeCategory, create one
+		if (logChannelResponse.status === 404) {
 
-			// Send the success embed
-			sendEmbed(interaction, "Set log channel.", `The log channel for \`${logTypeCategoryName}\` has been set to <#${targetLogChannel.id}>.`, SUCCESS);
+			const logChannelPostResponse = await postLogChannel(interaction.guild.id, logTypeCategory, targetLogChannel.id)
+
+			// If the request was successful, return success message
+			if (logChannelPostResponse.status === 200) {
+
+				// Send the success embed
+				sendEmbed(interaction, "Set log channel.", `The log channel for \`${logTypeCategoryName}\` has been set to <#${targetLogChannel.id}>.`, SUCCESS);
+
+			} else {
+				// If the request was not successful, return an error
+				sendErrorResponse(interaction, `An error occurred while setting the log channel for **${logTypeCategoryName}**.`);
+			}
+		} else if (logChannelResponse.status === 200) { // If the log channel for the logTypeCategory exists, update it
+
+			// Update the log channel for the logTypeCategory
+			const logChannelPostResponse = await postLogChannel(interaction.guild.id, logTypeCategory, targetLogChannel.id)
+
+			// If the request was successful, return success message
+			if (logChannelPostResponse.status === 200) {
+				// Send the success embed
+				sendEmbed(interaction, "Updated log channel.", `The log channel for \`${logTypeCategoryName}\` has been updated to <#${targetLogChannel.id}>. You will now receive logs for \`${logTypeCategoryName}\` in <#${targetLogChannel.id}>.`, WARNING);
+			} else {
+				// If the request was not successful, return an error
+				sendErrorResponse(interaction, `An error occurred while updating the log channel for \`${logTypeCategoryName}\`.`);
+			}
 
 		} else {
 			// If the request was not successful, return an error
-			sendErrorResponse(interaction, `An error occurred while setting the log channel for **${logTypeCategoryName}**.`);
+			sendEmbed(interaction, "Error", "An error occurred while setting the log channel.", ERROR);
 		}
-	} else if (logChannelResponse.status === 200) { // If the log channel for the logTypeCategory exists, update it
-
-		// Update the log channel for the logTypeCategory
-		const logChannelPostResponse = await postLogChannel(interaction.guild.id, logTypeCategory, targetLogChannel.id)
-
-		console.log(logChannelPostResponse)
-		// If the request was successful, return success message
-		if (logChannelPostResponse.status === 200) {
-			// Send the success embed
-			sendEmbed(interaction, "Updated log channel.", `The log channel for \`${logTypeCategoryName}\` has been updated to <#${targetLogChannel.id}>. You will now receive logs for \`${logTypeCategoryName}\` in <#${targetLogChannel.id}>.`, WARNING);
-		} else {
-			// If the request was not successful, return an error
-			sendErrorResponse(interaction, `An error occurred while updating the log channel for \`${logTypeCategoryName}\`.`);
-		}
-
-	} else {
-		// If the request was not successful, return an error
-		sendEmbed(interaction, "Error", "An error occurred while setting the log channel.", ERROR);
+	} catch (error) {
+		console.warn(`An error occurred occured while setting the log channel`);
+		console.error(error.message);
+		console.error(error.stack);
+		sendErrorResponse(interaction, "An error occurred while setting the log channel.");
 	}
 }
 
