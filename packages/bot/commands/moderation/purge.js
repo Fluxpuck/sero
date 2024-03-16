@@ -41,20 +41,27 @@ module.exports.run = async (client, interaction) => {
         }
 
         // Bulk delete the messages
-        if (messageCollection >= 1) {
-            interaction.channel.bulkDelete(messageCollection)
-                .then(() => {
-                    return interaction.reply({
-                        content: `Deleting ${messageCollection.size} messages ${targetUser ? `from ${targetUser.tag}` : ""}`,
-                        ephemeral: true,
-                    });
-                })
+        if (messageCollection.size >= 1) {
+
+            // Delete the messages from the channel
+            const deletedMessages = await interaction.channel.bulkDelete(messageCollection, true);
+
+            console.log("deletedMessages", deletedMessages)
+
+            // Return confirmation message to the user
+            interaction.reply({
+                content: `Deleted **${deletedMessages.size}** messages ${targetUser ? `from **${targetUser.tag}**` : ""}`,
+                ephemeral: true,
+            });
         }
 
         // Clear the messageCollection
         return messageCollection.clear();
 
     } catch (error) {
+
+        console.log(error)
+
         return interaction.reply({
             content: `${error.message}`,
             ephemeral: true
