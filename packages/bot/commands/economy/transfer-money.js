@@ -50,7 +50,7 @@ module.exports.run = async (client, interaction) => {
             })
         } else {
             interaction.reply({
-                content: `<@${targetUser.id}> has recieved **${transferAmount}** of your money!`,
+                content: `<@${targetUser.id}> has recieved **${transferAmount.toLocaleString()}** of your money!`,
                 ephemeral: false
             })
         }

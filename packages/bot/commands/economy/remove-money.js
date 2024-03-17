@@ -45,7 +45,7 @@ module.exports.run = async (client, interaction) => {
         const result = await postRequest(`/balance/${interaction.guildId}/${targetUser.id}`, { amount: -targetAmount });
         console.log(result.data)
         return interaction.reply({
-            content: `**${targetAmount.toString()}** coins were removed from <@${targetUser.id}>!`,
+            content: `**${targetAmount.toLocaleString()}** coins were removed from <@${targetUser.id}>!`,
             ephemeral: false
         })
     }
