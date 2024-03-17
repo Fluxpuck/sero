@@ -27,44 +27,38 @@ module.exports.props = {
 }
 
 module.exports.run = async (client, interaction) => {
-    try {
-        // Get User && Amount details from the interaction options
-        const targetUser = interaction.options.get("user")?.user
-        const targetAmount = interaction.options.get("amount").value;
 
-        // Fetch the messages based on user? and amount
-        const messageCollection = await fetchMessages(interaction, targetUser, targetAmount);
+    interaction.deferReply({ ephemeral: true });
 
-        // Check if the collection is not empty
-        if (messageCollection.size <= 0) {
-            throw new Error(`Oops! I couldn't find any messages ${targetUser ? `from ${targetUser.user.username}` : ""} to delete!`);
-        }
+    // Get User && Amount details from the interaction options
+    const targetUser = interaction.options.get("user")?.user
+    const targetAmount = interaction.options.get("amount").value;
+    console.log("targetUser", targetUser.tag, "targetAmount", targetAmount);
 
-        // Bulk delete the messages
-        if (messageCollection.size >= 1) {
+    // Fetch the messages based on user? and amount
+    const messageCollection = await fetchMessages(interaction, targetUser, targetAmount);
+    console.log("messageCollection", messageCollection.size);
 
-            // Delete the messages from the channel
-            const deletedMessages = await interaction.channel.bulkDelete(messageCollection, true);
+    // Check if the collection is not empty
+    if (messageCollection.size > 0) {
 
-            console.log("deletedMessages", deletedMessages)
+        // Delete the messages from the channel
+        const deletedMessages = await interaction.channel.bulkDelete(messageCollection, true);
+        console.log("deletedMessages", deletedMessages.size);
 
-            // Return confirmation message to the user
-            interaction.reply({
-                content: `Deleted **${deletedMessages.size}** messages ${targetUser ? `from **${targetUser.tag}**` : ""}`,
-                ephemeral: true,
-            });
-        }
+        // Return confirmation message to the user
+        interaction.editReply({
+            content: `Deleted **${deletedMessages.size}** messages ${targetUser ? `from **${targetUser.tag}**` : ""}`,
+            ephemeral: true,
+        });
 
-        // Clear the messageCollection
+        // Clear the message collection
         return messageCollection.clear();
 
-    } catch (error) {
-
-        console.log(error)
-
-        return interaction.reply({
-            content: `${error.message}`,
-            ephemeral: true
-        })
+    } else {
+        return interaction.editReply({
+            content: `Oops! I couldn't find any messages ${targetUser ? `from **${targetUser.tag}**` : ""} to delete!`,
+            ephemeral: true,
+        });
     }
 }

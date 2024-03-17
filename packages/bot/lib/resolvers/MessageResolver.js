@@ -18,35 +18,39 @@ module.exports = {
         // Construct a timestamp for two weeks ago
         const twoWeeksAgo = Date.now() - (14 * 24 * 60 * 60 * 1000);
 
+        // The remaining messages to fetch
+        let remainingLimit = limit;
+
         try {
-            // The remaining messages to fetch
-            let remainingLimit = limit;
 
             // Loop through the messages until the limit is reached
             while (remainingLimit > 0) {
 
-                // Filter out the messages by pinned and two weeks old
-                const options = { limit: Math.min(remainingLimit, 100), ...(lastMessageId ? { before: lastMessageId } : {}) };
+                // Set the fetch options and fetch the messages
+                const options = { limit: Math.min(remainingLimit, 10), ...(lastMessageId ? { before: lastMessageId } : {}) };
                 const fetchedMessages = await interaction.channel.messages.fetch(options);
 
                 // Break if there are no messages
                 if (!fetchedMessages.size) break;
 
-                let addedMessages = 0;
-                // Filter out the messages by pinned and two weeks old
+                // Initialize an array to store messages to add to the collection
+                let messagesToAdd = [];
+
+                // Process each fetched message
                 for (const [id, msg] of fetchedMessages) {
+                    // Check if the message meets the filtering criteria
                     if (!msg.pinned && msg.createdTimestamp > twoWeeksAgo && (!user || msg.author.id === user.id)) {
-                        // Add the message to the collection
-                        messageCollection.set(id, msg);
-                        // Increment the added messages
-                        addedMessages++;
-                        // Break if the limit is reached
-                        if (addedMessages >= remainingLimit) break;
+                        // Add the message to the array of messages to add
+                        messagesToAdd.push([id, msg]);
+                        // Decrement the remaining limit
+                        remainingLimit--;
+                        // Break if the limit has been reached
+                        if (remainingLimit <= 0) break;
                     }
                 }
 
-                // Update the remaining limit
-                remainingLimit -= addedMessages;
+                // Concatenate the array of messages to add to the collection
+                messageCollection = messageCollection.concat(messagesToAdd);
 
                 // If there are no messages, or the last message is older than two weeks ago, break
                 const lastMessage = fetchedMessages.last();
@@ -63,8 +67,8 @@ module.exports = {
             // Handle errors with detailed information
             console.error(`Error [MessageResolver, fetchMessages]:`, error);
 
-            // Return false if an error occurred
-            return false;
+            // Return empty collection
+            return messageCollection;
         }
     }
 };
