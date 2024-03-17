@@ -28,27 +28,28 @@ module.exports.props = {
 
 module.exports.run = async (client, interaction) => {
 
-    interaction.deferReply({ ephemeral: true });
-
     // Get User && Amount details from the interaction options
     const targetUser = interaction.options.get("user")?.user
     const targetAmount = interaction.options.get("amount").value;
-    console.log("targetUser", targetUser.tag, "targetAmount", targetAmount);
+
+    // Start the interaction reply
+    interaction.reply({
+        content: `*Deleting **${targetAmount}** messages${targetUser ? ` from **${targetUser.tag}**` : ""}...*`,
+        ephemeral: true
+    });
 
     // Fetch the messages based on user? and amount
     const messageCollection = await fetchMessages(interaction, targetUser, targetAmount);
-    console.log("messageCollection", messageCollection.size);
 
     // Check if the collection is not empty
     if (messageCollection.size > 0) {
 
         // Delete the messages from the channel
         const deletedMessages = await interaction.channel.bulkDelete(messageCollection, true);
-        console.log("deletedMessages", deletedMessages.size);
 
         // Return confirmation message to the user
         interaction.editReply({
-            content: `Deleted **${deletedMessages.size}** messages ${targetUser ? `from **${targetUser.tag}**` : ""}`,
+            content: `Deleted **${deletedMessages.size}** messages${targetUser ? ` from **${targetUser.tag}**` : ""}`,
             ephemeral: true,
         });
 
@@ -57,7 +58,7 @@ module.exports.run = async (client, interaction) => {
 
     } else {
         return interaction.editReply({
-            content: `Oops! I couldn't find any messages ${targetUser ? `from **${targetUser.tag}**` : ""} to delete!`,
+            content: `Oops! I couldn't find any messages${targetUser ? ` from **${targetUser.tag}**` : ""} to delete!`,
             ephemeral: true,
         });
     }
