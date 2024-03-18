@@ -1,3 +1,12 @@
+const LogTypes = {
+	'memberEvents': 'Member Events',
+	'emojiEvents': 'Emoji Events',
+	'roleEvents': 'Role Events',
+	'messageEvents': 'Message Events',
+	'stickerEvents': 'Sticker Events',
+	'inviteEvents': 'Invite Events'
+}
+
 /**
  * Returns the name of the event based on the event number.
  * @param {*} eventNumber - The event number to get the name of.
@@ -132,9 +141,35 @@ function getAuditActionName(eventNumber) {
     return moderationActionName[eventNumber] || "Unknown";
 };
 
+/**
+ * Returns the log type by key or value
+ * @param {*} logType - The key or value to check
+ * @returns - The log type
+ */
+function GetLogTypeByKeyOrValue(logType) {
+    // find the key from the value or the value from the key and return it as { key: value }
+    const entry = Object.entries(LogTypes).find(([key, value]) => key === logType || value === logType);
+    if (entry) {
+        return { [entry[0]]: entry[1] };
+    }
+    return null; // Return null if no match found
+}
+
+/**
+ * Returns the log type by key
+ * @param {*} logType - The key to check
+ * @returns - The log type
+ */
+function GetLogTypeByKey(logType) {
+    // return the value of the key
+    return LogTypes[logType];
+}
+
 module.exports = {
     getEventName,
     getEventCategory,
     checkModerationAction,
-    getAuditActionName
+    getAuditActionName,
+    GetLogTypeByKeyOrValue,
+    GetLogTypeByKey
 };
