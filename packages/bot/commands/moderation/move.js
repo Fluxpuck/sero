@@ -40,7 +40,8 @@ module.exports.run = async (client, interaction) => {
     const voiceStates = from.members;
     if (voiceStates.size === 0) {
         return interaction.reply({
-            content: "There are no members in the source channel."
+            content: "There are no members in the source channel.",
+            ephemeral: true
         })
     }
 
