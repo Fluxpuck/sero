@@ -42,51 +42,44 @@ module.exports.autocomplete = async (client, interaction) => {
 
 module.exports.run = async (client, interaction) => {
 
-	try {
-		// Get the logTypeCategory from the interaction options.
-		const logObject = await GetLogTypeByKeyOrValue(interaction.options.get("log-type").value);
+	// Get the logTypeCategory from the interaction options.
+	const logObject = await GetLogTypeByKeyOrValue(interaction.options.get("log-type").value);
 
-		// If the logTypeCategory is not valid, return an error
-		if (!logObject) {
-			return sendErrorResponse(interaction, ":x: The log type you provided is not valid.");
-		}
+	// If the logTypeCategory is not valid, return an error
+	if (!logObject) {
+		return sendErrorResponse(interaction, ":x: The log type you provided is not valid.");
+	}
 
-		const logTypeCategory = Object.keys(logObject)[0];
-		const logTypeCategoryName = Object.values(logObject)[0];
+	const logTypeCategory = Object.keys(logObject)[0];
+	const logTypeCategoryName = Object.values(logObject)[0];
 
-		// Send the request to check if the log channel exists
-		const logChannelResponse = await getRequest(`/logchannels/${interaction.guild.id}/${logTypeCategory}`);
+	// Send the request to check if the log channel exists
+	const logChannelResponse = await getRequest(`/logchannels/${interaction.guild.id}/${logTypeCategory}`);
 
-		// If there is no log channel for the logTypeCategory, create one
-		if (logChannelResponse.status === 404) {
+	// If there is no log channel for the logTypeCategory, create one
+	if (logChannelResponse.status === 404) {
 
-			// Send an embed saying that the log channel for the logTypeCategory does not exist
-			sendEmbed(interaction, `No log channel`, `> There is no channel set for logging \`${logTypeCategoryName}\`.`, ERROR);
+		// Send an embed saying that the log channel for the logTypeCategory does not exist
+		sendEmbed(interaction, `No log channel`, `> There is no channel set for logging \`${logTypeCategoryName}\`.`, ERROR);
 
-		} else if (logChannelResponse.status === 200) { // If the log channel for the logTypeCategory exists, update it
+	} else if (logChannelResponse.status === 200) { // If the log channel for the logTypeCategory exists, update it
 
-			// Update the log channel for the logTypeCategory
-			const logChannelDeleteResponse = await deleteRequest(`/logchannels/${interaction.guild.id}/${logTypeCategory}`);
+		// Update the log channel for the logTypeCategory
+		const logChannelDeleteResponse = await deleteRequest(`/logchannels/${interaction.guild.id}/${logTypeCategory}`);
 
-			console.log(logChannelDeleteResponse)
-			// If the request was successful, return success message
-			if (logChannelDeleteResponse.status === 200) {
-				// Send the success embed
-				sendEmbed(interaction, `Log channel removed`, `> Successfully removed the log channel for \`${logTypeCategoryName}\`.`, SUCCESS);
-			} else {
-				// If the request was not successful, return an error
-				sendErrorResponse(interaction, `An error occurred while trying to delete the log channel for \`${logTypeCategoryName}\`.`);
-			}
-
+		console.log(logChannelDeleteResponse)
+		// If the request was successful, return success message
+		if (logChannelDeleteResponse.status === 200) {
+			// Send the success embed
+			sendEmbed(interaction, `Log channel removed`, `> Successfully removed the log channel for \`${logTypeCategoryName}\`.`, SUCCESS);
 		} else {
 			// If the request was not successful, return an error
-			sendEmbed(interaction, "Error", "An error occurred while deleting the log channel.", ERROR);
+			sendErrorResponse(interaction, `An error occurred while trying to delete the log channel for \`${logTypeCategoryName}\`.`);
 		}
-	} catch (error) {
-		console.warn(`An error occurred occured while removing the log channel`);
-		console.error(error.message);
-		console.error(error.stack);
-		sendErrorResponse(interaction, "An error occurred while removing the log channel.");
+
+	} else {
+		// If the request was not successful, return an error
+		sendEmbed(interaction, "Error", "An error occurred while deleting the log channel.", ERROR);
 	}
 }
 
