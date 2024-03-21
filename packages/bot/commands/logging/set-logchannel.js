@@ -56,7 +56,10 @@ module.exports.run = async (client, interaction) => {
 
 	// If the logTypeCategory is not valid, return an error
 	if (!logObject) {
-		return sendErrorResponse(interaction, ":x: The log type you provided is not valid.");
+		return interaction.reply({
+			content: ':x: The log type you provided is not valid.',
+			ephemeral: true,
+		});
 	}
 
 	// Get the logTypeCategory and logTypeCategoryName from the logObject
@@ -79,7 +82,10 @@ module.exports.run = async (client, interaction) => {
 
 		} else {
 			// If the request was not successful, return an error
-			sendErrorResponse(interaction, `An error occurred while setting the log channel for **${logTypeCategoryName}**.`);
+			return interaction.reply({
+				content: `An error occurred while setting the log channel for **${logTypeCategoryName}**.`,
+				ephemeral: true,
+			});
 		}
 	} else if (logChannelResponse.status === 200) { // If the log channel for the logTypeCategory exists, update it
 
@@ -92,7 +98,10 @@ module.exports.run = async (client, interaction) => {
 			sendEmbed(interaction, "Updated log channel.", `The log channel for \`${logTypeCategoryName}\` has been updated to <#${targetLogChannel.id}>. You will now receive logs for \`${logTypeCategoryName}\` in <#${targetLogChannel.id}>.`, WARNING);
 		} else {
 			// If the request was not successful, return an error
-			sendErrorResponse(interaction, `An error occurred while updating the log channel for \`${logTypeCategoryName}\`.`);
+			return interaction.reply({
+				content: `An error occurred while updating the log channel for \`${logTypeCategoryName}\`.`,
+				ephemeral: true,
+			})
 		}
 
 	} else {
@@ -127,13 +136,5 @@ const sendEmbed = (interaction, embedTitle, embedDescription, color) => {
 
 	return interaction.reply({
 		embeds: [embed],
-	});
-};
-
-// Send an error response message
-const sendErrorResponse = (interaction, response) => {
-	return interaction.reply({
-		content: response,
-		ephemeral: true
 	});
 };

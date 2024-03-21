@@ -47,7 +47,10 @@ module.exports.run = async (client, interaction) => {
 
 	// If the logTypeCategory is not valid, return an error
 	if (!logObject) {
-		return sendErrorResponse(interaction, ":x: The log type you provided is not valid.");
+		return interaction.reply({
+			content: `The log-type you provided is not valid`,
+			ephemeral: true,
+		});
 	}
 
 	const logTypeCategory = Object.keys(logObject)[0];
@@ -74,7 +77,10 @@ module.exports.run = async (client, interaction) => {
 			sendEmbed(interaction, `Log channel removed`, `> Successfully removed the log channel for \`${logTypeCategoryName}\`.`, SUCCESS);
 		} else {
 			// If the request was not successful, return an error
-			sendErrorResponse(interaction, `An error occurred while trying to delete the log channel for \`${logTypeCategoryName}\`.`);
+			return interaction.reply({
+				content: `An error occurred while trying to delete the log channel for \`${logTypeCategoryName}\`.`,
+				ephemeral: true,
+			})
 		}
 
 	} else {
@@ -99,13 +105,5 @@ const sendEmbed = (interaction, embedTitle, embedDescription, color) => {
 
 	return interaction.reply({
 		embeds: [embed],
-	});
-};
-
-// Send an error response message
-const sendErrorResponse = (interaction, response) => {
-	return interaction.reply({
-		content: response,
-		ephemeral: true
 	});
 };
