@@ -44,7 +44,7 @@ async function checkDatabaseConnection(sequelize) {
         });
 
     } catch (error) {
-        console.log(error.message);
+        console.error(error.message);
     }
 }
 
