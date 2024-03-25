@@ -27,7 +27,7 @@ module.exports = async (client, message) => {
                 setTimeout(() => {
                     msg.delete();
                 }, 4000); // 4 seconds
-            });
+            }).catch(e => { });
 
         }
         // Return if the user mentions themselves.
