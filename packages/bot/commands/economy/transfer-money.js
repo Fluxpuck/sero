@@ -38,9 +38,9 @@ module.exports.run = async (client, interaction) => {
     if (client.cooldowns.has(cooldownKey) === false) {
 
         // Remove balance from the author
-        const removeResult = await postRequest(`/balance/${interaction.guildId}/${interaction.user.id}`, { amount: -targetAmount })
+        const removeResult = await postRequest(`/balance/${interaction.guildId}/${interaction.user.id}`, { amount: -transferAmount })
         // Add balance to the target
-        const addResult = await postRequest(`/balance/${interaction.guildId}/${targetUser.id}`, { amount: +targetAmount });
+        const addResult = await postRequest(`/balance/${interaction.guildId}/${targetUser.id}`, { amount: +transferAmount });
 
         // If either request was not successful, return an error
         if (removeResult.status !== 200 || addResult.status !== 200) {
