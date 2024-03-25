@@ -54,7 +54,15 @@ router.get("/:guildId/:userId", async (req, res, next) => {
         }
 
         // Return the results
-        return res.status(200).json(result);
+        res.status(200).json(result);
+
+
+        /**
+         * @TEST - Post Message to RabbitMQ
+         * @description This is a test code to post a message to RabbitMQ
+         */
+        const { publishToRabbitMQ } = require('../database/rabbitmq');
+        publishToRabbitMQ('user_queue', 'Hello World', { userId: userId });
 
     } catch (error) {
         next(error);
