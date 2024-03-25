@@ -36,7 +36,7 @@ module.exports.run = async (client, interaction) => {
     interaction.reply({
         content: `*Deleting **${targetAmount}** messages${targetUser ? ` from **${targetUser.tag}**` : ""}...*`,
         ephemeral: true
-    });
+    }).catch(e => { });
 
     // Fetch the messages based on user? and amount
     const messageCollection = await fetchMessages(interaction, targetUser, targetAmount);
@@ -51,7 +51,7 @@ module.exports.run = async (client, interaction) => {
         interaction.editReply({
             content: `Deleted **${deletedMessages.size}** messages${targetUser ? ` from **${targetUser.tag}**` : ""}`,
             ephemeral: true,
-        });
+        }).catch(e => { });
 
         // Clear the message collection
         return messageCollection.clear();
