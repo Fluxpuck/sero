@@ -5,6 +5,12 @@ const { RABBIT_HOST, RABBIT_LOCAL } = process.env;
 // General environment variables
 const { NODE_ENV } = process.env;
 
+// Define an enum for allowed queue names
+const QueueNames = {
+    GUILD_QUEUE: 'guild_queue',
+    USER_QUEUE: 'user_queue',
+};
+
 class RabbitMQConnection {
     constructor() {
         // Ensure only one instance of RabbitMQConnection exists
@@ -34,15 +40,18 @@ class RabbitMQConnection {
 
 
 // Function to publish message to RabbitMQ
-async function publishToRabbitMQ(message, data) {
+async function publishToRabbitMQ(queueName, message, data) {
     try {
-        // Establish RabbitMQ connection
+
+        // Validate queue-name against the enum list
+        if (!Object.values(QueueNames).includes(queueName)) {
+            throw new Error(`Invalid queue name: '${queueName}'`);
+        }
+
+        // Establish RabbitMQ connection && create channel
         const rabbitMQConnection = new RabbitMQConnection();
         const connection = await rabbitMQConnection.connect();
-
-        // Create channel
         const channel = await connection.createChannel();
-        const queueName = 'sero_message_queue';
 
         // Ensure queue for messages
         await channel.assertQueue(queueName, { durable: false });
@@ -61,12 +70,8 @@ async function publishToRabbitMQ(message, data) {
             console.log('Message sent to RabbitMQ:', payload);
         }
 
-        // Close channel
-        await channel.close();
     } catch (error) {
-        // Handle error
         console.error('Error publishing message to RabbitMQ:', error);
-        throw error; // Rethrow the error to handle it in the caller function
     }
 }
 
@@ -75,12 +80,9 @@ async function checkRabbitMQConnection() {
     try {
         // Attempt to establish RabbitMQ connection
         const rabbitMQConnection = new RabbitMQConnection();
-        const connection = await rabbitMQConnection.connect().catch(error => {
+        await rabbitMQConnection.connect().catch(error => {
             throw new Error(`Error connecting to RabbitMQ: ${error.message}`);
         });
-
-        // Close the connection (for testing purposes)
-        await connection.close();
 
         // Return true if connection is successful
         return true;
@@ -92,5 +94,6 @@ async function checkRabbitMQConnection() {
 
 module.exports = {
     publishToRabbitMQ,
-    checkRabbitMQConnection
+    checkRabbitMQConnection,
+    QueueNames
 };
