@@ -6,7 +6,7 @@ const { RABBIT_HOST, RABBIT_LOCAL } = process.env;
 const { NODE_ENV } = process.env;
 
 // Define an enum for allowed queue names
-const QueueNames = {
+const ChannelNames = {
     GUILD_QUEUE: 'guild_queue',
     USER_QUEUE: 'user_queue',
 };
@@ -40,12 +40,12 @@ class RabbitMQConnection {
 
 
 // Function to publish message to RabbitMQ
-async function publishToRabbitMQ(queueName, message, data) {
+async function publishToRabbitMQ(channelName, message, data) {
     try {
 
         // Validate queue-name against the enum list
-        if (!Object.values(QueueNames).includes(queueName)) {
-            throw new Error(`Invalid queue name: '${queueName}'`);
+        if (!Object.values(ChannelNames).includes(channelName)) {
+            throw new Error(`Invalid queue name: '${channelName}'`);
         }
 
         // Establish RabbitMQ connection && create channel
@@ -54,16 +54,17 @@ async function publishToRabbitMQ(queueName, message, data) {
         const channel = await connection.createChannel();
 
         // Ensure queue for messages
-        await channel.assertQueue(queueName, { durable: false });
+        await channel.assertExchange(channelName, 'direct', { durable: false });
 
         // Construct message payload
         const payload = {
             message: message,
-            data: data
+            data: data,
+            timestamp: new Date()
         };
 
         // Send message to RabbitMQ
-        await channel.sendToQueue(queueName, Buffer.from(JSON.stringify(payload)));
+        await channel.publish(channelName, '', Buffer.from(JSON.stringify(payload)));
 
         // Log message to console if in development mode
         if (NODE_ENV === 'development') {
@@ -95,5 +96,5 @@ async function checkRabbitMQConnection() {
 module.exports = {
     publishToRabbitMQ,
     checkRabbitMQConnection,
-    QueueNames
+    ChannelNames
 };
