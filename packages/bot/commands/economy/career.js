@@ -1,3 +1,6 @@
+const { createCustomEmbed } = require("../../assets/embed");
+const { getRequest } = require('../../database/connection')
+
 module.exports.props = {
     commandName: "career",
     description: "Get information on the balance and career of a user.",
@@ -8,7 +11,7 @@ module.exports.props = {
             {
                 name: "user",
                 type: 6,
-                description: "Select a user to get th balance of",
+                description: "Select a user to get information from.",
                 required: false
             }
         ],
@@ -17,14 +20,46 @@ module.exports.props = {
 }
 
 module.exports.run = async (client, interaction) => {
+    // => Fetch the user and get all required information from the database.
+    const targetUser = interaction.options.getUser("user")?.user || interaction.user;
+    const result = await getRequest(`/career/${interaction.guildId}/${targetUser.id}`)
+    const getBalance = await getRequest(`/balance/${interaction.guildId}/${targetUser.id}`)
+    const getSnapshot = await getRequest(`/career/snap/${interaction.guildId}/${targetUser.id}`)
 
-    /*
-    1. Fetch the user's career, job, career snapshots and balance
-    2. Create an embed with the user's career featuring:
-        - job
-        - career level
-        - total job earnings
-        - total balance
-    */
+    const { balance } = getBalance.data;
+    const { jobId, job, level } = result.data; 
+    const { name } = job;
+    const { income } = getSnapshot.data;
 
+    // => Build the embed
+    const embed = createCustomEmbed({
+        thumbnail: targetUser.displayAvatarURL({ dynamic: false }),
+        title: `${targetUser.username}'s Career Info (DEMO)`,
+        fields: [
+            {
+                name: `Job Name`,
+                value: `${name.toString()}`,
+                inline: true 
+            },
+            {
+                name: `Total Balance`,
+                value: `${balance.toString()}`,
+                inline: true
+            },
+            {
+                name: `Total Income`,
+                value: `${income.toString() ?? `N/A`}`,
+                inline: true
+            },
+            {
+                name: `Career Level`,
+                value: `${level.toString()}`,
+                inline: true
+            }
+    
+        ]
+    })
+
+    // => Send the embed
+    interaction.reply({ embeds: [embed] })
 }

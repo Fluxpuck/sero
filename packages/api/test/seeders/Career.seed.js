@@ -4,6 +4,11 @@ module.exports.run = async () => {
 
     const userData = [
         {
+            userId: "1042558234566860810",
+            jobId: 8,
+            guildId: "660103319557111808"
+        },
+        {
             userId: "377842014290575361", // ZAKARIAX
             jobId: 3,
             guildId: "660103319557111808"
@@ -19,7 +24,7 @@ module.exports.run = async () => {
             guildId: "660103319557111808"
         },
         {
-            userId: "1138091030713995344",
+            userId: "113809103071399344",
             jobId: 9,
             guildId: "660103319557111808",
         }
