@@ -43,17 +43,17 @@ module.exports.run = async (client, interaction) => {
             },
             {
                 name: `Total Balance`,
-                value: `${balance.toString()}`,
+                value: `${balance.toString()} coins`,
                 inline: true
             },
             {
                 name: `Total Income`,
-                value: `${income.toString() ?? `N/A`}`,
+                value: `${income.toString() ?? `N/A`} coins`,
                 inline: true
             },
             {
                 name: `Career Level`,
-                value: `${level.toString()}`,
+                value: `Level ${level.toString()}`,
                 inline: true
             }
     
