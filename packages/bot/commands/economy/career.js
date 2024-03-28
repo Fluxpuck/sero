@@ -34,7 +34,7 @@ module.exports.run = async (client, interaction) => {
     // => Build the embed
     const embed = createCustomEmbed({
         thumbnail: targetUser.displayAvatarURL({ dynamic: false }),
-        title: `${targetUser.username}'s Career Info (DEMO)`,
+        title: `${targetUser.username}'s Career Info`,
         fields: [
             {
                 name: `Job Name`,
