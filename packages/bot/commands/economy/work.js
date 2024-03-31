@@ -186,7 +186,7 @@ module.exports.run = async (client, interaction) => {
         );
 
         // Update the user's career
-        const updateUserCareer = await postRequest(`/career/${interaction.guild.id}/${interaction.user.id}`, { jobId: selectedJob.jobId, level: 1 });
+        const updateUserCareer = await postRequest(`/career/${interaction.guild.id}/${interaction.user.id}`, { jobId: selectedJob.jobId, level: 1, time: Date.now() });
 
         // If the user's career was updated successfully, return a message
         if (updateUserCareer.status === 200) {

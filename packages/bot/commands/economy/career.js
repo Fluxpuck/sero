@@ -1,3 +1,4 @@
+const { unix } = require("moment");
 const { createCustomEmbed } = require("../../assets/embed");
 const { getRequest } = require('../../database/connection')
 
@@ -27,7 +28,7 @@ module.exports.run = async (client, interaction) => {
     const getSnapshot = await getRequest(`/career/snap/${interaction.guildId}/${targetUser.id}`)
 
     const { balance } = getBalance.data;
-    const { jobId, job, level } = result.data; 
+    const { jobId, job, level, time } = result.data; 
     const { name } = job;
     const { income } = getSnapshot.data;
 
@@ -39,6 +40,11 @@ module.exports.run = async (client, interaction) => {
             {
                 name: `Job Name`,
                 value: `${name.toString()}`,
+                inline: true 
+            },
+            {
+                name: `Time in Job`,
+                value: `Since <t:${unixTimestamp(time)}:d> (<t:${unixTimestamp(time)}:R>)`,
                 inline: true 
             },
             {
@@ -62,4 +68,10 @@ module.exports.run = async (client, interaction) => {
 
     // => Send the embed
     interaction.reply({ embeds: [embed] })
+}
+
+
+function unixTimestamp(time) {
+    const timestamp = Math.floor(time / 1000);
+    return timestamp.toString();
 }

@@ -66,7 +66,7 @@ router.get("/jobs", async (req, res, next) => {
 });
 
 // Setup Attributes for this Route
-const jobProperties = ['jobId'];
+const jobProperties = ['jobId', 'time'];
 
 /**
  * @router POST api/career/:guildId/:userId
@@ -79,7 +79,7 @@ router.post("/:guildId/:userId", async (req, res, next) => {
         // Get the data from the request body && create object
         const { body, params } = req;
         const { guildId, userId } = params;
-        const { jobId } = body;
+        const { jobId, time } = body;
 
         // Check if the request body has all required properties
         if (!body || Object.keys(body).length === 0 || jobProperties.some(prop => body[prop] === undefined)) {
@@ -91,7 +91,8 @@ router.post("/:guildId/:userId", async (req, res, next) => {
             userId: userId,
             guildId: guildId,
             jobId: jobId,
-            level: 1
+            level: 1,
+            time: time
         }
 
         // Create or Update the request
