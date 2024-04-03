@@ -4,7 +4,7 @@ const { getRequest } = require('../../database/connection')
 
 module.exports.props = {
     commandName: "career",
-    description: "Get information on the balance and career of a user.",
+    description: "Get information on the career of a user.",
     usage: "/career [user]",
     interaction: {
         type: 1,
@@ -12,7 +12,7 @@ module.exports.props = {
             {
                 name: "user",
                 type: 6,
-                description: "Select a user to get information from.",
+                description: "Select a user to get their career info of",
                 required: false
             }
         ],
@@ -21,52 +21,59 @@ module.exports.props = {
 }
 
 module.exports.run = async (client, interaction) => {
-    // => Fetch the user and get all required information from the database.
+    // Get User details from the interaction options
     const targetUser = interaction.options.getUser("user")?.user || interaction.user;
-    const result = await getRequest(`/career/${interaction.guildId}/${targetUser.id}`)
-    const getBalance = await getRequest(`/balance/${interaction.guildId}/${targetUser.id}`)
-    const getSnapshot = await getRequest(`/career/snap/${interaction.guildId}/${targetUser.id}`)
 
-    const { balance } = getBalance.data;
-    const { jobId, job, level, time } = result.data; 
-    const { name } = job;
-    const { income } = getSnapshot.data;
+    // Get the user's career && career snapshots
+    const userCareer = await getRequest(`/career/${interaction.guildId}/${targetUser.id}`);
+    const careerIncome = await getRequest(`/career/income/${interaction.guildId}/${targetUser.id}`)
 
-    // => Build the embed
-    const embed = createCustomEmbed({
+    // If the (required) request was not successful, return an error
+    if (userCareer.status !== 200) {
+        return interaction.reply({
+            content: `Uh oh! The user ${targetUser.username} has no career yet.`,
+            ephemeral: true
+        })
+    }
+
+    // Set the data from the requests
+    const { level, updatedAt } = userCareer.data;
+    const { name } = userCareer.data.job;
+    const startCareerDate = new Date(updatedAt);
+    const totalIncome = careerIncome.data.careerIncome || 0;
+
+    // Create an embed to display the user's career
+    const messageEmbed = createCustomEmbed({
         thumbnail: targetUser.displayAvatarURL({ dynamic: false }),
         title: `${targetUser.username}'s Career Info`,
         fields: [
             {
                 name: `Job Name`,
                 value: `${name.toString()}`,
-                inline: true 
+                inline: true
             },
             {
                 name: `Time in Job`,
-                value: `Since <t:${unixTimestamp(time)}:d> (<t:${unixTimestamp(time)}:R>)`,
-                inline: true 
+                value: `Since <t:${startCareerDate.getTime()}:d> (<t:${startCareerDate.getTime()}:R>)`,
+                inline: true
             },
             {
                 name: `Total Income`,
-                value: `${income.toString() ?? `N/A`} coins`,
+                value: `${totalIncome.toLocaleString() ?? `N/A`} coins`,
                 inline: true
             },
             {
                 name: `Career Level`,
-                value: `Level ${level.toString()}`,
+                value: `Level ${level.toLocaleString()}`,
                 inline: true
             }
-    
+
         ]
     })
 
-    // => Send the embed
-    interaction.reply({ embeds: [embed] })
-}
-
-
-function unixTimestamp(time) {
-    const timestamp = Math.floor(time / 1000);
-    return timestamp.toString();
+    // Reply with the messageEmbed
+    return interaction.reply({
+        embeds: [messageEmbed],
+        ephemeral: false
+    })
 }
