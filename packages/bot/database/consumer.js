@@ -28,6 +28,16 @@ async function consumeQueue() {
 
             // EXECUTE CODE HERE...
 
+            /* Need to do:
+            
+            
+            
+            
+            */
+
+
+
+
         }, { noAck: true });
     } catch (error) {
         console.error('Error consuming queue:', error);
