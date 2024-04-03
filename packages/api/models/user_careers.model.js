@@ -30,11 +30,6 @@ module.exports = sequelize => {
             type: DataTypes.INTEGER,
             allowNull: false,
         },
-        time: {
-            type: String,
-            allowNull: false
-
-        },
         level: {
             type: DataTypes.INTEGER,
             allowNull: false,
