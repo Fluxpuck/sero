@@ -10,7 +10,8 @@ router.get("/", async (req, res, next) => {
     try {
 
         const message = 'Hello from the API!';
-        sendToQueue(message);
+        const payload = { key: 'value' };
+        sendToQueue(message, payload);
         res.send('Message sent to RabbitMQ');
 
     } catch (error) {
