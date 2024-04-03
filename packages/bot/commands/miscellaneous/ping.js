@@ -15,9 +15,7 @@ module.exports.run = async (client, interaction) => {
     interaction.editReply(`Pong! → ${message.createdTimestamp - interaction.createdTimestamp}ms`);
 
 
-    // TEST CODE
-    const user = getRequest(`/users/${interaction.guild.id}/${interaction.user.id}`);
-
-
+    // TEST RABBITMQ 
+    getRequest(`/rabbit`);
 
 }

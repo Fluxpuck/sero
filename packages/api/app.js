@@ -43,17 +43,12 @@ require("dotenv").config({ path: join(__dirname, '.', 'config', '.env') });
     await sequelize.sync();
     const t1 = performance.now();
 
-    // → Create RabbitMQ Connection
-    let { checkRabbitMQConnection } = require("./database/rabbitmq");
-    const rabbitMQConnected = await checkRabbitMQConnection();
-
     // → Start server
     await app.listen(port, () => {
         return console.log(`
     RESTFUL API - Startup details:
     > ${new Date().toUTCString()}
     > Database Synced in ${Math.round(t1 - t0)} milliseconds
-    > RabbitMQ ${rabbitMQConnected ? 'Connected' : 'Disconnected'}
     > Ready on http://localhost:${port}
         `)
     });

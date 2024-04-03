@@ -18,20 +18,16 @@ client.version = require('./package.json').version
 const events = require('./utils/EventManager');
 events.run(client); //run the events
 
-// → Create RabbitMQ Connection
-let { checkRabbitMQConnection } = require("./database/rabbitmq");
-const rabbitMQConnected = checkRabbitMQConnection();
-
 // → Login to Discord API
 client.login(process.env.NODE_ENV === "production"
-    ? process.env.PRODUCTION_TOKEN
-    : process.env.DEVELOPMENT_TOKEN).then(() => {
+  ? process.env.PRODUCTION_TOKEN
+  : process.env.DEVELOPMENT_TOKEN).then(() => {
 
-        // → Displays a welcome message in the console 
-        // to indicate that the bot has successfully started up.
-        console.log(`
+    // → Displays a welcome message in the console 
+    // to indicate that the bot has successfully started up.
+    console.log(`
       _______ _______ _______   _______ 
-     |       |       |    _  \\ |      |
+     |       |       |    _  \\ |       |
      |  _____|    ___|   | |  ||   _   |
      | |_____|   |___|   |_| /_|  | |  |
      |_____  |    ___|    __   |  |_|  |
@@ -40,8 +36,10 @@ client.login(process.env.NODE_ENV === "production"
 
       Discord bot - Startup details:
        > ${new Date().toUTCString()}
-       > RabbitMQ ${rabbitMQConnected ? 'Connected' : 'Disconnected'}
        > ${client.user.tag}
       `);
+  });
 
-    });
+// → Listen to RabbitMQ events
+const { consumeQueue } = require('./database/consumer');
+consumeQueue();
