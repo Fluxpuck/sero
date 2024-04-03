@@ -1,6 +1,6 @@
-const { unix } = require("moment");
 const { createCustomEmbed } = require("../../assets/embed");
-const { getRequest } = require('../../database/connection')
+const { getRequest } = require('../../database/connection');
+const { unixTimestamp } = require("../../lib/helpers/TimeDateHelpers/timeHelper");
 
 module.exports.props = {
     commandName: "career",
@@ -39,8 +39,8 @@ module.exports.run = async (client, interaction) => {
     // Set the data from the requests
     const { level, updatedAt } = userCareer.data;
     const { name } = userCareer.data.job;
-    const startCareerDate = new Date(updatedAt);
     const totalIncome = careerIncome.data.careerIncome || 0;
+    const startCareerDate = new Date(updatedAt);
 
     // Create an embed to display the user's career
     const messageEmbed = createCustomEmbed({
@@ -54,8 +54,12 @@ module.exports.run = async (client, interaction) => {
             },
             {
                 name: `Time in Job`,
-                value: `Since <t:${startCareerDate.getTime()}:d> (<t:${startCareerDate.getTime()}:R>)`,
+                value: `Since <t:${unixTimestamp(startCareerDate)}:d> (<t:${unixTimestamp(startCareerDate)}:R>)`,
                 inline: true
+            },
+            {
+                name: "\t", // Add a blank field
+                value: "\t"
             },
             {
                 name: `Total Income`,
@@ -67,7 +71,6 @@ module.exports.run = async (client, interaction) => {
                 value: `Level ${level.toLocaleString()}`,
                 inline: true
             }
-
         ]
     })
 
