@@ -10,24 +10,17 @@ module.exports = async (client, payload) => {
 
     console.log("guildMemberRank.js: ", payload);
 
-    /** LEVEL ROUTE
-     * @one - Add a function that will check the ranks of the guild
-     * @two - If the member is higher than the level of a rank, 
-     * @three Add this rank to the member && @four Send a RabbitMQ message with
-     * @five - (the guildId, userId, level and (highest)rank)
+    /**
+     * @TODO - Send message on level.js route when someone reaches a new rank
+     * @api - Add a beforeSave hook that will check the (guild)ranks of the user
+     * @api - If the member is higher than the level of a (guild)rank, 
+     * @api - Add this rank to the member in the database
+     * @api - And, sent a RabbitMQ message with (the guildId, userId, level and (highest)rank)
+     * 
+     * @bot - Get the (highest)rank of the member
+     * @bot - Get all (guild)rank roles lower than the member's rank
+     * @bot - Find the member and the roles in the guild
+     * @bot - Give the member the rank-roles
      */
-
-    /** THIS EVENT
-     * @one - Get the member_levels and rank-roles from the API
-     * @two - Filter all rank-roles with lower level than the member's level
-     * @three - Find the member and the roles in the guild
-     * @four - Give the member the rank-roles
-     */
-
-
-
-
-
-
 
 }
