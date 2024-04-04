@@ -4,7 +4,7 @@ const EVENT_CODES = require('../config/EventCodes');
 // RabbitMQ environment variables
 const { NODE_ENV, RABBIT_HOST, RABBIT_LOCAL } = process.env;
 
-async function sendToQueue(event_code = "", data) {
+async function sendToQueue(event_code = EVENT_CODES.UNKNOWN, data) {
     try {
         // Connect to RabbitMQ
         const connection = await amqp.connect(
@@ -15,15 +15,10 @@ async function sendToQueue(event_code = "", data) {
         const channel = await connection.createChannel();
         const queue = 'messages';
 
-        // Validate the event_code
-        if (!event_code || !(event_code in EVENT_CODES)) {
-            event_code = EVENT_CODES.UNKNOWN;
-        }
-
         // Construct message payload
         const payload = {
             code: event_code,
-            data: event_code !== EVENT_CODES.UNKNOWN ?? data,
+            data: data,
             timestamp: new Date()
         };
 

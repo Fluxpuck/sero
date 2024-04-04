@@ -1,9 +1,11 @@
 const amqp = require('amqplib');
+const EVENT_CODES = require('../config/EventCodes');
+const eventEnum = require('../config/eventEnum');
 
 // RabbitMQ environment variables
 const { RABBIT_HOST, RABBIT_LOCAL, NODE_ENV } = process.env;
 
-async function consumeQueue() {
+async function consumeQueue(client) {
     try {
         // Connect to RabbitMQ
         const connection = await amqp.connect(
@@ -26,17 +28,17 @@ async function consumeQueue() {
                 console.log("Received message: ", payload);
             }
 
-            // EXECUTE CODE HERE...
+            // Execute the correct event
+            // based on the event code
+            switch (payload.code) {
+                case EVENT_CODES.USER_RANK_UPDATE:
+                    // Set the data from the payload
+                    // and emit the event to the client
+                    const { data } = payload;
+                    return client.emit(eventEnum.GUILD_MEMBER_RANK, data);
+            }
 
-            /* Need to do:
-            
-            
-            
-            
-            */
-
-
-
+            return;
 
         }, { noAck: true });
     } catch (error) {

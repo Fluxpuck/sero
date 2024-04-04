@@ -42,4 +42,4 @@ client.login(process.env.NODE_ENV === "production"
 
 // → Listen to RabbitMQ events
 const { consumeQueue } = require('./database/consumer');
-consumeQueue();
+consumeQueue(client);
