@@ -22,6 +22,8 @@ services:
   api:
     build:
       context: ./packages/api
+    environment:
+      NODE_ENV: production
     env_file:
       - ./packages/api/config/.env
     restart: unless-stopped
@@ -35,6 +37,8 @@ services:
       context: ./packages/bot
     env_file:
       - ./packages/bot/config/.env
+    environment:
+      NODE_ENV: production
     restart: unless-stopped
     depends_on:
       - api
