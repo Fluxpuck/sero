@@ -20,7 +20,7 @@ module.exports.props = {
                 type: 3,
                 required: true,
                 autocomplete: true,
-                maxLength: 100
+                maxLength: 250,
             },
         ],
         defaultMemberPermissions: ['ModerateMembers'],
@@ -67,8 +67,8 @@ module.exports.run = async (client, interaction) => {
     return member.send(privateMessage)
         .then(() => {
             return interaction.reply({
-                content: `Successfully warned <@${member.user.id}> with the following message:\n> ${privateMessage}`,
-                ephemeral: false,
+                content: `You successfully warned <@${member.user.id}> with the following message:\n> ${privateMessage}`,
+                ephemeral: true,
             });
         })
         .catch(err => {

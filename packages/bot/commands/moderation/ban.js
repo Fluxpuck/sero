@@ -64,8 +64,8 @@ module.exports.run = async (client, interaction) => {
     member.ban({ reason: violationReason, days: null })
         .then(() => {
             return interaction.reply({
-                content: `Successfully banned **${member.user.username}** (${member.user.id}) for:\n> ${violationReason}`,
-                ephemeral: false,
+                content: `You successfully banned **${member.user.username}** (${member.user.id}) for:\n> ${violationReason}`,
+                ephemeral: true,
             });
         })
         .catch(err => {

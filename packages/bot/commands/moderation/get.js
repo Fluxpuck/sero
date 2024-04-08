@@ -28,7 +28,11 @@ module.exports.run = async (client, interaction, AuditLogs = []) => {
     const targetUser = interaction.options.get("user").user;
 
     // Fetch the user by userId
-    const member = await interaction.guild.members.fetch(targetUser.id)
+    const member = await interaction.guild.members.fetch(targetUser.id);
+    if (!member) return interaction.reply({
+        content: "User not found in this server.",
+        ephemeral: true
+    });
 
     // Check if the member has AuditLogs
     const memberLogs = await getRequest(`/logs/${interaction.guildId}/${targetUser.id}`);

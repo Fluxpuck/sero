@@ -2,10 +2,7 @@ const eventEnum = require('../config/eventEnum');
 
 module.exports = async (client, interaction) => {
     // Return if guild is not active!
-    if (!interaction.guild.active) return interaction.reply({
-        content: `*This bot has not been activated in this guild yet!*`,
-        ephemeral: true,
-    });;
+    if (!interaction.guild.active) return;
 
     try {
         // Check if the interaction has an autocomplete function
@@ -30,11 +27,6 @@ module.exports = async (client, interaction) => {
 
     } catch (error) {
         // Handle errors with detailed information
-        console.error(`Error in command execution for "${interaction.commandName}":`, error);
-
-        return interaction.reply({
-            content: `*There was an error while executing the command "${interaction.commandName}"*\n${error.message}`,
-            ephemeral: true,
-        });
+        return console.error(`Error "${interaction.commandName}":`, error);
     }
 }

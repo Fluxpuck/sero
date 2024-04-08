@@ -19,7 +19,7 @@ module.exports.run = async (client, interaction) => {
   const snapshotResult = await getRequest(`/career/snap/${interaction.guild.id}/${interaction.user.id}`);
 
   // If no snapshot, or the snapshot is older than 1 day - 24 hours, continue
-  if (snapshotResult.status != 200 || isTimestampFromToday(snapshotResult.createdAt) == false) {
+  if (snapshotResult.status != 200 || isTimestampFromToday(snapshotResult?.data.createdAt) == false) {
 
     // Fetch the user's career (job)
     const userCareerResult = await getRequest(`/career/${interaction.guild.id}/${interaction.user.id}`);
@@ -128,10 +128,11 @@ module.exports.run = async (client, interaction) => {
 
         // Calculate the income based on the user's career
         const income = calculateDailyIncome(job.wage, job.raise, DEFAULT_CAREER_LEVEL);
+        const salary = job.wage.toLocaleString();
 
         return {
           name: `${job.emoji} - ${job.name}`,
-          value: `*${job.description}*\nSalary: \`$${job.wage}\`\nDaily Income (base): \`$${income}\`\nRaise (per level): \`${job.raise}%\``,
+          value: `*${job.description}*\nSalary: \`$${salary}\`\nDaily Income (base): \`$${income}\`\nRaise (per level): \`${job.raise}%\``,
           inline: false
         }
       })
@@ -168,6 +169,7 @@ module.exports.run = async (client, interaction) => {
         // Get the selected job
         const selectedJob = randomJobData.find(job => job.jobId == selectedButton);
         const income = calculateBaseIncome(selectedJob.wage);
+        const salary = selectedJob.wage.toLocaleString();
 
         // Update embed Footer && Fields
         messageEmbed.setTitle(`You have selected a job!`);
@@ -177,7 +179,7 @@ module.exports.run = async (client, interaction) => {
           [
             {
               name: `${selectedJob.emoji} - ${selectedJob.name}`,
-              value: `*${selectedJob.description}*\nSalary: \`$${selectedJob.wage}\`\nDaily Income (base): \`$${income}\`\nRaise (per level): \`${selectedJob.raise}%\``,
+              value: `*${selectedJob.description}*\nSalary: \`$${salary}\`\nDaily Income (base): \`$${income}\`\nRaise (per level): \`${selectedJob.raise}%\``,
               inline: false
             }
           ]

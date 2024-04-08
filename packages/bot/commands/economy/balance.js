@@ -24,15 +24,18 @@ module.exports.run = async (client, interaction) => {
 
     // Get the user's the experience && check if the user has experience.
     const result = await getRequest(`/balance/${interaction.guildId}/${targetUser.id}`);
-    const { balance } = result.data;
+    const balance = result.data.balance || 0;
 
-    // Setup Embed:
-    const embed = createCustomEmbed({
+    // Create an embed to display the user's balance
+    const messageEmbed = createCustomEmbed({
         title: `${targetUser.username}'s balance`,
-        description: `:coin: ${balance.toString()} coin${balance > 1 ? "s" : ""}`
+        description: `:coin: ${balance.toLocaleString()} coin${balance > 1 ? "s" : ""}`
     })
 
+    // Reply with the messageEmbed
     return interaction.reply({
-        embeds: [embed]
+        embeds: [messageEmbed],
+        ephemeral: false
     })
+
 }

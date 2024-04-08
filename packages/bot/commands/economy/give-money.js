@@ -42,7 +42,7 @@ module.exports.run = async (client, interaction) => {
         })
     } else {
         return interaction.reply({
-            content: `<@${targetUser.id}> has recieved **${targetAmount}** coins!`,
+            content: `<@${targetUser.id}> has recieved **${targetAmount.toLocaleString()}** coins!`,
             ephemeral: false
         })
     }

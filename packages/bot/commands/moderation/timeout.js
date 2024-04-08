@@ -93,8 +93,8 @@ module.exports.run = async (client, interaction) => {
     member.timeout(duration, `${targetReason}`)
         .then(() => {
             return interaction.reply({
-                content: `Successfully muted <@${member.user.id}> for:\n> ${targetReason}`,
-                ephemeral: false,
+                content: `You successfully muted <@${member.user.id}> for:\n> ${targetReason}`,
+                ephemeral: true,
             });
         })
         .catch(err => {

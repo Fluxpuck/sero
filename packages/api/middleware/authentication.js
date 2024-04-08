@@ -4,7 +4,7 @@ module.exports = {
 
     authenticate(req, res, next) {
 
-        //get token from request header
+        // Get token from request header
         const userToken = req.headers.authorization;
         if (!userToken) next(new CreateError(404, 'No authorization key provided'));
 

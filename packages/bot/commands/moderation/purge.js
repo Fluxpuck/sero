@@ -27,35 +27,38 @@ module.exports.props = {
 }
 
 module.exports.run = async (client, interaction) => {
+
     // Get User && Amount details from the interaction options
     const targetUser = interaction.options.get("user")?.user
     const targetAmount = interaction.options.get("amount").value;
 
+    // Start the interaction reply
+    interaction.reply({
+        content: `*Deleting **${targetAmount}** messages${targetUser ? ` from **${targetUser.tag}**` : ""}...*`,
+        ephemeral: true
+    }).catch(e => { });
+
     // Fetch the messages based on user? and amount
     const messageCollection = await fetchMessages(interaction, targetUser, targetAmount);
 
-    // TODO - Check why purge doesnt work correctly recursively
-    console.log("messageCollection", messageCollection.size)
-
     // Check if the collection is not empty
     if (messageCollection.size > 0) {
-        // Delete the messages
-        return interaction.channel.bulkDelete(messageCollection)
-            .then(() => {
-                return interaction.reply({
-                    content: `Deleting ${messageCollection.size} messages ${targetUser ? `from ${targetUser.tag}` : ""}`,
-                    ephemeral: true,
-                });
-            })
-            .catch(err => {
-                return interaction.reply({
-                    content: `Could not delete messages ${targetUser ? `from ${targetUser.tag}` : ""}!`,
-                    ephemeral: true,
-                });
-            });
+
+        // Delete the messages from the channel
+        const deletedMessages = await interaction.channel.bulkDelete(messageCollection, true);
+
+        // Return confirmation message to the user
+        interaction.editReply({
+            content: `Deleted **${deletedMessages.size}** messages${targetUser ? ` from **${targetUser.tag}**` : ""}`,
+            ephemeral: true,
+        }).catch(e => { });
+
+        // Clear the message collection
+        return messageCollection.clear();
+
     } else {
-        return interaction.reply({
-            content: `Oops! I couldn't find any messages ${targetUser ? `from ${targetUser.user.username}` : ""} to delete!`,
+        return interaction.editReply({
+            content: `Oops! I couldn't find any messages${targetUser ? ` from **${targetUser.tag}**` : ""} to delete!`,
             ephemeral: true,
         });
     }

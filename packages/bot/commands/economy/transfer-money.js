@@ -38,9 +38,9 @@ module.exports.run = async (client, interaction) => {
     if (client.cooldowns.has(cooldownKey) === false) {
 
         // Remove balance from the author
-        const removeResult = await postRequest(`/balance/${interaction.guildId}/${interaction.user.id}`, { amount: -targetAmount })
+        const removeResult = await postRequest(`/balance/${interaction.guildId}/${interaction.user.id}`, { amount: -transferAmount })
         // Add balance to the target
-        const addResult = await postRequest(`/balance/${interaction.guildId}/${targetUser.id}`, { amount: +targetAmount });
+        const addResult = await postRequest(`/balance/${interaction.guildId}/${targetUser.id}`, { amount: +transferAmount });
 
         // If either request was not successful, return an error
         if (removeResult.status !== 200 || addResult.status !== 200) {
@@ -50,16 +50,16 @@ module.exports.run = async (client, interaction) => {
             })
         } else {
             interaction.reply({
-                content: `<@${targetUser.id}> has recieved **${transferAmount}** of your money!`,
+                content: `<@${targetUser.id}> has recieved **${transferAmount.toLocaleString()}** of your money!`,
                 ephemeral: false
             })
         }
 
         // Add the user to the cooldowns Collection
-        return client.cooldowns.set(cooldownKey, interaction, 24 * 60 * 60) // 3600 minutes 
+        return client.cooldowns.set(cooldownKey, interaction, 12 * 60 * 60) // 3600 minutes 
     } else {
         return interaction.reply({
-            content: `You can only transfer experience once per day!`,
+            content: `You can only transfer experience once per 12-hours!`,
             ephemeral: true
         })
     }

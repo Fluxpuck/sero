@@ -56,10 +56,10 @@ module.exports.run = async (client, interaction) => {
         }
 
         // Add the user to the cooldowns Collection
-        return client.cooldowns.set(cooldownKey, interaction, 24 * 60 * 60) // 3600 minutes 
+        return client.cooldowns.set(cooldownKey, interaction, 12 * 60 * 60) // 3600 minutes 
     } else {
         return interaction.reply({
-            content: `You can only transfer experience once per day!`,
+            content: `You can only transfer experience once per 12-hours!`,
             ephemeral: true
         })
     }

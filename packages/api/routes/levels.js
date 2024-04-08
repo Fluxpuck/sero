@@ -144,6 +144,48 @@ router.post('/:guildId/:userId', async (req, res, next) => {
 });
 
 /**
+ * @router POST api/levels/claim_reward/:guildId/:userId
+ * @description Claim the one-time User Experience Reward
+ */
+router.post('/claim_reward/:guildId/:userId', async (req, res, next) => {
+  const t = await sequelize.transaction();
+  try {
+    const { body, params } = req;
+    const { guildId, userId } = params;
+
+    // Get levels from the user
+    const levels = await UserLevels.findOne({
+      where: {
+        userId: userId,
+        guildId: guildId,
+      },
+      transaction: t,
+    });
+
+    if (!levels) {
+      throw new CreateError(404, 'This user has no levels yet');
+    };
+
+    // Set the users reward_claimed to true
+    levels.reward_claimed = true;
+
+    // Update the level
+    const request = await levels.save({ transaction: t });
+    res.status(200).json({
+      message: `User ${guildId}/${userId} has claimed the one-time experience reward.`,
+      data: request
+    });
+
+    //commit transaction
+    return t.commit();
+
+  } catch (error) {
+    await t.rollback();
+    next(error);
+  }
+});
+
+/**
  * @router POST api/levels/add/:guildId/:userId
  * @description Add experience to a User
  */

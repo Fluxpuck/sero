@@ -14,7 +14,7 @@ module.exports = async (client, message) => {
 
     // Check if the author is away
     const awayResult = await getRequest(`/away/${message.guildId}/${memberId}`);
-    if (awayResult.status == 200) {
+    if (awayResult?.status == 200) {
 
         // If the user is the same as the author, remove away from database
         if (memberId === message.author.id) {
@@ -27,7 +27,7 @@ module.exports = async (client, message) => {
                 setTimeout(() => {
                     msg.delete();
                 }, 4000); // 4 seconds
-            });
+            }).catch(e => { });
 
         }
         // Return if the user mentions themselves.

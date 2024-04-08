@@ -2,15 +2,13 @@ const eventEnum = require("../config/eventEnum");
 const { postRequest, getRequest } = require("../database/connection");
 
 module.exports = async (client, message) => {
-    if (!message.guild.active) return
+    if (!message.guild.active) return;
 
     // If the message is from a bot, return
     if (message.author.bot) return;
 
-    /**
-     * Check if the user is away.
-     */
-    client.emit(eventEnum.GUILD_MEMBER_AWAY, message)
+    // Check if the user is away.
+    client.emit(eventEnum.GUILD_MEMBER_AWAY, message);
 
     /**
      * Check if the message author, the User, is is stored
@@ -26,17 +24,17 @@ module.exports = async (client, message) => {
         const getUserResult = await getRequest(`/users/${message.guildId}/${message.author.id}`);
 
         // If the User is not in the Database, store it
-        if (getUserResult.status == 404) {
+        if (!getUserResult || getUserResult.status == 404) {
             const saveUserResult = await postRequest(`/users/${message.guildId}/${message.author.id}`, {
                 userName: message.author.username,
             });
 
-            if (saveUserResult.status == 200) {
+            if (saveUserResult?.status == 200) {
                 userStorage = saveUserResult.data.data;
             };
         }
 
-        if (getUserResult.status == 200) {
+        if (getUserResult?.status == 200) {
             userStorage = getUserResult.data;
         }
 
@@ -76,7 +74,7 @@ module.exports = async (client, message) => {
             client.emit(eventEnum.GUILD_MEMBER_LEVEL, message, oldMember, newMember);
 
             // Add the user to the cooldowns Collection
-            return client.cooldowns.set(cooldownKey, message, 60)
+            return client.cooldowns.set(cooldownKey, message, 60);
         }
     }
 }

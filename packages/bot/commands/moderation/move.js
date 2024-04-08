@@ -8,7 +8,7 @@ module.exports.props = {
             {
                 name: "voice-channel",
                 description: "Select the voice channel of which you want users to move from.",
-                type: 7, // CHANNEL
+                type: 7,
                 required: true,
                 channelTypes: [2]
             },
@@ -23,10 +23,7 @@ module.exports.props = {
     },
     defaultMemberPermissions: ['MoveMembers'],
 };
-/**
- * 
- * @param {CommandInteraction} interaction 
- */
+
 module.exports.run = async (client, interaction) => {
     const firstChannel = interaction.options.get("voice-channel").value;
     const targetChannel = interaction.options.get("target-channel").value;
@@ -43,7 +40,8 @@ module.exports.run = async (client, interaction) => {
     const voiceStates = from.members;
     if (voiceStates.size === 0) {
         return interaction.reply({
-            content: "There are no members in the source channel."
+            content: "There are no members in the source channel.",
+            ephemeral: true
         })
     }
 
