@@ -14,8 +14,4 @@ module.exports.run = async (client, interaction) => {
     const message = await interaction.reply({ content: 'Pinging...', fetchReply: true });
     interaction.editReply(`Pong! → ${message.createdTimestamp - interaction.createdTimestamp}ms`);
 
-
-    // TEST RABBITMQ 
-    getRequest(`/rabbit`);
-
 }
