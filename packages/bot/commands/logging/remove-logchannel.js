@@ -1,9 +1,7 @@
 const { getRequest, deleteRequest } = require("../../database/connection")
 const { createCustomEmbed } = require("../../assets/embed")
 const { formatExpression } = require("../../lib/helpers/StringHelpers/stringHelper")
-const { LOGGING_CATEGORIES } = require("../../assets/logging")
-const { ERROR, WARNING, SUCCESS } = require("../../assets/embed-colors")
-const { GetLogTypeByKeyOrValue } = require("../../config/LogTypes")
+const { LOGGING_CATEGORIES } = require("../../assets/log-categories")
 
 module.exports.props = {
 	commandName: "remove-logchannel",
@@ -42,68 +40,40 @@ module.exports.autocomplete = async (client, interaction) => {
 
 module.exports.run = async (client, interaction) => {
 
-	// Get the logTypeCategory from the interaction options.
-	const logObject = await GetLogTypeByKeyOrValue(interaction.options.get("log-type").value);
+	// Get logTypeCategory from the interaction options
+	const targetLogCategory = interaction.options.get("log-type").value;
 
 	// If the logTypeCategory is not valid, return an error
-	if (!logObject) {
+	if (!Object.values(LOGGING_CATEGORIES).includes(targetLogCategory)) {
 		return interaction.reply({
-			content: `The log-type you provided is not valid`,
-			ephemeral: true,
-		});
+			content: `Oops! The log-type you provided is not valid`,
+			ephemeral: true
+		})
 	}
 
-	const logTypeCategory = Object.keys(logObject)[0];
-	const logTypeCategoryName = Object.values(logObject)[0];
+	// Check if the target logTypeCategory is set in the database
+	const logChannelResult = await getRequest(`/logchannels/${interaction.guild.id}/${targetLogCategory}`);
+	if (logChannelResult.status == 200) {
 
-	// Send the request to check if the log channel exists
-	const logChannelResponse = await getRequest(`/logchannels/${interaction.guild.id}/${logTypeCategory}`);
-
-	// If there is no log channel for the logTypeCategory, create one
-	if (logChannelResponse.status === 404) {
-
-		// Send an embed saying that the log channel for the logTypeCategory does not exist
-		sendEmbed(interaction, `No log channel`, `> There is no channel set for logging \`${logTypeCategoryName}\`.`, ERROR);
-
-	} else if (logChannelResponse.status === 200) { // If the log channel for the logTypeCategory exists, update it
-
-		// Update the log channel for the logTypeCategory
-		const logChannelDeleteResponse = await deleteRequest(`/logchannels/${interaction.guild.id}/${logTypeCategory}`);
-
-		console.log(logChannelDeleteResponse)
-		// If the request was successful, return success message
-		if (logChannelDeleteResponse.status === 200) {
-			// Send the success embed
-			sendEmbed(interaction, `Log channel removed`, `> Successfully removed the log channel for \`${logTypeCategoryName}\`.`, SUCCESS);
-		} else {
-			// If the request was not successful, return an error
+		// Remove the log channel for the logTypeCategory
+		const deleteResponse = await deleteRequest(`/logchannels/${interaction.guild.id}/${targetLogCategory}`);
+		if (deleteResponse.status == 200) {
 			return interaction.reply({
-				content: `An error occurred while trying to delete the log channel for \`${logTypeCategoryName}\`.`,
-				ephemeral: true,
+				content: `The log-channel for \`${targetLogCategory}\` has been removed.`,
+				ephemeral: true
+			})
+		} else {
+			return interaction.reply({
+				content: `Something went wrong while removing the log-channel \`${targetLogCategory}\`.`,
+				ephemeral: true
 			})
 		}
 
 	} else {
-		// If the request was not successful, return an error
-		sendEmbed(interaction, "Error", "An error occurred while deleting the log channel.", ERROR);
+		return interaction.reply({
+			content: "Cannot remove the log-channel for the specified log type.",
+			ephemeral: true
+		})
 	}
+
 }
-
-
-// Send a success embed
-const sendEmbed = (interaction, embedTitle, embedDescription, color) => {
-	const embed = createCustomEmbed({
-		title: embedTitle,
-		description: embedDescription,
-		timestamp: new Date(),
-		color: color,
-		footer: {
-			text: `Requested by ${interaction.user.tag}`,
-			iconURL: interaction.user.displayAvatarURL({ dynamic: true })
-		}
-	});
-
-	return interaction.reply({
-		embeds: [embed],
-	});
-};
