@@ -1,10 +1,10 @@
 const LogTypes = {
-	'memberEvents': 'Member Events',
-	'emojiEvents': 'Emoji Events',
-	'roleEvents': 'Role Events',
-	'messageEvents': 'Message Events',
-	'stickerEvents': 'Sticker Events',
-	'inviteEvents': 'Invite Events'
+    'memberEvents': 'Member Events',
+    'emojiEvents': 'Emoji Events',
+    'roleEvents': 'Role Events',
+    'messageEvents': 'Message Events',
+    'stickerEvents': 'Sticker Events',
+    'inviteEvents': 'Invite Events'
 }
 
 /**
