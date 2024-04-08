@@ -7,7 +7,6 @@ module.exports = async (client, payload) => {
         // if (!payload.hasOwnProperty(attribute)) return;
     }
 
-
     console.log("guildMemberRank.js: ", payload);
 
     /**
