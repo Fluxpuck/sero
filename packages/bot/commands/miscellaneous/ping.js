@@ -1,5 +1,3 @@
-const { getRequest } = require("../../database/connection");
-
 module.exports.props = {
     commandName: "ping",
     description: "Check the client latency",
