@@ -91,7 +91,7 @@ router.post("/:guildId/:userId", async (req, res, next) => {
             userId: userId,
             guildId: guildId,
             jobId: jobId,
-            level: 1
+            level: 1,
         }
 
         // Create or Update the request
@@ -186,6 +186,42 @@ router.delete("/:guildId/:userId", async (req, res, next) => {
 
         // Return the results
         return res.status(200).json(`The career for ${guildId}/${userId} was deleted successfully`);
+
+    } catch (error) {
+        next(error);
+    }
+});
+
+/**
+ * @router GET api/career/snap/income/:guildId/:userId
+ * @description Get the total career income from specific user from a specific guild
+ */
+router.get("/income/:guildId/:userId", async (req, res, next) => {
+    try {
+        const { guildId, userId } = req.params;
+
+        // Fetch career data related to the guildId and userId
+        const result = await Work_snapshot.findAll({
+            where: {
+                guildId: guildId,
+                userId: userId
+            },
+            order: [['createdAt', 'DESC']],
+        });
+
+        // If no results found, trigger error
+        if (!result) {
+            throw new CreateError(404, 'No career snapshot for this userId in this of guildId');
+        }
+
+        // Calculate total income
+        let careerIncome = 0;
+        result.forEach(snap => {
+            careerIncome += snap.income;
+        });
+
+        // Return the total income
+        return res.status(200).json({ careerIncome: careerIncome });
 
     } catch (error) {
         next(error);

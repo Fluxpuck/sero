@@ -158,7 +158,16 @@ module.exports = {
         } else {
             return `${timeDifferenceInMinutes} minute${timeDifferenceInMinutes === 1 ? '' : 's'} ago`;
         }
-    }
+    },
 
+    /**
+     * Get the time in milliseconds from a given timestamp
+     * @param {*} time - The timestamp to convert
+     * @returns - The time in milliseconds
+     */
+    unixTimestamp: (time) => {
+        const timestamp = Math.floor(time / 1000);
+        return timestamp.toString();
+    }
 
 };
