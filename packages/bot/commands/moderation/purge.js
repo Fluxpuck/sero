@@ -1,4 +1,4 @@
-const { fetchMessages } = require("../../lib/resolvers/MessageResolver");
+const { fetchMessages } = require("../../lib/resolvers/messageResolver");
 
 module.exports.props = {
     commandName: "purge",

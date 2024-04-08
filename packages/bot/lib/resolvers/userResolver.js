@@ -4,7 +4,7 @@
  */
 
 const { Guild } = require('discord.js');
-const { regEscape } = require('../helpers/StringHelpers/StringHelper');
+const { regEscape } = require('../helpers/StringHelpers/stringHelper');
 
 module.exports = {
 
