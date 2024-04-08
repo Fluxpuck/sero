@@ -57,14 +57,14 @@ module.exports.run = async (client, interaction) => {
 
 		// Remove the log channel for the logTypeCategory
 		const deleteResponse = await deleteRequest(`/logchannels/${interaction.guild.id}/${targetLogCategory}`);
-		if (deleteResponse.status == 200) {
+		if (deleteResponse.status !== 200) {
 			return interaction.reply({
-				content: `The log-channel for \`${targetLogCategory}\` has been removed.`,
+				content: `Something went wrong while removing the log-channel \`${targetLogCategory}\`.`,
 				ephemeral: true
 			})
 		} else {
 			return interaction.reply({
-				content: `Something went wrong while removing the log-channel \`${targetLogCategory}\`.`,
+				content: `The log-channel for \`${targetLogCategory}\` has been removed.`,
 				ephemeral: true
 			})
 		}
