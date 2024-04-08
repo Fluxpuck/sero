@@ -2,7 +2,7 @@ const { ActionRowBuilder, ButtonBuilder, ComponentType, ButtonStyle } = require(
 const { createCustomEmbed } = require("../../assets/embed");
 const { JOB_MESSAGES } = require("../../assets/job-messages");
 const { postRequest, getRequest } = require("../../database/connection");
-const { calculateDailyIncome, calculateBaseIncome } = require("../../lib/helpers/EconomyHelpers/EconomyHelper");
+const { calculateDailyIncome, calculateBaseIncome } = require("../../lib/helpers/EconomyHelpers/economyHelper");
 const { isFromYesterdayOrOlder, getTimeUntilTomorrow, isTimestampFromToday } = require("../../lib/helpers/TimeDateHelpers/timeHelper");
 
 module.exports.props = {
