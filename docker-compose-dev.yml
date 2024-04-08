@@ -17,6 +17,13 @@ services:
     volumes:
       - postgresql-data:/var/lib/postgresql-15/data
 
+  # RabbitMQ
+  rabbitmq:
+    image: rabbitmq:3-management
+    ports:
+      - "5673:5672" # Map port 5673 on the host to port 5672 in the container
+      - "15673:15672" # Map port 15673 on the host to port 15672 in the container
+
 # Persistent Data Volumes
 volumes:
   postgresql-data:

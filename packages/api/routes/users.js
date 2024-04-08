@@ -54,7 +54,7 @@ router.get("/:guildId/:userId", async (req, res, next) => {
         }
 
         // Return the results
-        return res.status(200).json(result);
+        res.status(200).json(result);
 
     } catch (error) {
         next(error);
