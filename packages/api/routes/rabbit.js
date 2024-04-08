@@ -11,6 +11,10 @@ const EVENT_CODES = require('../config/EventCodes');
 router.get("/", async (req, res, next) => {
     try {
 
+        // Send a message to RabbitMQ
+        // This is an example of how to send a message to RabbitMQ...
+        // Should be removed later
+
         const event_code = EVENT_CODES.USER_RANK_UPDATE;
         const payload = { key: 'value' };
         sendToQueue(event_code, payload);
