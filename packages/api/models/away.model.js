@@ -35,6 +35,10 @@ module.exports = sequelize => {
             type: DataTypes.DATE,
             allowNull: true,
         },
+        message: {
+            type: DataTypes.STRING,
+            allowNull: true,
+        },
     }, {
         sequelize,
         modelName: 'away',
