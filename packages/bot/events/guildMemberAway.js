@@ -50,6 +50,7 @@ module.exports = async (client, message) => {
                     name: `${messageMention ? messageMention.username : message.author.username} is currently away...`,
                     iconURL: messageMention ? messageMention.avatarURL() : message.author.avatarURL()
                 },
+                ...awayResult.data.message && { description: `${awayResult.data.message}` }, // Conditionally add the description
                 footer: {
                     text: `${timeDifference}`,
                 }
