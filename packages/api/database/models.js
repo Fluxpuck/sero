@@ -11,7 +11,7 @@ const models = {
     Away: require('../models/away.model')(sequelize),
     Jobs: require('../models/jobs.model')(sequelize),
     Messages: require('../models/messages.model')(sequelize),
-    LevelRewards: require('../models/level_rewards.model')(sequelize),
+    LevelRanks: require('../models/level_ranks.model')(sequelize),
     LogChannels: require('../models/log_channels.model')(sequelize),
     Logs: require('../models/logs.model')(sequelize),
     Work_snapshot: require('../models/work_snapshot.model')(sequelize),

@@ -1,6 +1,6 @@
 const { Model, DataTypes } = require('sequelize');
 
-class LevelRewards extends Model {
+class LevelRanks extends Model {
     static associate(models) {
         this.hasMany(models.Levels, { foreignKey: 'level' })
         this.belongsTo(models.Guild, { foreignKey: 'guildId' })
@@ -8,7 +8,7 @@ class LevelRewards extends Model {
 }
 
 module.exports = sequelize => {
-    LevelRewards.init({
+    LevelRanks.init({
         rankId: {
             type: DataTypes.INTEGER,
             primaryKey: true,
@@ -35,12 +35,12 @@ module.exports = sequelize => {
         },
     }, {
         sequelize,
-        modelName: 'level_rewards',
+        modelName: 'level_ranks',
         timestamps: true,
         updatedAt: true,
         createdAt: true
     });
 
-    return LevelRewards;
+    return LevelRanks;
 }
 
