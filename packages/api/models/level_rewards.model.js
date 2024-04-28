@@ -9,7 +9,7 @@ class LevelRewards extends Model {
 
 module.exports = sequelize => {
     LevelRewards.init({
-        level: {
+        rankId: {
             type: DataTypes.INTEGER,
             primaryKey: true,
             allowNull: false,
@@ -22,10 +22,16 @@ module.exports = sequelize => {
                 is: /^\d{17,20}$/ // Discord Snowflake
             }
         },
-        reward: {
-            type: DataTypes.JSON,
+        level: {
+            type: DataTypes.INTEGER,
+            allowNull: false,
+        },
+        roleId: {
+            type: DataTypes.BIGINT,
             allowNull: true,
-            defaultValue: {},
+            validate: {
+                is: /^\d{17,20}$/ // Discord Snowflake
+            }
         },
     }, {
         sequelize,

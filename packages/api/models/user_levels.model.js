@@ -37,6 +37,13 @@ module.exports = sequelize => {
             defaultValue: 0,
             min: 0
         },
+        rank: {
+            type: DataTypes.INTEGER,
+            allowNull: false,
+            defaultValue: 1,
+            min: 1,
+            max: 100
+        },
         currentLevelExp: {
             type: DataTypes.INTEGER,
             allowNull: false,
@@ -87,6 +94,9 @@ module.exports = sequelize => {
             limit: 1
         });
 
+        // if there is no previous or next level, return the userLevel as is
+        if (!previousLevel || !nextLevel) return userLevel;
+
         // Update the userLevel data
         userLevel.level = previousLevel ? previousLevel.level : 1;
         userLevel.currentLevelExp = previousLevel ? previousLevel.experience : 0;
@@ -96,22 +106,49 @@ module.exports = sequelize => {
         return userLevel;
     };
 
+    const updateRank = async (userLevel) => {
+
+        const { LevelRewards } = require('../database/models');
+
+        const userRank = await LevelRewards.findOne({
+            where: {
+                guildId: userLevel.guildId,
+                level: userLevel.level
+            }
+        });
+
+        // if there is no level Reward, return the userLevel as is
+        if (!userRank) return userLevel;
+
+        // Update the userLevel data
+        userLevel.rank = userRank.rankId;
+
+        return userLevel;
+    };
+
     UserLevels.beforeSave(async (userLevel, options) => {
         // Check if the level needs to be updated
         const newLevel = await updateLevels(userLevel);
-        if (
+        if ( // if any of the level information has changed
             userLevel.level !== newLevel.level ||
             userLevel.currentLevelExp !== newLevel.currentLevelExp ||
             userLevel.nextLevelExp !== newLevel.nextLevelExp ||
             userLevel.remainingExp !== newLevel.remainingExp
-        ) {
-            // Set the new level information
+        ) { // Set the new level information
             userLevel.set({
                 level: newLevel.level,
                 currentLevelExp: newLevel.currentLevelExp,
                 nextLevelExp: newLevel.nextLevelExp,
                 remainingExp: newLevel.remainingExp
             });
+
+            // Check if the rank needs to be updated
+            const newRank = await updateRank(userLevel);
+            if (userLevel.rank !== newRank.rank) {
+                userLevel.set({
+                    rank: newRank.rank
+                });
+            }
 
             // Save the changes to the database
             await userLevel.save();
