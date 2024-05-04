@@ -84,8 +84,7 @@ router.post("/:guildId/:userId", async (req, res, next) => {
     const updateData = {
       userId: userId,
       guildId: guildId,
-      duration: duration,
-      message: body?.message || null
+      duration: duration
     }
 
     // Check if the user is already away
