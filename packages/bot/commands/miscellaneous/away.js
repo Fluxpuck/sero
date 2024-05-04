@@ -12,7 +12,7 @@ module.exports.props = {
             {
                 name: "time",
                 type: 10,
-                description: "The amount (in minutes) of time you want to be away for (defaults to 5 minutes)",
+                description: "The amount (in minutes) of time you want to be away for (default is 5 minutes)",
                 required: false,
                 minValue: 5,
                 maxValue: 720,
@@ -33,14 +33,15 @@ module.exports.props = {
 
 module.exports.autocomplete = async (client, interaction) => {
     const focusedReason = interaction.options.getFocused(true);
+
     if (focusedReason.name === "time") {
         defaultTimes = [
-            { name: "5 minutes", value: "5" },
             { name: "10 minutes", value: "10" },
-            { name: "20 minutes", value: "20" },
             { name: "30 minutes", value: "30" },
             { name: "1 hour", value: "60" },
-            { name: "2 hours", value: "120" }
+            { name: "3 hours", value: "180" },
+            { name: "6 hours", value: "360" },
+            { name: "12 hours", value: "720" },
         ];
         if (focusedReason.value) {
             const filteredTimes = defaultTimes.filter(time => time.name.toLowerCase().includes(focusedReason.value.toLowerCase()));
@@ -50,6 +51,7 @@ module.exports.autocomplete = async (client, interaction) => {
         await interaction.respond(defaultTimes);
         return;
     }
+
     if (focusedReason.name === "message") {
         const reasons = Object.keys(AWAY_PREREASONS).map(reason =>
             ({ name: formatExpression(reason), value: AWAY_PREREASONS[reason] })
@@ -68,7 +70,7 @@ module.exports.run = async (client, interaction) => {
     const messageOption = interaction.options.get("message")?.value;
 
     // Give the user the experience
-    const result = await postRequest(`/away/${interaction.guildId}/${interaction.user.id}`, { duration: timeInMinutes, message: messageOption});
+    const result = await postRequest(`/away/${interaction.guildId}/${interaction.user.id}`, { duration: timeInMinutes, message: messageOption });
 
     // If the request was not successful, return an error
     if (result.status !== 200) {
@@ -77,10 +79,10 @@ module.exports.run = async (client, interaction) => {
             ephemeral: true
         })
     } else {
-        var content = `<@${interaction.user.id}> will be away for **${timeInMinutes}** minutes!`;
+        let content = `<@${interaction.user.id}> will be away for **${timeInMinutes}** minutes!`;
         if (interaction.options.get("message")) {
             const reason = interaction.options.get("message")?.value;
-            content += `\n Reason: **${reason}**`;
+            content += `> **${reason}**`;
         }
         return interaction.reply({
             content: content,
