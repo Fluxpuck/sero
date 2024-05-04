@@ -1,5 +1,5 @@
 # Use a Node.js base image
-FROM node:latest
+FROM node:20
 
 # Set the working directory inside the container
 WORKDIR /usr/src/app/packages/bot
