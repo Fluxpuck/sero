@@ -45,14 +45,14 @@ const MUTE_PREREASONS = {
 }
 
 const AWAY_PREREASONS = {
-    LUNCH: "Having lunch",
-    DINNER: "Having (a lovely) dinner",
-    MEETING: "In a Meeting right now",
-    WORK: "Busy at work",
-    SCHOOL: "At school",
-    STUDY: "Studying",
-    SLEEP: "Sleeping",
-    BREAK: "Taking a break",
+    LUNCH: "Having lunch!",
+    DINNER: "Having (a lovely) dinner!",
+    MEETING: "In a Meeting right now.",
+    WORK: "Busy at work.",
+    SCHOOL: "At school...",
+    STUDY: "Studying...",
+    SLEEP: "Sleeping. Zzzz...",
+    BREAK: "Taking a break.",
     AFK: "AFK"
 }
 
