@@ -82,7 +82,7 @@ module.exports.run = async (client, interaction) => {
         let content = `<@${interaction.user.id}> will be away for **${timeInMinutes}** minutes!`;
         if (interaction.options.get("message")) {
             const reason = interaction.options.get("message")?.value;
-            content += `> **${reason}**`;
+            content += `\n> **${reason}**`;
         }
         return interaction.reply({
             content: content,
