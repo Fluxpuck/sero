@@ -1,41 +1,39 @@
+const { getRequest } = require('../../database/connection')
 const { ActionRowBuilder, ComponentType } = require("discord.js");
+const { createCustomEmbed } = require("../../assets/embed")
 const ClientButtonsEnum = require("../../assets/embed-buttons");
-const { createCustomEmbed } = require("../../assets/embed");
 const { chunk } = require("../../lib/helpers/MathHelpers/arrayHelper");
-const { getRequest } = require("../../database/connection");
-
 module.exports.props = {
-    commandName: "leaderboard",
-    description: "Check the leaderboard for the guild",
-    usage: "/leaderboard",
+    commandName: "balance-board",
+    description: "Get the balance leaderboard of the server.",
+    usage: "/economy",
     interaction: {},
     defaultMemberPermissions: ['SendMessages'],
 }
 
 module.exports.run = async (client, interaction, leaderboard = []) => {
-
-    // Get all levels for a specific guild from the database
-    const result = await getRequest(`/levels/${interaction.guildId}`);
+    // Fetch all balances.
+    const result = await getRequest(`/balance/${interaction.guildId}`);
     if (result.status === 200) {
-        leaderboard = result.data
+        leaderboard = result.data;
     }
 
     // If status code is 404, return an error
     if (result.status === 404) {
         return interaction.reply({
-            content: `Uh oh! There are no users on the leaderboard yet!`,
+            content: `Oops! There is no one on the \`\`balance\`\` leaderboard yet!`,
             ephemeral: true
         })
-    } else if (result.status !== 200) { // If the status code is not 200, return an error that something went wrong
+    } else if (result.status !== 200) {
         return interaction.reply({
-            content: "Oops! Something went wrong while trying to fetch the leaderboard!",
+            content: `Oops! Something went wrong while trying to fetch the leaderboard!`,
             ephemeral: true
         })
     }
 
     // Setup embed description
-    const leaderboardValues = leaderboard.map((level, index) => {
-        const user = level.user;
+    const leaderboardValues = leaderboard.map((balance, index) => {
+        const user = balance.user;
 
         // Setup the Ranking
         const rankings = ["🥇", "🥈", "🥉"];
@@ -43,7 +41,7 @@ module.exports.run = async (client, interaction, leaderboard = []) => {
 
         // Construct the leaderboard fields
         const leaderboardTitle = `${ranking} \`${user.userName}\``
-        const leaderboardValue = `*Level ${level.level} / ${level.experience} EXP*`
+        const leaderboardValue = `:coin: *${balance.balance} coin(s)*`
         return {
             name: leaderboardTitle,
             value: leaderboardValue,
@@ -52,7 +50,7 @@ module.exports.run = async (client, interaction, leaderboard = []) => {
     });
 
     // Slice the leaderboard in chunks of 10
-    const leaderboardPages = chunk(leaderboardValues, 10);
+    const leaderboardPages = chunk(leaderboardValues, 10)
     let page = 0, maxpages = leaderboardPages.length - 1;
 
     // Check if there are more than 3 logs
@@ -69,7 +67,6 @@ module.exports.run = async (client, interaction, leaderboard = []) => {
     // Construct Pagination Buttons
     const paginationButtons = leaderboardPages.length > 1 ? [ClientButtonsEnum.PREVIOUS_PAGE, ClientButtonsEnum.NEXT_PAGE] : [];
     const messageComponents = paginationButtons.length > 0 ? new ActionRowBuilder().addComponents(...paginationButtons) : null;
-
 
     // Double check to set the pagination buttons buttons to their default state...
     const previousIndex = messageComponents?.components?.findIndex(button => button.data.custom_id === "previous_pg");
@@ -130,5 +127,5 @@ module.exports.run = async (client, interaction, leaderboard = []) => {
             })
 
         }
-    });
+    })
 }
