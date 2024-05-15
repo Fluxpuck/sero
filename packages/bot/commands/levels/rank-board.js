@@ -70,7 +70,6 @@ module.exports.run = async (client, interaction, leaderboard = []) => {
     const paginationButtons = leaderboardPages.length > 1 ? [ClientButtonsEnum.PREVIOUS_PAGE, ClientButtonsEnum.NEXT_PAGE] : [];
     const messageComponents = paginationButtons.length > 0 ? new ActionRowBuilder().addComponents(...paginationButtons) : null;
 
-
     // Double check to set the pagination buttons buttons to their default state...
     const previousIndex = messageComponents?.components?.findIndex(button => button.data.custom_id === "previous_pg");
     const nextIndex = messageComponents?.components?.findIndex(button => button.data.custom_id === "next_pg");
