@@ -7,9 +7,7 @@ module.exports.props = {
     commandName: "balance-board",
     description: "Get the balance leaderboard of the server.",
     usage: "/economy",
-    interaction: {
-        type: 1,
-    },
+    interaction: {},
     defaultMemberPermissions: ['SendMessages'],
 }
 

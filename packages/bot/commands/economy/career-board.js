@@ -7,9 +7,7 @@ module.exports.props = {
     commandName: "career-board",
     description: "Get the career level leaderboard of the server.",
     usage: "/economy",
-    interaction: {
-        type: 1,
-    },
+    interaction: {},
     defaultMemberPermissions: ['SendMessages'],
 }
 
