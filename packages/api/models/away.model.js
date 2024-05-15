@@ -31,6 +31,11 @@ module.exports = sequelize => {
             allowNull: false,
             defaultValue: 5,
         },
+        message: {
+            type: DataTypes.STRING,
+            allowNull: true,
+            maxLength: 250,
+        },
         expireAt: {
             type: DataTypes.DATE,
             allowNull: true,

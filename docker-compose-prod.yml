@@ -13,9 +13,17 @@ services:
     volumes:
       - db_data:/var/lib/postgresql/data
 
+  rabbitmq:
+    image: rabbitmq:3-management
+    ports:
+      - "5672:5672"
+      - "15672:15672"
+
   api:
     build:
       context: ./packages/api
+    environment:
+      NODE_ENV: production
     env_file:
       - ./packages/api/config/.env
     restart: unless-stopped
@@ -29,6 +37,8 @@ services:
       context: ./packages/bot
     env_file:
       - ./packages/bot/config/.env
+    environment:
+      NODE_ENV: production
     restart: unless-stopped
     depends_on:
       - api

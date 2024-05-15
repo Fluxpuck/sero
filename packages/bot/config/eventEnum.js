@@ -10,6 +10,7 @@ const eventEnum = {
     GUILD_MEMBER_LEVEL: 'guildMemberLevel',
     GUILD_MEMBER_AWAY: 'guildMemberAway',
     BUTTON_INTERACTION: 'buttonInteraction',
+    GUILD_MEMBER_RANK: 'guildMemberRank',
 };
 
 module.exports = eventEnum;

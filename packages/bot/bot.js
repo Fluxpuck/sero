@@ -20,5 +20,26 @@ events.run(client); //run the events
 
 // → Login to Discord API
 client.login(process.env.NODE_ENV === "production"
-    ? process.env.PRODUCTION_TOKEN
-    : process.env.DEVELOPMENT_TOKEN);
+  ? process.env.PRODUCTION_TOKEN
+  : process.env.DEVELOPMENT_TOKEN).then(() => {
+
+    // → Displays a welcome message in the console 
+    // to indicate that the bot has successfully started up.
+    console.log(`
+      _______ _______ _______   _______ 
+     |       |       |    _  \\ |       |
+     |  _____|    ___|   | |  ||   _   |
+     | |_____|   |___|   |_| /_|  | |  |
+     |_____  |    ___|    __   |  |_|  |
+      _____| |   |___|   |  |  |       |
+     |_______|_______|___|  |__|_______|
+
+      Discord bot - Startup details:
+       > ${new Date().toUTCString()}
+       > ${client.user.tag}
+      `);
+  });
+
+// → Listen to RabbitMQ messages
+const { consumeQueue } = require('./database/consumer');
+consumeQueue(client); //run message consumer

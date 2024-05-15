@@ -1,9 +1,7 @@
 const { getRequest, postRequest } = require("../../database/connection")
 const { createCustomEmbed } = require("../../assets/embed")
 const { formatExpression } = require("../../lib/helpers/StringHelpers/stringHelper")
-const { LOGGING_CATEGORIES } = require("../../assets/logging")
-const { ERROR, WARNING, SUCCESS } = require("../../assets/embed-colors")
-const { GetLogTypeByKeyOrValue } = require("../../config/LogTypes")
+const { LOGGING_CATEGORIES } = require("../../assets/log-categories")
 
 module.exports.props = {
 	commandName: "set-logchannel",
@@ -49,85 +47,33 @@ module.exports.autocomplete = async (client, interaction) => {
 
 module.exports.run = async (client, interaction) => {
 
-	// Get the target log channel from the interaction options
-	const targetLogChannel = interaction.options.getChannel("channel");
-	// Get the logTypeCategory from the interaction options. 
-	const logObject = await GetLogTypeByKeyOrValue(interaction.options.get("log-type").value);
-	const logTypeCategory = Object.keys(logObject)[0];
-	const logTypeCategoryName = Object.values(logObject)[0];
+	// Get logTypeCategory && targetChannel from the interaction options
+	const targetLogCategory = interaction.options.get("log-type").value;
+	const targetChannel = interaction.options.getChannel("channel");
 
-	// Fetch the current guild logchannel for the logTypeCategory
-	const logChannelResponse = await getRequest(`/logchannels/${interaction.guild.id}/${logTypeCategory}`);
+	// If the logTypeCategory is not valid, return an error
+	if (!Object.values(LOGGING_CATEGORIES).includes(targetLogCategory)) {
+		return interaction.reply({
+			content: `Oops! The log-type you provided is not valid`,
+			ephemeral: true
+		})
+	}
 
-	// If there is no log channel for the logTypeCategory, create one
-	if (logChannelResponse.status === 404) {
+	// Create or update the log channel for the logTypeCategory
+	const result = await postRequest(`/logchannels/${interaction.guild.id}/${targetLogCategory}`, {
+		channelId: targetChannel.id
+	});
 
-		const logChannelPostResponse = await postLogChannel(interaction.guild.id, logTypeCategory, targetLogChannel.id)
-
-		// If the request was successful, return success message
-		if (logChannelPostResponse.status === 200) {
-
-			// Send the success embed
-			sendEmbed(interaction, "Set log channel.", `The log channel for \`${logTypeCategoryName}\` has been set to <#${targetLogChannel.id}>.`, SUCCESS);
-
-		} else {
-			// If the request was not successful, return an error
-			sendErrorResponse(interaction, `An error occurred while setting the log channel for **${logTypeCategoryName}**.`);
-		}
-	} else if (logChannelResponse.status === 200) { // If the log channel for the logTypeCategory exists, update it
-
-		// Update the log channel for the logTypeCategory
-		const logChannelPostResponse = await postLogChannel(interaction.guild.id, logTypeCategory, targetLogChannel.id)
-
-		console.log(logChannelPostResponse)
-		// If the request was successful, return success message
-		if (logChannelPostResponse.status === 200) {
-			// Send the success embed
-			sendEmbed(interaction, "Updated log channel.", `The log channel for \`${logTypeCategoryName}\` has been updated to <#${targetLogChannel.id}>. You will now receive logs for \`${logTypeCategoryName}\` in <#${targetLogChannel.id}>.`, WARNING);
-		} else {
-			// If the request was not successful, return an error
-			sendErrorResponse(interaction, `An error occurred while updating the log channel for \`${logTypeCategoryName}\`.`);
-		}
-
+	// If the request was not successful, return an error
+	if (result.status !== 200) {
+		return interaction.reply({
+			content: `Something went wrong while setting the log-channel \`${targetLogCategory}\`.`,
+			ephemeral: true
+		})
 	} else {
-		// If the request was not successful, return an error
-		sendEmbed(interaction, "Error", "An error occurred while setting the log channel.", ERROR);
+		return interaction.reply({
+			content: `The log-channel for \`${targetLogCategory}\` has been set to <#${targetChannel.id}>.`,
+			ephemeral: true
+		})
 	}
 }
-
-// Post the log channel via the API
-const postLogChannel = async (guildId, logTypeCategory, channelId) => {
-	// logchannels/:guildId/:category
-	const response = await postRequest(`/logchannels/${guildId}/${logTypeCategory}`, {
-		channelId: channelId
-	});
-
-	return response;
-}
-
-// Embeds
-// Send a success embed
-const sendEmbed = (interaction, embedTitle, embedDescription, color) => {
-	const embed = createCustomEmbed({
-		title: embedTitle,
-		description: embedDescription,
-		timestamp: new Date(),
-		color: color,
-		footer: {
-			text: `Requested by ${interaction.user.tag}`,
-			iconURL: interaction.user.displayAvatarURL({ dynamic: true })
-		}
-	});
-
-	return interaction.reply({
-		embeds: [embed],
-	});
-};
-
-// Send an error response message
-const sendErrorResponse = (interaction, response) => {
-	return interaction.reply({
-		content: response,
-		ephemeral: true
-	});
-};

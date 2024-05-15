@@ -1,3 +1,12 @@
+const LogTypes = {
+    'memberEvents': 'Member Events',
+    'emojiEvents': 'Emoji Events',
+    'roleEvents': 'Role Events',
+    'messageEvents': 'Message Events',
+    'stickerEvents': 'Sticker Events',
+    'inviteEvents': 'Invite Events'
+}
+
 /**
  * Returns the name of the event based on the event number.
  * @param {*} eventNumber - The event number to get the name of.
@@ -136,5 +145,5 @@ module.exports = {
     getEventName,
     getEventCategory,
     checkModerationAction,
-    getAuditActionName
+    getAuditActionName,
 };

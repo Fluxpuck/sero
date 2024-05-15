@@ -22,7 +22,7 @@ module.exports.run = async (client, interaction) => {
     // Get User details from the interaction options
     const targetUser = interaction.options.get("user").user;
 
-    // Give the user the experience
+    // Reset the user the experience
     const result = await postRequest(`/levels/reset/${interaction.guildId}/${targetUser.id}`);
 
     // If the request was not successful, return an error

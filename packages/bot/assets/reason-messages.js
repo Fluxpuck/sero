@@ -44,4 +44,16 @@ const MUTE_PREREASONS = {
     INAPPROPRIATE_CONTENT: "Talking about inappropriate things in a chat.",
 }
 
-module.exports = { KICK_PREREASONS, BAN_PREREASONS, WARN_PREREASONS, MUTE_PREREASONS }
+const AWAY_PREREASONS = {
+    LUNCH: "Having lunch!",
+    DINNER: "Having (a lovely) dinner!",
+    MEETING: "In a Meeting right now.",
+    WORK: "Busy at work.",
+    SCHOOL: "At school...",
+    STUDY: "Studying...",
+    SLEEP: "Sleeping. Zzzz...",
+    BREAK: "Taking a break.",
+    AFK: "AFK"
+}
+
+module.exports = { KICK_PREREASONS, BAN_PREREASONS, WARN_PREREASONS, MUTE_PREREASONS, AWAY_PREREASONS }
