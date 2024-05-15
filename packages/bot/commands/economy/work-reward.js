@@ -2,10 +2,7 @@ module.exports.props = {
     commandName: "work-reward",
     description: "Get a reward for completing a work-week.",
     usage: "/work-reward",
-    interaction: {
-        type: 1,
-        options: [],
-    },
+    interaction: {},
     defaultMemberPermissions: ['SendMessages'],
 }
 
