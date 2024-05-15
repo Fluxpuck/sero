@@ -1,8 +1,41 @@
 const express = require("express");
 const router = express.Router();
-const { UserCareers, Jobs, Work_snapshot } = require("../database/models");
+const { UserCareers, Jobs, Work_snapshot, User } = require("../database/models");
 const { sequelize } = require('../database/sequelize');
 const { CreateError } = require('../utils/ClassManager');
+
+
+/** 
+ * @router GET api/career/:guildId
+ * @description Get all career info from a specific guild
+ */
+router.get("/:guildId", async (req, res, next) => {
+    try {
+        const { guildId } = req.params;
+        const limit = req.query.limit || 100;
+    
+        // Check for results related to the guildId
+        const result = await UserCareers.findAll({
+          where: { guildId: guildId },
+          include: [{
+            model: User,
+            where: { guildId: guildId }
+          }],
+          order: [['level', 'DESC']],
+          limit: limit
+        });
+          // If no results found, trigger error
+    if (!result) {
+        throw new CreateError(404, 'No balances for this guildId found.');
+      }
+  
+      // Return the results
+      return res.status(200).json(result);
+  
+    } catch (error) {
+      next(error);
+    }
+});
 
 /** 
  * @router GET api/career/:guildId/userId

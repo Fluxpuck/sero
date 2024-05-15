@@ -5,8 +5,8 @@ const { chunk } = require("../../lib/helpers/MathHelpers/arrayHelper");
 const { getRequest } = require("../../database/connection");
 
 module.exports.props = {
-    commandName: "leaderboard",
-    description: "Check the leaderboard for the guild",
+    commandName: "rank-board",
+    description: "Check the rank leaderboard for the guild",
     usage: "/leaderboard",
     interaction: {},
     defaultMemberPermissions: ['SendMessages'],
