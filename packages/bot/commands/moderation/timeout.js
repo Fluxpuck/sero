@@ -82,6 +82,12 @@ module.exports.run = async (client, interaction) => {
         ephemeral: true
     });
 
+    // Check if the member has left the server before proceeding.
+    if(!member) return interaction.reply({
+        content: `<@${member.user.id}> does not exist within the server!`,
+        ephemeral: true
+    })
+
     // Get the duration && reason from the interaction options
     const targetDuration = interaction.options.get("time").value;
     const targetReason = interaction.options.get("reason").value;

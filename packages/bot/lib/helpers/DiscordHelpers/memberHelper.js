@@ -1,4 +1,4 @@
-const { GuildMember } = require('discord.js');
+const { GuildMember, Guild } = require('discord.js');
 
 module.exports = {
 
@@ -89,5 +89,5 @@ module.exports = {
 
 		// Format the join position array and return the result
 		return joinPositionArray.map(obj => obj.member.user.tag === guild.members.cache.get(memberId).user.tag ? `**${obj.member.user.tag}**` : `\`${obj.member.user.tag}\``).join(' ➜ ');
-	}
-};
+	},
+}
