@@ -1,13 +1,26 @@
 module.exports = async (client, payload) => {
 
+
+
+    console.log("RabbitMQ message received & event GUILD_MEMBER_RANK emitted", payload);
+
+
+
+
+
+
+
+
+
+
     // Check if all required attributes exist in the payload
     // Else return
-    const requiredAttributes = ['guildId', 'userId', 'level'];
-    for (const attribute of requiredAttributes) {
-        // if (!payload.hasOwnProperty(attribute)) return;
-    }
+    // const requiredAttributes = ['guildId', 'userId', 'level'];
+    // for (const attribute of requiredAttributes) {
+    //     // if (!payload.hasOwnProperty(attribute)) return;
+    // }
 
-    console.log("guildMemberRank.js: ", payload);
+    // console.log("guildMemberRank.js: ", payload);
 
     /**
      * @TODO - Send message on level.js route when someone reaches a new rank
