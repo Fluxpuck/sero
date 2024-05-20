@@ -118,41 +118,36 @@ module.exports = sequelize => {
 
     const updateRank = async (userLevel) => {
 
-        console.log("Checking for rank update...")
-
         const { LevelRanks } = require('../database/models');
         const userRank = await LevelRanks.findOne({
             where: {
                 guildId: userLevel.guildId,
-                level: userLevel.level
-            }
+                level: {
+                    [Op.lte]: userLevel.level
+                }
+            },
+            order: [['level', 'DESC']] // Order by level in descending order to get the highest level rank
         });
 
-        console.log("userRank: ", userRank);
-
-        // Update userLevel with the rank information if found
-        if (userRank) {
-            userLevel.rank = userRank.rank;
-        }
-
-        return userLevel;
-
+        return {
+            rank: userRank.level
+        };
     };
 
     UserLevels.beforeSave(async (userLevel) => {
         // Check if the user has reached a new level
         const newLevel = await updateLevels(userLevel);
-        const hasLevelChanged = (
-            userLevel.level !== newLevel.level ||
+        console.log("New Level: ", newLevel)
+
+        const hasLevelChanged = userLevel.level !== newLevel.level;
+        const hasExperienceChanged = (
             userLevel.currentLevelExp !== newLevel.currentLevelExp ||
             userLevel.nextLevelExp !== newLevel.nextLevelExp ||
             userLevel.remainingExp !== newLevel.remainingExp
         );
 
-        if (hasLevelChanged) {
+        if (hasExperienceChanged) {
             userLevel.set(newLevel);
-
-            console.log("User's level has updated!")
         }
 
         // Update rank information if level has changed
@@ -160,8 +155,6 @@ module.exports = sequelize => {
             const newRank = await updateRank(userLevel);
             if (userLevel.rank !== newRank.rank) {
                 userLevel.rank = newRank.rank;
-
-                console.log("User's rank has updated!")
 
                 // Send RabbitMQ message with the new rank information
                 sendToQueue(EVENT_CODES.USER_RANK_UPDATE,
@@ -171,9 +164,6 @@ module.exports = sequelize => {
                         level: userLevel.level,
                         rank: userLevel.rank
                     });
-
-                res.send('Message sent to RabbitMQ');
-
             }
         }
     });
