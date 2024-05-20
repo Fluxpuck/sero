@@ -1,6 +1,4 @@
 const { Model, DataTypes, Op } = require('sequelize');
-const { Levels, LevelRanks } = require('../database/models');
-
 const EVENT_CODES = require('../config/EventCodes');
 const { sendToQueue } = require('../database/publisher');
 
@@ -84,6 +82,7 @@ module.exports = sequelize => {
 
     const updateLevels = async (userLevel) => {
 
+        const { Levels } = require('../database/models');
         const levels = await Levels.findAll({
             order: [['experience', 'ASC']],
         });
@@ -107,6 +106,7 @@ module.exports = sequelize => {
 
     const updateRank = async (userLevel) => {
 
+        const { LevelRanks } = require('../database/models');
         const userRank = await LevelRanks.findOne({
             where: {
                 guildId: userLevel.guildId,

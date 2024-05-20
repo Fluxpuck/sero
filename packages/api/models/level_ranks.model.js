@@ -9,11 +9,6 @@ class LevelRanks extends Model {
 
 module.exports = sequelize => {
     LevelRanks.init({
-        rankId: {
-            type: DataTypes.INTEGER,
-            primaryKey: true,
-            allowNull: false,
-        },
         guildId: {
             type: DataTypes.BIGINT,
             primaryKey: true,
@@ -24,6 +19,7 @@ module.exports = sequelize => {
         },
         level: {
             type: DataTypes.INTEGER,
+            primaryKey: true,
             allowNull: false,
         },
         roleId: {
