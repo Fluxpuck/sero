@@ -6,26 +6,17 @@ module.exports = async (client, payload = []) => {
         if (!payload.hasOwnProperty(attribute)) return;
     }
 
-
-
-
     console.log("guildMemberRank.js: ", payload);
 
-
-
-
-
-
-
-
-
     /**
-     * @TODO - Send message on level.js route when someone reaches a new rank
+     * @TODO - GIVE MEMBER ALL THE RANK REWARDS THEY HAVE EARNED
      * 
-     * @bot - Get the (highest)rank of the member
-     * @bot - Get all (guild)rank roles lower than the member's rank
-     * @bot - Find the member and the roles in the guild
-     * @bot - Give the member the rank-roles
+     * @bot - GET THE GUILD by guildId
+     * @bot - GET THE MEMBER by userId
+     * 
+     * @bot - Create two lists: addRewards & removeRewards
+     * @bot - LOOP THROUGH userRanks & removeRewards they no longer deserve
+     * @bot - LOOP THROUGH userRanks & addRewards they deserve
      */
 
 }
