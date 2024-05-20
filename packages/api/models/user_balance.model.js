@@ -29,8 +29,14 @@ module.exports = sequelize => {
             type: DataTypes.INTEGER,
             allowNull: false,
             defaultValue: 0,
-            min: -100_000,
-            max: 1_000_000_000
+            min: {
+                args: [-100_000],
+                msg: 'Minimum value constraint violated.', // Error message if constraint is violated
+            },
+            max: {
+                args: [1_000_000_000],
+                msg: 'Maximum value constraint violated.', // Error message if constraint is violated
+            },
         },
     }, {
         sequelize,

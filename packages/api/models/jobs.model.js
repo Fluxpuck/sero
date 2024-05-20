@@ -28,14 +28,26 @@ module.exports = sequelize => {
         wage: {
             type: DataTypes.INTEGER,
             allowNull: false,
-            min: 0,
-            max: 100_000
+            min: {
+                args: [0],
+                msg: 'Minimum value constraint violated.', // Error message if constraint is violated
+            },
+            max: {
+                args: [100_000],
+                msg: 'Maximum value constraint violated.', // Error message if constraint is violated
+            },
         },
         raise: {
             type: DataTypes.DECIMAL(3, 1),
             allowNull: false,
-            min: 0,
-            max: 20
+            min: {
+                args: [0],
+                msg: 'Minimum value constraint violated.', // Error message if constraint is violated
+            },
+            max: {
+                args: [20],
+                msg: 'Maximum value constraint violated.', // Error message if constraint is violated
+            },
         },
     }, {
         sequelize,

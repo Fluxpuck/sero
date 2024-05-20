@@ -31,20 +31,20 @@ module.exports = sequelize => {
             type: DataTypes.INTEGER,
             allowNull: false,
             defaultValue: 0,
-            min: 0,
+            min: {
+                args: [0],
+                msg: 'Minimum value constraint violated.', // Error message
+            },
         },
         level: {
             type: DataTypes.INTEGER,
             allowNull: false,
             defaultValue: 0,
-            min: 0
         },
         rank: {
             type: DataTypes.INTEGER,
             allowNull: false,
             defaultValue: 1,
-            min: 1,
-            max: 100
         },
         currentLevelExp: {
             type: DataTypes.INTEGER,
@@ -64,7 +64,15 @@ module.exports = sequelize => {
         modifyer: {
             type: DataTypes.INTEGER,
             allowNull: false,
-            defaultValue: 1
+            defaultValue: 1,
+            min: {
+                args: [0],
+                msg: 'Minimum value constraint violated.', // Error message if constraint is violated
+            },
+            max: {
+                args: [5],
+                msg: 'Maximum value constraint violated.', // Error message if constraint is violated
+            },
         },
         reward_claimed: {
             type: DataTypes.BOOLEAN,
@@ -106,6 +114,8 @@ module.exports = sequelize => {
 
     const updateRank = async (userLevel) => {
 
+        console.log("Checking for rank update...")
+
         const { LevelRanks } = require('../database/models');
         const userRank = await LevelRanks.findOne({
             where: {
@@ -113,6 +123,8 @@ module.exports = sequelize => {
                 level: userLevel.level
             }
         });
+
+        console.log("userRank: ", userRank);
 
         // Update userLevel with the rank information if found
         if (userRank) {
@@ -135,6 +147,8 @@ module.exports = sequelize => {
 
         if (hasLevelChanged) {
             userLevel.set(newLevel);
+
+            console.log("User's level has updated!")
         }
 
         // Update rank information if level has changed
@@ -142,6 +156,8 @@ module.exports = sequelize => {
             const newRank = await updateRank(userLevel);
             if (userLevel.rank !== newRank.rank) {
                 userLevel.rank = newRank.rank;
+
+                console.log("User's rank has updated!")
 
                 // Send RabbitMQ message with the new rank information
                 sendToQueue(EVENT_CODES.USER_RANK_UPDATE,
