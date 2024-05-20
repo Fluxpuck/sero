@@ -1,4 +1,8 @@
 const { Model, DataTypes, Op } = require('sequelize');
+const { Levels, LevelRanks } = require('../database/models');
+
+const EVENT_CODES = require('../config/EventCodes');
+const { sendToQueue } = require('../database/publisher');
 
 class UserLevels extends Model {
     static associate(models) {
@@ -80,81 +84,79 @@ module.exports = sequelize => {
 
     const updateLevels = async (userLevel) => {
 
-        const { Levels } = require('../database/models');
-
-        const previousLevel = await Levels.findOne({
-            where: { experience: { [Op.lt]: userLevel.experience } },
-            order: [['experience', 'DESC']],
-            limit: 1
-        });
-
-        const nextLevel = await Levels.findOne({
-            where: { experience: { [Op.gt]: userLevel.experience } },
+        const levels = await Levels.findAll({
             order: [['experience', 'ASC']],
-            limit: 1
         });
 
-        // if there is no previous or next level, return the userLevel as is
-        if (!previousLevel || !nextLevel) return userLevel;
+        // Find the previous level
+        const previousLevel = levels
+            .filter(level => level.experience <= userLevel.experience)
+            .pop() || { level: 1, experience: 0 };
 
-        // Update the userLevel data
-        userLevel.level = previousLevel ? previousLevel.level : 1;
-        userLevel.currentLevelExp = previousLevel ? previousLevel.experience : 0;
-        userLevel.nextLevelExp = nextLevel.experience;
-        userLevel.remainingExp = nextLevel.experience - userLevel.experience;
+        // Find the next level
+        const nextLevel = levels
+            .find(level => level.experience > userLevel.experience) || { experience: Infinity };
 
-        return userLevel;
+        return {
+            level: previousLevel.level,
+            currentLevelExp: previousLevel.experience,
+            nextLevelExp: nextLevel.experience,
+            remainingExp: nextLevel.experience - userLevel.experience,
+        };
     };
 
     const updateRank = async (userLevel) => {
 
-        const { LevelRewards } = require('../database/models');
-
-        const userRank = await LevelRewards.findOne({
+        const userRank = await LevelRanks.findOne({
             where: {
                 guildId: userLevel.guildId,
                 level: userLevel.level
             }
         });
 
-        // if there is no level Reward, return the userLevel as is
-        if (!userRank) return userLevel;
-
-        // Update the userLevel data
-        userLevel.rank = userRank.rankId;
+        // Update userLevel with the rank information if found
+        if (userRank) {
+            userLevel.rank = userRank.rank;
+        }
 
         return userLevel;
+
     };
 
-    UserLevels.beforeSave(async (userLevel, options) => {
-        // Check if the level needs to be updated
+    UserLevels.beforeSave(async (userLevel) => {
+        // Check if the user has reached a new level
         const newLevel = await updateLevels(userLevel);
-        if ( // if any of the level information has changed
+        const hasLevelChanged = (
             userLevel.level !== newLevel.level ||
             userLevel.currentLevelExp !== newLevel.currentLevelExp ||
             userLevel.nextLevelExp !== newLevel.nextLevelExp ||
             userLevel.remainingExp !== newLevel.remainingExp
-        ) { // Set the new level information
-            userLevel.set({
-                level: newLevel.level,
-                currentLevelExp: newLevel.currentLevelExp,
-                nextLevelExp: newLevel.nextLevelExp,
-                remainingExp: newLevel.remainingExp
-            });
+        );
 
-            // Check if the rank needs to be updated
+        if (hasLevelChanged) {
+            userLevel.set(newLevel);
+        }
+
+        // Update rank information if level has changed
+        if (hasLevelChanged) {
             const newRank = await updateRank(userLevel);
             if (userLevel.rank !== newRank.rank) {
-                userLevel.set({
-                    rank: newRank.rank
-                });
-            }
+                userLevel.rank = newRank.rank;
 
-            // Save the changes to the database
-            await userLevel.save();
+                // Send RabbitMQ message with the new rank information
+                sendToQueue(EVENT_CODES.USER_RANK_UPDATE,
+                    {
+                        userId: userLevel.userId,
+                        guildId: userLevel.guildId,
+                        level: userLevel.level,
+                        rank: userLevel.rank
+                    });
+
+                res.send('Message sent to RabbitMQ');
+
+            }
         }
     });
 
     return UserLevels;
 }
-
