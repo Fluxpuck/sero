@@ -30,6 +30,16 @@ module.exports = sequelize => {
             type: DataTypes.INTEGER,
             allowNull: false,
             defaultValue: 5,
+            validate: {
+                min: {
+                    args: [1],
+                    msg: 'Duration must be at least 1 minute.',
+                },
+                max: {
+                    args: [1440],
+                    msg: 'Duration cannot be more than 1 day.',
+                },
+            },
         },
         expireAt: {
             type: DataTypes.DATE,

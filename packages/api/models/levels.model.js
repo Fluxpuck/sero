@@ -13,11 +13,11 @@ module.exports = sequelize => {
             allowNull: false,
             min: {
                 args: [0],
-                msg: 'Minimum value constraint violated.', // Error message if constraint is violated
+                msg: 'Level cannot be null.',
             },
             max: {
                 args: [100],
-                msg: 'Maximum value constraint violated.', // Error message if constraint is violated
+                msg: 'Level cannot be greater than 100.',
             },
         },
         experience: {
@@ -26,11 +26,11 @@ module.exports = sequelize => {
             defaultValue: 0,
             min: {
                 args: [0],
-                msg: 'Minimum value constraint violated.', // Error message if constraint is violated
+                msg: 'Experience cannot be negative.',
             },
             max: {
                 args: [10_000_000],
-                msg: 'Maximum value constraint violated.', // Error message if constraint is violated
+                msg: 'Experience cannot be greater than 10,000,000.',
             },
         },
     }, {

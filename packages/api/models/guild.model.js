@@ -41,8 +41,14 @@ module.exports = sequelize => {
       allowNull: false,
       defaultValue: 1,
       validate: {
-        min: 0.5,
-        max: 5,
+        min: {
+          args: [0],
+          msg: 'Modifyer cannot be 0'
+        },
+        max: {
+          args: [5],
+          msg: 'Modifyer cannot be greater than 5'
+        },
       },
     },
     duration: {

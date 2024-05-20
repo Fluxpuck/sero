@@ -31,10 +31,12 @@ module.exports = sequelize => {
             type: DataTypes.INTEGER,
             allowNull: false,
             defaultValue: 0,
-            min: {
-                args: [0],
-                msg: 'Minimum value constraint violated.', // Error message
-            },
+            validate: {
+                min: {
+                    args: [0],
+                    msg: 'Experience cannot be negative.',
+                },
+            }
         },
         level: {
             type: DataTypes.INTEGER,
@@ -65,14 +67,16 @@ module.exports = sequelize => {
             type: DataTypes.INTEGER,
             allowNull: false,
             defaultValue: 1,
-            min: {
-                args: [0],
-                msg: 'Minimum value constraint violated.', // Error message if constraint is violated
-            },
-            max: {
-                args: [5],
-                msg: 'Maximum value constraint violated.', // Error message if constraint is violated
-            },
+            validate: {
+                min: {
+                    args: [0],
+                    msg: 'Modifyer cannot be 0'
+                },
+                max: {
+                    args: [5],
+                    msg: 'Modifyer cannot be greater than 5'
+                },
+            }
         },
         reward_claimed: {
             type: DataTypes.BOOLEAN,

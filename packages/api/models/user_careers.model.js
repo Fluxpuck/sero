@@ -36,11 +36,11 @@ module.exports = sequelize => {
             defaultValue: 1,
             min: {
                 args: [1],
-                msg: 'Minimum value constraint violated.', // Error message if constraint is violated
+                msg: 'Career level cannot be less than 1.',
             },
             max: {
                 args: [1_000],
-                msg: 'Maximum value constraint violated.', // Error message if constraint is violated
+                msg: 'Career level cannot be greater than 1,000.',
             },
         },
     }, {
