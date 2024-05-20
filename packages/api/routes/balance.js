@@ -20,7 +20,7 @@ router.get("/:guildId", async (req, res, next) => {
         model: User,
         where: { guildId: guildId }
       }],
-      order: [['experience', 'DESC']],
+      order: [['balance', 'DESC']],
       limit: limit
     });
 
