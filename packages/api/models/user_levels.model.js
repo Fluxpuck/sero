@@ -119,19 +119,24 @@ module.exports = sequelize => {
     const updateRank = async (userLevel) => {
 
         const { LevelRanks } = require('../database/models');
-        const userRank = await LevelRanks.findOne({
+        const levelRanks = await LevelRanks.findAll({
             where: {
-                guildId: userLevel.guildId,
-                level: {
-                    [Op.lte]: userLevel.level
-                }
+                guildId: userLevel.guildId
             },
-            order: [['level', 'DESC']] // Order by level in descending order to get the highest level rank
+            order: [['level', 'ASC']],
         });
+
+        // Find the user's ranks
+        const userRanks = levelRanks.filter(rank => rank.level <= userLevel.level);
+        const userRank = userRanks.at(-1) || { level: 1 };
+
+        // Get all guild available level rank rewards
+        const availableRewards = levelRanks.map(rank => rank.roleId);
 
         return {
             rank: userRank.level,
-            reward: userRank.roleId
+            ranks: userRanks,
+            rewards: availableRewards
         };
     };
 
@@ -159,11 +164,10 @@ module.exports = sequelize => {
                 // Send RabbitMQ message with the new rank information
                 sendToQueue(EVENT_CODES.USER_RANK_UPDATE,
                     {
-                        userId: userLevel.userId,
                         guildId: userLevel.guildId,
-                        level: userLevel.level,
-                        rank: userLevel.rank,
-                        reward: newRank.reward,
+                        userId: userLevel.userId,
+                        userRanks: newRank.ranks,
+                        guildRewards: newRank.rewards,
                     });
             }
         }

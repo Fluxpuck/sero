@@ -1,11 +1,10 @@
 module.exports = async (client, payload = []) => {
 
     // Check if all required attributes exist in the payload
-    const requiredAttributes = ['guildId', 'userId', 'level', 'rank'];
+    const requiredAttributes = ['guildId', 'userId', 'userRanks', 'guildRewards'];
     for (const attribute of requiredAttributes) {
         if (!payload.hasOwnProperty(attribute)) return;
     }
-
 
 
 
