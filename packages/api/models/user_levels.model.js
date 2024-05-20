@@ -130,14 +130,14 @@ module.exports = sequelize => {
         });
 
         return {
-            rank: userRank.level
+            rank: userRank.level,
+            reward: userRank.roleId
         };
     };
 
     UserLevels.beforeSave(async (userLevel) => {
         // Check if the user has reached a new level
         const newLevel = await updateLevels(userLevel);
-        console.log("New Level: ", newLevel)
 
         const hasLevelChanged = userLevel.level !== newLevel.level;
         const hasExperienceChanged = (
@@ -162,7 +162,8 @@ module.exports = sequelize => {
                         userId: userLevel.userId,
                         guildId: userLevel.guildId,
                         level: userLevel.level,
-                        rank: userLevel.rank
+                        rank: userLevel.rank,
+                        reward: newRank.reward,
                     });
             }
         }
