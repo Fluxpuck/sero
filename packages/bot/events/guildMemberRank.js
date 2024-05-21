@@ -1,3 +1,5 @@
+const { findUser } = require("../lib/resolvers/userResolver");
+
 module.exports = async (client, payload = []) => {
 
     // Check if all required attributes exist in the payload
@@ -6,7 +8,14 @@ module.exports = async (client, payload = []) => {
         if (!payload.hasOwnProperty(attribute)) return;
     }
 
-    console.log("guildMemberRank.js: ", payload);
+    // Get the guild by guildId
+    const guild = await client.guilds.fetch(payload.guildId);
+
+    // Get the member by userId
+    const member = findUser(guild, payload.userId);
+
+
+
 
     /**
      * @TODO - GIVE MEMBER ALL THE RANK REWARDS THEY HAVE EARNED

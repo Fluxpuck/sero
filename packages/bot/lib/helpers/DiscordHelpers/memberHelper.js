@@ -20,7 +20,7 @@ module.exports = {
 			: (roles = roles);
 
 		// Return the formatted roles or 'None' if the member has no roles
-		return roles ? roles : `\`None\``;	
+		return roles ? roles : `\`None\``;
 	},
 
 	/**
@@ -55,7 +55,6 @@ module.exports = {
 	 * getMemberJoinOrder(guild, memberId, 10);
 	 */
 	getMemberJoinOrder: (guild, memberId, iterationCount) => {
-
 		// Check if the member exists in the guild
 		if (!guild.members.cache.findKey(m => m.user.id === memberId)) return null;
 
