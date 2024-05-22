@@ -1,8 +1,6 @@
 // Define RabbitMQ event codes
 const EVENT_CODES = {
-    USER_RANK_UPDATE: 'user_rank_update',
-
-    UNKNOWN: 'unknown_event'
+    GUILD_MEMBER_RANK: 'guildMemberRank',
 };
 
 module.exports = EVENT_CODES;

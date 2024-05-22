@@ -1,8 +1,8 @@
 /**
- * Calcualte the differences between two arrays of objects
+ * Calculate the differences between two arrays of objects
  * @param {Array} arr1 Array of objects
  * @param {Array} arr2 Array of objects
- * @returns Object with the differences
+ * @returns Array of objects with the differences
  */
 function calculateDifferences(arr1, arr2) {
     if (arr1.length !== arr2.length) {
@@ -14,17 +14,25 @@ function calculateDifferences(arr1, arr2) {
     const differences = [];
 
     for (let i = 0; i < arr1.length; i++) {
-        const diff = {
-            experience: arr1[i].experience - arr2[i].experience,
-            level: arr1[i].level - arr2[i].level,
-            remainingExp: arr1[i].remainingExp - arr2[i].remainingExp,
-        };
+        const obj1 = arr1[i];
+        const obj2 = arr2[i];
+
+        // Get unique keys from both objects
+        const keys = new Set([...Object.keys(obj1), ...Object.keys(obj2)]);
+        const diff = {};
+
+        keys.forEach(key => {
+            const value1 = obj1[key] || 0;
+            const value2 = obj2[key] || 0;
+            diff[key] = value1 - value2;
+        });
 
         differences.push(diff);
     }
 
     return differences;
 }
+
 
 /**
  * Get a random object in an array

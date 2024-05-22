@@ -130,13 +130,10 @@ module.exports = sequelize => {
         const userRanks = levelRanks.filter(rank => rank.level <= userLevel.level);
         const userRank = userRanks.at(-1) || { level: 1 };
 
-        // Get all guild available level rank rewards
-        const availableRewards = levelRanks.map(rank => rank.roleId);
-
         return {
             rank: userRank.level,
             ranks: userRanks,
-            rewards: availableRewards
+            rewards: levelRanks
         };
     };
 
@@ -162,12 +159,12 @@ module.exports = sequelize => {
                 userLevel.rank = newRank.rank;
 
                 // Send RabbitMQ message with the new rank information
-                sendToQueue(EVENT_CODES.USER_RANK_UPDATE,
+                sendToQueue(EVENT_CODES.GUILD_MEMBER_RANK,
                     {
                         guildId: userLevel.guildId,
                         userId: userLevel.userId,
-                        userRanks: newRank.ranks,
-                        guildRewards: newRank.rewards,
+                        userRankRewards: newRank.ranks,
+                        allRankRewards: newRank.rewards,
                     });
             }
         }

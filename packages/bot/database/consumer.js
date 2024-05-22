@@ -51,17 +51,8 @@ async function consumeQueue(client) {
                     console.log('Received message: ', payload);
                 }
 
-                // Execute the correct event based on the event code
-                switch (payload.code) {
-                    case EVENT_CODES.USER_RANK_UPDATE:
-                        // Set the data from the payload and emit the event to the client
-                        const { data } = payload;
-                        client.emit(eventEnum.GUILD_MEMBER_RANK, data);
-                        break;
-                    default:
-                        console.log('Unknown event code:', payload.code);
-                        break;
-                }
+                //Emit the client event based on the payload code
+                client.emit(payload.code, payload.data);
 
                 // Acknowledge the message
                 channel.ack(message);
