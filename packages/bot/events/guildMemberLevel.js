@@ -1,6 +1,10 @@
 const { LEVEL_MESSAGES } = require("../assets/level-messages");
 
 module.exports = async (client, message, oldLevel, newLevel) => {
+
+    return; // TEMPORARY DISABLE THIS FEATURE!!!!!!!!!
+
+
     if (!oldLevel || !newLevel) return;
 
     /**

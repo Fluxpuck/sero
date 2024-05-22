@@ -53,7 +53,7 @@ module.exports = async (client, message) => {
 
       // Check if user is present in Levels
       const result = await getRequest(`/levels/${message.guildId}/${message.author.id}`)
-      if (result) { oldMember = result.data ? result.data[0] : null }
+      if (result) { oldMember = result.data ? result.data.userLevel : null }
 
       // If 404 error, create a new entry
       if (result?.status === 404) {
