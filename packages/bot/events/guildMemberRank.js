@@ -12,19 +12,30 @@ module.exports = async (client, payload = []) => {
     const guild = await client.guilds.fetch(payload.guildId);
     const member = findUser(guild, payload.userId);
 
+    // Ranks that are unattained by the member
+    const unattainedRankRewards = payload.allRankRewards.filter(rank =>
+        !payload.userRankRewards.some(userRank => userRank.level === rank.level)
+    );
 
+    try {
+        // REMOVE unattained rank rewards from the member
+        for (const rank of unattainedRankRewards) {
+            // Get the role by roleId
+            const role = await guild.roles.fetch(rank.roleId);
+            // Remove the role from the member
+            await member.roles.remove(role, `Remove unattained rank reward role for level ${rank.level}`);
+        }
 
-    console.log("userRankRewards", payload.userRankRewards)
-    console.log("allRankRewards", payload.allRankRewards);
+        // ADD attained rank rewards to the member
+        for (const rank of payload.userRankRewards) {
+            // Get the role by roleId
+            const role = await guild.roles.fetch(rank.roleId);
+            // Remove the role from the member
+            await member.roles.add(role, `Add attained rank reward role for level ${rank.level}`);
+        }
 
-
-
-    /**
-     * @TODO - GIVE MEMBER ALL THE RANK REWARDS THEY HAVE EARNED
-     * 
-     * @bot - Create two lists: addRewards & removeRewards
-     * @bot - LOOP THROUGH userRanks & removeRewards they no longer deserve
-     * @bot - LOOP THROUGH userRanks & addRewards they deserve
-     */
+    } catch (err) {
+        console.error("Error updating member rank rewards:", err);
+    };
 
 }
