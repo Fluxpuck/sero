@@ -34,8 +34,14 @@ module.exports = sequelize => {
             type: DataTypes.INTEGER,
             allowNull: false,
             defaultValue: 1,
-            min: 1,
-            max: 1000
+            min: {
+                args: [1],
+                msg: 'Career level cannot be less than 1.',
+            },
+            max: {
+                args: [1_000],
+                msg: 'Career level cannot be greater than 1,000.',
+            },
         },
     }, {
         sequelize,

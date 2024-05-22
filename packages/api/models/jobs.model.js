@@ -28,14 +28,28 @@ module.exports = sequelize => {
         wage: {
             type: DataTypes.INTEGER,
             allowNull: false,
-            min: 0,
-            max: 100_000
+            validate: {
+                min: {
+                    args: [0],
+                    msg: 'Wage cannot be negative.',
+                },
+                max: {
+                    args: [100_000],
+                    msg: 'Wage cannot be greater than 100,000.',
+                },
+            }
         },
         raise: {
             type: DataTypes.DECIMAL(3, 1),
             allowNull: false,
-            min: 0,
-            max: 20
+            min: {
+                args: [0],
+                msg: 'Raise cannot be negative.',
+            },
+            max: {
+                args: [20],
+                msg: 'Raise cannot be greater than 20.',
+            },
         },
     }, {
         sequelize,

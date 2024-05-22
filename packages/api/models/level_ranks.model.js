@@ -1,6 +1,6 @@
 const { Model, DataTypes } = require('sequelize');
 
-class LevelRewards extends Model {
+class LevelRanks extends Model {
     static associate(models) {
         this.hasMany(models.Levels, { foreignKey: 'level' })
         this.belongsTo(models.Guild, { foreignKey: 'guildId' })
@@ -8,12 +8,7 @@ class LevelRewards extends Model {
 }
 
 module.exports = sequelize => {
-    LevelRewards.init({
-        level: {
-            type: DataTypes.INTEGER,
-            primaryKey: true,
-            allowNull: false,
-        },
+    LevelRanks.init({
         guildId: {
             type: DataTypes.BIGINT,
             primaryKey: true,
@@ -22,19 +17,26 @@ module.exports = sequelize => {
                 is: /^\d{17,20}$/ // Discord Snowflake
             }
         },
-        reward: {
-            type: DataTypes.JSON,
+        level: {
+            type: DataTypes.INTEGER,
+            primaryKey: true,
+            allowNull: false,
+        },
+        roleId: {
+            type: DataTypes.BIGINT,
             allowNull: true,
-            defaultValue: {},
+            validate: {
+                is: /^\d{17,20}$/ // Discord Snowflake
+            }
         },
     }, {
         sequelize,
-        modelName: 'level_rewards',
+        modelName: 'level_ranks',
         timestamps: true,
         updatedAt: true,
         createdAt: true
     });
 
-    return LevelRewards;
+    return LevelRanks;
 }
 

@@ -1,25 +1,41 @@
-module.exports = async (client, payload) => {
+const { findUser } = require("../lib/resolvers/userResolver");
+
+module.exports = async (client, payload = []) => {
 
     // Check if all required attributes exist in the payload
-    // Else return
-    const requiredAttributes = ['guildId', 'userId', 'level'];
+    const requiredAttributes = ['guildId', 'userId', 'userRankRewards', 'allRankRewards'];
     for (const attribute of requiredAttributes) {
-        // if (!payload.hasOwnProperty(attribute)) return;
+        if (!payload.hasOwnProperty(attribute)) return;
     }
 
-    console.log("guildMemberRank.js: ", payload);
+    // Get the guild by guildId and the member by userId
+    const guild = await client.guilds.fetch(payload.guildId);
+    const member = findUser(guild, payload.userId);
 
-    /**
-     * @TODO - Send message on level.js route when someone reaches a new rank
-     * @api - Add a beforeSave hook that will check the (guild)ranks of the user
-     * @api - If the member is higher than the level of a (guild)rank, 
-     * @api - Add this rank to the member in the database
-     * @api - And, sent a RabbitMQ message with (the guildId, userId, level and (highest)rank)
-     * 
-     * @bot - Get the (highest)rank of the member
-     * @bot - Get all (guild)rank roles lower than the member's rank
-     * @bot - Find the member and the roles in the guild
-     * @bot - Give the member the rank-roles
-     */
+    // Ranks that are unattained by the member
+    const unattainedRankRewards = payload.allRankRewards.filter(rank =>
+        !payload.userRankRewards.some(userRank => userRank.level === rank.level)
+    );
+
+    try {
+        // REMOVE unattained rank rewards from the member
+        for (const rank of unattainedRankRewards) {
+            // Get the role by roleId
+            const role = await guild.roles.fetch(rank.roleId);
+            // Remove the role from the member
+            await member.roles.remove(role, `Remove unattained rank reward role for level ${rank.level}`);
+        }
+
+        // ADD attained rank rewards to the member
+        for (const rank of payload.userRankRewards) {
+            // Get the role by roleId
+            const role = await guild.roles.fetch(rank.roleId);
+            // Remove the role from the member
+            await member.roles.add(role, `Add attained rank reward role for level ${rank.level}`);
+        }
+
+    } catch (err) {
+        console.error("Error updating member rank rewards:", err);
+    };
 
 }

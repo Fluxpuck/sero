@@ -11,14 +11,27 @@ module.exports = sequelize => {
             type: DataTypes.INTEGER,
             primaryKey: true,
             allowNull: false,
-            max: 100,
+            min: {
+                args: [0],
+                msg: 'Level cannot be null.',
+            },
+            max: {
+                args: [100],
+                msg: 'Level cannot be greater than 100.',
+            },
         },
         experience: {
             type: DataTypes.INTEGER,
             allowNull: false,
             defaultValue: 0,
-            min: 0,
-            max: 10_000_000
+            min: {
+                args: [0],
+                msg: 'Experience cannot be negative.',
+            },
+            max: {
+                args: [10_000_000],
+                msg: 'Experience cannot be greater than 10,000,000.',
+            },
         },
     }, {
         sequelize,

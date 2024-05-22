@@ -12,7 +12,7 @@ class Guild extends Model {
     this.hasMany(models.LogChannels, { foreignKey: 'guildId' })
     this.hasMany(models.Away, { foreignKey: 'guildId' })
     this.hasMany(models.Work_snapshot, { foreignKey: 'guildId' })
-    this.hasMany(models.LevelRewards, { foreignKey: 'guildId' })
+    this.hasMany(models.LevelRanks, { foreignKey: 'guildId' })
   }
 }
 
@@ -41,8 +41,14 @@ module.exports = sequelize => {
       allowNull: false,
       defaultValue: 1,
       validate: {
-        min: 0.5,
-        max: 5,
+        min: {
+          args: [0],
+          msg: 'Modifyer cannot be 0'
+        },
+        max: {
+          args: [5],
+          msg: 'Modifyer cannot be greater than 5'
+        },
       },
     },
     duration: {

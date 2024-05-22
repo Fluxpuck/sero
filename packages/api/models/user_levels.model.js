@@ -1,4 +1,6 @@
 const { Model, DataTypes, Op } = require('sequelize');
+const EVENT_CODES = require('../config/EventCodes');
+const { sendToQueue } = require('../database/publisher');
 
 class UserLevels extends Model {
     static associate(models) {
@@ -29,13 +31,22 @@ module.exports = sequelize => {
             type: DataTypes.INTEGER,
             allowNull: false,
             defaultValue: 0,
-            min: 0,
+            validate: {
+                min: {
+                    args: [0],
+                    msg: 'Experience cannot be negative.',
+                },
+            }
         },
         level: {
             type: DataTypes.INTEGER,
             allowNull: false,
             defaultValue: 0,
-            min: 0
+        },
+        rank: {
+            type: DataTypes.INTEGER,
+            allowNull: false,
+            defaultValue: 1,
         },
         currentLevelExp: {
             type: DataTypes.INTEGER,
@@ -55,7 +66,17 @@ module.exports = sequelize => {
         modifyer: {
             type: DataTypes.INTEGER,
             allowNull: false,
-            defaultValue: 1
+            defaultValue: 1,
+            validate: {
+                min: {
+                    args: [0],
+                    msg: 'Modifyer cannot be 0'
+                },
+                max: {
+                    args: [5],
+                    msg: 'Modifyer cannot be greater than 5'
+                },
+            }
         },
         reward_claimed: {
             type: DataTypes.BOOLEAN,
@@ -74,50 +95,80 @@ module.exports = sequelize => {
     const updateLevels = async (userLevel) => {
 
         const { Levels } = require('../database/models');
-
-        const previousLevel = await Levels.findOne({
-            where: { experience: { [Op.lt]: userLevel.experience } },
-            order: [['experience', 'DESC']],
-            limit: 1
-        });
-
-        const nextLevel = await Levels.findOne({
-            where: { experience: { [Op.gt]: userLevel.experience } },
+        const levels = await Levels.findAll({
             order: [['experience', 'ASC']],
-            limit: 1
         });
 
-        // Update the userLevel data
-        userLevel.level = previousLevel ? previousLevel.level : 1;
-        userLevel.currentLevelExp = previousLevel ? previousLevel.experience : 0;
-        userLevel.nextLevelExp = nextLevel.experience;
-        userLevel.remainingExp = nextLevel.experience - userLevel.experience;
+        // Find the previous level
+        const previousLevel = levels
+            .filter(level => level.experience <= userLevel.experience)
+            .pop() || { level: 1, experience: 0 };
 
-        return userLevel;
+        // Find the next level
+        const nextLevel = levels
+            .find(level => level.experience > userLevel.experience) || { experience: Infinity };
+
+        return {
+            level: previousLevel.level,
+            currentLevelExp: previousLevel.experience,
+            nextLevelExp: nextLevel.experience,
+            remainingExp: nextLevel.experience - userLevel.experience,
+        };
     };
 
-    UserLevels.beforeSave(async (userLevel, options) => {
-        // Check if the level needs to be updated
+    const updateRank = async (userLevel) => {
+
+        const { LevelRanks } = require('../database/models');
+        const levelRanks = await LevelRanks.findAll({
+            where: {
+                guildId: userLevel.guildId
+            },
+            order: [['level', 'ASC']],
+        });
+
+        // Find the user's ranks
+        const userRanks = levelRanks.filter(rank => rank.level <= userLevel.level);
+        const userRank = userRanks.at(-1) || { level: 1 };
+
+        return {
+            rank: userRank.level,
+            ranks: userRanks,
+            rewards: levelRanks
+        };
+    };
+
+    UserLevels.beforeSave(async (userLevel) => {
+        // Check if the user has reached a new level
         const newLevel = await updateLevels(userLevel);
-        if (
-            userLevel.level !== newLevel.level ||
+
+        const hasLevelChanged = userLevel.level !== newLevel.level;
+        const hasExperienceChanged = (
             userLevel.currentLevelExp !== newLevel.currentLevelExp ||
             userLevel.nextLevelExp !== newLevel.nextLevelExp ||
             userLevel.remainingExp !== newLevel.remainingExp
-        ) {
-            // Set the new level information
-            userLevel.set({
-                level: newLevel.level,
-                currentLevelExp: newLevel.currentLevelExp,
-                nextLevelExp: newLevel.nextLevelExp,
-                remainingExp: newLevel.remainingExp
-            });
+        );
 
-            // Save the changes to the database
-            await userLevel.save();
+        if (hasExperienceChanged) {
+            userLevel.set(newLevel);
+        }
+
+        // Update rank information if level has changed
+        if (hasLevelChanged) {
+            const newRank = await updateRank(userLevel);
+            if (userLevel.rank !== newRank.rank) {
+                userLevel.rank = newRank.rank;
+
+                // Send RabbitMQ message with the new rank information
+                sendToQueue(EVENT_CODES.GUILD_MEMBER_RANK,
+                    {
+                        guildId: userLevel.guildId,
+                        userId: userLevel.userId,
+                        userRankRewards: newRank.ranks,
+                        allRankRewards: newRank.rewards,
+                    });
+            }
         }
     });
 
     return UserLevels;
 }
-
