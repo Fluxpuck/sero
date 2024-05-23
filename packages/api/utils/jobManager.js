@@ -11,10 +11,3 @@ cron.schedule('*/10 * * * *', () => {
     sendToQueue(EVENT_CODES.HEARTBEAT, {});
 
 });
-
-
-
-
-// cron.schedule('*/10 * * * * *', () => {
-//     console.log('running every 10 seconds');
-// });
