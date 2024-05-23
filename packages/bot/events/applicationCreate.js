@@ -58,6 +58,8 @@ module.exports = async (client, applications) => {
                 defaultMemberPermissions: command.defaultMemberPermissions,
             }).then(async (application) => {
 
+                console.log("\x1b[36m", `[Client]: ${application.name} created successfully.`);
+
                 // POST the command to the database to add the commandId 
                 const result = await postCommands(application.name, {
                     commandId: application.id,
@@ -71,11 +73,11 @@ module.exports = async (client, applications) => {
                 })
 
                 if (process.env.NODE_ENV === "development") {
-                    console.log(result);
+                    console.log("\x1b[2m", `[Database]: ${result}`);
                 }
 
             }).catch((error) => {
-                console.error(`[Error creating (${command.commandName})]: `, error);
+                console.error(`[Error]: Something went wrong trying to create an application for ${command.commandName}`, error);
             });
 
         } else {
@@ -87,8 +89,12 @@ module.exports = async (client, applications) => {
                 type: command.interactionType,
                 options: command.interactionOptions,
                 defaultMemberPermissions: command.defaultMemberPermissions,
+            }).then(async (application) => {
+
+                console.log("\x1b[34m", `[Client]: ${application.name} updated successfully.`);
+
             }).catch((error) => {
-                console.error(`[Error editing (${command.commandName})]: `, error);
+                console.error(`[Error]: Something went wrong trying to update the application ${command.commandName}`, error);
             });
 
         }
