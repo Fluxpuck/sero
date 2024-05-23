@@ -77,16 +77,18 @@ router.post("/:commandName", async (req, res, next) => {
       commandId,
       interactionType,
       interactionOptions,
+      defaultMemberPermissions,
       description,
       usage } = body;
     // Create a new data object
     const updateData = {
       commandId: commandId,
       commandName: commandName,
-      interactionType: interactionType,
-      interactionOptions: interactionOptions,
       description: description,
       usage: usage,
+      interactionType: interactionType,
+      interactionOptions: interactionOptions,
+      defaultMemberPermissions: defaultMemberPermissions,
     };
 
     // Check if the command already exists
