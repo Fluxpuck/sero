@@ -48,7 +48,7 @@ module.exports = {
                     // Post the command to the database
                     const { commandName, description, usage, defaultMemberPermissions } = command.props;
                     const { type = 1, options } = command.props?.interaction;
-                    postCommands(command.props.commandName, {
+                    const result = await postCommands(command.props.commandName, {
                         commandName: commandName,
                         description: description,
                         usage: usage,
@@ -59,7 +59,7 @@ module.exports = {
 
                     // Log the command to the console if in development mode
                     if (process.env.NODE_ENV === "development") {
-                        console.log(`Post ${commandName} to database.`);
+                        console.log(result);
                     }
 
                 }
