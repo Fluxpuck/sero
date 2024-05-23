@@ -45,21 +45,23 @@ module.exports = {
                     // Set the command in the client's collection
                     client.commands.set(command.props.commandName, command);
 
-                    // Save to the database if config is set
-                    if (process.env.SAVE_FILE_COMMANDS === "true") {
-                        const { commandName, description, usage } = command.props;
-                        const { type = 1, options } = command.props?.interaction;
+                    // Post the command to the database
+                    const { commandName, description, usage, defaultMemberPermissions } = command.props;
+                    const { type = 1, options } = command.props?.interaction;
+                    postCommands(command.props.commandName, {
+                        commandName: commandName,
+                        description: description,
+                        usage: usage,
+                        interactionType: type,
+                        interactionOptions: options,
+                        defaultMemberPermissions: defaultMemberPermissions,
+                    });
 
-                        console.log(`Saving command: ${commandName}`);
-
-                        postCommands(command.props.commandName, {
-                            commandName: commandName,
-                            interactionType: type,
-                            interactionOptions: options,
-                            description: description,
-                            usage: usage,
-                        });
+                    // Log the command to the console if in development mode
+                    if (process.env.NODE_ENV === "development") {
+                        console.log(`Post ${commandName} to database.`);
                     }
+
                 }
             }
         }
