@@ -2,94 +2,101 @@ const { PermissionFlagsBits } = require('discord.js');
 const { fetchCommands, postCommands, deleteCommands } = require("../lib/client/commands");
 
 module.exports = async (client, applications) => {
-    const commands = await fetchCommands();
-    if (!commands) return;
 
-    // Refresh all unused commands
-    if (process.env.APPLICATION_REFRESH === "true") {
-        for (const [commandId, { name }] of applications) {
+    // Fetch all application commands from the Database
+    const databaseCommands = await fetchCommands();
+    if (!databaseCommands) return;
 
-            const commandMismatch = !commands.some(command => command.commandName === name);
+    // Check if the database command is in the client.commands
+    // If not, delete the command from the database
+    for await (const command of databaseCommands) {
+        if (!client.commands.has(command.commandName)) {
 
-            if (commandMismatch) {
-                const application = applications.get(commandId);
-                try {
-                    const result = await application.delete();
-
-                    console.log(`Application Deleted: ${application.name} | ${application.id}`)
-                    // console.log("DEBUG: ", result)
-                } catch (error) {
-                    console.log(error)
-                }
+            // Delete the command from the database
+            const result = await deleteCommands(command.commandName)
+            if (process.env.NODE_ENV === "development") {
+                console.log("Command not found. Deleting from the database", result);
             }
+
+            // Slice the command from the databaseCommands array
+            const index = databaseCommands.indexOf(command);
+            databaseCommands.splice(index, 1);
+
         }
     }
 
-    // Create or Update application commands
-    if (process.env.APPLICATION_INITIALIZE === "true") {
-        for (const command of commands) {
-            const commandKey = command.commandId || command.commandName;
+    // If the application command is not in the databaseCommands
+    // Delete the command from the application
+    for await (const [key, value] of applications) {
+        if (!databaseCommands.find(command => command.commandName === value.name)) {
 
-            const applicationMatch = Array.from(applications.entries()).find(([key, value]) => commandKey === key || commandKey === value.name);
-
-            if (applicationMatch) {
-                const [key, value] = applicationMatch;
-                const { commandId, commandName, description, usage, interactionType, interactionOptions, private } = command;
-
-                if (commandId === key || commandName === value.name) {
-                    await client.application?.commands.edit(key, {
-                        name: commandName,
-                        description: description,
-                        type: interactionType,
-                        options: interactionOptions,
-                        defaultMemberPermissions: [PermissionFlagsBits.KickMembers],
-                    }).then(async (application) => {
-
-                        console.log(`Application Updated: ${application.name} | ${application.id}`)
-
-                        const result = await postCommands(application.name, {
-                            commandId: application.id,
-                            commandName: application.name,
-                            description: description,
-                            usage: usage,
-                            interactionType: interactionType,
-                            interactionOptions: interactionOptions,
-                            private: private,
-                        });
-                        // console.log(`DEBUG: ${result}`);
-
-                    }).catch((error) => {
-                        console.error(`[Error editing (${commandName})]: `, error);
-                    });
-                }
-            } else {
-                const { commandName, description, usage, interactionType, interactionOptions, private } = command;
-
-                await client.application?.commands.create({
-                    name: commandName,
-                    description: description,
-                    type: interactionType,
-                    options: interactionOptions,
-                    defaultMemberPermissions: [PermissionFlagsBits.KickMembers],
-                }).then(async (application) => {
-
-                    console.log(`Application Created: ${application.name} | ${application.id}`)
-
-                    const result = await postCommands(application.name, {
-                        commandId: application.id,
-                        commandName: application.name,
-                        description: description,
-                        usage: usage,
-                        interactionType: interactionType,
-                        interactionOptions: interactionOptions,
-                        private: private,
-                    });
-                    // console.log(`DEBUG: ${result}`);
-
-                }).catch((error) => {
-                    console.error(`[Error creating (${commandName})]: `, error);
-                });
+            // Delete the command from the application
+            const result = await client.application.commands.delete(key);
+            if (process.env.NODE_ENV === "development") {
+                console.log("Command not found. Deleting from the application", result);
             }
+
+        }
+    }
+
+    // Check if the command in the database has a commandId
+    // If a commandId is found, update the application command
+    // Else create a new application command and update the database
+    for (const command of databaseCommands) {
+
+        // Check if the command has a commandId
+        // If not, create a new command in the application
+        // And update the database
+        if (!command.commandId) {
+
+            // CREATE new application command
+            await client.application?.commands.create({
+                name: command.commandName,
+                description: command.description,
+                type: command.interactionType,
+                options: command.interactionOptions,
+                defaultMemberPermissions: command.defaultMemberPermissions,
+            }).then(async (application) => {
+
+                console.log("\x1b[36m", `[Client]: ${application.name} created successfully.`);
+
+                // POST the command to the database to add the commandId 
+                const result = await postCommands(application.name, {
+                    commandId: application.id,
+                    commandName: application.name,
+                    description: command.description,
+                    usage: command.usage,
+                    type: command.interactionType,
+                    options: command.interactionOptions,
+                    defaultMemberPermissions: command.defaultMemberPermissions,
+                    private: command.private,
+                })
+
+                if (process.env.NODE_ENV === "development") {
+                    console.log("\x1b[2m", `[Database]: ${result}`);
+                }
+
+            }).catch((error) => {
+                console.error(`[Error]: Something went wrong trying to create an application for ${command.commandName}`, error);
+            });
+
+        } else {
+
+            // EDIT existing application command
+            await client.application?.commands.edit(command.commandId, {
+                name: command.commandName,
+                description: command.description,
+                type: command.interactionType,
+                options: command.interactionOptions,
+                defaultMemberPermissions: command.defaultMemberPermissions,
+            }).then(async (application) => {
+
+                console.log("\x1b[34m", `[Client]: ${application.name} updated successfully.`);
+
+            }).catch((error) => {
+                console.error(`[Error]: Something went wrong trying to update the application ${command.commandName}`, error);
+            });
+
         }
     }
 }

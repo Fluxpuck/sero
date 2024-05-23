@@ -4,7 +4,7 @@ const { formatExpression } = require("../../lib/helpers/StringHelpers/stringHelp
 module.exports.props = {
     commandName: "timeout",
     description: "Timeout a user in the server",
-    usage: "/mute [user] [time] [reason]",
+    usage: "/timeout [user] [time] [reason]",
     private: true,
     interaction: {
         type: 1,
@@ -32,8 +32,8 @@ module.exports.props = {
                     maxLength: 100
                 },
             ],
-        defaultMemberPermissions: ['ModerateMembers'],
-    }
+    },
+    defaultMemberPermissions: ['ModerateMembers'],
 }
 
 module.exports.autocomplete = async (client, interaction) => {

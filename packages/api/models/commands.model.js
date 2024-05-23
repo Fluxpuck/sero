@@ -38,6 +38,10 @@ module.exports = sequelize => {
             type: DataTypes.JSON,
             allowNull: true,
         },
+        defaultMemberPermissions: {
+            type: DataTypes.JSON,
+            allowNull: true,
+        },
         private: {
             type: DataTypes.BOOLEAN,
             allowNull: true,

@@ -25,7 +25,7 @@ client.login(process.env.NODE_ENV === "production"
 
     // → Displays a welcome message in the console 
     // to indicate that the bot has successfully started up.
-    console.log(`
+    console.log("\x1b[33m", `
       _______ _______ _______   _______ 
      |       |       |    _  \\ |       |
      |  _____|    ___|   | |  ||   _   |

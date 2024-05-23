@@ -5,7 +5,7 @@ module.exports.props = {
     description: "One-time experience reward!",
     usage: "/claim-exp",
     interaction: {},
-    defaultMemberPermissions: ['sendMessages'],
+    defaultMemberPermissions: ['SendMessages'],
 }
 
 module.exports.run = async (client, interaction) => {
