@@ -285,6 +285,45 @@ router.post('/gain/:guildId/:userId', async (req, res, next) => {
 });
 
 /**
+ * @router POST api/levels/reset/:guildId
+ * @description Reset a all Experience/Levels in a Guild
+ */
+router.post('/reset/:guildId', async (req, res, next) => {
+  const t = await sequelize.transaction();
+  try {
+    const { body, params } = req;
+    const { guildId } = params;
+
+    // Get levels from the user
+    const levels = await UserLevels.findAll({
+      where: {
+        guildId: guildId,
+      },
+      transaction: t,
+    });
+
+    // Reset EXP of the user
+    levels.experience = 0;
+    levels.level = 1;
+    levels.currentLevelExp = 0;
+    levels.nextLevelExp = 0;
+    levels.remainingExp = 0;
+    levels.rank = 1;
+
+    // Save the changes
+    await levels.save({ transaction: t });
+    res.status(200).send(`User ${guildId}/${userId} experience points are reset`);
+
+    //commit transaction
+    return t.commit();
+
+  } catch (error) {
+    await t.rollback();
+    next(error);
+  }
+});
+
+/**
  * @router POST api/levels/reset/:guildId/:userId
  * @description Reset a User Experience/Levels
  */
@@ -305,10 +344,11 @@ router.post('/reset/:guildId/:userId', async (req, res, next) => {
 
     // Reset EXP of the user
     levels.experience = 0;
-    levels.level = 0;
+    levels.level = 1;
     levels.currentLevelExp = 0;
     levels.nextLevelExp = 0;
     levels.remainingExp = 0;
+    levels.rank = 1;
 
     // Save the changes
     await levels.save({ transaction: t });
