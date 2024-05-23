@@ -35,7 +35,7 @@ module.exports.run = async (client, interaction) => {
     const result = await postRequest(`/balance/${interaction.guildId}/${targetUser.id}`, { amount: targetAmount });
 
     // If the request was not successful, return an error
-    if (result.status !== 200) {
+    if (result?.status !== 200) {
         return interaction.reply({
             content: `Uh oh! The user ${targetUser.username} has no balance yet.`,
             ephemeral: true

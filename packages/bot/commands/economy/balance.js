@@ -24,7 +24,7 @@ module.exports.run = async (client, interaction) => {
 
     // Get the user's the experience && check if the user has experience.
     const result = await getRequest(`/balance/${interaction.guildId}/${targetUser.id}`);
-    const balance = result.data.balance || 0;
+    const balance = result?.data.balance || 0;
 
     // Create an embed to display the user's balance
     const messageEmbed = createCustomEmbed({

@@ -73,7 +73,7 @@ module.exports.run = async (client, interaction) => {
     const result = await postRequest(`/away/${interaction.guildId}/${interaction.user.id}`, { duration: timeInMinutes, message: messageOption });
 
     // If the request was not successful, return an error
-    if (result.status !== 200) {
+    if (result?.status !== 200) {
         return interaction.reply({
             content: "Something went wrong while setting your away status.",
             ephemeral: true

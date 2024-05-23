@@ -38,12 +38,10 @@ module.exports.run = async (client, interaction) => {
 
     // Check if the user has the proper amount of money.
     if (currentBalance < targetAmount) {
-        const result = await postRequest(`/balance/${interaction.guildId}/${targetUser.id}`, { amount: -currentBalance })
-        console.log(result.data)
+        await postRequest(`/balance/${interaction.guildId}/${targetUser.id}`, { amount: -currentBalance })
     } else {
         // Remove the user's balance if has proper amount.
-        const result = await postRequest(`/balance/${interaction.guildId}/${targetUser.id}`, { amount: -targetAmount });
-        console.log(result.data)
+        await postRequest(`/balance/${interaction.guildId}/${targetUser.id}`, { amount: -targetAmount });
         return interaction.reply({
             content: `**${targetAmount.toLocaleString()}** coins were removed from <@${targetUser.id}>!`,
             ephemeral: false

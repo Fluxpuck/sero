@@ -14,17 +14,17 @@ module.exports.props = {
 module.exports.run = async (client, interaction, leaderboard = []) => {
     // Fetch all careers.
     const result = await getRequest(`/career/${interaction.guildId}`);
-    if (result.status === 200) {
+    if (result?.status === 200) {
         leaderboard = result.data;
     }
 
     // If status code is 404, return an error
-    if (result.status === 404) {
+    if (result?.status === 404) {
         return interaction.reply({
             content: `Oops! There is no one on the \`\`career\`\` leaderboard yet!`,
             ephemeral: true
         })
-    } else if (result.status !== 200) {
+    } else if (result?.status !== 200) {
         return interaction.reply({
             content: `Oops! Something went wrong while trying to fetch the leaderboard!`,
             ephemeral: true

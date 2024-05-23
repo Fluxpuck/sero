@@ -30,7 +30,7 @@ module.exports.run = async (client, interaction) => {
         const result = await postRequest(`/levels/reset/${interaction.guildId}/${targetUser.id}`);
 
         // If the request was not successful, return an error
-        if (result.status !== 200) {
+        if (result?.status !== 200) {
             return interaction.reply({
                 content: "Something went wrong while resetting the users experience.",
                 ephemeral: true
@@ -74,7 +74,7 @@ module.exports.run = async (client, interaction) => {
                 const result = await postRequest(`/levels/reset/${interaction.guildId}`);
 
                 // If the request was not successful, return an error
-                if (result.status !== 200) {
+                if (result?.status !== 200) {
                     return i.update({
                         content: "Something went wrong while resetting the experience.",
                         components: [],

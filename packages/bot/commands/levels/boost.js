@@ -43,7 +43,7 @@ module.exports.run = async (client, interaction) => {
 
         const result = await getRequest(`/guilds/${interaction.guildId}`);
         // If the request was not successful, return an error
-        if (result.status === 200) {
+        if (result?.status === 200) {
 
             // Get the modifier and duration from the response
             const modifier = result.data.modifier;
@@ -92,7 +92,7 @@ module.exports.run = async (client, interaction) => {
         const result = await postRequest(`/guilds/boost/${interaction.guildId}`, { modifier: targetModifier, duration: duration });
 
         // If the request was not successful, return an error
-        if (result.status !== 200) {
+        if (result?.status !== 200) {
             return interaction.reply({
                 content: `Uh oh! Something went wrong and the modifier has not been set.`,
                 ephemeral: true
