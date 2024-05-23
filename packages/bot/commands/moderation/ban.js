@@ -23,8 +23,8 @@ module.exports.props = {
                 maxLength: 100,
             },
         ],
-        defaultMemberPermissions: ['BanMembers'],
     },
+    defaultMemberPermissions: ['BanMembers'],
 };
 
 module.exports.autocomplete = async (client, interaction) => {
