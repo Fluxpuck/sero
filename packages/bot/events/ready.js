@@ -1,6 +1,6 @@
 const { join } = require('path');
 const { loadCommands } = require("../utils/CommandManager");
-const { postRequest, getRequest } = require('../database/connection');
+const { getRequest } = require('../database/connection');
 const events = require('../config/eventEnum');
 
 module.exports = async (client) => {
@@ -20,13 +20,6 @@ module.exports = async (client) => {
     Array.from(client.guilds.cache.values()).forEach(async guild => {
         const { data } = await getRequest(`/guilds/${guild.id}`);
         if (data) guild.active = data?.active === true;
-
-        if (process.env.SAVE_CLIENT_GUILDS === "true") {
-            const result = await postRequest(`/guilds/${guild.id}`, {
-                guildId: guild.id,
-                guildName: guild.name
-            })
-        }
     });
 
 }
