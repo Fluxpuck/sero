@@ -10,6 +10,7 @@ const cors = require("cors");
 const helmet = require("helmet");
 const { join } = require('path');
 require("dotenv").config({ path: join(__dirname, '.', 'config', '.env') });
+require('./utils/jobManager');
 
 (async () => {
     // → Setup server

@@ -29,18 +29,6 @@ const ClientButtonsEnum = {
         .setCustomId('cancel')
         .setDisabled(false),
 
-    INVITE: new ButtonBuilder()
-        .setStyle(ButtonStyle.Link)
-        .setLabel('Invite Me')
-        .setURL('https://discord.com/')
-        .setDisabled(false),
-
-    INFO: new ButtonBuilder()
-        .setStyle(ButtonStyle.Secondary)
-        .setEmoji('ℹ️')
-        .setCustomId('info')
-        .setDisabled(false),
-
     LOGS: new ButtonBuilder()
         .setStyle(ButtonStyle.Danger)
         .setEmoji('🔍')
@@ -53,6 +41,18 @@ const ClientButtonsEnum = {
         .setEmoji('🖼️')
         .setLabel('Avatar')
         .setCustomId('avatar')
+        .setDisabled(false),
+
+    YES: new ButtonBuilder()
+        .setStyle(ButtonStyle.Success)
+        .setLabel('Yes')
+        .setCustomId('yes')
+        .setDisabled(false),
+
+    NO: new ButtonBuilder()
+        .setStyle(ButtonStyle.Danger)
+        .setLabel('No')
+        .setCustomId('no')
         .setDisabled(false),
 };
 
