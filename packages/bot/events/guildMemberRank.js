@@ -2,6 +2,8 @@ const { findUser } = require("../lib/resolvers/userResolver");
 
 module.exports = async (client, payload = []) => {
 
+    console.log("guildMemberRank event received...")
+
     // Check if all required attributes exist in the payload
     const requiredAttributes = ['guildId', 'userId', 'userRankRewards', 'allRankRewards'];
     for (const attribute of requiredAttributes) {
