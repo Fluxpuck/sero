@@ -39,7 +39,3 @@ client.login(process.env.NODE_ENV === "production"
        > ${client.user.tag}
       `);
   });
-
-// → Listen to RabbitMQ messages
-const { consumeQueue } = require('./database/consumer');
-consumeQueue(client); //run message consumer
