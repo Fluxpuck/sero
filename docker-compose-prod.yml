@@ -13,11 +13,12 @@ services:
     volumes:
       - db_data:/var/lib/postgresql/data
 
-  rabbitmq:
-    image: rabbitmq:3-management
+  redis:
+    image: redis:latest
     ports:
-      - "5672:5672"
-      - "15672:15672"
+      - "6379:6379"
+    volumes:
+      - redis-data:/data
 
   api:
     build:
@@ -31,6 +32,7 @@ services:
       - "3336:3336"
     depends_on:
       - database
+      - redis
 
   bot:
     build:
@@ -41,8 +43,9 @@ services:
       NODE_ENV: production
     restart: unless-stopped
     depends_on:
-      - rabbitmq
+      - redis
       - api
 
 volumes:
   db_data:
+  redis-data:
