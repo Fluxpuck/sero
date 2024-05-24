@@ -2,9 +2,9 @@ var cron = require('node-cron');
 
 /**
  * Send a heartbeat to the RabbitMQ server
- * @schedule - every 10 minutes
+ * @schedule - every 1 minutes
  */
-cron.schedule('* * * * *', () => {
+cron.schedule('* * * * * ', () => {
 
     const { sendToQueue } = require('../database/publisher');
     const EVENT_CODES = require('../config/EventCodes');
