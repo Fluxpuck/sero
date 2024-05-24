@@ -11,8 +11,7 @@
     "moment": "^2.29.4",
     "node-cache": "^5.1.2",
     "node-cron": "^3.0.2",
-    "canvas": "^2.11.2",
-    "amqplib": "^0.10.3"
+    "canvas": "^2.11.2"
   },
   "github": {
     "user": "Fluxpuck",
