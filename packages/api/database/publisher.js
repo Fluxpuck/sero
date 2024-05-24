@@ -1,69 +1,42 @@
 const amqp = require('amqplib');
+const EVENT_CODES = require('../config/EventCodes');
 
 // RabbitMQ environment variables
 const { NODE_ENV, RABBIT_HOST, RABBIT_LOCAL } = process.env;
 
-// Setup Connection and Channel variables
-let connection, channel;
-
-async function createConnection() {
+async function sendToQueue(event_code = EVENT_CODES.UNKNOWN, data) {
     try {
-        connection = await amqp.connect(NODE_ENV === 'production' ? RABBIT_HOST : RABBIT_LOCAL, { heartbeat: 30 });
+        // Connect to RabbitMQ
+        const connection = await amqp.connect(
+            NODE_ENV === 'production' ? RABBIT_HOST : RABBIT_LOCAL
+        );
 
-        connection.on('error', (err) => {
-            console.error('Connection error:', err);
-            reconnect();
-        });
-
-        connection.on('close', () => {
-            console.log('Connection closed, retrying...');
-            reconnect();
-        });
-
-        channel = await connection.createChannel();
-        await channel.assertQueue('messages', { durable: false });
-
-    } catch (error) {
-        console.error('Error connecting to RabbitMQ:', error);
-        reconnect();
-    }
-}
-
-function reconnect() {
-    setTimeout(async () => {
-        await createConnection();
-    }, 5000); // Retry after 5 seconds
-}
-
-async function sendToQueue(event_code, data) {
-    try {
-        if (!connection || !channel) {
-            console.error('No connection or channel available');
-            await createConnection(); // Ensure connection is re-established
-        }
-
+        // Create a channel && queue
+        const channel = await connection.createChannel();
+        const queue = 'messages';
+        // Construct message payload
         const payload = {
             code: event_code,
             data: data,
             timestamp: new Date()
         };
 
-        await channel.sendToQueue('messages', Buffer.from(JSON.stringify(payload)));
+        // Send message to queue
+        await channel.assertQueue(queue, { durable: false });
+        await channel.sendToQueue(queue, Buffer.from(JSON.stringify(payload)));
 
+        // Log the message to the console → for debugging purposes only!
         if (process.env.NODE_ENV === "development") {
             console.log("Message sent: ", payload);
         }
 
+        // Close the channel && connection
+        await channel.close();
+        await connection.close();
+
     } catch (error) {
         console.error('Error sending message:', error);
-        if (error.isOperational) {
-            console.log('Reconnecting and retrying...');
-            await createConnection();
-            await sendToQueue(event_code, data); // Retry the message sending
-        }
     }
 }
-
-createConnection(); // Establish connection
 
 module.exports = { sendToQueue };

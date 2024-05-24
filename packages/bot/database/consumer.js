@@ -8,21 +8,23 @@ let connection, channel;
 
 async function createConnection() {
     try {
-        connection = await amqp.connect(NODE_ENV === 'production' ? RABBIT_HOST : RABBIT_LOCAL, { heartbeat: 30 });
+        if (!connection || !channel) {
+            connection = await amqp.connect(NODE_ENV === 'production' ? RABBIT_HOST : RABBIT_LOCAL, { heartbeat: 30 });
 
-        connection.on('error', (err) => {
-            console.error('Connection error:', err);
-            reconnect();
-        });
+            connection.on('error', (err) => {
+                console.error('Connection error:', err);
+                reconnect();
+            });
 
-        connection.on('close', () => {
-            console.log('Connection closed, retrying...');
-            reconnect();
-        });
+            connection.on('close', () => {
+                console.log('Connection closed, retrying...');
+                reconnect();
+            });
 
-        channel = await connection.createChannel();
-        await channel.assertQueue('messages', { durable: false });
-        console.log('Connection and channel established.');
+            channel = await connection.createChannel();
+            await channel.assertQueue('messages', { durable: false });
+            console.log('Connection and channel established.');
+        }
 
     } catch (error) {
         console.error('Error connecting to RabbitMQ:', error);
@@ -31,9 +33,7 @@ async function createConnection() {
 }
 
 function reconnect() {
-    setTimeout(async () => {
-        await createConnection();
-    }, 5000); // Retry after 5 seconds
+    setTimeout(createConnection, 5000); // Retry after 5 seconds
 }
 
 async function consumeQueue(client) {
@@ -64,6 +64,6 @@ async function consumeQueue(client) {
     }
 }
 
-createConnection(); // Establish connection
-
 module.exports = { consumeQueue };
+
+createConnection(); // Establish connection
