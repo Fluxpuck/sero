@@ -23,7 +23,7 @@ services:
     ports:
       - "6379:6379" # Map port 6379 on the host to port 6379 in the container
     volumes:
-      - redis-data:/data
+      - redis-data:/var/lib/redis/data
 
 # Persistent Data Volumes
 volumes:
