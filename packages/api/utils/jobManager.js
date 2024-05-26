@@ -1,13 +1,11 @@
 var cron = require('node-cron');
+const { publishMessage, REDIS_CHANNELS } = require('../database/publisher');
+
 
 /**
- * Send a heartbeat to the RabbitMQ server
+ * Send a heartbeat message to the Redis channel
  * @schedule - every 1 minutes
  */
 cron.schedule('* * * * * ', () => {
-
-    const { sendToQueue } = require('../database/publisher');
-    const EVENT_CODES = require('../config/EventCodes');
-    sendToQueue(EVENT_CODES.HEARTBEAT, {});
-
+    publishMessage(REDIS_CHANNELS.HEARTBEAT, {});
 });

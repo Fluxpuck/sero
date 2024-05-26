@@ -44,6 +44,9 @@ require('./utils/jobManager');
     await sequelize.sync();
     const t1 = performance.now();
 
+    // → Connect to Redis
+    const { redisClient } = require('./database/publisher');
+
     // → Start server
     await app.listen(port, () => {
         return console.log(`
@@ -51,6 +54,7 @@ require('./utils/jobManager');
     > ${new Date().toUTCString()}
     > Database Synced in ${Math.round(t1 - t0)} milliseconds
     > Ready on http://localhost:${port}
+    > ${redisClient.status === 'ready' ? 'Redis is connected' : 'Redis is not connected!'}
         `)
     });
 

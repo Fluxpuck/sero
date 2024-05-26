@@ -32,3 +32,4 @@ node_modules
 .VSCodeCounter
 .vscode/extensions.json
 .vscode/settings.json
+package-lock.json

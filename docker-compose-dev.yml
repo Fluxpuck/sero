@@ -1,4 +1,4 @@
-version: "1"
+version: "3"
 
 services:
   # PostgreSQL
@@ -6,7 +6,7 @@ services:
     image: "postgres:15"
     command: postgres -c 'max_connections=200' -c shared_preload_libraries=pg_stat_statements -c pg_stat_statements.track=all -c pg_stat_statements.max=10000
     ports:
-      - "5433:5432" # Map port 5433 on the host to port 5432 in the container
+      - "5432:5432"
     environment:
       - POSTGRES_USER=postgres
       - POSTGRES_PASSWORD=postgres
@@ -15,15 +15,17 @@ services:
     labels:
       NAME: "flux-pg"
     volumes:
-      - postgresql-data:/var/lib/postgresql-15/data
+      - postgresql-data:/var/lib/postgresql/data
 
-  # RabbitMQ
-  rabbitmq:
-    image: rabbitmq:3-management
+  # Redis
+  redis:
+    image: redis:latest
     ports:
-      - "5673:5672" # Map port 5673 on the host to port 5672 in the container
-      - "15673:15672" # Map port 15673 on the host to port 15672 in the container
+      - "6379:6379" # Map port 6379 on the host to port 6379 in the container
+    volumes:
+      - redis-data:/data
 
 # Persistent Data Volumes
 volumes:
   postgresql-data:
+  redis-data:

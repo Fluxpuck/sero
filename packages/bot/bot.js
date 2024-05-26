@@ -18,6 +18,10 @@ client.version = require('./package.json').version
 const events = require('./utils/EventManager');
 events.run(client); //run the events
 
+// → Subscribe to Redis channels
+const { redisClient, subscribeToChannel } = require('./database/subscriber');
+subscribeToChannel(client);
+
 // → Login to Discord API
 client.login(process.env.NODE_ENV === "production"
   ? process.env.PRODUCTION_TOKEN
@@ -37,9 +41,6 @@ client.login(process.env.NODE_ENV === "production"
       Discord bot - Startup details:
        > ${new Date().toUTCString()}
        > ${client.user.tag}
+       > ${redisClient.status === 'ready' ? 'Redis is connected' : 'Redis is not connected!'}
       `);
   });
-
-// → Listen to RabbitMQ messages
-const { consumeQueue } = require('./database/consumer');
-consumeQueue(client); //run message consumer
