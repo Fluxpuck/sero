@@ -45,7 +45,7 @@ require('./utils/jobManager');
     const t1 = performance.now();
 
     // → Connect to Redis
-    require('./database/publisher');
+    const { redisClient } = require('./database/publisher');
 
     // → Start server
     await app.listen(port, () => {
@@ -54,6 +54,7 @@ require('./utils/jobManager');
     > ${new Date().toUTCString()}
     > Database Synced in ${Math.round(t1 - t0)} milliseconds
     > Ready on http://localhost:${port}
+    > ${redisClient.status === 'ready' ? 'Redis is connected' : 'Redis is not connected!'}
         `)
     });
 

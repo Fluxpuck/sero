@@ -1,9 +1,11 @@
 var cron = require('node-cron');
+const { publishMessage, REDIS_CHANNELS } = require('../database/publisher');
+
 
 /**
- * Example of a cron job
+ * Send a heartbeat message to the Redis channel
  * @schedule - every 1 minutes
  */
 cron.schedule('* * * * * ', () => {
-    return;
+    publishMessage(REDIS_CHANNELS.HEARTBEAT, {});
 });

@@ -1,5 +1,4 @@
 const Redis = require('ioredis');
-const { HEARTBEAT } = require('../config/EventCodes');
 
 // Retry connection settings
 const MAX_RETRIES = 5;
@@ -49,7 +48,7 @@ const createRedisClient = () => {
 
         // Log the connection status
         if (process.env.NODE_ENV === "development") {
-            console.log('Publisher connected to Redis!');
+            console.log('Subscriber connected to Redis!');
         }
     });
 
@@ -59,29 +58,35 @@ const createRedisClient = () => {
 // Create a Redis client
 const redisClient = createRedisClient();
 
-// Publish a message to a channel
-const publishMessage = (event_code = REDIS_CHANNELS.HEARTBEAT, data) => {
-    // Construct message payload
-    const payload = {
-        code: event_code,
-        data: data,
-        timestamp: new Date().toUTCString()
-    };
+// Subscribe to a channel and handle incoming messages
+const subscribeToChannel = (client) => {
 
-    // Publish the message to the Redis channel
-    // The message is a JSON string
-    redisClient.publish(event_code, JSON.stringify(payload), (err, reply) => {
-        if (err) {
-            console.error('Error publishing message', err);
-        } else {
-            // Log the message to the console → for debugging purposes only!
-            if (process.env.NODE_ENV === "development") {
-                console.log(`Message published to ${event_code}:`);
-                console.log(payload);
+    // Subscribe to all channels from the REDIS_CHANNELS object
+    Object.values(REDIS_CHANNELS).forEach(channel => {
+        redisClient.subscribe(channel, (err, count) => {
+            if (err) {
+                console.error('Error subscribing to channel', err);
+            } else {
+                console.log(`Subscribed to ${count} channel(s). Listening for updates on the ${channel} channel.`);
             }
-        }
+        });
+    });
+
+
+    // Listen for incoming messages
+    // When a message is received, emit a Discord client-event
+    redisClient.on('message', (channel, message) => {
+
+        // Parse the message payload
+        const payload = JSON.parse(message);
+
+        // Emit the Discord client event
+        client.emit(payload.code, payload.data);
     });
 };
 
+
+
+
 // Export the module
-module.exports = { redisClient, publishMessage, REDIS_CHANNELS };
+module.exports = { redisClient, subscribeToChannel, REDIS_CHANNELS };
