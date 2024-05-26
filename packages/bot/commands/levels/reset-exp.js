@@ -21,6 +21,8 @@ module.exports.props = {
 }
 
 module.exports.run = async (client, interaction) => {
+    await interaction.deferReply({ ephemeral: false });
+
     // Get User details from the interaction options
     const targetUser = interaction.options.get("user")?.user
 
@@ -31,12 +33,13 @@ module.exports.run = async (client, interaction) => {
 
         // If the request was not successful, return an error
         if (result?.status !== 200) {
-            return interaction.reply({
+            await interaction.deleteReply();
+            return interaction.followUp({
                 content: "Something went wrong while resetting the users experience.",
                 ephemeral: true
             })
         } else {
-            return interaction.reply({
+            return interaction.editReply({
                 content: `<@${targetUser.id}>'s experience has been reset!`,
                 ephemeral: false
             })
@@ -51,7 +54,7 @@ module.exports.run = async (client, interaction) => {
             );
 
         // Send a reply and ask if the user is sure
-        const response = await interaction.reply({
+        const response = await interaction.editReply({
             content: "Are you sure you want to reset all experience for all users?\n*This action cannot be undone.*",
             components: [messageComponents],
             ephemeral: false
