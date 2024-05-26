@@ -24,15 +24,20 @@ module.exports.props = {
 };
 
 module.exports.run = async (client, interaction, AuditLogs = []) => {
+    await interaction.deferReply({ ephemeral: false });
+
     // Get User details from the interaction options
     const targetUser = interaction.options.get("user").user;
 
     // Fetch the user by userId
     const member = await interaction.guild.members.fetch(targetUser.id);
-    if (!member) return interaction.reply({
-        content: "User not found in this server.",
-        ephemeral: true
-    });
+    if (!member) {
+        await interaction.deleteReply();
+        return interaction.followUp({
+            content: "User not found in this server.",
+            ephemeral: true
+        });
+    }
 
     // Check if the member has AuditLogs
     const memberLogs = await getRequest(`/logs/${interaction.guildId}/${targetUser.id}`);
@@ -115,7 +120,7 @@ module.exports.run = async (client, interaction, AuditLogs = []) => {
     messageComponents.components.forEach(button => button.data.disabled = false)
 
     // Return the message
-    const response = await interaction.reply({
+    const response = await interaction.editReply({
         embeds: [messageEmbed],
         components: [messageComponents],
         ephemeral: false
