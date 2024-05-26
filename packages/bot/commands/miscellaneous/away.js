@@ -64,7 +64,7 @@ module.exports.autocomplete = async (client, interaction) => {
 }
 
 module.exports.run = async (client, interaction) => {
-    await interaction.deferReply()
+    await interaction.deferReply({ ephemeral: false });
 
     // Get Away time value from the interaction options
     const timeOption = interaction.options.get("time")?.value;
