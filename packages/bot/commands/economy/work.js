@@ -14,6 +14,7 @@ module.exports.props = {
 }
 
 module.exports.run = async (client, interaction) => {
+  await interaction.deferReply({ ephemeral: false });
 
   // Fetch career snapshot from the user
   const snapshotResult = await getRequest(`/career/snap/${interaction.guild.id}/${interaction.user.id}`);
@@ -41,7 +42,8 @@ module.exports.run = async (client, interaction) => {
       // Update the user's balance
       const updateUserBalance = await postRequest(`/balance/${interaction.guild.id}/${interaction.user.id}`, { amount: income });
       if (updateUserBalance.status != 200) {
-        return interaction.reply({
+        await interaction.deleteReply();
+        return interaction.followUp({
           content: `Oops! Something went wrong while updating your balance. Please try again later.`,
           ephemeral: true
         })
@@ -60,7 +62,8 @@ module.exports.run = async (client, interaction) => {
 
       // If the work snapshot was not added successfully, return an error message
       if (addWorkSnapshot.status != 200) {
-        return interaction.reply({
+        await interaction.deleteReply();
+        return interaction.followUp({
           content: `Oops! Something went wrong while working. Please try again later.`,
           ephemeral: true
         })
@@ -68,7 +71,7 @@ module.exports.run = async (client, interaction) => {
 
       // If the work snapshot was added successfully, return a message
       if (addWorkSnapshot.status === 200) {
-        return interaction.reply({
+        return interaction.editReply({
           embeds: [embed],
           ephemeral: false
         })
@@ -93,7 +96,8 @@ module.exports.run = async (client, interaction) => {
         // Get 3 random jobs
         const jobsResult = await getRequest(`/career/jobs?limit=3`);
         if (jobsResult.status != 200) {
-          return interaction.reply({
+          await interaction.deleteReply();
+          return interaction.followUp({
             content: `Oops! Something went wrong while fetching available jobs. Please try again later.`,
             ephemeral: true
           })
@@ -145,7 +149,7 @@ module.exports.run = async (client, interaction) => {
       })
 
       // Send the message
-      const response = await interaction.reply({
+      const response = await interaction.editReply({
         embeds: [messageEmbed],
         components: [messageComponents],
         ephemeral: false
@@ -212,7 +216,8 @@ module.exports.run = async (client, interaction) => {
     const remainingTime = getTimeUntilTomorrow(snapshotResult.data.createdAt);
 
     // return a message that the user has already worked today
-    return interaction.reply({
+    await interaction.deleteReply();
+    return interaction.followUp({
       content: `You have already worked today! Please try again in ${remainingTime}.`,
       ephemeral: true
     })

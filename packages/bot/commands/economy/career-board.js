@@ -12,6 +12,8 @@ module.exports.props = {
 }
 
 module.exports.run = async (client, interaction, leaderboard = []) => {
+    await interaction.deferReply({ ephemeral: false });
+
     // Fetch all careers.
     const result = await getRequest(`/career/${interaction.guildId}`);
     if (result?.status === 200) {
@@ -20,12 +22,14 @@ module.exports.run = async (client, interaction, leaderboard = []) => {
 
     // If status code is 404, return an error
     if (result?.status === 404) {
-        return interaction.reply({
+        await interaction.deleteReply();
+        return interaction.followUp({
             content: `Oops! There is no one on the \`\`career\`\` leaderboard yet!`,
             ephemeral: true
         })
     } else if (result?.status !== 200) {
-        return interaction.reply({
+        await interaction.deleteReply();
+        return interaction.followUp({
             content: `Oops! Something went wrong while trying to fetch the leaderboard!`,
             ephemeral: true
         })
@@ -76,7 +80,7 @@ module.exports.run = async (client, interaction, leaderboard = []) => {
     messageComponents?.components[nextIndex]?.data && (messageComponents.components[nextIndex].data.disabled = false);
 
     // Return the message
-    const response = await interaction.reply({
+    const response = await interaction.editReply({
         embeds: [messageEmbed],
         components: messageComponents ? [messageComponents] : [],
         ephemeral: false
