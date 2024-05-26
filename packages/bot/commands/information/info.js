@@ -12,7 +12,6 @@ module.exports.props = {
 }
 
 module.exports.run = async (client, interaction) => {
-    await interaction.deferReply({ ephemeral: false });
 
     // Setting up the embedded message
     const messageEmbed = new EmbedBuilder()
@@ -26,7 +25,7 @@ module.exports.run = async (client, interaction) => {
         )
 
     // Sending the message
-    return interaction.editReply({
+    return interaction.reply({
         embeds: [messageEmbed],
         ephemeral: false,
     }).catch((err) => { throw err });

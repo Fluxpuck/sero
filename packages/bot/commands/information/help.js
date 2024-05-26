@@ -12,7 +12,6 @@ module.exports.props = {
 }
 
 module.exports.run = async (client, interaction) => {
-    await interaction.deferReply({ ephemeral: false });
 
     // Get all commands that do not have the Private property
     const commandList = client.commands.map(c => c.props)
@@ -51,7 +50,7 @@ module.exports.run = async (client, interaction) => {
 
     // Reply to the user
     const embedActionRow = new ActionRowBuilder().addComponents(dropdownMenu)
-    const response = await interaction.editReply({
+    const response = await interaction.reply({
         embeds: [messageEmbed],
         components: [embedActionRow],
         ephemeral: false

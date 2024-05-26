@@ -21,8 +21,6 @@ module.exports.props = {
 
 // → Constructing the command and exporting
 module.exports.run = async (client, interaction) => {
-    await interaction.deferReply({ ephemeral: false });
-
     // Get details from the interaction options
     const targetRole = interaction.options.get("role").role;
 
@@ -64,7 +62,7 @@ module.exports.run = async (client, interaction) => {
     });
 
     // Send the embed
-    return interaction.editReply({
+    return interaction.reply({
         embeds: [messageEmbed],
         ephemeral: false,
     });

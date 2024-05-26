@@ -7,10 +7,9 @@ module.exports.props = {
 }
 
 module.exports.run = async (client, interaction) => {
-    await interaction.deferReply({ ephemeral: false })
 
     // Reply with Discord Latency
-    const message = await interaction.editReply({ content: 'Pinging...', fetchReply: true });
+    const message = await interaction.reply({ content: 'Pinging...', fetchReply: true });
     interaction.editReply(`Pong! → ${message.createdTimestamp - interaction.createdTimestamp}ms`);
 
 }
