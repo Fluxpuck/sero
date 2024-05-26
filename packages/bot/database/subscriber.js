@@ -14,7 +14,7 @@ const REDIS_CHANNELS = {
 const createRedisClient = () => {
     // Create a new Redis connection
     const client = new Redis({
-        host: process.env.NODE_ENV === 'production' ? process.env.REDIS_HOST : process.env.LOCAL_REDIS_HOST,
+        host: process.env.NODE_ENV === 'production' ? process.env.REDIS_HOST : "localhost",
         port: process.env.REDIS_PORT,
         reconnectOnError: (err) => {
             return true; // Retry on every error
