@@ -1,5 +1,4 @@
 const Redis = require('ioredis');
-const { HEARTBEAT } = require('../config/EventCodes');
 
 // Retry connection settings
 const MAX_RETRIES = 5;

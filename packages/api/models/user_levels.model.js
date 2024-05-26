@@ -1,5 +1,5 @@
 const { Model, DataTypes, Op } = require('sequelize');
-const EVENT_CODES = require('../config/EventCodes');
+const { publishMessage, REDIS_CHANNELS } = require('../database/publisher');
 
 class UserLevels extends Model {
     static associate(models) {
@@ -157,13 +157,15 @@ module.exports = sequelize => {
             if (userLevel.rank !== newRank.rank) {
                 userLevel.rank = newRank.rank;
 
-                // SEND DATA TO A QUEUE
-                const data = {
-                    guildId: userLevel.guildId,
-                    userId: userLevel.userId,
-                    userRankRewards: newRank.ranks,
-                    allRankRewards: newRank.rewards,
-                };
+                // Publish the user's new rank to the Redis channel
+                publishMessage(REDIS_CHANNELS.RANK,
+                    {
+                        guildId: userLevel.guildId,
+                        userId: userLevel.userId,
+                        userRankRewards: newRank.ranks,
+                        allRankRewards: newRank.rewards,
+                    }
+                );
             }
         }
     });

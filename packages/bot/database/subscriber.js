@@ -67,18 +67,26 @@ const subscribeToChannel = (client) => {
             if (err) {
                 console.error('Error subscribing to channel', err);
             } else {
-                console.log(`Subscribed to ${count} channel(s). Listening for updates on the ${channel} channel.`);
+                // Log the message to the console → for debugging purposes only!
+                if (process.env.NODE_ENV === "development") {
+                    console.log(`Subscribed to ${channel}`);
+                }
             }
         });
     });
 
-
     // Listen for incoming messages
-    // When a message is received, emit a Discord client-event
+    // When a message is received, parse and emit a Discord client-event
     redisClient.on('message', (channel, message) => {
 
         // Parse the message payload
         const payload = JSON.parse(message);
+
+        // Log the message to the console → for debugging purposes only!
+        if (process.env.NODE_ENV === "development") {
+            console.log(`Received message from ${channel}:`);
+            console.log(payload)
+        }
 
         // Emit the Discord client event
         client.emit(payload.code, payload.data);
