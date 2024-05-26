@@ -44,6 +44,9 @@ require('./utils/jobManager');
     await sequelize.sync();
     const t1 = performance.now();
 
+    // → Connect to Redis
+    require('./database/publisher');
+
     // → Start server
     await app.listen(port, () => {
         return console.log(`

@@ -1,16 +1,38 @@
-import globals from 'globals'
-
-import path from 'path'
-import { fileURLToPath } from 'url'
-import { FlatCompat } from '@eslint/eslintrc'
-import pluginJs from '@eslint/js'
-
-// mimic CommonJS variables -- not needed if using CommonJS
-const __filename = fileURLToPath(import.meta.url)
-const __dirname = path.dirname(__filename)
-const compat = new FlatCompat({ baseDirectory: __dirname, recommendedConfig: pluginJs.configs.recommended })
+import globals from 'globals';
+import pluginJs from '@eslint/js';
 
 export default [
-  { languageOptions: { globals: globals.browser } },
-  ...compat.extends('standard')
-]
+  // Base configuration for all JS files
+  {
+    files: ['**/*.js'],
+    languageOptions: {
+      ecmaVersion: 2021,
+      globals: {
+        ...globals.browser,
+        ...globals.node,
+      },
+    },
+    rules: {
+      'no-unused-vars': ['warn', { varsIgnorePattern: '^(err|error)$' }],
+    },
+  },
+  // Configuration specific for commonjs sourceType
+  {
+    files: ['**/*.js'],
+    languageOptions: {
+      sourceType: 'commonjs',
+    },
+  },
+  // Plugin's recommended configuration
+  pluginJs.configs.recommended,
+  // Configuration for ECMAScript modules
+  {
+    files: ['**/*.js'],
+    languageOptions: {
+      sourceType: 'module',
+    },
+    rules: {
+      // your custom rules
+    },
+  },
+];
