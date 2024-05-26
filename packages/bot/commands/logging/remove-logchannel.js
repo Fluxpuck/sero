@@ -39,7 +39,7 @@ module.exports.autocomplete = async (client, interaction) => {
 }
 
 module.exports.run = async (client, interaction) => {
-	await interaction.deferReply({ ephemeral: false });
+	await interaction.deferReply({ ephemeral: true });
 
 	// Get logTypeCategory from the interaction options
 	const targetLogCategory = interaction.options.get("log-type").value;
