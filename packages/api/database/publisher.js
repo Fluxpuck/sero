@@ -48,7 +48,7 @@ const createRedisClient = () => {
 
         // Log the connection status
         if (process.env.NODE_ENV === "development") {
-            console.log('Publisher connected to Redis!');
+            console.log(`\x1b[35m`, ' > Publisher connected to Redis!');
         }
     });
 

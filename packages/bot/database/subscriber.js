@@ -48,7 +48,7 @@ const createRedisClient = () => {
 
         // Log the connection status
         if (process.env.NODE_ENV === "development") {
-            console.log('Subscriber connected to Redis!');
+            console.log(`\x1b[35m`, ' > Subscriber connected to Redis!');
         }
     });
 
@@ -69,7 +69,7 @@ const subscribeToChannel = (client) => {
             } else {
                 // Log the message to the console → for debugging purposes only!
                 if (process.env.NODE_ENV === "development") {
-                    console.log(`Subscribed to ${channel}`);
+                    console.log(`\x1b[35m`, `[Redis]: Subscribed to ${channel}`);
                 }
             }
         });
@@ -92,9 +92,6 @@ const subscribeToChannel = (client) => {
         client.emit(payload.code, payload.data);
     });
 };
-
-
-
 
 // Export the module
 module.exports = { redisClient, subscribeToChannel, REDIS_CHANNELS };
