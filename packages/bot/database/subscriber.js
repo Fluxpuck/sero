@@ -45,11 +45,6 @@ const createRedisClient = () => {
     // Reset retry count on successful connection
     client.on('connect', () => {
         retryCount = 0;
-
-        // Log the connection status
-        if (process.env.NODE_ENV === "development") {
-            console.log(`\x1b[35m`, ' > Subscriber connected to Redis!');
-        }
     });
 
     return client;
