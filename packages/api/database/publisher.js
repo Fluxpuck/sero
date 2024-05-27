@@ -70,8 +70,10 @@ const publishMessage = (event_code = REDIS_CHANNELS.HEARTBEAT, data) => {
         } else {
             // Log the message to the console → for debugging purposes only!
             if (process.env.NODE_ENV === "development") {
-                console.log(`Message published to ${event_code}:`);
-                console.log(payload);
+                if (event_code != REDIS_CHANNELS.HEARTBEAT) {
+                    console.log(`Message published to ${event_code}:`);
+                    console.log(payload);
+                }
             }
         }
     });

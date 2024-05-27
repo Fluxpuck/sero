@@ -79,8 +79,10 @@ const subscribeToChannel = (client) => {
 
         // Log the message to the console → for debugging purposes only!
         if (process.env.NODE_ENV === "development") {
-            console.log(`Received message from ${channel}:`);
-            console.log(payload)
+            if (channel != REDIS_CHANNELS.HEARTBEAT) {
+                console.log(`Received message from ${channel}:`);
+                console.log(payload)
+            }
         }
 
         // Emit the Discord client event
