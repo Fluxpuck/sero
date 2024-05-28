@@ -45,9 +45,10 @@ module.exports = async (client, applications) => {
     for (const command of databaseCommands) {
 
         // Check if the command has a commandId
+        // Or if the application has the commandId
         // If not, create a new command in the application
         // And update the database
-        if (!command.commandId) {
+        if (!command.commandId || !applications.has(command.commandId)) {
 
             // CREATE new application command
             await client.application?.commands.create({
