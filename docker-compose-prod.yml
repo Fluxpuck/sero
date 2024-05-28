@@ -34,7 +34,7 @@ services:
     ports:
       - "3336:3336"
     depends_on:
-      - database
+      - postgres
       - redis
 
   bot:
