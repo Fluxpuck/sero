@@ -30,6 +30,7 @@ module.exports.props = {
 }
 
 module.exports.run = async (client, interaction) => {
+    await interaction.deferReply({ ephemeral: false });
 
     // Get modifier && duration details from the interaction options
     const targetModifier = interaction.options.get("modifier")?.value;
@@ -40,7 +41,6 @@ module.exports.run = async (client, interaction) => {
         /**
          * If no options are provided, we should show the current modifier and duration
          */
-
         const result = await getRequest(`/guilds/${interaction.guildId}`);
         // If the request was not successful, return an error
         if (result?.status === 200) {
@@ -54,7 +54,7 @@ module.exports.run = async (client, interaction) => {
             const expireMoment = moment(expireAt);
 
             if (!expireAt || now.isAfter(expireMoment)) {
-                return interaction.reply({
+                return interaction.editReply({
                     content: `The current modifier is **${modifier}X**.`,
                     ephemeral: false
                 });
@@ -66,14 +66,15 @@ module.exports.run = async (client, interaction) => {
 
                 const timeLeft = `${durationHours} hour${durationHours === 1 ? "" : "s"} and ${durationMinutes} minute${durationMinutes === 1 ? "" : "s"}`;
 
-                return interaction.reply({
+                return interaction.editReply({
                     content: `The current experience modifier is **${modifier}X** for **${duration} hour${duration === 1 ? "" : "s"}**. There are ${timeLeft} left.`,
                     ephemeral: false
                 });
             }
 
         } else {
-            return interaction.reply({
+            await interaction.deleteReply();
+            return interaction.followUp({
                 content: `Uh oh! Something went wrong fetching the server modifier.`,
                 ephemeral: true
             })

@@ -27,6 +27,8 @@ module.exports.props = {
 }
 
 module.exports.run = async (client, interaction) => {
+    await interaction.deferReply({ ephemeral: false });
+
     // Get User && Amount details from the interaction options
     const targetUser = interaction.options.get("user").user;
     const transferAmount = interaction.options.get("amount").value;
@@ -44,12 +46,13 @@ module.exports.run = async (client, interaction) => {
 
         // If either request was not successful, return an error
         if (removeResult.status !== 200 || addResult.status !== 200) {
-            interaction.reply({
+            await interaction.deleteReply();
+            interaction.followUp({
                 content: "Something went wrong while transferring experience to the user.",
                 ephemeral: true
             })
         } else {
-            interaction.reply({
+            interaction.editReply({
                 content: `<@${targetUser.id}> has recieved **${transferAmount}** of your experience!`,
                 ephemeral: false
             })
@@ -58,7 +61,8 @@ module.exports.run = async (client, interaction) => {
         // Add the user to the cooldowns Collection
         return client.cooldowns.set(cooldownKey, interaction, 12 * 60 * 60) // 3600 minutes 
     } else {
-        return interaction.reply({
+        await interaction.deleteReply();
+        return interaction.followUp({
             content: `You can only transfer experience once per 12-hours!`,
             ephemeral: true
         })

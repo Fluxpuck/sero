@@ -64,6 +64,8 @@ module.exports.autocomplete = async (client, interaction) => {
 }
 
 module.exports.run = async (client, interaction) => {
+    await interaction.deferReply({ ephemeral: true });
+
     // Get User details from the interaction options && convert user into a member object.
     const targetUser = interaction.options.get("user").user;
 
@@ -71,13 +73,13 @@ module.exports.run = async (client, interaction) => {
     const member = await interaction.guild.members.fetch(targetUser.id)
 
     // If the target is the author, return message
-    if (member.user.id === interaction.user.id) return interaction.reply({
+    if (member.user.id === interaction.user.id) return interaction.editReply({
         content: "You cannot mute yourself!",
         ephemeral: true
     });
 
     // If the member is not moderatable, return message
-    if (!member.moderatable) return interaction.reply({
+    if (!member.moderatable) return interaction.editReply({
         content: `<@${member.user.id}> is a moderator!`,
         ephemeral: true
     });
@@ -92,13 +94,13 @@ module.exports.run = async (client, interaction) => {
     // Mute the target user with reason
     member.timeout(duration, `${targetReason}`)
         .then(() => {
-            return interaction.reply({
+            return interaction.editReply({
                 content: `You successfully muted <@${member.user.id}> for:\n> ${targetReason}`,
                 ephemeral: true,
             });
         })
         .catch(err => {
-            return interaction.reply({
+            return interaction.editReply({
                 content: `Could not mute <@${member.user.id}>!`,
                 ephemeral: true,
             });

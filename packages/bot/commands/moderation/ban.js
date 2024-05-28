@@ -41,6 +41,8 @@ module.exports.autocomplete = async (client, interaction) => {
 }
 
 module.exports.run = async (client, interaction) => {
+    await interaction.deferReply({ ephemeral: true });
+
     // Get User && Reason details from the interaction options && convert user into a member
     const targetUser = interaction.options.get("user").user;
     const violationReason = interaction.options.get("reason").value;
@@ -49,13 +51,13 @@ module.exports.run = async (client, interaction) => {
     const member = await interaction.guild.members.fetch(targetUser.id)
 
     // If the target is the author, return message
-    if (member.user.id === interaction.user.id) return interaction.reply({
+    if (member.user.id === interaction.user.id) return interaction.editReply({
         content: "You cannot ban yourself!",
         ephemeral: true
     });
 
     // If the member is not moderatable, return message
-    if (!member.moderatable) return interaction.reply({
+    if (!member.moderatable) return interaction.editReply({
         content: `<@${member.user.id}> is a moderator!`,
         ephemeral: true
     });
@@ -63,13 +65,13 @@ module.exports.run = async (client, interaction) => {
     // Ban the target user with reason
     member.ban({ reason: violationReason, days: null })
         .then(() => {
-            return interaction.reply({
+            return interaction.editReply({
                 content: `You successfully banned **${member.user.username}** (${member.user.id}) for:\n> ${violationReason}`,
                 ephemeral: true,
             });
         })
         .catch(err => {
-            return interaction.reply({
+            return interaction.editReply({
                 content: `Could not ban **${member.user.username}** (${member.user.id})!`,
                 ephemeral: true,
             });

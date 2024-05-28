@@ -27,10 +27,11 @@ module.exports.props = {
 }
 
 module.exports.run = async (client, interaction) => {
+    await interaction.deferReply({ ephemeral: false });
+
     // Get User && Amount details from the interaction options
     const targetUser = interaction.options.get("user").user;
     const targetAmount = interaction.options.get("amount").value || 0;
-
 
     // Get the user's the experience && check if the user has experience.
     const currentUser = await getRequest(`/levels/${interaction.guildId}/${targetUser.id}`);
@@ -43,13 +44,14 @@ module.exports.run = async (client, interaction) => {
     // Remove the user's experience if has proper amount.
     const result = await postRequest(`/levels/add/${interaction.guildId}/${targetUser.id}`, { experience: -targetAmount });
     if (result && result?.status !== 200) {
-        interaction.reply({
+        await interaction.deleteReply();
+        interaction.followUp({
             content: "Something went wrong while removing experience from the user.",
             ephemeral: true
         })
 
     } else {
-        return interaction.reply({
+        return interaction.editReply({
             content: `**${targetAmount}** experience was removed from <@${targetUser.id}>!`,
             ephemeral: false
         })
