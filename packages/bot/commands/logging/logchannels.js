@@ -7,6 +7,7 @@ module.exports.props = {
 }
 
 module.exports.run = async (client, interaction) => {
+    await interaction.deferReply({ ephemeral: true });
 
     /*
     1. Fetch the servers log-channels per log Category

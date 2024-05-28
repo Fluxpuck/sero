@@ -27,13 +27,14 @@ module.exports.props = {
 }
 
 module.exports.run = async (client, interaction) => {
+    await interaction.deferReply({ ephemeral: true });
 
     // Get User && Amount details from the interaction options
     const targetUser = interaction.options.get("user")?.user
     const targetAmount = interaction.options.get("amount").value;
 
     // Start the interaction reply
-    interaction.reply({
+    interaction.editReply({
         content: `*Deleting **${targetAmount}** messages${targetUser ? ` from **${targetUser.tag}**` : ""}...*`,
         ephemeral: true
     }).catch(e => { });
