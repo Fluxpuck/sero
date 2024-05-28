@@ -20,11 +20,13 @@ module.exports.props = {
 }
 
 module.exports.run = async (client, interaction) => {
+	await interaction.deferReply({ ephemeral: false });
 
 	// Get User details from the interaction options
 	const targetUser = interaction.options.get("user")?.user || interaction.user;
 	if (!targetUser) {
-		return interaction.reply({
+		await interaction.deleteReply();
+		return interaction.followUp({
 			content: "Oops! Something went wrong while trying to fetch the user.",
 			ephemeral: true
 		})
@@ -41,12 +43,14 @@ module.exports.run = async (client, interaction) => {
 
 		// If status code is 404, return an error saying the user is not ranked yet
 		if (result?.status === 404) {
-			return interaction.reply({
+			await interaction.deleteReply();
+			return interaction.followUp({
 				content: `Uh oh! The user ${targetUser.username} is no rank yet!`,
 				ephemeral: true
 			})
 		} else if (result?.status !== 200) { // If the status code is not 200, return an error that something went wrong
-			return interaction.reply({
+			await interaction.deleteReply();
+			return interaction.followUp({
 				content: "Oops! Something went wrong while trying to fetch the rank!",
 				ephemeral: true
 			})
@@ -70,12 +74,12 @@ module.exports.run = async (client, interaction) => {
 
 		// If creating the rank card was successful, return rankcard
 		if (rankCard) {
-			interaction.reply(
+			interaction.editReply(
 				{ files: [rankCard] }
 			)
-		} else {
-			// Else return an error
-			interaction.reply({
+		} else { // Else return an error
+			await interaction.deleteReply();
+			interaction.followUp({
 				content: "Oops! Something went wrong creating your rank card!",
 				ephemeral: true
 			})

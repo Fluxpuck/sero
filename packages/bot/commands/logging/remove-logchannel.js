@@ -39,13 +39,14 @@ module.exports.autocomplete = async (client, interaction) => {
 }
 
 module.exports.run = async (client, interaction) => {
+	await interaction.deferReply({ ephemeral: true });
 
 	// Get logTypeCategory from the interaction options
 	const targetLogCategory = interaction.options.get("log-type").value;
 
 	// If the logTypeCategory is not valid, return an error
 	if (!Object.values(LOGGING_CATEGORIES).includes(targetLogCategory)) {
-		return interaction.reply({
+		return interaction.editReply({
 			content: `Oops! The log-type you provided is not valid`,
 			ephemeral: true
 		})
@@ -58,19 +59,19 @@ module.exports.run = async (client, interaction) => {
 		// Remove the log channel for the logTypeCategory
 		const deleteResponse = await deleteRequest(`/logchannels/${interaction.guild.id}/${targetLogCategory}`);
 		if (deleteResponse.status !== 200) {
-			return interaction.reply({
+			return interaction.editReply({
 				content: `Something went wrong while removing the log-channel \`${targetLogCategory}\`.`,
 				ephemeral: true
 			})
 		} else {
-			return interaction.reply({
+			return interaction.editReply({
 				content: `The log-channel for \`${targetLogCategory}\` has been removed.`,
 				ephemeral: true
 			})
 		}
 
 	} else {
-		return interaction.reply({
+		return interaction.editReply({
 			content: "Cannot remove the log-channel for the specified log type.",
 			ephemeral: true
 		})

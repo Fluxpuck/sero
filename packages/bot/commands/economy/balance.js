@@ -19,6 +19,8 @@ module.exports.props = {
 }
 
 module.exports.run = async (client, interaction) => {
+    await interaction.deferReply({ ephemeral: false });
+
     // Get User details from the interaction options
     const targetUser = interaction.options.get("user")?.user || interaction.user;
 
@@ -33,7 +35,7 @@ module.exports.run = async (client, interaction) => {
     })
 
     // Reply with the messageEmbed
-    return interaction.reply({
+    return interaction.editReply({
         embeds: [messageEmbed],
         ephemeral: false
     })
