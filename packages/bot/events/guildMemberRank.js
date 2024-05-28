@@ -22,20 +22,16 @@ module.exports = async (client, payload = []) => {
         for (const rank of unattainedRankRewards) {
             // Get the role by roleId
             const role = await guild.roles.fetch(rank.roleId);
-            if (role) {
-                // Remove the role from the member
-                await member?.roles?.remove(role, `Remove unattained rank reward role for level ${rank.level}`).catch(err => { });
-            }
+            // Remove the role from the member
+            await member.roles.remove(role, `Remove unattained rank reward role for level ${rank.level}`).catch(err => { });
         }
 
         // ADD attained rank rewards to the member
         for (const rank of payload.userRankRewards) {
             // Get the role by roleId
             const role = await guild.roles.fetch(rank.roleId);
-            if (role) {
-                // Remove the role from the member
-                await member?.roles?.add(role, `Add attained rank reward role for level ${rank.level}`).catch(err => { });
-            }
+            // Remove the role from the member
+            await member.roles.add(role, `Add attained rank reward role for level ${rank.level}`).catch(err => { });
         }
 
     } catch (err) {

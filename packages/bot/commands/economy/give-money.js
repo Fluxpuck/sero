@@ -27,8 +27,6 @@ module.exports.props = {
 }
 
 module.exports.run = async (client, interaction) => {
-    await interaction.deferReply({ ephemeral: false });
-
     // Get User && Amount details from the interaction options
     const targetUser = interaction.options.get("user").user;
     const targetAmount = interaction.options.get("amount").value;
@@ -38,13 +36,12 @@ module.exports.run = async (client, interaction) => {
 
     // If the request was not successful, return an error
     if (result?.status !== 200) {
-        await interaction.deleteReply();
-        return interaction.followUp({
+        return interaction.reply({
             content: `Uh oh! The user ${targetUser.username} has no balance yet.`,
             ephemeral: true
         })
     } else {
-        return interaction.editReply({
+        return interaction.reply({
             content: `<@${targetUser.id}> has recieved **${targetAmount.toLocaleString()}** coins!`,
             ephemeral: false
         })

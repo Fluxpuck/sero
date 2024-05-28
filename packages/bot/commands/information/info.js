@@ -12,7 +12,6 @@ module.exports.props = {
 }
 
 module.exports.run = async (client, interaction) => {
-
     // Setting up the embedded message
     const messageEmbed = new EmbedBuilder()
         .setTitle(client.user.username)

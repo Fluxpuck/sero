@@ -46,7 +46,6 @@ module.exports.autocomplete = async (client, interaction) => {
 }
 
 module.exports.run = async (client, interaction) => {
-	await interaction.deferReply({ ephemeral: true });
 
 	// Get logTypeCategory && targetChannel from the interaction options
 	const targetLogCategory = interaction.options.get("log-type").value;
@@ -54,7 +53,7 @@ module.exports.run = async (client, interaction) => {
 
 	// If the logTypeCategory is not valid, return an error
 	if (!Object.values(LOGGING_CATEGORIES).includes(targetLogCategory)) {
-		return interaction.editReply({
+		return interaction.reply({
 			content: `Oops! The log-type you provided is not valid`,
 			ephemeral: true
 		})
@@ -67,12 +66,12 @@ module.exports.run = async (client, interaction) => {
 
 	// If the request was not successful, return an error
 	if (result?.status !== 200) {
-		return interaction.editReply({
+		return interaction.reply({
 			content: `Something went wrong while setting the log-channel \`${targetLogCategory}\`.`,
 			ephemeral: true
 		})
 	} else {
-		return interaction.editReply({
+		return interaction.reply({
 			content: `The log-channel for \`${targetLogCategory}\` has been set to <#${targetChannel.id}>.`,
 			ephemeral: true
 		})

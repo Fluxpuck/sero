@@ -9,23 +9,20 @@ module.exports.props = {
 }
 
 module.exports.run = async (client, interaction) => {
-    await interaction.deferReply({ ephemeral: false });
 
     /*
-    Based on Mee6 levels, calculate the bonus experience to give to the user.
-    The bonus experience is calculated by taking the user's current experience and level,
+    Based on the messages database,
+    Check if the user has at least 100 messages in the server in the last 5 days
+    If they do, give them 1000 experience bonus points
     */
 
     /**
      * @TEMPORARY - TEMPORARY COMMAND DOWN BELOW
      */
-    if (interaction.guildId !== "552953312073220096") {
-        await interaction.deleteReply();
-        return interaction.followUp({
-            content: "This command is currently only available in the SSundee server.",
-            ephemeral: true
-        })
-    }
+    if (interaction.guildId !== "552953312073220096") return interaction.reply({
+        content: "This command is currently only available in the SSundee server.",
+        ephemeral: true
+    })
 
     try {
         // Get the user experience
@@ -66,14 +63,13 @@ module.exports.run = async (client, interaction) => {
         }
 
         // Return the response
-        return interaction.editReply({
+        return interaction.reply({
             content: `You have claimed your one-time experience reward! You have been awarded **${EXP_BONUS}** experience points.`,
             ephemeral: false
         })
 
     } catch (error) {
-        await interaction.deleteReply();
-        return interaction.followUp({
+        return interaction.reply({
             content: `${error.message}`,
             ephemeral: true
         })

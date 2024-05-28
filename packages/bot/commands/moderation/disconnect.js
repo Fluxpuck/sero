@@ -17,8 +17,6 @@ module.exports.props = {
 };
 
 module.exports.run = async (client, interaction) => {
-    await interaction.deferReply({ ephemeral: true });
-
     // Get User details from the interaction options
     const targetUser = interaction.options.get("user").user;
     const member = await interaction.guild.members.fetch(targetUser.id)
@@ -30,12 +28,12 @@ module.exports.run = async (client, interaction) => {
         await member.voice.disconnect();
 
         // Send the success message
-        return interaction.editReply({
+        return interaction.reply({
             content: `You successfully disconnected <@${member.user.id}>`,
             ephemeral: true,
         });
     } else {
-        return interaction.editReply({
+        return interaction.reply({
             content: `<@${member.user.id}> is not in a voice channel.`,
             ephemeral: true
         });
