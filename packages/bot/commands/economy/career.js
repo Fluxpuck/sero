@@ -21,8 +21,6 @@ module.exports.props = {
 }
 
 module.exports.run = async (client, interaction) => {
-    await interaction.deferReply({ ephemeral: false });
-
     // Get User details from the interaction options
     const targetUser = interaction.options.getUser("user")?.user || interaction.user;
 
@@ -32,8 +30,7 @@ module.exports.run = async (client, interaction) => {
 
     // If the (required) request was not successful, return an error
     if (userCareer.status !== 200) {
-        await interaction.deleteReply();
-        return interaction.followUp({
+        return interaction.reply({
             content: `Uh oh! The user ${targetUser.username} has no career yet.`,
             ephemeral: true
         })
@@ -78,7 +75,7 @@ module.exports.run = async (client, interaction) => {
     })
 
     // Reply with the messageEmbed
-    return interaction.editReply({
+    return interaction.reply({
         embeds: [messageEmbed],
         ephemeral: false
     })

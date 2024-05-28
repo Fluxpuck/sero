@@ -64,8 +64,6 @@ module.exports.autocomplete = async (client, interaction) => {
 }
 
 module.exports.run = async (client, interaction) => {
-    await interaction.deferReply({ ephemeral: false });
-
     // Get Away time value from the interaction options
     const timeOption = interaction.options.get("time")?.value;
     const timeInMinutes = timeOption ?? 5; // Default to 5 minutes
@@ -76,8 +74,7 @@ module.exports.run = async (client, interaction) => {
 
     // If the request was not successful, return an error
     if (result?.status !== 200) {
-        await interaction.deleteReply();
-        return interaction.followUp({
+        return interaction.reply({
             content: "Something went wrong while setting your away status.",
             ephemeral: true
         })
@@ -87,7 +84,7 @@ module.exports.run = async (client, interaction) => {
             const reason = interaction.options.get("message")?.value;
             content += `\n> **${reason}**`;
         }
-        return interaction.editReply({
+        return interaction.reply({
             content: content,
             ephemeral: false
         }).then(msg => {

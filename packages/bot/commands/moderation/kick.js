@@ -41,8 +41,6 @@ module.exports.autocomplete = async (client, interaction) => {
 }
 
 module.exports.run = async (client, interaction) => {
-    await interaction.deferReply({ ephemeral: true });
-
     // Get User && Member && Reason details from the interaction options
     const targetUser = interaction.options.get("user").user;
     const violationReason = interaction.options.get("reason").value;
@@ -51,13 +49,13 @@ module.exports.run = async (client, interaction) => {
     const member = await interaction.guild.members.fetch(targetUser.id)
 
     // If the target is the author, return message
-    if (member.user.id === interaction.user.id) return interaction.editReply({
+    if (member.user.id === interaction.user.id) return interaction.reply({
         content: "You cannot kick yourself!",
         ephemeral: true
     });
 
     // If the member is not moderatable, return message
-    if (!member.moderatable) return interaction.editReply({
+    if (!member.moderatable) return interaction.reply({
         content: `<@${member.user.id}> is a moderator!`,
         ephemeral: true
     });
@@ -65,13 +63,13 @@ module.exports.run = async (client, interaction) => {
     // Kick the target member with reason
     return member.kick(violationReason)
         .then(() => {
-            return interaction.editReply({
+            return interaction.reply({
                 content: `You successfully kicked **${member.user.username}** (${member.user.id}) for:\n> ${violationReason}`,
                 ephemeral: true,
             });
         })
         .catch(err => {
-            return interaction.editReply({
+            return interaction.reply({
                 content: `Could not kick **${member.user.username}** (${member.user.id})!`,
                 ephemeral: true,
             });
