@@ -39,12 +39,6 @@ module.exports = async (client, applications) => {
         }
     }
 
-    const app_map = Array.from(applications.values()).map(app => ({ commandId: app.id, commandName: app.name }))
-    console.table(app_map)
-
-    const db_map = databaseCommands.map(app => ({ commandId: app.commandId, commandName: app.commandName }))
-    console.table(db_map)
-
     // Check if the command in the database has a commandId
     // If a commandId is found, update the application command
     // Else create a new application command and update the database
