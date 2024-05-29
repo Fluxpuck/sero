@@ -1,25 +1,24 @@
 version: "3"
 
 services:
-  # PostgreSQL
+  # Postgres
   postgres:
-    image: "postgres:15"
-    command: postgres -c 'max_connections=200' -c shared_preload_libraries=pg_stat_statements -c pg_stat_statements.track=all -c pg_stat_statements.max=10000
+    image: "postgres:latest"
+    container_name: postgres
+    environment:
+      POSTGRES_USER: myuser
+      POSTGRES_PASSWORD: mypassword
+      POSTGRES_DB: mydatabase
+      TZ: Europe/Paris
     ports:
       - "5432:5432"
-    environment:
-      - POSTGRES_USER=postgres
-      - POSTGRES_PASSWORD=postgres
-      - POSTGRES_DB=postgres
-      - TZ=Europe/Paris
-    labels:
-      NAME: "flux-pg"
     volumes:
-      - postgresql-data:/var/lib/postgresql/data
+      - postgres_data:/var/lib/postgresql/data
 
   # Redis
   redis:
     image: redis:latest
+    container_name: redis
     ports:
       - "6379:6379" # Map port 6379 on the host to port 6379 in the container
     volumes:
@@ -27,5 +26,5 @@ services:
 
 # Persistent Data Volumes
 volumes:
-  postgresql-data:
+  postgres_data:
   redis-data:

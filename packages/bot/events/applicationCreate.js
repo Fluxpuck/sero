@@ -44,10 +44,14 @@ module.exports = async (client, applications) => {
     // Else create a new application command and update the database
     for (const command of databaseCommands) {
 
+        // Check if the application has the commandName
+        const hasCommandId = command.commandId !== undefined && command.commandId !== null;
+        const hasCommandName = Array.from(applications.values()).some(app => app.name === command.commandName)
+
         // Check if the command has a commandId
         // If not, create a new command in the application
         // And update the database
-        if (!command.commandId) {
+        if (!hasCommandId || !hasCommandName) {
 
             // CREATE new application command
             await client.application?.commands.create({
@@ -57,7 +61,7 @@ module.exports = async (client, applications) => {
                 options: command.interactionOptions,
                 defaultMemberPermissions: command.defaultMemberPermissions,
             }).then(async (application) => {
-
+                // Log the application creation
                 console.log("\x1b[36m", `[Client]: ${application.name} created successfully.`);
 
                 // POST the command to the database to add the commandId 
@@ -90,7 +94,7 @@ module.exports = async (client, applications) => {
                 options: command.interactionOptions,
                 defaultMemberPermissions: command.defaultMemberPermissions,
             }).then(async (application) => {
-
+                // Log the application update
                 console.log("\x1b[34m", `[Client]: ${application.name} updated successfully.`);
 
             }).catch((error) => {

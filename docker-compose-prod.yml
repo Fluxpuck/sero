@@ -1,8 +1,9 @@
 version: '3'
 
 services:
-  database:
+  postgres:
     image: postgres:latest
+    container_name: postgres
     environment:
       POSTGRES_USER: admin
       POSTGRES_PASSWORD: curlywire90
@@ -11,16 +12,18 @@ services:
     ports:
       - "5432:5432"
     volumes:
-      - db_data:/var/lib/postgresql/data
+      - postgres_data:/var/lib/postgresql/data
 
   redis:
     image: redis:latest
+    container_name: redis
     ports:
       - "6379:6379"
     volumes:
       - redis-data:/var/lib/redis/data
 
   api:
+    container_name: sero-api
     build:
       context: ./packages/api
     environment:
@@ -31,10 +34,11 @@ services:
     ports:
       - "3336:3336"
     depends_on:
-      - database
+      - postgres
       - redis
 
   bot:
+    container_name: sero-bot
     build:
       context: ./packages/bot
     env_file:
@@ -47,5 +51,5 @@ services:
       - api
 
 volumes:
-  db_data:
+  postgres_data:
   redis-data:
