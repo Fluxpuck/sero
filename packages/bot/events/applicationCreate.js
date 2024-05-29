@@ -61,7 +61,7 @@ module.exports = async (client, applications) => {
                 options: command.interactionOptions,
                 defaultMemberPermissions: command.defaultMemberPermissions,
             }).then(async (application) => {
-
+                // Log the application creation
                 console.log("\x1b[36m", `[Client]: ${application.name} created successfully.`);
 
                 // POST the command to the database to add the commandId 
@@ -94,7 +94,7 @@ module.exports = async (client, applications) => {
                 options: command.interactionOptions,
                 defaultMemberPermissions: command.defaultMemberPermissions,
             }).then(async (application) => {
-
+                // Log the application update
                 console.log("\x1b[34m", `[Client]: ${application.name} updated successfully.`);
 
             }).catch((error) => {

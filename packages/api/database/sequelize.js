@@ -5,21 +5,21 @@ require('dotenv').config({ path: join(__dirname, '..', 'config', '.env') });
 // Function to create and return a Sequelize instance
 function createSequelizeInstance() {
 
-    // Development environment variables
-    const { LOCAL_HOST, LOCAL_DB, LOCAL_USER, LOCAL_PASS } = process.env;
-    // Production environment variables
-    const { POSTGRES_HOST, POSTGRES_USER, POSTGRES_PASSWORD, POSTGRES_DB, POSTGRES_PORT } = process.env;
-    // General environment variables
-    const { NODE_ENV } = process.env;
+    // Setup the environment variables
+    const postgres_host = process.env.NODE_ENV === 'production' ? process.env.POSTGRES_HOST : "localhost"
+    const postgres_user = process.env.NODE_ENV === 'production' ? process.env.POSTGRES_USER : "postgres"
+    const postgres_password = process.env.NODE_ENV === 'production' ? process.env.POSTGRES_PASSWORD : "postgres"
+    const postgres_db = process.env.NODE_ENV === 'production' ? process.env.POSTGRES_DB : "postgres"
+    const postgres_port = process.env.NODE_ENV === 'production' ? process.env.POSTGRES_PORT : 5432
 
     try {
         const sequelize = new Sequelize(
-            NODE_ENV === 'production' ? POSTGRES_DB : LOCAL_DB,
-            NODE_ENV === 'production' ? POSTGRES_USER : LOCAL_USER,
-            NODE_ENV === 'production' ? POSTGRES_PASSWORD : LOCAL_PASS,
+            postgres_db,
+            postgres_user,
+            postgres_password,
             {
-                host: NODE_ENV === 'production' ? POSTGRES_HOST : LOCAL_HOST,
-                port: POSTGRES_PORT,
+                host: postgres_host,
+                port: postgres_port,
                 dialect: 'postgres',
                 logging: false,
             }

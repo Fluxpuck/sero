@@ -1,4 +1,4 @@
-version: "3.1"
+version: "3"
 
 services:
   # Postgres
@@ -6,10 +6,10 @@ services:
     image: "postgres:latest"
     container_name: postgres
     environment:
-      - POSTGRES_USER=postgres
-      - POSTGRES_PASSWORD=postgres
-      - POSTGRES_DB=postgres
-      - TZ=Europe/Paris
+      POSTGRES_USER: myuser
+      POSTGRES_PASSWORD: mypassword
+      POSTGRES_DB: mydatabase
+      TZ: Europe/Paris
     ports:
       - "5432:5432"
     volumes:

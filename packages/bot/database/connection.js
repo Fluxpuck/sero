@@ -1,7 +1,7 @@
 const axios = require('axios');
-const { NODE_ENV, PROD_API_URL, DEV_API_URL } = process.env;
+const { NODE_ENV, PROD_API_URL } = process.env;
 const instance = axios.create({
-    baseURL: NODE_ENV === 'production' ? PROD_API_URL : DEV_API_URL,
+    baseURL: NODE_ENV === 'production' ? PROD_API_URL : "http://localhost:3336/api/",
     headers: {
         'Authorization': process.env.API_MASTER_KEY,
         "Content-type": "application/json"
