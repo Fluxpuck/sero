@@ -1,6 +1,6 @@
 const { join } = require('path');
 const { loadCommands } = require("../utils/CommandManager");
-const { getRequest } = require('../database/connection');
+const { getRequest, postRequest } = require('../database/connection');
 const events = require('../config/eventEnum');
 
 module.exports = async (client) => {
@@ -18,8 +18,19 @@ module.exports = async (client) => {
 
     // Set global guild active setting
     Array.from(client.guilds.cache.values()).forEach(async guild => {
-        const { data } = await getRequest(`/guilds/${guild.id}`);
-        if (data) guild.active = data?.active === true;
+        // Fetch the guild from the database
+        const result = await getRequest(`/guilds/${guild.id}`);
+        // Set the guild's active status to true
+        if (result.status === 200) {
+            guild.active = data?.active === true;
+        }
+        // If the guild is not found in the database, create a new entry for the guild
+        if (result.status === 404) {
+            await postRequest(`/guilds/${guild.id}`, {
+                guildId: guild.id,
+                guildName: guild.name
+            })
+        }
     });
 
 }
