@@ -22,7 +22,7 @@ module.exports = async (client) => {
         const result = await getRequest(`/guilds/${guild.id}`);
         // Set the guild's active status to true
         if (result.status === 200) {
-            guild.active = data?.active === true;
+            guild.active = result?.data?.active === true;
         }
         // If the guild is not found in the database, create a new entry for the guild
         if (result.status === 404) {
