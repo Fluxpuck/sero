@@ -1,26 +1,30 @@
-const { readdirSync } = require('fs');
-const { join } = require('path');
-const { authenticate } = require('./authentication');
+const fs = require('fs');
+const path = require('path');
+
+function loadRoutes(app, dirPath) {
+    fs.readdirSync(dirPath).forEach(file => {
+        const filePath = path.join(dirPath, file);
+        const stat = fs.statSync(filePath);
+
+        if (stat.isDirectory()) {
+            // Recursively load routes in subdirectories
+            loadRoutes(app, filePath);
+        } else if (file.endsWith('.js')) {
+            const route = require(filePath);
+            const routePath = filePath
+                .replace(__dirname, '')
+                .replace(/\\/g, '/')
+                .replace('/routes', '')
+                .replace('.js', '');
+
+            console.log(`Loading route: ${routePath}`);
+
+            app.use(routePath, route);
+        }
+    });
+}
 
 module.exports.run = (app) => {
-
-    // Set directory path to routes and read files
-    const filePath = join(__dirname, '..', 'routes')
-    const routeFiles = readdirSync(filePath);
-
-    // Go through all routes files and bind to App
-    for (const route of routeFiles) {
-        const api = require(`${filePath}/${route}`);
-        const apiName = route.split('.').shift();
-        app.use(`/api/${apiName}`, authenticate, api);
-    }
-
-    // Catch all other routes
-    app.use((req, res, next) => {
-        const error = new Error('Sorry, that route does not exist.');
-        error.status = 400;
-        error.stack = req;
-        next(error);
-    });
-
-}
+    const routesDir = path.join(__dirname, '../routes');
+    loadRoutes(app, routesDir);
+};
