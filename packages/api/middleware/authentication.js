@@ -4,6 +4,9 @@ module.exports = {
 
     authenticate(req, res, next) {
 
+        // Skip authentication in development mode
+        if (process.env.NODE_ENV === 'development') return next();
+
         // Get token from request header
         const userToken = req.headers.authorization;
         if (!userToken) next(new CreateError(404, 'No authorization key provided'));
