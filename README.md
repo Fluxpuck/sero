@@ -47,19 +47,22 @@ _Additionally, **VSCode** has a great build-in [Debugger](https://code.visualstu
 
 ![image](https://github.com/Fluxpuck/sero/assets/33183946/46f5bbc2-4059-4c0a-a73a-ccae47cd821d)
 
-## Code Format
+### Code Format
 When using **VSCode** code can be formatted automatically
 1. Open `File → Preferences → Settings (CTRL + ,)`
 2. Go to `Text Editor → Formatting`
 3. Enabble `Format On Paste` & `Format On Save`
 
+### Troubleshooting
+Most issues can be resolved by 
+- (re)installing the `node_modules` 
+- (re)running the **SeedManager**
+- Always run the API before the Bot
+
 ## GitHub
 This project is ticket-based and managed using [Linear](https://linear.app/sero-bot). Development goes per ticket and branches are to be created from the main `development` branch, using the `issue-id` from the ticket. Please read the [Git Guide](https://github.com/Fluxpuck/sero/blob/development/docs/git-guide.md) for all information on managing the code.
 
-## Troubleshooting
-Most issues can be resolved by (re)installing the `node_modules` and/or (re)running the **SeedManager**.
-
-### Contributors
+## Contributors
 Created with ❤ by
  [Fluxpuck](https://github.com/Fluxpuck) |
  [ZeusGMJ](https://github.com/ZEUSGMJ) |
