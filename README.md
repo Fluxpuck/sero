@@ -26,10 +26,10 @@ npm install
 docker-compose -f docker-compose-dev.yml up
 ```
 #### 2. Secrets
-Before we can run anything, we need to make sure to add a `.env` file in `\packages\api\config\` & `\packages\bot\config\`. The bot and api secret should both include a `NODE_ENV=development`, and the bot secret should also include a `DEVELOPMENT_TOKEN=<bot-token-here>`. The Discord bot application token can generated on the [Discord Developers](https://discord.com/developers/applications) website. 
+Before we can run anything, we need to make sure to add a `.env` file in `\packages\api\config\` & `\packages\bot\config\`. The bot and api secret should both include a `NODE_ENV=development`, and the bot secret should also include a `DEVELOPMENT_TOKEN=<bot-token-here>`. A Discord bot application token can generated on the [Discord Developers](https://discord.com/developers/applications) website. 
 
 #### 3. Seeding
-Running development with an empty database is very difficult to work with! Always make sure to run the **SeedManager**. This will add truncate the database and seed the database with example data. 
+Running development with an empty database is very difficult to work with! Always make sure to run the **SeedManager**. This will truncate the database and seed the database with example data. 
 
 When you add new models/tables and routes in the API, make sure you add some dummy data. that is useful during development.
 
