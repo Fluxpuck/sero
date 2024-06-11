@@ -30,7 +30,6 @@
   "scripts": {
     "start-api": "node packages/api/app.js",
     "start-bot": "node packages/bot/bot.js",
-    "start-all": "npm-run-all -p start-api start-bot",
     "seedmanager": "node packages/api/test/_seedManager.js"
   }
 }
