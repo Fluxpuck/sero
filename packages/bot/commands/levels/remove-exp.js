@@ -39,7 +39,7 @@ module.exports.run = async (client, interaction) => {
 
     // Check if the user has the proper amount of experience.
     if (currentExperience < targetAmount) {
-        await postRequest(`/levels/add/${interaction.guildId}/${targetUser.id}`, { experience: -currentExperience })
+        interaction.reply({ content: `The user does not have \`\`${targetAmount}\`\` experience to remove, they only have \`\`${currentExperience}\`\` experience.`})
     }
     // Remove the user's experience if has proper amount.
     const result = await postRequest(`/levels/add/${interaction.guildId}/${targetUser.id}`, { experience: -targetAmount });
