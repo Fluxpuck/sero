@@ -93,36 +93,32 @@ router.get("/:guildId/:userId", async (req, res, next) => {
 router.post('/reset/:guildId', async (req, res, next) => {
   const t = await sequelize.transaction();
   try {
-    const { body, params } = req;
+    const { params } = req;
     const { guildId } = params;
 
-    // Get levels from the user
-    const levels = await UserLevels.findAll({
-      where: {
-        guildId: guildId,
+    // Bulk update the levels
+    await UserLevels.update(
+      {
+        experience: 0,
+        level: 1,
+        currentLevelExp: 0,
+        nextLevelExp: 100,
+        remainingExp: 100,
+        rank: 1,
       },
-      transaction: t,
-    });
+      {
+        where: {
+          guildId: guildId,
+        },
+        transaction: t,
+      }
+    );
 
-    // Reset EXP of each user
-    for (const level of levels) {
-      level.experience = 0;
-      level.level = 1;
-      level.currentLevelExp = 0;
-      level.nextLevelExp = 0;
-      level.remainingExp = 0;
-      level.rank = 1;
-
-      // Save the changes
-      await level.save({ transaction: t });
-    }
-
-    //commit transaction
+    // Commit transaction
     await t.commit();
 
     // Return the response
     return res.status(200).send(`Experience points for all users in guild ${guildId} are reset`);
-
   } catch (error) {
     await t.rollback();
     next(error);
@@ -152,8 +148,8 @@ router.post('/reset/:guildId/:userId', async (req, res, next) => {
     levels.experience = 0;
     levels.level = 1;
     levels.currentLevelExp = 0;
-    levels.nextLevelExp = 0;
-    levels.remainingExp = 0;
+    levels.nextLevelExp = 100;
+    levels.remainingExp = 100;
     levels.rank = 1;
 
     // Save the changes

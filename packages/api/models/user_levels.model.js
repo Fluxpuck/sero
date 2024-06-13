@@ -35,7 +35,18 @@ module.exports = sequelize => {
                     args: [0],
                     msg: 'Experience cannot be negative.',
                 },
-            }
+                max: {
+                    args: [4_950_000],
+                    msg: 'Experience cannot be greater than 4,950,000 (Max Level)'
+                }
+            },
+            set(value) {
+                if (value < 0) {
+                    this.setDataValue('experience', 0);
+                } else {
+                    this.setDataValue('experience', value);
+                }
+            },
         },
         level: {
             type: DataTypes.INTEGER,
