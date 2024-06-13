@@ -45,7 +45,7 @@ module.exports.run = async (client, interaction) => {
 		if (result?.status === 404) {
 			await interaction.deleteReply();
 			return interaction.followUp({
-				content: `Uh oh! The user ${targetUser.username} is no rank yet!`,
+				content: `Uh oh! The user ${targetUser.username} has no rank yet!`,
 				ephemeral: true
 			})
 		} else if (result?.status !== 200) { // If the status code is not 200, return an error that something went wrong
