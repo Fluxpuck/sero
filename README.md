@@ -62,6 +62,8 @@ Most issues can be resolved by
 ## GitHub
 This project is ticket-based and managed using [Linear](https://linear.app/sero-bot). Development goes per ticket and branches are to be created from the main `development` branch, using the `issue-id` from the ticket. Please read the [Git Guide](https://github.com/Fluxpuck/sero/blob/development/docs/git-guide.md) for all information on managing the code.
 
+Also, make sure to read this documentation on [Semantic Commit Messages](https://gist.github.com/joshbuchea/6f47e86d2510bce28f8e7f42ae84c716).
+
 ## Contributors
 Created with ❤ by
  [Fluxpuck](https://github.com/Fluxpuck) |
