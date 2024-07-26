@@ -1,8 +1,15 @@
+// → Import Dependencies
 const express = require('express');
 const router = express.Router();
-const { Guild } = require("../database/models");
-const { sequelize } = require('../database/sequelize');
-const { CreateError } = require('../utils/ClassManager');
+
+const { sequelize } = require('../../database/sequelize');
+const { Guild } = require("../../database/models");
+
+const { CreateError } = require('../../utils/ClassManager');
+
+// → Routes Definitions
+const UserRoute = require('./user');
+
 
 /**
  * @router GET api/guilds

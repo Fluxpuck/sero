@@ -1,32 +1,25 @@
 const express = require("express");
 const router = express.Router();
-const { UserBalance, User } = require("../database/models");
-const { sequelize } = require('../database/sequelize');
-const { CreateError } = require('../utils/ClassManager');
+const { Away } = require("../../../database/models");
+const { sequelize } = require('../../../database/sequelize');
+const { CreateError } = require('../../../utils/ClassManager');
 
 /**
- * @router GET api/balance/:guildId
- * @description Get all balances for a specific guild
+ * @router GET api/away/:guildId
+ * @description Get all Away statusses for a specific guild
  */
 router.get("/:guildId", async (req, res, next) => {
   try {
     const { guildId } = req.params;
-    const limit = req.query.limit || 100;
 
     // Check for results related to the guildId
-    const result = await UserBalance.findAll({
+    const result = await Away.findAll({
       where: { guildId: guildId },
-      include: [{
-        model: User,
-        where: { guildId: guildId }
-      }],
-      order: [['balance', 'DESC']],
-      limit: limit
     });
 
     // If no results found, trigger error
     if (!result) {
-      throw new CreateError(404, 'No balances for this guildId found.');
+      throw new CreateError(404, 'No Away status for this guildId found.');
     }
 
     // Return the results
@@ -38,31 +31,24 @@ router.get("/:guildId", async (req, res, next) => {
 });
 
 /**
- * @router GET api/balance/:guildId/userId
- * @description Get the balances from a specific user from a specific guild
+ * @router GET api/away/:guildId/userId
+ * @description Get the Away status from a specific user from a specific guild
  */
 router.get("/:guildId/:userId", async (req, res, next) => {
   try {
     const { guildId, userId } = req.params;
 
     // Check for results related to the guildId and userId
-    const result = await UserBalance.findOne({
+    const result = await Away.findOne({
       where: {
         guildId: guildId,
         userId: userId
       },
-      include: [{
-        model: User,
-        where: {
-          guildId: guildId,
-          userId: userId
-        },
-      }]
     });
 
     // If no results found, trigger error
     if (!result) {
-      throw new CreateError(404, 'No balance for this combination of guildId and userId found.');
+      throw new CreateError(404, 'No Away status for this combination of guildId and userId found.');
     }
 
     // Return the results
@@ -75,11 +61,11 @@ router.get("/:guildId/:userId", async (req, res, next) => {
 
 
 // Setup Attributes for this Route
-const requiredProperties = ['amount'];
+const requiredProperties = ['duration'];
 
 /**
- * @router POST api/balance/:guildId/userId
- * @description Save or Update the balance for a specific user from a specific guild
+ * @router POST api/away/:guildId/userId
+ * @description Save the Away status from a specific user from a specific guild
  */
 router.post("/:guildId/:userId", async (req, res, next) => {
   const t = await sequelize.transaction();
@@ -93,8 +79,17 @@ router.post("/:guildId/:userId", async (req, res, next) => {
       throw new CreateError(400, 'Invalid or missing data for this request');
     }
 
-    // Check if the user is already balance
-    const userBalance = await UserBalance.findOne({
+    // Get the data from the request body && create object
+    const { duration } = body;
+    const updateData = {
+      userId: userId,
+      guildId: guildId,
+      duration: duration,
+      message: body?.message || null
+    }
+
+    // Check if the user is already away
+    const levels = await Away.findOne({
       where: {
         guildId: guildId,
         userId: userId
@@ -102,26 +97,17 @@ router.post("/:guildId/:userId", async (req, res, next) => {
       transaction: t
     });
 
-    // Get the data from the request body && create object
-    const { amount } = body;
-    const updateBalance = userBalance ? userBalance.balance + amount : 0;
-    const updateData = {
-      userId: userId,
-      guildId: guildId,
-      balance: updateBalance
-    }
-
     // Update or Create the request
-    if (userBalance) {
-      await userBalance.update(updateData, { transaction: t });
+    if (levels) {
+      await levels.update(updateData, { transaction: t });
       res.status(200).json({
-        message: `UserBalance for ${guildId}/${userId} updated successfully`,
-        data: userBalance
+        message: `Away status for ${guildId}/${userId} updated successfully`,
+        data: levels
       });
     } else {
-      const request = await UserBalance.create(updateData, { transaction: t });
+      const request = await Away.create(updateData, { transaction: t });
       res.status(200).json({
-        message: `UserBalance for ${guildId}/${userId} created successfully`,
+        message: `Away status for ${guildId}/${userId} created successfully`,
         data: request
       });
     }
@@ -136,16 +122,18 @@ router.post("/:guildId/:userId", async (req, res, next) => {
 });
 
 
+
+
 /**
- * @router DELETE api/balance/:guildId/userId
- * @description Delete a specific balance
+ * @router DELETE api/away/:guildId/userId
+ * @description Delete the Away status from a specific user from a specific guild
  */
 router.delete("/:guildId/:userId", async (req, res, next) => {
   try {
     const { guildId, userId } = req.params;
 
-    // Check if the user is balance
-    const request = await UserBalance.findOne({
+    // Check if the user is away
+    const request = await Away.findOne({
       where: {
         guildId: guildId,
         userId: userId
@@ -154,14 +142,14 @@ router.delete("/:guildId/:userId", async (req, res, next) => {
 
     // If no results found, trigger error
     if (!request || request.length === 0) {
-      throw new CreateError(404, 'No balance for this combination of guildId and userId found.');
+      throw new CreateError(404, 'No Away status for this combination of guildId and userId found.');
     }
 
     // Delete the request
     await request.destroy();
 
     // Return the results
-    return res.status(200).json(`The balance for ${guildId}/${userId} was deleted successfully`);
+    return res.status(200).json(`The Away status for ${guildId}/${userId} was deleted successfully`);
 
   } catch (error) {
     next(error);

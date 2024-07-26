@@ -1,8 +1,8 @@
 const express = require("express");
 const router = express.Router();
-const { Logs, Guild, User } = require("../database/models");
-const { sequelize } = require('../database/sequelize');
-const { CreateError } = require('../utils/ClassManager');
+const { Logs, Guild, User } = require("../../../database/models");
+const { sequelize } = require('../../../database/sequelize');
+const { CreateError } = require('../../../utils/ClassManager');
 
 
 /**
