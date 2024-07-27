@@ -7,14 +7,21 @@ function loadRoutes(app, dirPath, baseRoute = '') {
         const stat = fs.statSync(filePath);
 
         if (stat.isDirectory()) {
-            // Recursively load routes in subdirectories
-            const newBaseRoute = `${baseRoute}/${file}`;
-            loadRoutes(app, filePath, newBaseRoute);
-        } else if (file.endsWith('.js')) {
+            // Load only the first-level directories, not the sub-directories
+            const indexFilePath = path.join(filePath, 'index.js');
+            if (fs.existsSync(indexFilePath)) {
+                const route = require(indexFilePath);
+                const routePath = `${baseRoute}/${file}`;
+
+                console.log(`[Route]: /api${routePath}/`);
+
+                app.use(routePath, route);
+            }
+        } else if (file.endsWith('.js') && file !== 'index.js') {
             const route = require(filePath);
             const routePath = `${baseRoute}/${file.replace('.js', '')}`;
 
-            console.log(`Loading route: ${routePath}`);
+            console.log(`[Route]: /api${routePath}/`);
 
             app.use(routePath, route);
         }
