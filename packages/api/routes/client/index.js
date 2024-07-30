@@ -1,6 +1,7 @@
 const express = require("express");
 const router = express.Router();
 
-// Insert routes here
+const { loadRoutes } = require("../../middleware/routes");
+loadRoutes(router, __dirname, "/client");
 
 module.exports = router;
