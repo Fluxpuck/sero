@@ -1,7 +1,8 @@
 const express = require("express");
 const router = express.Router();
 
-const { loadRoutes } = require("../../middleware/routes");
-loadRoutes(router, __dirname, "/client");
+// Load the routes from the current directory
+const { registerBaseRoutes } = require("../../middleware/routes");
+registerBaseRoutes(router, __dirname, "/client");
 
 module.exports = router;

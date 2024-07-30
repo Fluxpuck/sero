@@ -1,7 +1,16 @@
 const express = require("express");
-const router = express.Router();
+const router = express.Router({ mergeParams: true });
 
-const { loadRoutes } = require("../../middleware/routes");
-loadRoutes(router, __dirname, "/guilds");
+// Define the routes for the guilds
+const { registerIndividualRoute } = require("../../middleware/routes");
+registerIndividualRoute("/guilds/:guildId/users", require("./users"));
+registerIndividualRoute("/guilds/:guildId/logs", require("./logs"));
+registerIndividualRoute("/guilds/:guildId/messages", require("./messages"));
+registerIndividualRoute("/guilds/:guildId/economy", require("./economy"));
+registerIndividualRoute("/guilds/:guildId/levels", require("./levels"));
+
+
+
+
 
 module.exports = router;

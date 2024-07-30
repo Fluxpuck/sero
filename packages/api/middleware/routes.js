@@ -1,7 +1,7 @@
 const fs = require('fs');
 const path = require('path');
 
-function loadRoutes(app, dirPath, baseRoute = '') {
+function registerBaseRoutes(app, dirPath, baseRoute = '') {
     fs.readdirSync(dirPath).forEach(file => {
         const filePath = path.join(dirPath, file);
         const stat = fs.statSync(filePath);
@@ -28,9 +28,21 @@ function loadRoutes(app, dirPath, baseRoute = '') {
     });
 }
 
-module.exports.run = (app) => {
-    const routesDir = path.join(__dirname, '../routes');
-    loadRoutes(app, routesDir);
-};
 
-module.exports.loadRoutes = loadRoutes;
+const express = require("express");
+const router = express.Router({ mergeParams: true });
+function registerIndividualRoute(path, route) {
+    console.log(`[Route]: /api${path}/`);
+    router.use(path, route);
+}
+
+function run(app) {
+    const routesDir = path.join(__dirname, '../routes');
+    registerBaseRoutes(app, routesDir);
+}
+
+module.exports = {
+    run,
+    registerBaseRoutes,
+    registerIndividualRoute
+};
