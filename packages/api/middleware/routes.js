@@ -32,3 +32,5 @@ module.exports.run = (app) => {
     const routesDir = path.join(__dirname, '../routes');
     loadRoutes(app, routesDir);
 };
+
+module.exports.loadRoutes = loadRoutes;
