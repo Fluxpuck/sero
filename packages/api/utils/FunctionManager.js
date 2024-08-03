@@ -1,9 +1,8 @@
-const { CreateError } = require('../utils/ClassManager');
-
 // → Export any Function from this Manager
 module.exports = {
 
-    /** Check is input is Discord Snowflake
+    /** 
+     * Check is input is Discord Snowflake
      * @param {*} input - input to check
      * @returns - true if input is a snowflake, else false
      */
@@ -28,114 +27,30 @@ module.exports = {
         else return false
     },
 
-    /**
-     * Generate a unique token
-     * @returns - unique token
-     */
-    generateUniqueToken() {
-        const tokenLength = 5;
-        const min = Math.pow(10, tokenLength - 1);
-        const max = Math.pow(10, tokenLength) - 1;
-
-        const timestamp = Date.now().toString();
-        const tokenSuffix = Math.floor(Math.random() * (max - min + 1)) + min;
-
-        const uniqueToken = timestamp + tokenSuffix.toString();
-        return uniqueToken;
-    },
-
-    /**
-     * Generate a unique hash code
-     * @param {*} userId 
-     * @param {*} guildId 
+    /** 
+     * Calculate a random XP value for a member between 15 and 25
+     * And multiply with the personal and server modifier
+     * @param {*} personalModifier 
+     * @param {*} serverModifier 
      * @returns 
      */
-    generateUniqueHash(userId, guildId) {
-        const combinedString = userId + guildId;
-        let hash = 0;
-        for (let i = 0; i < combinedString.length; i++) {
-            const char = combinedString.charCodeAt(i);
-            hash = (hash << 5) - hash + char;
-        }
-        return Math.abs(hash); // Ensure the result is always positive
-    },
+    calculateXP(personalModifier = 1, serverModifier = 1) {
+        let baseXP = 15;
+        let maxXP = 25;
 
-    /**
-     * Validate params
-     * @param {*} req - request
-     * @param {*} paramNames - array of param names
-     * @returns - error if invalid, else returns requested params
-     */
-    validateParams(req, paramNames) {
-        for (const paramName of paramNames) {
-            const paramValue = req.params[paramName];
-            //check correct if param is provided
-            if (!paramValue) {
-                return new CreateError(400, `No ${paramName} provided.`);
-            }
-            //check if param is a snowflake
-            if (!module.exports.checkSnowflake(paramValue)) {
-                return new CreateError(404, `The provided ${paramName} is invalid. Please ensure that it is a valid Discord Snowflake.`);
-            }
-        }
-    },
+        //generate a random number between 0 and 1
+        let randNum = Math.random();
+        let randomizedXP;
 
-    /**
-     * Validate data
-     * @param {*} req - request
-     * @param {*} dataNames - array of data names
-     * @returns - error if invalid, else returns requested data
-     */
-    validateData(req, dataNames) {
-        for (const dataName of dataNames) {
-            const dataValue = req.body[dataName];
-            //check correct if data is provided
-            if (!dataValue) {
-                return new CreateError(400, `No ${dataName} provided.`);
-            }
-
-            switch (dataName) {
-                case 'guild':
-                    if (!req.body[dataName].guildId) return new CreateError(400, `No ${dataName}.guildId provided.`);
-                    if (!req.body[dataName].guildName) return new CreateError(400, `No ${dataName}.guildName provided.`);
-                    break;
-                case 'user':
-                    if (!req.body[dataName].userId) return new CreateError(400, `No ${dataName}.userId provided.`);
-                    if (!req.body[dataName].userName) return new CreateError(400, `No ${dataName}.userName provided.`);
-                    if (!req.body[dataName].guildId) return new CreateError(400, `No ${dataName}.guildId provided.`);
-                    break;
-                case 'level':
-                    if (!req.body[dataName].experience) return new CreateError(400, `No ${dataName}.experience provided.`);
-                    if (!req.body[dataName].userId) return new CreateError(400, `No ${dataName}.userId provided.`);
-                    break;
-                case 'moderator':
-                    if (!req.body[dataName].location) return new CreateError(400, `No ${dataName}.location provided.`);
-                    if (!req.body[dataName].language) return new CreateError(400, `No ${dataName}.language provided.`);
-                    if (!req.body[dataName].rank) return new CreateError(400, `No ${dataName}.rank provided.`);
-                    if (!req.body[dataName].userId) return new CreateError(400, `No ${dataName}.userId provided.`);
-                    if (!req.body[dataName].guildId) return new CreateError(400, `No ${dataName}.guildId provided.`);
-                    break;
-                case 'message':
-                    if (!req.body[dataName].messageId) return new CreateError(400, `No ${dataName}.messageId provided.`);
-                    if (!req.body[dataName].channelId) return new CreateError(400, `No ${dataName}.channelId provided.`);
-                    if (!req.body[dataName].userId) return new CreateError(400, `No ${dataName}.userId provided.`);
-                    if (!req.body[dataName].guildId) return new CreateError(400, `No ${dataName}.guildId provided.`);
-                    break;
-                case 'event':
-                    if (!req.body[dataName].category) return new CreateError(400, `No ${dataName}.category provided.`);
-                    if (!req.body[dataName].channelId) return new CreateError(400, `No ${dataName}.channelId provided.`);
-                    if (!req.body[dataName].guildId) return new CreateError(400, `No ${dataName}.guildId provided.`);
-                    break;
-                case 'command':
-                    if (!req.body[dataName].commandId) return new CreateError(400, `No ${dataName}.commandId provided.`);
-                    if (!req.body[dataName].commandName) return new CreateError(400, `No ${dataName}.commandName provided.`);
-                    if (!req.body[dataName].clientId) return new CreateError(400, `No ${dataName}.clientId provided.`);
-                    break;
-                default:
-                    break;
-            }
-            //return requested body
-            return req.body;
+        if (randNum <= 0.5) {
+            //the member gets a randomized XP value between baseXP and maxXP
+            randomizedXP = Math.floor(Math.random() * (maxXP - baseXP + 1) + baseXP) * personalModifier * serverModifier;
+        } else {
+            //the member gets the base XP value
+            randomizedXP = baseXP * personalModifier * serverModifier;
         }
+
+        return randomizedXP;
     }
+
 }
