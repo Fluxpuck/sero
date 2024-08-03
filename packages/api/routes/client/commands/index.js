@@ -7,10 +7,11 @@ const { findAllRecords, findOneRecord, createOrUpdateRecord } = require("../../.
 /**
  * GET api/client/commands
  * @description Get all client commands
+ * @param {string} limit - The number of commands to return
  */
 router.get("/", async (req, res, next) => {
     const { limit } = req.query;
-    const options = { limit: limit || 50 };
+    const options = { limit: limit || 100 };
 
     try {
         const clientCommands = await findAllRecords(Commands, options);
@@ -27,6 +28,7 @@ router.get("/", async (req, res, next) => {
 /**
  * GET api/client/commands/:commandId
  * @description Get a specific client command
+ * @param {string} commandId - The id of the command
  */
 router.get("/:commandId", async (req, res, next) => {
     const { commandId } = req.params;
