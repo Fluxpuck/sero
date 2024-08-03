@@ -2,9 +2,10 @@
 // https://www.w3schools.com/tags/ref_httpmessages.asp
 
 class CreateError {
-  constructor(status = 500, message = 'Bad Request') {
+  constructor(status = 500, message = 'Bad Request', success = false) {
     this.status = status;
     this.message = message;
+    this.success = success;
   }
 }
 
