@@ -97,7 +97,6 @@ router.post("/", async (req, res, next) => {
             res.status(200).json({ message: "User updated successfully", data: result });
         };
 
-
     } catch (error) {
         t.rollback();
         next(error);

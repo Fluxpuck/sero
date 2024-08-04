@@ -51,6 +51,22 @@ module.exports = {
         }
 
         return randomizedXP;
-    }
+    },
+
+    /**
+     * Generate a unique token
+     * @returns - unique token
+     */
+    generateUniqueToken() {
+        const tokenLength = 5;
+        const min = Math.pow(10, tokenLength - 1);
+        const max = Math.pow(10, tokenLength) - 1;
+
+        const timestamp = Date.now().toString();
+        const tokenSuffix = Math.floor(Math.random() * (max - min + 1)) + min;
+
+        const uniqueToken = timestamp + tokenSuffix.toString();
+        return uniqueToken;
+    },
 
 }
