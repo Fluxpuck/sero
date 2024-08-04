@@ -16,8 +16,8 @@ const { calculateXP } = require("../../../utils/FunctionManager");
  */
 router.post("/:userId", async (req, res, next) => {
     const t = await sequelize.transaction();
-    const { guldId, userId } = req.params;
-    const options = { where: { guildId: guldId, userId: userId } };
+    const { guildId, userId } = req.params;
+    const options = { where: { guildId: guildId, userId: userId } };
 
     try {
         const { experience } = req.body;
@@ -63,8 +63,8 @@ router.post("/:userId", async (req, res, next) => {
  */
 router.post("/gain/:userId", async (req, res, next) => {
     const t = await sequelize.transaction();
-    const { guldId, userId } = req.params;
-    const options = { where: { guildId: guldId, userId: userId } };
+    const { guildId, userId } = req.params;
+    const options = { where: { guildId: guildId, userId: userId } };
 
     try {
         const userLevel = await findOneRecord(UserLevels, options);
