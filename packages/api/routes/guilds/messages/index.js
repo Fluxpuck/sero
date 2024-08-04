@@ -38,10 +38,9 @@ router.get("/:userId", async (req, res, next) => {
  */
 router.post("/", async (req, res, next) => {
     const t = await sequelize.transaction();
+    const { guildId } = req.params;
+
     try {
-        const {
-            guildId
-        } = req.params;
         const {
             messageId,
             channelId,

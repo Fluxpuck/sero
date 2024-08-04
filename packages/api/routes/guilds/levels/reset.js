@@ -16,7 +16,6 @@ router.post("/", async (req, res, next) => {
     const { guildId } = req.params;
 
     try {
-
         // Update the values for all users in the guild
         await UserLevels.update(
             {
