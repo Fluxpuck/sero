@@ -99,7 +99,7 @@ router.post("/", async (req, res, next) => {
 
 
     } catch (error) {
-        await t.rollback();
+        t.rollback();
         next(error);
     }
 
