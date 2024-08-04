@@ -73,7 +73,7 @@ module.exports = sequelize => {
             allowNull: false,
             defaultValue: 100
         },
-        modifyer: {
+        modifier: {
             type: DataTypes.INTEGER,
             allowNull: false,
             defaultValue: 1,

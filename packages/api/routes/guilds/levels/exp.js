@@ -73,8 +73,8 @@ router.post("/gain/:userId", async (req, res, next) => {
         } else {
 
             // Get the server and personal modifiers
-            const { serverModifier = 1 } = await Guild.findByPk(guildId);
-            const { personalModifier = 1 } = await User.findOne(options);
+            const { modifier: serverModifier = 1 } = await Guild.findByPk(guildId);
+            const { modifier: personalModifier = 1 } = await User.findOne(options);
 
             // Calculate the experience to add
             const experience_gain = calculateXP(serverModifier, personalModifier);
