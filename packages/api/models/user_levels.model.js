@@ -90,7 +90,7 @@ module.exports = sequelize => {
         },
         reward_claimed: {
             type: DataTypes.BOOLEAN,
-            allowNull: true,
+            allowNull: false,
             defaultValue: false
         }
     }, {

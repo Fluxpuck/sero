@@ -62,7 +62,7 @@ router.post("/", async (req, res, next) => {
         await t.commit();
 
         // Send the response
-        res.status(200).json({ message: "Message was stored successfully", data: message });
+        res.status(200).json({ message: "Message stored successfully", data: message });
 
     } catch (error) {
         t.rollback();

@@ -1,5 +1,5 @@
 const express = require("express");
-const router = express.Router();
+const router = express.Router({ mergeParams: true });
 
 const { Away } = require("../../../database/models");
 const { findAllRecords, findOneRecord, createOrUpdateRecord } = require("../../../utils/RequestManager");
