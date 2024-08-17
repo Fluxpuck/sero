@@ -36,6 +36,7 @@ const findOneRecord = async (model, options) => {
  * Create or update a record in a model
  * @param {*} model 
  * @param {*} data 
+ * @param {*} transaction 
  * @returns 
  */
 const createOrUpdateRecord = async (model, data, transaction) => {
@@ -48,8 +49,26 @@ const createOrUpdateRecord = async (model, data, transaction) => {
     }
 };
 
+/**
+ * Create a unique record in a model
+ * @param {*} model 
+ * @param {*} data 
+ * @param {*} transaction 
+ * @returns 
+ */
+const createUniqueRecord = async (model, data, transaction) => {
+    try {
+        const result = await model.create(data, { transaction });
+        return result;
+    } catch (error) {
+        console.error('Error executing create:', error);
+        throw error;
+    }
+};
+
 module.exports = {
     findAllRecords,
     findOneRecord,
-    createOrUpdateRecord
+    createOrUpdateRecord,
+    createUniqueRecord
 };
