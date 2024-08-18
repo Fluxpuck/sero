@@ -50,6 +50,18 @@ module.exports = {
     },
 
     /**
+     * Check the connection to the API
+     */
+    async baseRequest() {
+        try {
+            const response = await instance.get('/');
+            return response
+        } catch (error) {
+            return error?.response?.data.error
+        }
+    },
+
+    /**
      * @TEMPORARY - CONNECTION TO MEE6
      * Get the user experience from MEE6
      * @param {string} userId - The user ID

@@ -18,19 +18,6 @@ client.version = require('./package.json').version
 const events = require('./utils/EventManager');
 // events.run(client); //run the events
 
-// → Check API connection
-const { getRequest } = require('./database/connection');
-getRequest('/').then(response => {
-
-  console.log(response);
-
-  if (response?.status === 200) {
-    console.log("\x1b[32m", `API is connected!`);
-  } else {
-    console.log("\x1b[31m", `API is not connected!`);
-  }
-});
-
 // → Subscribe to Redis channels
 const { redisClient, subscribeToChannel } = require('./database/subscriber');
 subscribeToChannel(client);
@@ -38,7 +25,11 @@ subscribeToChannel(client);
 // → Login to Discord API
 client.login(process.env.NODE_ENV === "production"
   ? process.env.PRODUCTION_TOKEN
-  : process.env.DEVELOPMENT_TOKEN).then(() => {
+  : process.env.DEVELOPMENT_TOKEN).then(async () => {
+
+    // → Check API connection
+    const { baseRequest } = require('./database/connection');
+    const apiConnection = await baseRequest();
 
     // → Displays a welcome message in the console 
     // to indicate that the bot has successfully started up.
@@ -55,5 +46,6 @@ client.login(process.env.NODE_ENV === "production"
        > ${new Date().toUTCString()}
        > ${client.user.tag}
        > ${redisClient.status === 'ready' ? 'Redis is connected' : 'Redis is not connected!'}
+       > ${apiConnection.status === 200 ? 'Sero-api is connected' : 'Sero-api is not connected!'}
       `);
   });
