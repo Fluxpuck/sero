@@ -1,6 +1,7 @@
 const express = require("express");
 const router = express.Router();
 
+const { sequelize } = require('../../../database/sequelize');
 const { Commands } = require("../../../database/models");
 const { findAllRecords, findOneRecord, createOrUpdateRecord } = require("../../../utils/RequestManager");
 const { CreateError, RequestError } = require("../../../utils/ClassManager");
@@ -71,7 +72,7 @@ router.post("/", async (req, res, next) => {
         } = req.body;
 
         // Check if the required fields are provided
-        if (!commandName || !interactionType) {
+        if (!commandName) {
             throw new RequestError(400, "Invalid Request", {
                 method: req.method, path: req.path
             });
@@ -93,9 +94,9 @@ router.post("/", async (req, res, next) => {
 
         // Send the appropriate response
         if (created) {
-            res.status(201).json({ message: "Command created successfully", data: result });
+            res.status(201).json({ message: `${commandName} created successfully`, data: result });
         } else {
-            res.status(200).json({ message: "Command updated successfully", data: result });
+            res.status(200).json({ message: `${commandName} updated successfully`, data: result });
         };
 
     } catch (error) {

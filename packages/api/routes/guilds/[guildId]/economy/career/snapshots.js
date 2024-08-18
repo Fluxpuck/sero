@@ -1,6 +1,7 @@
 const express = require("express");
 const router = express.Router({ mergeParams: true });
 
+const { sequelize } = require('../../../../../database/sequelize');
 const { Work_snapshot } = require("../../../../../database/models");
 const { findAllRecords, findOneRecord, createOrUpdateRecord, createUniqueRecord } = require("../../../../../utils/RequestManager");
 const { CreateError, RequestError } = require("../../../../../utils/ClassManager");

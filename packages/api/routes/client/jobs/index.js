@@ -1,6 +1,7 @@
 const express = require("express");
 const router = express.Router();
 
+const { sequelize } = require('../../../database/sequelize');
 const { Jobs } = require("../../../database/models");
 const { findAllRecords, findOneRecord, createOrUpdateRecord } = require("../../../utils/RequestManager");
 const { CreateError, RequestError } = require("../../../utils/ClassManager");
