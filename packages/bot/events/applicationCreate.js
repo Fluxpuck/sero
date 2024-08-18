@@ -77,7 +77,7 @@ module.exports = async (client, applications) => {
                 })
 
                 if (process.env.NODE_ENV === "development") {
-                    console.log("\x1b[2m", `[Database]: ${result}`);
+                    console.log("\x1b[2m", `[Database]: ${result.message}`);
                 }
 
             }).catch((error) => {

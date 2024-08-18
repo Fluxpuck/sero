@@ -16,7 +16,7 @@ client.version = require('./package.json').version
 
 // → Listen to Client events
 const events = require('./utils/EventManager');
-// events.run(client); //run the events
+events.run(client); //run the events
 
 // → Subscribe to Redis channels
 const { redisClient, subscribeToChannel } = require('./database/subscriber');
