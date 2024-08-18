@@ -25,12 +25,5 @@
     "user": "Fluxpuck",
     "repository": "flux",
     "url": "https://github.com/Fluxpuck/flux"
-  },
-  "_moduleAliases": {
-    "@root": ".",
-    "@db": "database",
-    "@middleware": "./middleware",
-    "@routes": "routes",
-    "@models": "models"
   }
 }

@@ -1,4 +1,4 @@
-require('module-alias/register')
+require('module-alias/register');
 
 // → Require Packages & Modules
 const express = require("express");
