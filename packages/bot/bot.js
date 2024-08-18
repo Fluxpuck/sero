@@ -16,7 +16,20 @@ client.version = require('./package.json').version
 
 // → Listen to Client events
 const events = require('./utils/EventManager');
-events.run(client); //run the events
+// events.run(client); //run the events
+
+// → Check API connection
+const { getRequest } = require('./database/connection');
+getRequest('/').then(response => {
+
+  console.log(response);
+
+  if (response?.status === 200) {
+    console.log("\x1b[32m", `API is connected!`);
+  } else {
+    console.log("\x1b[31m", `API is not connected!`);
+  }
+});
 
 // → Subscribe to Redis channels
 const { redisClient, subscribeToChannel } = require('./database/subscriber');

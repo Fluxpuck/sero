@@ -20,13 +20,12 @@ function registerBaseRoutes(app, dirPath, baseRoute = '') {
             const routePath = `${baseRoute}/${file.replace('.js', '')}`;
 
             console.log(`[Route]: /api${routePath}/`);
-
             app.use(routePath, route);
 
         } else if (file === 'index.js') {
             const route = require(filePath);
-            console.log(`[Route]: /api${baseRoute}/`);
 
+            console.log(`[Route]: /api${baseRoute}/`);
             app.use(baseRoute, route);
         }
     });

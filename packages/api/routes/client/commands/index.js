@@ -58,10 +58,6 @@ router.get("/:commandId", async (req, res, next) => {
  * @param {object} defaultMemberPermissions - The default permissions for the member
  */
 router.post("/", async (req, res, next) => {
-
-
-    console.log("[POST REQUEST - commands]:", req.body);
-
     const t = await sequelize.transaction();
     try {
         const {
