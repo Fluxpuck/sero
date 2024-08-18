@@ -3,6 +3,7 @@ const router = express.Router({ mergeParams: true });
 
 const { Work_snapshot } = require("../../../../../database/models");
 const { findAllRecords, findOneRecord, createOrUpdateRecord, createUniqueRecord } = require("../../../../../utils/RequestManager");
+const { CreateError, RequestError } = require("../../../../../utils/ClassManager");
 
 /**
  * GET api/guilds/:guildId/career/snapshots/:userId

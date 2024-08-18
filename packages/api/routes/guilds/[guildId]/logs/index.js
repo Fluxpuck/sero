@@ -3,6 +3,8 @@ const router = express.Router({ mergeParams: true });
 
 const { Logs, LogChannels } = require("../../../../database/models");
 const { findAllRecords, findOneRecord, createOrUpdateRecord } = require("../../../../utils/RequestManager");
+const { CreateError, RequestError } = require("../../../../utils/ClassManager");
+
 const { generateUniqueToken } = require("../../../../utils/FunctionManager");
 
 /**

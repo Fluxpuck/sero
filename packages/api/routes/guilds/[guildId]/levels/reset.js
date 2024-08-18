@@ -4,6 +4,7 @@ const router = express.Router({ mergeParams: true });
 
 const { UserLevels } = require("../../../../database/models");
 const { findAllRecords, findOneRecord, createOrUpdateRecord } = require("../../../../utils/RequestManager");
+const { CreateError, RequestError } = require("../../../../utils/ClassManager");
 
 /**
  * POST api/guilds/:guildId/levels/reset

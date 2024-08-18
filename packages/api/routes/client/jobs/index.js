@@ -3,6 +3,7 @@ const router = express.Router();
 
 const { Jobs } = require("../../../database/models");
 const { findAllRecords, findOneRecord, createOrUpdateRecord } = require("../../../utils/RequestManager");
+const { CreateError, RequestError } = require("../../../utils/ClassManager");
 
 /**
  * GET api/client/jobs

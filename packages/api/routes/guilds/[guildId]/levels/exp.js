@@ -4,6 +4,8 @@ const router = express.Router({ mergeParams: true });
 
 const { Guild, User, UserLevels } = require("../../../../database/models");
 const { findAllRecords, findOneRecord, createOrUpdateRecord } = require("../../../../utils/RequestManager");
+const { CreateError, RequestError } = require("../../../../utils/ClassManager");
+
 const { calculateXP } = require("../../../../utils/FunctionManager");
 
 /**

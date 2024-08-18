@@ -3,6 +3,7 @@ const router = express.Router();
 
 const { Commands } = require("../../../database/models");
 const { findAllRecords, findOneRecord, createOrUpdateRecord } = require("../../../utils/RequestManager");
+const { CreateError, RequestError } = require("../../../utils/ClassManager");
 
 /**
  * GET api/client/commands
@@ -57,6 +58,10 @@ router.get("/:commandId", async (req, res, next) => {
  * @param {object} defaultMemberPermissions - The default permissions for the member
  */
 router.post("/", async (req, res, next) => {
+
+
+    console.log("[POST REQUEST - commands]:", req.body);
+
     const t = await sequelize.transaction();
     try {
         const {
