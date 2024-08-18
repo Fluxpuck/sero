@@ -7,16 +7,14 @@ function registerBaseRoutes(app, dirPath, baseRoute = '') {
         const stat = fs.statSync(filePath);
 
         if (stat.isDirectory()) {
-            // Load only the first-level directories, not the sub-directories
-            const indexFilePath = path.join(filePath, 'index.js');
-            if (fs.existsSync(indexFilePath)) {
-                const route = require(indexFilePath);
-                const routePath = `${baseRoute}/${file}`;
+            // Convert directory names in brackets (e.g., [guildId]) to route parameters (e.g., :guildId)
+            const routeParam = file.startsWith('[') && file.endsWith(']')
+                ? `:${file.slice(1, -1)}`
+                : file;
 
-                console.log(`[Route]: /api${routePath}/`);
+            // Recursively call registerBaseRoutes for subdirectories
+            registerBaseRoutes(app, filePath, `${baseRoute}/${routeParam}`);
 
-                app.use(routePath, route);
-            }
         } else if (file.endsWith('.js') && file !== 'index.js') {
             const route = require(filePath);
             const routePath = `${baseRoute}/${file.replace('.js', '')}`;
@@ -24,16 +22,14 @@ function registerBaseRoutes(app, dirPath, baseRoute = '') {
             console.log(`[Route]: /api${routePath}/`);
 
             app.use(routePath, route);
+
+        } else if (file === 'index.js') {
+            const route = require(filePath);
+            console.log(`[Route]: /api${baseRoute}/`);
+
+            app.use(baseRoute, route);
         }
     });
-}
-
-
-const express = require("express");
-const router = express.Router({ mergeParams: true });
-function registerIndividualRoute(path, route) {
-    console.log(`[Route]: /api${path}/`);
-    router.use(path, route);
 }
 
 function run(app) {
@@ -41,8 +37,4 @@ function run(app) {
     registerBaseRoutes(app, routesDir);
 }
 
-module.exports = {
-    run,
-    registerBaseRoutes,
-    registerIndividualRoute
-};
+module.exports = { run };

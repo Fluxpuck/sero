@@ -2,8 +2,8 @@ const express = require("express");
 const { Op } = require('sequelize');
 const router = express.Router({ mergeParams: true });
 
-const { UserLevels } = require("../../../database/models");
-const { findAllRecords, findOneRecord, createOrUpdateRecord } = require("../../../utils/RequestManager");
+const { UserLevels } = require("../../../../database/models");
+const { findAllRecords, findOneRecord, createOrUpdateRecord } = require("../../../../utils/RequestManager");
 
 /**
  * POST api/guilds/:guildId/levels/reset

@@ -1,9 +1,9 @@
 const express = require("express");
 const router = express.Router({ mergeParams: true });
 
-const { Logs, LogChannels } = require("../../../database/models");
-const { findAllRecords, findOneRecord, createOrUpdateRecord } = require("../../../utils/RequestManager");
-const { generateUniqueToken } = require("../../../utils/FunctionManager");
+const { Logs, LogChannels } = require("../../../../database/models");
+const { findAllRecords, findOneRecord, createOrUpdateRecord } = require("../../../../utils/RequestManager");
+const { generateUniqueToken } = require("../../../../utils/FunctionManager");
 
 /**
  * GET api/guilds/:guildId/logs

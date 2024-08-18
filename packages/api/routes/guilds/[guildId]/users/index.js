@@ -1,8 +1,8 @@
 const express = require("express");
 const router = express.Router({ mergeParams: true });
 
-const { User } = require("../../../database/models");
-const { findAllRecords, findOneRecord, createOrUpdateRecord } = require("../../../utils/RequestManager");
+const { User } = require("../../../../database/models");
+const { findAllRecords, findOneRecord, createOrUpdateRecord } = require("../../../../utils/RequestManager");
 
 /**
  * GET api/guilds/:guildId/users

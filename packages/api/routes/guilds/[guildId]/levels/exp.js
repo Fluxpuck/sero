@@ -2,10 +2,9 @@ const express = require("express");
 const { Op } = require('sequelize');
 const router = express.Router({ mergeParams: true });
 
-const { Guild, User, UserLevels } = require("../../../database/models");
-const { findAllRecords, findOneRecord, createOrUpdateRecord } = require("../../../utils/RequestManager");
-const { calculateXP } = require("../../../utils/FunctionManager");
-
+const { Guild, User, UserLevels } = require("../../../../database/models");
+const { findAllRecords, findOneRecord, createOrUpdateRecord } = require("../../../../utils/RequestManager");
+const { calculateXP } = require("../../../../utils/FunctionManager");
 
 /**
  * POST api/guilds/:guildId/levels/exp/:userId

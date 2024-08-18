@@ -1,8 +1,8 @@
 const express = require("express");
 const router = express.Router({ mergeParams: true });
 
-const { UserCareers } = require("../../../../database/models");
-const { findAllRecords, findOneRecord, createOrUpdateRecord } = require("../../../../utils/RequestManager");
+const { UserCareers } = require("../../../../../database/models");
+const { findAllRecords, findOneRecord, createOrUpdateRecord } = require("../../../../../utils/RequestManager");
 
 /**
  * GET api/guilds/:guildId/career/:userId

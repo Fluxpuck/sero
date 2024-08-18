@@ -1,7 +1,4 @@
-/* RESTFUL API for Flux
- Intented for Private use only
- Copyright © 2023
-*/
+require('module-alias/register')
 
 // → Require Packages & Modules
 const express = require("express");
@@ -9,7 +6,11 @@ const bodyParser = require("body-parser");
 const cors = require("cors");
 const helmet = require("helmet");
 const { join } = require('path');
+
+// → Load Environment Variables
 require("dotenv").config({ path: join(__dirname, '.', 'config', '.env') });
+
+// → Load Cron Job Manager
 require('./utils/jobManager');
 
 (async () => {
@@ -27,7 +28,7 @@ require('./utils/jobManager');
     app.use(cors());
 
     // → Adding morgan to log HTTP request
-    const logger = require("./middleware/logging");
+    const logger = require('./middleware/logging');
     app.use(logger);
 
     // → Mount API routes to App
