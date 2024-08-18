@@ -1,5 +1,6 @@
 const fs = require('fs');
 const path = require('path');
+const { authenticate } = require('./authentication');
 
 function registerBaseRoutes(app, dirPath, baseRoute = '') {
     fs.readdirSync(dirPath).forEach(file => {
@@ -16,17 +17,20 @@ function registerBaseRoutes(app, dirPath, baseRoute = '') {
             registerBaseRoutes(app, filePath, `${baseRoute}/${routeParam}`);
 
         } else if (file.endsWith('.js') && file !== 'index.js') {
-            const route = require(filePath);
             const routePath = `${baseRoute}/${file.replace('.js', '')}`;
+            // Resolve the absolute path to the route file
+            const route = require(filePath);
 
             console.log(`[Route]: /api${routePath}/`);
-            app.use(routePath, route);
+            app.use(`/api${routePath}`, authenticate, route);
 
         } else if (file === 'index.js') {
+            const routePath = baseRoute;
+            // Resolve the absolute path to the index file
             const route = require(filePath);
 
-            console.log(`[Route]: /api${baseRoute}/`);
-            app.use(baseRoute, route);
+            console.log(`[Route]: /api${routePath}/`);
+            app.use(`/api${routePath}`, authenticate, route);
         }
     });
 }
@@ -34,6 +38,14 @@ function registerBaseRoutes(app, dirPath, baseRoute = '') {
 function run(app) {
     const routesDir = path.join(__dirname, '../routes');
     registerBaseRoutes(app, routesDir);
+
+    // Catch all other routes
+    app.use((req, res, next) => {
+        const error = new Error('Sorry, that route does not exist.');
+        error.status = 400;
+        error.stack = req;
+        next(error);
+    });
 }
 
 module.exports = { run };
