@@ -3,6 +3,7 @@ const { ActionRowBuilder, ComponentType } = require("discord.js");
 const { createCustomEmbed } = require("../../assets/embed")
 const ClientButtonsEnum = require("../../assets/embed-buttons");
 const { chunk } = require("../../lib/helpers/MathHelpers/arrayHelper");
+
 module.exports.props = {
     commandName: "balance-board",
     description: "Get the balance leaderboard of the server.",
@@ -15,7 +16,7 @@ module.exports.run = async (client, interaction, leaderboard = []) => {
     await interaction.deferReply({ ephemeral: false });
 
     // Fetch all balances.
-    const result = await getRequest(`/balance/${interaction.guildId}`);
+    const result = await getRequest(`/guilds/${interaction.guildId}/economy/balance`);
     if (result?.status === 200) {
         leaderboard = result.data;
     }

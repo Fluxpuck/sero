@@ -25,7 +25,7 @@ module.exports.run = async (client, interaction) => {
     const targetUser = interaction.options.get("user")?.user || interaction.user;
 
     // Get the user's the experience && check if the user has experience.
-    const result = await getRequest(`/balance/${interaction.guildId}/${targetUser.id}`);
+    const result = await getRequest(`/guilds/${interaction.guildId}/economy/balance/${targetUser.id}`);
     const balance = result?.data.balance || 0;
 
     // Create an embed to display the user's balance

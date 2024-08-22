@@ -17,13 +17,13 @@ module.exports.run = async (client, interaction) => {
   await interaction.deferReply({ ephemeral: false });
 
   // Fetch career snapshot from the user
-  const snapshotResult = await getRequest(`/career/snap/${interaction.guild.id}/${interaction.user.id}`);
+  const snapshotResult = await getRequest(`/guilds/${interaction.guild.id}/economy/career/snapshots/${interaction.user.id}`);
 
   // If no snapshot, or the snapshot is older than 1 day - 24 hours, continue
   if (snapshotResult.status != 200 || isTimestampFromToday(snapshotResult?.data.createdAt) == false) {
 
     // Fetch the user's career (job)
-    const userCareerResult = await getRequest(`/career/${interaction.guild.id}/${interaction.user.id}`);
+    const userCareerResult = await getRequest(`/guilds/${interaction.guild.id}/economy/career/${interaction.user.id}`);
 
     // If user has a career, return a job-message and update user's balance
     if (userCareerResult.status === 200) {
@@ -94,7 +94,7 @@ module.exports.run = async (client, interaction) => {
       } else {
 
         // Get 3 random jobs
-        const jobsResult = await getRequest(`/career/jobs?limit=3`);
+        const jobsResult = await getRequest(`/client/jobs?limit=3`);
         if (jobsResult.status != 200) {
           await interaction.deleteReply();
           return interaction.followUp({
@@ -190,7 +190,7 @@ module.exports.run = async (client, interaction) => {
         );
 
         // Update the user's career
-        const updateUserCareer = await postRequest(`/career/${interaction.guild.id}/${interaction.user.id}`, { jobId: selectedJob.jobId, level: 1 });
+        const updateUserCareer = await postRequest(`/guilds/${interaction.guild.id}/economy/career`, { userId: interaction.user.id, jobId: selectedJob.jobId, level: 1 });
 
         // If the user's career was updated successfully, return a message
         if (updateUserCareer.status === 200) {

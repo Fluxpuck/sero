@@ -34,7 +34,7 @@ module.exports.run = async (client, interaction) => {
     const targetAmount = interaction.options.get("amount").value;
 
     // Give the user the money
-    const result = await postRequest(`/balance/${interaction.guildId}/${targetUser.id}`, { amount: targetAmount });
+    const result = await postRequest(`/guilds/${interaction.guildId}/economy/balance`, { userId: targetUser.id, amount: targetAmount });
 
     // If the request was not successful, return an error
     if (result?.status !== 200) {

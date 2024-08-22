@@ -15,7 +15,7 @@ module.exports.run = async (client, interaction, leaderboard = []) => {
     await interaction.deferReply({ ephemeral: false });
 
     // Fetch all careers.
-    const result = await getRequest(`/career/${interaction.guildId}`);
+    const result = await getRequest(`/guilds/${interaction.guildId}/economy/career/`);
     if (result?.status === 200) {
         leaderboard = result.data;
     }

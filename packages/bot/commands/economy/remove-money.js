@@ -34,7 +34,7 @@ module.exports.run = async (client, interaction) => {
     const targetAmount = interaction.options.get("amount").value || 0;
 
     // Get the user's balance && check if the user has money.
-    const currentUser = await getRequest(`/balance/${interaction.guildId}/${targetUser.id}`);
+    const currentUser = await getRequest(`/guilds/${interaction.guildId}/economy/balance/${targetUser.id}`);
     // If the request was not successful, return an error
     if (result?.status !== 200) {
         await interaction.deleteReply();
@@ -49,11 +49,11 @@ module.exports.run = async (client, interaction) => {
         // Check if the user has the proper amount of money.
         if (currentBalance < targetAmount) {
             // Remove the current balance, setting it to null
-            await postRequest(`/balance/${interaction.guildId}/${targetUser.id}`, { amount: -currentBalance })
+            await postRequest(`/guilds/${interaction.guildId}/economy/balance`, { userId: targetUser.id, amount: -currentBalance })
 
         } else {
             // Remove the user's balance if has proper amount.
-            await postRequest(`/balance/${interaction.guildId}/${targetUser.id}`, { amount: -targetAmount });
+            await postRequest(`/guilds/${interaction.guildId}/economy/balance`, { userId: targetUser.id, amount: -targetAmount });
             return interaction.editReply({
                 content: `**${targetAmount.toLocaleString()}** coins were removed from <@${targetUser.id}>!`,
                 ephemeral: false
