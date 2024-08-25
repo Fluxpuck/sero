@@ -75,11 +75,12 @@ router.post("/", async (req, res, next) => {
         }
 
         // Find the existing balance for the user
-        const options = { where: { guildId, userId } };
+        const options = { where: { guildId: guildId, userId: userId } };
         const existingBalance = await findOneRecord(UserBalance, options);
 
         // Calculate the new balance
-        const newBalance = existingBalance ? existingBalance.balance + balance : balance;
+        let newBalance = existingBalance ? existingBalance.balance + balance : balance;
+        newBalance = newBalance < 0 ? 0 : newBalance;
 
         // Update or create the balance
         const [result, created] = await createOrUpdateRecord(UserBalance, { guildId, userId, balance: newBalance }, t);
