@@ -3,7 +3,7 @@ const router = express.Router({ mergeParams: true });
 
 const { sequelize } = require('../../../../database/sequelize');
 const { UserLevels } = require("../../../../database/models");
-const { findAllRecords, findOneRecord, createOrUpdateRecord } = require("../../../../utils/RequestManager");
+const { findOneRecord } = require("../../../../utils/RequestManager");
 const { CreateError, RequestError } = require("../../../../utils/ClassManager");
 
 /**
@@ -18,6 +18,14 @@ router.post("/:userId", async (req, res, next) => {
     const options = { where: { guildId: guildId, userId: userId } };
 
     try {
+        const { experience } = req.body;
+
+        // Check if the required fields are provided
+        if (!experience) {
+            throw new RequestError(400, "Invalid Request", {
+                method: req.method, path: req.path
+            });
+        }
 
         // Check if the user has a level
         const user = await findOneRecord(UserLevels, options);
@@ -27,23 +35,25 @@ router.post("/:userId", async (req, res, next) => {
 
         // Check if the user already claimed the reward
         if (user.reward_claimed) {
-            throw new CreateError(400, "User already claimed the reward");
+            throw new CreateError(204, "User already claimed the reward");
         }
 
-        // Update the user's experience by adding experience
+        // Mark the reward as claimed
         user.reward_claimed = true;
+        await user.save({ transaction: t });
 
-        // Save the updated record
+        // Update the user's experience
+        user.experience = (user.experience ?? 0) + experience;
         await user.save({ transaction: t });
 
         // Commit the transaction
         await t.commit();
 
-        res.status(200).json({ message: "User reward claimed", data: user });
-
+        res.status(200).json({ message: `${experience} experience points added to user`, data: user });
 
     } catch (error) {
-        t.rollback();
+        // Rollback the transaction in case of error
+        await t.rollback();
         next(error);
     }
 });
