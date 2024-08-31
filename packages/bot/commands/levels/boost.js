@@ -61,8 +61,8 @@ module.exports.run = async (client, interaction) => {
             } else {
                 const diff = expireMoment.diff(now);
 
-                const durationHours = Math.floor(diff / 3600000); // convert milliseconds to hours
-                const durationMinutes = Math.floor((diff % 3600000) / 60000); // convert remaining milliseconds to minutes
+                const durationHours = Math.floor(diff / 3_600_000); // convert milliseconds to hours
+                const durationMinutes = Math.floor((diff % 3_600_000) / 60_000); // convert remaining milliseconds to minutes
 
                 const timeLeft = `${durationHours} hour${durationHours === 1 ? "" : "s"} and ${durationMinutes} minute${durationMinutes === 1 ? "" : "s"}`;
 
@@ -90,7 +90,7 @@ module.exports.run = async (client, interaction) => {
         const duration = targetDuration ?? 1;
 
         // Give the user the experience
-        const result = await postRequest(`/guilds/boost/${interaction.guildId}`, { modifier: targetModifier, duration: duration });
+        const result = await postRequest(`/guilds/boost`, { guildId: guildId, modifier: targetModifier, duration: duration });
 
         // If the request was not successful, return an error
         if (result?.status !== 200) {
