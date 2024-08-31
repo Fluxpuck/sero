@@ -21,16 +21,17 @@ function registerBaseRoutes(app, dirPath, baseRoute = '') {
             // Resolve the absolute path to the route file
             const route = require(filePath);
 
-            console.log(`[Route]: ${routePath}`);
             app.use(`/api${routePath}`, authenticate, route);
+            console.log(`[Route]: ${routePath}`);
 
         } else if (file === 'index.js') {
             const routePath = baseRoute;
             // Resolve the absolute path to the index file
             const route = require(filePath);
 
-            console.log(`[Route]: ${routePath}`);
             app.use(`/api${routePath}`, authenticate, route);
+            console.log(`[Route]: ${routePath}`);
+
         }
     });
 }
@@ -43,7 +44,7 @@ function run(app) {
     app.use((req, res, next) => {
         const error = new Error('Sorry, that route does not exist.');
         error.status = 400;
-        error.stack = req;
+        error.stack = Array.isArray(req) ? req : [];
         next(error);
     });
 }
