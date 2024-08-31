@@ -13,12 +13,12 @@ module.exports = async (client, message) => {
     const memberId = messageMention ? messageMention.id : message.author.id
 
     // Check if the author is away
-    const awayResult = await getRequest(`/guilds/${interaction.guildId}/away/${memberId}`);
+    const awayResult = await getRequest(`/guilds/${message.guildId}/away/${memberId}`);
     if (awayResult?.status == 200) {
 
         // If the user is the same as the author, remove away from database
         if (memberId === message.author.id) {
-            await deleteRequest(`/guilds/${interaction.guildId}/away/${memberId}`);
+            await deleteRequest(`/guilds/${message.guildId}/away/${memberId}`);
 
             // Return the message
             message.reply(
