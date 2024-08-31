@@ -78,16 +78,23 @@ router.post("/", async (req, res, next) => {
             });
         }
 
-        // Update or Create the record
-        const [result, created] = await createOrUpdateRecord(Commands, {
-            commandId,
+        // Create an object for the command data
+        const commandData = {
             commandName,
             description,
             usage,
             interactionType,
             interactionOptions,
-            defaultMemberPermissions
-        }, t);
+            defaultMemberPermissions,
+        };
+
+        // Conditionally add commandId if it's not null
+        if (commandId !== null) {
+            commandData.commandId = commandId;
+        }
+
+        // Update or Create the record
+        const [result, created] = await createOrUpdateRecord(Commands, commandData, t);
 
         // Commit the transaction
         await t.commit();
@@ -109,9 +116,9 @@ router.post("/", async (req, res, next) => {
  * DELETE api/client/commands/:commandId
  * @description Delete a specific client command
  */
-router.delete("/:commandId", async (req, res, next) => {
-    const { commandId } = req.params;
-    const options = { where: { id: commandId } };
+router.delete("/:commandName", async (req, res, next) => {
+    const { commandName } = req.params;
+    const options = { where: { commandName: commandName } };
 
     try {
         const clientCommand = await findOneRecord(Commands, options);
@@ -119,7 +126,7 @@ router.delete("/:commandId", async (req, res, next) => {
             throw new CreateError(404, "Client command not found");
         } else {
             await clientCommand.destroy();
-            res.status(200).json({ message: "Client command deleted successfully" });
+            res.status(200).json({ message: `${commandName} deleted successfully` });
         }
     } catch (error) {
         next(error);
