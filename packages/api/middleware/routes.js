@@ -21,7 +21,7 @@ function registerBaseRoutes(app, dirPath, baseRoute = '') {
             // Resolve the absolute path to the route file
             const route = require(filePath);
 
-            console.log(`[Route]: /api${routePath}/`);
+            console.log(`[Route]: ${routePath}`);
             app.use(`/api${routePath}`, authenticate, route);
 
         } else if (file === 'index.js') {
@@ -29,7 +29,7 @@ function registerBaseRoutes(app, dirPath, baseRoute = '') {
             // Resolve the absolute path to the index file
             const route = require(filePath);
 
-            console.log(`[Route]: /api${routePath}/`);
+            console.log(`[Route]: ${routePath}`);
             app.use(`/api${routePath}`, authenticate, route);
         }
     });
