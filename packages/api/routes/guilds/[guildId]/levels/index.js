@@ -69,15 +69,16 @@ router.get("/:userId", async (req, res, next) => {
             const position = await UserLevels.count({
                 where: {
                     guildId: guildId,
-                    experience: { [Op.gt]: result.experience }
+                    experience: { [Op.gt]: userLevel.experience }
                 }
             });
 
-            // Add the position to the userLevel object
-            userLevel.position = position + 1;
+            // Convert userLevel to a plain object to add the position property
+            const userLevelData = userLevel.get({ plain: true });
+            userLevelData.position = position + 1;
 
             // Return the user's level and position
-            return res.status(200).json(userLevel);
+            return res.status(200).json(userLevelData);
 
         }
     } catch (error) {

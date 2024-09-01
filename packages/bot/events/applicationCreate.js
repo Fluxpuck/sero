@@ -105,7 +105,7 @@ module.exports = async (client) => {
             await application.delete(key).then(async (application) => {
 
                 // Delete the command from the database
-                const result = await deleteCommands(command.commandName)
+                const result = await deleteCommands(application.name)
 
                 if (process.env.NODE_ENV === "development") {
                     console.log("\x1b[2m", `[Database]: ${result.message}`);

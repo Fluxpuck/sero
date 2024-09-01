@@ -45,7 +45,7 @@ client.login(process.env.NODE_ENV === "production"
       Discord bot - Startup details:
        > ${new Date().toUTCString()}
        > ${client.user.tag}
-       > ${redisClient.status === 'ready' ? 'Redis is connected' : 'Redis is not connected!'}
-       > ${apiConnection.status === 200 ? 'Sero-api is connected' : 'Sero-api is not connected!'}
+       > ${redisClient?.status === 'ready' ? 'Redis is connected' : 'Redis is not connected!'}
+       > ${apiConnection?.status === 200 ? 'Sero-api is connected' : 'Sero-api is not connected!'}
       `);
   });
