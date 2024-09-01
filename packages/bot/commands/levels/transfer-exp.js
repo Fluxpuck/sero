@@ -40,9 +40,9 @@ module.exports.run = async (client, interaction) => {
     if (client.cooldowns.has(cooldownKey) === false) {
 
         // Remove exp from the author
-        const removeResult = await postRequest(`/levels/add/${interaction.guildId}/${interaction.user.id}`, { experience: -transferAmount });
+        const removeResult = await postRequest(`/guilds/${interaction.guildId}/levels/exp/${targetUser.id}`, { experience: -targetAmount });
         // Add exp to the target
-        const addResult = await postRequest(`/levels/add/${interaction.guildId}/${targetUser.id}`, { experience: transferAmount });
+        const addResult = postRequest(`/guilds/${interaction.guildId}/levels/exp/${targetUser.id}`, { experience: targetAmount });
 
         // If either request was not successful, return an error
         if (removeResult.status !== 200 || addResult.status !== 200) {

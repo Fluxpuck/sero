@@ -40,7 +40,7 @@ module.exports.run = async (client, interaction, AuditLogs = []) => {
     }
 
     // Check if the member has AuditLogs
-    const memberLogs = await getRequest(`/logs/${interaction.guildId}/${targetUser.id}`);
+    const memberLogs = await getRequest(`/guilds/${interaction.guildId}/logs/${targetUser.id}`);
     if (memberLogs.status == 200) {
         AuditLogs = memberLogs.data
     }

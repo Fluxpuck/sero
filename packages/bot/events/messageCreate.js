@@ -20,11 +20,12 @@ module.exports = async (client, message) => {
     let userStorage = {};
 
     // Get the User from the database
-    const getUserResult = await getRequest(`/users/${message.guildId}/${message.author.id}`);
+    const getUserResult = await getRequest(`/guilds/${message.guildId}/users/${message.author.id}`);
 
     // If the User is not in the Database, store it
     if (!getUserResult || getUserResult.status === 404) {
-      const saveUserResult = await postRequest(`/users/${message.guildId}/${message.author.id}`, {
+      const saveUserResult = await postRequest(`/guilds/${message.guildId}/users`, {
+        userId: message.author.id,
         userName: message.author.username
       })
 
@@ -48,26 +49,13 @@ module.exports = async (client, message) => {
       * And will add experience to the user's level
       */
     if (client.cooldowns.has(cooldownKey) === false) {
-      // Setup variables for guildMemberLevel event
-      let oldMember, newMember;
 
-      // Check if user is present in Levels
-      const result = await getRequest(`/levels/${message.guildId}/${message.author.id}`)
-      if (result) { oldMember = result.data ? result.data.userLevel : null }
-
-      // If 404 error, create a new entry
-      if (result?.status === 404) {
-        // Create a new entry in the leaderboard for the user and guild
-        const entry = await postRequest(`/levels/${message.guildId}/${message.author.id}`)
-        if (entry) { newMember = entry.data ? entry.data.data : null }
-      } else {
-        // Give the users experience
-        const gain = await postRequest(`/levels/gain/${message.guildId}/${message.author.id}`)
-        if (gain) { newMember = gain.data ? gain.data.data : null }
-      }
+      // Update the User's experience
+      const result = await postRequest(`/guilds/${message.guildId}/levels/exp/gain/${message.author.id}`);
+      const { previous = null, current = null } = result.data;
 
       // Trigger guildMemberLevel event
-      client.emit(eventEnum.GUILD_MEMBER_LEVEL, message, oldMember, newMember);
+      client.emit(eventEnum.GUILD_MEMBER_LEVEL, message, previous, current);
 
       // Add the user to the cooldowns Collection
       return client.cooldowns.set(cooldownKey, message, 60);

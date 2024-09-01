@@ -39,7 +39,7 @@ module.exports.run = async (client, interaction) => {
 	if (client.cooldowns.has(cooldownKey) === false) {
 
 		// Get the user experience
-		const result = await getRequest(`/levels/${interaction.guildId}/${targetUser.id}`);
+		const result = await getRequest(`/guilds/${interaction.guildId}/levels/${targetUser.id}`);
 
 		// If status code is 404, return an error saying the user is not ranked yet
 		if (result?.status === 404) {

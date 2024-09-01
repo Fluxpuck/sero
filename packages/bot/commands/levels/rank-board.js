@@ -16,7 +16,7 @@ module.exports.run = async (client, interaction, leaderboard = []) => {
     await interaction.deferReply({ ephemeral: false });
 
     // Get all levels for a specific guild from the database
-    const result = await getRequest(`/levels/${interaction.guildId}`);
+    const result = await getRequest(`/guilds/${interaction.guildId}/levels`);
     if (result?.status === 200) {
         leaderboard = result.data
     }

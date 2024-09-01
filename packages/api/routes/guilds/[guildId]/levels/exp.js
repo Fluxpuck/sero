@@ -32,28 +32,37 @@ router.post("/:userId", async (req, res, next) => {
 
         const userLevel = await findOneRecord(UserLevels, options);
         if (!userLevel) {
-            throw new CreateError(404, "User levels not found in the guild");
-        } else {
-
-            // Update the user's experience by adding experience
-            userLevel.experience = (userLevel.experience ?? 0) + experience;
-
-            // Ensure experience doesn't go below 0
-            if (userLevel.experience < 0) {
-                userLevel.experience = 0;
-            }
-
-            // Save the updated record
-            await userLevel.save({ transaction });
-
-            // Commit the transaction
-            await t.commit();
-
-            const returnMessage = experience < 0
-                ? `${experience} experience points removed from user`
-                : `${experience} experience points added to user`;
-            res.status(200).json({ message: returnMessage, data: userLevel });
+            // Create a new UserLevels entry if not found
+            userLevel = await UserLevels.create({ guildId, userId, experience: 0 }, { transaction: t });
         }
+
+        // Store the previous user level details
+        const previousUserLevel = { ...userLevel.get() };
+
+        // Update the user's experience by adding experience
+        userLevel.experience = (userLevel.experience ?? 0) + experience;
+
+        // Ensure experience doesn't go below 0
+        if (userLevel.experience < 0) {
+            userLevel.experience = 0;
+        }
+
+        // Save the updated record
+        await userLevel.save({ transaction });
+
+        // Commit the transaction
+        await t.commit();
+
+        const returnMessage = experience < 0
+            ? `${experience} experience points removed from user`
+            : `${experience} experience points added to user`;
+
+        res.status(200).json({
+            message: returnMessage, data: {
+                previous: previousUserLevel,
+                current: userLevel
+            }
+        });
 
     } catch (error) {
         t.rollback();
@@ -75,27 +84,35 @@ router.post("/gain/:userId", async (req, res, next) => {
     try {
         const userLevel = await findOneRecord(UserLevels, options);
         if (!userLevel) {
-            throw new CreateError(404, "User levels not found in the guild");
-        } else {
-
-            // Get the server and personal modifiers
-            const { modifier: serverModifier = 1 } = await Guild.findByPk(guildId);
-            const { modifier: personalModifier = 1 } = await User.findOne(options);
-
-            // Calculate the experience to add
-            const experience_gain = calculateXP(serverModifier, personalModifier);
-
-            // Update the user's experience by adding experience
-            levels.experience = experience_gain
-
-            // Save the updated record
-            await userLevel.save({ transaction });
-
-            // Commit the transaction
-            await t.commit();
-
-            res.status(200).json({ message: `User gained ${experience_gain} experience points`, data: userLevel });
+            // Create a new UserLevels entry if not found
+            userLevel = await UserLevels.create({ guildId, userId, experience: 0 }, { transaction: t });
         }
+
+        // Store the previous user level details
+        const previousUserLevel = { ...userLevel.get() };
+
+        // Get the server and personal modifiers
+        const { modifier: serverModifier = 1 } = await Guild.findByPk(guildId);
+        const { modifier: personalModifier = 1 } = await User.findOne(options);
+
+        // Calculate the experience to add
+        const experience_gain = calculateXP(serverModifier, personalModifier);
+
+        // Update the user's experience by adding experience
+        levels.experience = experience_gain
+
+        // Save the updated record
+        await userLevel.save({ transaction });
+
+        // Commit the transaction
+        await t.commit();
+
+        res.status(200).json({
+            message: `User gained ${experience_gain} experience points`, data: {
+                previous: previousUserLevel,
+                current: userLevel
+            }
+        });
 
     } catch (error) {
         t.rollback();

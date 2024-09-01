@@ -15,7 +15,7 @@ const { generateUniqueToken } = require("../../../../utils/FunctionManager");
  * @param {string} guildId - The id of the guild
  * @param {string} userId - The id of the user
  */
-router.get("/userId", async (req, res, next) => {
+router.get("/:userId", async (req, res, next) => {
     const { guildId, userId } = req.params;
     const { limit } = req.query;
     const options = { limit: limit || 10, where: { guildId: guildId, userId: userId } };

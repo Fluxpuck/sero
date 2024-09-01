@@ -40,7 +40,7 @@ module.exports.run = async (client, interaction) => {
       const jobMessage = JOB_MESSAGES[jobId][idx].replace('{COIN}', `**${income}**`);
 
       // Update the user's balance
-      const updateUserBalance = await postRequest(`/balance/${interaction.guild.id}/${interaction.user.id}`, { amount: income });
+      const updateUserBalance = await postRequest(`/guilds/${interaction.guild.id}/economy/balance`, { userId: interaction.user.id, amount: income });
       if (updateUserBalance.status != 200) {
         await interaction.deleteReply();
         return interaction.followUp({
@@ -57,8 +57,8 @@ module.exports.run = async (client, interaction) => {
       })
 
       // Add the work to the work snapshot
-      const snapshotDetails = { jobId: jobId, income: income };
-      const addWorkSnapshot = await postRequest(`/career/snap/${interaction.guild.id}/${interaction.user.id}`, snapshotDetails);
+      const snapshotDetails = { userId: interaction.user.id, jobId: jobId, income: income };
+      const addWorkSnapshot = await postRequest(`/guilds/${interaction.guild.id}/economy/career/snapshots`, snapshotDetails);
 
       // If the work snapshot was not added successfully, return an error message
       if (addWorkSnapshot.status != 200) {

@@ -31,14 +31,14 @@ module.exports = async (client, auditLog, guild) => {
             auditAction: auditLog.action,
             auditType: getEventName(auditLog.action),
             auditCategory: getEventCategory(auditLog.action),
-            targetId: auditLog.targetId ?? null,
-            reason: auditLog.reason ?? undefined,
+            targetId: auditLog.targetId,
+            reason: auditLog.reason ?? null,
             executorId: auditLog.executorId,
-            duration: auditLog.duration ?? undefined,
+            duration: auditLog.duration ?? null,
         };
 
         // Save the audit log to the database
-        const request = await postRequest(`/logs/${guild.id}/${auditLog.targetId}`, auditLogData)
+        const request = await postRequest(`/guilds/${guild.id}/logs`, auditLogData)
         if (request.status !== 200) return console.log(request)
 
     }
