@@ -16,7 +16,15 @@ const { CreateError, RequestError } = require("../../../../utils/ClassManager");
 router.get("/", async (req, res, next) => {
     const { guildId } = req.params;
     const { limit } = req.query;
-    const options = { limit: limit || 100, where: { guildId: guildId } };
+    const options = {
+        limit: limit || 100,
+        where: { guildId: guildId },
+        order: [['experience', 'DESC']],
+        include: [{
+            model: User,
+            where: { guildId: guildId }
+        }],
+    };
 
     try {
         const userLevels = await findAllRecords(UserLevels, options);

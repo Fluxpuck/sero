@@ -2,7 +2,7 @@ const express = require("express");
 const router = express.Router({ mergeParams: true });
 
 const { sequelize } = require('../../../../database/sequelize');
-const { UserBalance } = require("../../../../database/models");
+const { User, UserBalance } = require("../../../../database/models");
 const { findAllRecords, findOneRecord, createOrUpdateRecord } = require("../../../../utils/RequestManager");
 const { CreateError, RequestError } = require("../../../../utils/ClassManager");
 
@@ -13,7 +13,16 @@ const { CreateError, RequestError } = require("../../../../utils/ClassManager");
  */
 router.get("/", async (req, res, next) => {
     const { guildId } = req.params;
-    const options = { where: { guildId: guildId } };
+    const { limit } = req.query;
+    const options = {
+        limit: limit || 100,
+        where: { guildId: guildId },
+        order: [['balance', 'DESC']],
+        include: [{
+            model: User,
+            where: { guildId: guildId }
+        }],
+    };
 
     try {
         const userBalances = await findAllRecords(UserBalance, options);
