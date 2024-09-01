@@ -52,7 +52,7 @@ module.exports = async (client, message) => {
 
       // Update the User's experience
       const result = await postRequest(`/guilds/${message.guildId}/levels/exp/gain/${message.author.id}`);
-      const { previous = null, current = null } = result.data;
+      const { previous, current } = result.data;
 
       // Trigger guildMemberLevel event
       client.emit(eventEnum.GUILD_MEMBER_LEVEL, message, previous, current);

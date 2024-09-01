@@ -37,7 +37,7 @@ router.post("/:userId", async (req, res, next) => {
         }
 
         // Store the previous user level details
-        const previousUserLevel = userLevel;
+        const previousUserLevel = { ...userLevel.dataValues };
 
         // Update the user's experience by adding experience
         userLevel.experience = (userLevel.experience ?? 0) + experience;
@@ -47,8 +47,8 @@ router.post("/:userId", async (req, res, next) => {
             userLevel.experience = 0;
         }
 
-        // Save the updated record
-        await userLevel.save({ transaction: t });
+        // Save the updated record and use { returning: true } to get updated values back
+        await userLevel.save({ transaction: t, returning: true });
 
         // Commit the transaction
         await t.commit();
@@ -58,10 +58,9 @@ router.post("/:userId", async (req, res, next) => {
             : `${experience} experience points added to user`;
 
         res.status(200).json({
-            message: returnMessage, data: {
-                previous: previousUserLevel,
-                current: userLevel
-            }
+            message: returnMessage,
+            previous: previousUserLevel,
+            current: userLevel
         });
 
     } catch (error) {
@@ -89,7 +88,7 @@ router.post("/gain/:userId", async (req, res, next) => {
         }
 
         // Store the previous user level details
-        const previousUserLevel = userLevel;
+        const previousUserLevel = { ...userLevel.dataValues };
 
         // Get the server and personal modifiers
         const { modifier: serverModifier = 1 } = await Guild.findByPk(guildId);
@@ -99,19 +98,18 @@ router.post("/gain/:userId", async (req, res, next) => {
         const experience_gain = calculateXP(serverModifier, personalModifier);
 
         // Update the user's experience by adding experience
-        userLevel.experience = experience_gain
+        userLevel.experience += experience_gain;
 
-        // Save the updated record
-        await userLevel.save({ transaction: t });
+        // Save the updated record and use { returning: true } to get updated values back
+        await userLevel.save({ transaction: t, returning: true });
 
         // Commit the transaction
         await t.commit();
 
         res.status(200).json({
-            message: `User gained ${experience_gain} experience points`, data: {
-                previous: previousUserLevel,
-                current: userLevel
-            }
+            message: `User gained ${experience_gain} experience points`,
+            previous: previousUserLevel,
+            current: userLevel
         });
 
     } catch (error) {
