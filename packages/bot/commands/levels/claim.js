@@ -17,13 +17,13 @@ module.exports.run = async (client, interaction) => {
      */
 
     // This command is only eligable in the SSundee server
-    // if (interaction.guildId !== "552953312073220096") {
-    //     await interaction.deleteReply();
-    //     return interaction.followUp({
-    //         content: "This command is currently only available in the SSundee server.",
-    //         ephemeral: true
-    //     })
-    // }
+    if (interaction.guildId !== "552953312073220096") {
+        await interaction.deleteReply();
+        return interaction.followUp({
+            content: "This command is currently only available in the SSundee server.",
+            ephemeral: true
+        })
+    }
 
     // Get the experience from MEE6
     const mee6Result = await getMee6Levels(interaction.user.id);
