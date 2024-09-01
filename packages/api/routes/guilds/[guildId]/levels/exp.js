@@ -38,6 +38,11 @@ router.post("/:userId", async (req, res, next) => {
             // Update the user's experience by adding experience
             userLevel.experience = (userLevel.experience ?? 0) + experience;
 
+            // Ensure experience doesn't go below 0
+            if (userLevel.experience < 0) {
+                userLevel.experience = 0;
+            }
+
             // Save the updated record
             await userLevel.save({ transaction });
 

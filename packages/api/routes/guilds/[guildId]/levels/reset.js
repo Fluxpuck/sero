@@ -2,7 +2,7 @@ const express = require("express");
 const router = express.Router({ mergeParams: true });
 
 const { sequelize } = require('../../../../database/sequelize');
-const { UserLevels } = require("../../../../database/models");
+const { UserLevels, LevelRanks } = require("../../../../database/models");
 const { findAllRecords, findOneRecord, createOrUpdateRecord } = require("../../../../utils/RequestManager");
 const { CreateError, RequestError } = require("../../../../utils/ClassManager");
 
@@ -33,10 +33,16 @@ router.post("/", async (req, res, next) => {
             }
         );
 
+        // Fetch the LevelRanks for the guild
+        const levelRanks = await LevelRanks.findAll({
+            where: { guildId: guildId },
+            transaction: t
+        });
+
         // Commit the transaction
         await t.commit();
 
-        res.status(200).json({ message: "All guild user levels reset successfully" });
+        res.status(200).json({ message: "All guild user levels reset successfully", data: levelRanks });
 
     } catch (error) {
         t.rollback();
