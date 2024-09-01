@@ -30,14 +30,14 @@ router.post("/:userId", async (req, res, next) => {
             });
         }
 
-        const userLevel = await findOneRecord(UserLevels, options);
+        let userLevel = await findOneRecord(UserLevels, options);
         if (!userLevel) {
             // Create a new UserLevels entry if not found
-            userLevel = await UserLevels.create({ guildId, userId, experience: 0 }, { transaction: t });
+            userLevel = await UserLevels.create({ guildId: guildId, userId: guildId }, { transaction: t });
         }
 
         // Store the previous user level details
-        const previousUserLevel = { ...userLevel.get() };
+        const previousUserLevel = userLevel;
 
         // Update the user's experience by adding experience
         userLevel.experience = (userLevel.experience ?? 0) + experience;
@@ -48,7 +48,7 @@ router.post("/:userId", async (req, res, next) => {
         }
 
         // Save the updated record
-        await userLevel.save({ transaction });
+        await userLevel.save({ transaction: t });
 
         // Commit the transaction
         await t.commit();
@@ -82,14 +82,14 @@ router.post("/gain/:userId", async (req, res, next) => {
     const options = { where: { guildId: guildId, userId: userId } };
 
     try {
-        const userLevel = await findOneRecord(UserLevels, options);
+        let userLevel = await findOneRecord(UserLevels, options);
         if (!userLevel) {
             // Create a new UserLevels entry if not found
-            userLevel = await UserLevels.create({ guildId, userId, experience: 0 }, { transaction: t });
+            userLevel = await UserLevels.create({ guildId: guildId, userId: userId }, { transaction: t });
         }
 
         // Store the previous user level details
-        const previousUserLevel = { ...userLevel.get() };
+        const previousUserLevel = userLevel;
 
         // Get the server and personal modifiers
         const { modifier: serverModifier = 1 } = await Guild.findByPk(guildId);
@@ -99,10 +99,10 @@ router.post("/gain/:userId", async (req, res, next) => {
         const experience_gain = calculateXP(serverModifier, personalModifier);
 
         // Update the user's experience by adding experience
-        levels.experience = experience_gain
+        userLevel.experience = experience_gain
 
         // Save the updated record
-        await userLevel.save({ transaction });
+        await userLevel.save({ transaction: t });
 
         // Commit the transaction
         await t.commit();
