@@ -14,7 +14,7 @@ function handleVoiceSessionEnd(session) {
         postRequest(`/guilds/${guild.id}/activities`, {
             guildId: guild.id,
             userId: member.id,
-            type: "voice",
+            type: "voice-session",
             additional: {
                 channelId: channel.id,
                 duration: duration,

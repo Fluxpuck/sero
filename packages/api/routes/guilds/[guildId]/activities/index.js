@@ -3,7 +3,7 @@ const router = express.Router({ mergeParams: true });
 
 const { sequelize } = require('../../../../database/sequelize');
 const { UserActivities } = require("../../../../database/models");
-const { findAllRecords, findOneRecord, createOrUpdateRecord } = require("../../../../utils/RequestManager");
+const { findAllRecords, createUniqueRecord } = require("../../../../utils/RequestManager");
 const { CreateError, RequestError } = require("../../../../utils/ClassManager");
 
 /**
