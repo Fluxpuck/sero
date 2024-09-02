@@ -38,6 +38,7 @@ module.exports.run = async (client, interaction) => {
             type: "voice-disconnect",
             additional: {
                 channelId: member.voice.channel.id,
+                executedBy: interaction.user.id
             }
         });
 
