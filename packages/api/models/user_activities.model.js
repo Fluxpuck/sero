@@ -2,30 +2,33 @@ const { Model, DataTypes } = require('sequelize');
 
 class UserActivities extends Model {
     static associate(models) {
-        this.belongsTo(models.User, { foreignKey: { name: 'userId', allowNull: false } });
-        this.belongsTo(models.Guild, { foreignKey: { name: 'guildId', allowNull: false } });
+        this.belongsTo(models.Guild, { foreignKey: 'guildId' })
+        this.belongsTo(models.User, { foreignKey: 'userId' })
     }
 }
 
 module.exports = sequelize => {
     UserActivities.init({
+        id: {
+            type: DataTypes.INTEGER,
+            primaryKey: true,
+            autoIncrement: true
+        },
         guildId: {
             type: DataTypes.BIGINT,
-            primaryKey: true,
             allowNull: false,
             validate: {
                 is: /^\d{17,20}$/ //Discord Snowflake
             }
         },
-        executedBy: {
+        userId: {
             type: DataTypes.BIGINT,
-            primaryKey: true,
             allowNull: false,
             validate: {
                 is: /^\d{17,20}$/ //Discord Snowflake
             }
         },
-        commandName: {
+        type: {
             type: DataTypes.STRING,
             allowNull: false,
         },
@@ -38,7 +41,6 @@ module.exports = sequelize => {
         modelName: 'user_activities',
         timestamps: true,
         createdAt: true,
-        updatedAt: true,
     });
 
     return UserActivities;

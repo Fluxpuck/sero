@@ -90,7 +90,12 @@ router.post("/", async (req, res, next) => {
         }
 
         // Create a new work snapshot
-        const result = await createUniqueRecord(Work_snapshot, { guildId, userId, jobId, income }, t);
+        const result = await createUniqueRecord(Work_snapshot, {
+            guildId: guildId,
+            userId: userId,
+            jobId: jobId,
+            income: income
+        }, t);
 
         // Commit the transaction
         await t.commit();
