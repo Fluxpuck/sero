@@ -5,6 +5,7 @@ const models = {
     Levels: require('../models/levels.model')(sequelize),
     Guild: require('../models/guild.model')(sequelize),
     User: require('../models/user.model')(sequelize),
+    UserActivities: require('../models/user_activities.model')(sequelize),
     UserLevels: require('../models/user_levels.model')(sequelize),
     UserBalance: require('../models/user_balance.model')(sequelize),
     UserCareers: require('../models/user_careers.model')(sequelize),
