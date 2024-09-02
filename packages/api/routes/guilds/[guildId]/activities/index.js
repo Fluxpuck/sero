@@ -50,14 +50,14 @@ router.post("/", async (req, res, next) => {
         } = req.body;
 
         // Check if the required fields are provided
-        if (!messageId || !type) {
+        if (!userId || !type) {
             throw new RequestError(400, "Invalid Request", {
                 method: req.method, path: req.path
             });
         }
 
         // Create a new activity log
-        const activity = await createUniqueRecord(UserActivities, {
+        const activityData = await createUniqueRecord(UserActivities, {
             guildId: guildId,
             userId: userId,
             type: type,
@@ -68,14 +68,12 @@ router.post("/", async (req, res, next) => {
         await t.commit();
 
         // Send the appropriate response
-        res.status(201).json({ message: "User activity stored successfully", data: result });
+        res.status(201).json({ message: "User activity stored successfully", data: activityData });
 
     } catch (error) {
         t.rollback();
         next(error);
     }
-
 });
-
 
 module.exports = router;
