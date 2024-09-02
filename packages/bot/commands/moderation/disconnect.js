@@ -1,3 +1,5 @@
+const { postRequest } = require("../../database/connection");
+
 module.exports.props = {
     commandName: "disconnect",
     description: "Disconnect a user from a voicechannel",
@@ -28,6 +30,16 @@ module.exports.run = async (client, interaction) => {
 
         // Disconnect the member from the voicechannel
         await member.voice.disconnect();
+
+        // Store the activity in the database
+        postRequest(`/guilds/${interaction.guild.id}/activities`, {
+            guildId: interaction.guild.id,
+            userId: targetUser.id,
+            type: "voice-disconnect",
+            additional: {
+                channelId: member.voice.channel.id,
+            }
+        });
 
         // Send the success message
         return interaction.editReply({
