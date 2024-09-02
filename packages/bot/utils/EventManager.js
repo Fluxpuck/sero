@@ -1,6 +1,11 @@
 const { readdirSync, statSync } = require('fs');
 const { join, basename, extname } = require('path');
 
+// Define the middleware function
+let middleware = (event, data, next) => {
+    next();
+};
+
 module.exports.run = (client) => {
 
     // Define the path to the events directory
@@ -33,10 +38,24 @@ module.exports.run = (client) => {
         // Get the name of the event from the file name
         const eventName = basename(file, extname(file));
 
-        // Bind the event to the client
-        client.on(eventName, event.bind(null, client));
+        // Bind the event to the client and call middleware
+        client.on(eventName, (...args) => {
+            middleware(eventName, args, () => {
+                event(client, ...args);
+            });
+        });
+
+        // Log the command to the console if in development mode
+        if (process.env.NODE_ENV === "development") {
+            console.log("\x1b[2m", `[Client]: Initialized ${eventName} event`);
+        }
+
         // Add the event to the client's events collection
         client.events.set(eventName, { name: eventName, file: file });
     }
-
 }
+
+// Add middleware to the event manager 
+module.exports.use = (fn) => {
+    middleware = fn;
+};
