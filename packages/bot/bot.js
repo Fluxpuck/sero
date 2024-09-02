@@ -16,9 +16,6 @@ client.version = require('./package.json').version
 
 // → Listen to Client events
 const events = require('./utils/EventManager');
-// → Middleware for the events
-const middleware = require('./utils/EventMiddleware')
-events.use(middleware.activity_logger); //use activity logger middleware
 events.run(client); //run the events
 
 // → Subscribe to Redis channels

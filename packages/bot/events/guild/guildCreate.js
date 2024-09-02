@@ -1,4 +1,4 @@
-const { postRequest } = require('../database/connection');
+const { postRequest } = require('../../database/connection');
 
 module.exports = async (client, guild) => {
     await postRequest(`/guilds/${guild.id}`, {
