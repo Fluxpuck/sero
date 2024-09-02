@@ -94,9 +94,9 @@ router.post("/", async (req, res, next) => {
 
         // Send the appropriate response
         if (created) {
-            res.status(201).json({ message: "User created successfully", data: result });
+            res.status(201).json({ message: "User created successfully", user: result });
         } else {
-            res.status(200).json({ message: "User updated successfully", data: result });
+            res.status(200).json({ message: "User updated successfully", user: result });
         };
 
     } catch (error) {
