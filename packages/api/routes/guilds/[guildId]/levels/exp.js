@@ -21,7 +21,7 @@ router.post("/:userId", async (req, res, next) => {
     const options = { where: { guildId: guildId, userId: userId } };
 
     try {
-        const { experience } = req.body;
+        const { experience } = await req.body;
 
         // Check if the required fields are provided
         if (!experience) {
@@ -33,7 +33,7 @@ router.post("/:userId", async (req, res, next) => {
         let userLevel = await findOneRecord(UserLevels, options);
         if (!userLevel) {
             // Create a new UserLevels entry if not found
-            userLevel = await UserLevels.create({ guildId: guildId, userId: guildId }, { transaction: t });
+            userLevel = await UserLevels.create({ guildId: guildId, userId: userId }, { transaction: t });
         }
 
         // Store the previous user level details
