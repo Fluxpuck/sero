@@ -27,7 +27,13 @@ module.exports.run = async (client, interaction) => {
 
     // Get the experience from MEE6
     const mee6Result = await getMee6Levels(interaction.user.id);
-    if (!mee6Result) throw new Error("Oops! You are not eligible for the one-time experience reward due to missing MEE6 data.");
+    if (!mee6Result) {
+        await interaction.deleteReply();
+        return interaction.followUp({
+            content: "Oops! You are not eligible for the one-time experience reward due to missing MEE6 data.",
+            ephemeral: true
+        })
+    }
 
     // Calculate the experience bonus based on the user's MEE6 level/experience
     function bonusXP(xp, lvl) {

@@ -8,7 +8,7 @@ module.exports = async (client, message) => {
   if (message.author.bot) return;
 
   // Create a cooldown key based on the userId, guildId and event Enum
-  const user_key = `${message.author.id}_${message.guildId}`;
+  const user_key = `${message.author.id}_${message.guildId}_message`;
   const timer = 60 * 60 * 1 // 1 hour timer
   if (client.cooldowns.has(user_key) === false) {
 
