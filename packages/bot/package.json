@@ -1,6 +1,6 @@
 {
   "name": "sero-bot",
-  "version": "v1.3.3",
+  "version": "v1.2",
   "scripts": {
     "start": "node bot.js"
   },

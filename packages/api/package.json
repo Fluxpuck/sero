@@ -1,6 +1,6 @@
 {
   "name": "sero-api",
-  "version": "v1.0.12",
+  "version": "v2.0",
   "scripts": {
     "start": "node app.js"
   },
