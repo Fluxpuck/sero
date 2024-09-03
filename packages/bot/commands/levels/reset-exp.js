@@ -32,7 +32,7 @@ module.exports.run = async (client, interaction) => {
         // We set the experience to a negative value to reset it
         // This will trigger the updateRank function in the API
         // And will also remove the rank roles from the user
-        const result = await postRequest(`/levels/add/${interaction.guildId}/${targetUser.id}`, { experience: -10_000_000 })
+        const result = await postRequest(`/guilds/${interaction.guildId}/levels/exp/${targetUser.id}`, { experience: -10_000_000 })
 
         // If the request was not successful, return an error
         if (result?.status !== 200) {
@@ -58,7 +58,7 @@ module.exports.run = async (client, interaction) => {
 
         // Send a reply and ask if the user is sure
         const response = await interaction.editReply({
-            content: "Are you sure you want to reset all experience for all users?\n*This action cannot be undone.*",
+            content: "Are you sure you want to reset all experience for all users?\nThis action will also remove any roles associated with current ranks.\n*This action cannot be undone.*",
             components: [messageComponents],
             ephemeral: false
         });
@@ -77,7 +77,7 @@ module.exports.run = async (client, interaction) => {
             if (selectedButton === "yes") {
 
                 // Reset the experience for all users in the guild
-                const result = await postRequest(`/levels/reset/${interaction.guildId}`);
+                const result = await postRequest(`/guilds/${interaction.guildId}/levels/reset`);
 
                 // If the request was not successful, return an error
                 if (result?.status !== 200) {
@@ -87,6 +87,26 @@ module.exports.run = async (client, interaction) => {
                         ephemeral: true
                     })
                 } else {
+
+                    // @DISABLED - Due to the high number of users, this will take a long time to process
+                    // and will likely time out the request or Rate Limit the bot
+
+                    // // Get the level ranks from the database response
+                    // const levelRanks = result.data.levelRanks || [];
+
+                    // // Iterate over the level ranks and remove all users from the roles
+                    // for (const rank of levelRanks) {
+
+                    //     // Get the role by roleId
+                    //     const targetRole = await interaction.guild.roles.fetch(rank.roleId);
+
+                    //     // Remove all users from the role
+                    //     targetRole.members.forEach(async member => {
+                    //         await member.roles.remove(targetRole);
+                    //     });
+
+                    // }
+
                     return i.update({
                         content: `Your server's experience has been reset!`,
                         components: [],

@@ -73,7 +73,7 @@ module.exports = sequelize => {
             allowNull: false,
             defaultValue: 100
         },
-        modifyer: {
+        modifier: {
             type: DataTypes.INTEGER,
             allowNull: false,
             defaultValue: 1,
@@ -90,7 +90,7 @@ module.exports = sequelize => {
         },
         reward_claimed: {
             type: DataTypes.BOOLEAN,
-            allowNull: true,
+            allowNull: false,
             defaultValue: false
         }
     }, {

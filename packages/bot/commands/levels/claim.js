@@ -11,14 +11,12 @@ module.exports.props = {
 module.exports.run = async (client, interaction) => {
     await interaction.deferReply({ ephemeral: false });
 
-    /*
-    Based on Mee6 levels, calculate the bonus experience to give to the user.
-    The bonus experience is calculated by taking the user's current experience and level,
-    */
-
     /**
-     * @TEMPORARY - TEMPORARY COMMAND DOWN BELOW
+     * @TEMPORARY - Temporary Command
+     * Users can claim a one-time experience reward based on their MEE6 levels.
      */
+
+    // This command is only eligable in the SSundee server
     if (interaction.guildId !== "552953312073220096") {
         await interaction.deleteReply();
         return interaction.followUp({
@@ -27,56 +25,51 @@ module.exports.run = async (client, interaction) => {
         })
     }
 
-    try {
-        // Get the user experience
-        const userLevels = await getRequest(`/levels/${interaction.guildId}/${interaction.user.id}`);
-        if (userLevels.status !== 200) {
-            throw new Error("You have already claimed your one-time experience reward.");
-        }
-
-        // Check if the user has already claimed the reward
-        if (userLevels.data.reward_claimed === true) {
-            throw new Error("You have already claimed your one-time experience reward.");
-        }
-
-        // Get the experience from MEE6
-        const mee6Result = await getMee6Levels(interaction.user.id);
-        if (!mee6Result) {
-            throw new Error("Oops! Sorry, but you are not eligible to claim this reward.");
-        }
-
-        // Calculate the experience bonus to give
-        function calculateBonusXP(xp, lvl) {
-            let bonusXP = (xp / 10_000) * lvl * (Math.log(lvl + 1) * 2);
-            if (bonusXP > 100_000) bonusXP = 100_000;
-            return Math.floor(bonusXP); // Return the bonusXP as an integer
-        }
-        const EXP_BONUS = calculateBonusXP(mee6Result.xp, mee6Result.level);
-
-        // Give the user the experience
-        const postLevelsResult = await postRequest(`/levels/add/${interaction.guildId}/${interaction.user.id}`, { experience: EXP_BONUS });
-        if (postLevelsResult.status !== 200) {
-            throw new Error(`Uh oh! The user ${interaction.user.username} has no levels yet.`);
-        }
-
-        // Post the reward claim
-        const postClaimResult = await postRequest(`/levels/claim_reward/${interaction.guildId}/${interaction.user.id}`);
-        if (postClaimResult.status !== 200) {
-            throw new Error("Something went wrong while claiming your one-time experience reward.");
-        }
-
-        // Return the response
-        return interaction.editReply({
-            content: `You have claimed your one-time experience reward! You have been awarded **${EXP_BONUS}** experience points.`,
-            ephemeral: false
-        })
-
-    } catch (error) {
+    // Get the experience from MEE6
+    const mee6Result = await getMee6Levels(interaction.user.id);
+    if (!mee6Result) {
         await interaction.deleteReply();
         return interaction.followUp({
-            content: `${error.message}`,
+            content: "Oops! You are not eligible for the one-time experience reward due to missing MEE6 data.",
             ephemeral: true
         })
     }
 
+    // Calculate the experience bonus based on the user's MEE6 level/experience
+    function bonusXP(xp, lvl) {
+        const DEVIDE_BY = 10_000, MAX_BONUS = 150_000;
+        let bonusXP = (xp / DEVIDE_BY) * lvl * (Math.log(lvl + 1) * 2);
+        if (bonusXP > MAX_BONUS) bonusXP = MAX_BONUS;
+        return Math.floor(bonusXP);
+    }
+    const EXP_BONUS = bonusXP(mee6Result.xp, mee6Result.level);
+
+    // Claim the reward - Database update
+    const claimResult = await postRequest(`/guilds/${interaction.guildId}/levels/claim/${interaction.user.id}`, { experience: EXP_BONUS });
+
+    // If the request was not successful, return an (error) message
+    if (claimResult?.status === 404) {
+        await interaction.deleteReply();
+        return interaction.followUp({
+            content: "You do not have a level in the guild.",
+            ephemeral: true
+        })
+    } else if (claimResult?.status === 204) {
+        await interaction.deleteReply();
+        return interaction.followUp({
+            content: "You have already claimed your one-time experience reward.",
+            ephemeral: true
+        })
+    } else if (claimResult?.status !== 200) {
+        await interaction.deleteReply();
+        return interaction.followUp({
+            content: "Uh oh! Something went wrong claiming the experience reward.",
+            ephemeral: true
+        })
+    } else {
+        return interaction.editReply({
+            content: `You have claimed your one-time experience reward! 🎁 \n You have been awarded **${EXP_BONUS}** experience points.`,
+            ephemeral: false
+        })
+    }
 }

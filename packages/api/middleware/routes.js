@@ -1,26 +1,52 @@
-const { readdirSync } = require('fs');
-const { join } = require('path');
+const fs = require('fs');
+const path = require('path');
 const { authenticate } = require('./authentication');
 
-module.exports.run = (app) => {
+function registerBaseRoutes(app, dirPath, baseRoute = '') {
+    fs.readdirSync(dirPath).forEach(file => {
+        const filePath = path.join(dirPath, file);
+        const stat = fs.statSync(filePath);
 
-    // Set directory path to routes and read files
-    const filePath = join(__dirname, '..', 'routes')
-    const routeFiles = readdirSync(filePath);
+        if (stat.isDirectory()) {
+            // Convert directory names in brackets (e.g., [guildId]) to route parameters (e.g., :guildId)
+            const routeParam = file.startsWith('[') && file.endsWith(']')
+                ? `:${file.slice(1, -1)}`
+                : file;
 
-    // Go through all routes files and bind to App
-    for (const route of routeFiles) {
-        const api = require(`${filePath}/${route}`);
-        const apiName = route.split('.').shift();
-        app.use(`/api/${apiName}`, authenticate, api);
-    }
+            // Recursively call registerBaseRoutes for subdirectories
+            registerBaseRoutes(app, filePath, `${baseRoute}/${routeParam}`);
+
+        } else if (file.endsWith('.js') && file !== 'index.js') {
+            const routePath = `${baseRoute}/${file.replace('.js', '')}`;
+            // Resolve the absolute path to the route file
+            const route = require(filePath);
+
+            app.use(`/api${routePath}`, authenticate, route);
+            console.log(`[Route]: ${routePath}`);
+
+        } else if (file === 'index.js') {
+            const routePath = baseRoute;
+            // Resolve the absolute path to the index file
+            const route = require(filePath);
+
+            app.use(`/api${routePath}`, authenticate, route);
+            console.log(`[Route]: ${routePath}`);
+
+        }
+    });
+}
+
+function run(app) {
+    const routesDir = path.join(__dirname, '../routes');
+    registerBaseRoutes(app, routesDir);
 
     // Catch all other routes
     app.use((req, res, next) => {
         const error = new Error('Sorry, that route does not exist.');
         error.status = 400;
-        error.stack = req;
+        error.stack = Array.isArray(req) ? req : [];
         next(error);
     });
-
 }
+
+module.exports = { run };

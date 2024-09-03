@@ -33,16 +33,10 @@ module.exports.run = async (client, interaction) => {
     const targetUser = interaction.options.get("user").user;
     const targetAmount = interaction.options.get("amount").value || 0;
 
-    // Get the user's the experience && check if the user has experience.
-    const currentUser = await getRequest(`/levels/${interaction.guildId}/${targetUser.id}`);
-    const currentExperience = currentUser ? currentUser.experience : 0;
-
-    // Check if the user has the proper amount of experience.
-    if (currentExperience < targetAmount) {
-        await postRequest(`/levels/add/${interaction.guildId}/${targetUser.id}`, { experience: -currentExperience })
-    }
     // Remove the user's experience if has proper amount.
-    const result = await postRequest(`/levels/add/${interaction.guildId}/${targetUser.id}`, { experience: -targetAmount });
+    const result = await postRequest(`/guilds/${interaction.guildId}/levels/exp/${targetUser.id}`, { experience: -targetAmount });
+
+    // If the request was not successful, return an error
     if (result && result?.status !== 200) {
         await interaction.deleteReply();
         interaction.followUp({

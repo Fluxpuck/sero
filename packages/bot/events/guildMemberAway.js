@@ -1,4 +1,4 @@
-const moment = require('moment');
+const eventEnum = require('../config/eventEnum')
 const { createCustomEmbed } = require("../assets/embed");
 const { getRequest, deleteRequest } = require("../database/connection");
 const { getTimeAgo } = require('../lib/helpers/TimeDateHelpers/timeHelper');
@@ -13,12 +13,12 @@ module.exports = async (client, message) => {
     const memberId = messageMention ? messageMention.id : message.author.id
 
     // Check if the author is away
-    const awayResult = await getRequest(`/away/${message.guildId}/${memberId}`);
+    const awayResult = await getRequest(`/guilds/${message.guildId}/away/${memberId}`);
     if (awayResult?.status == 200) {
 
         // If the user is the same as the author, remove away from database
         if (memberId === message.author.id) {
-            await deleteRequest(`/away/${message.guildId}/${memberId}`);
+            await deleteRequest(`/guilds/${message.guildId}/away/${memberId}`);
 
             // Return the message
             message.reply(
@@ -36,10 +36,11 @@ module.exports = async (client, message) => {
         }
 
         /**
-         * This code whas a one minute cooldown per user
-         */
-        const cooldownKey = memberId + message.guildId
-        if (client.cooldowns.has(cooldownKey) === false) {
+        * This code will execute per 60 seconds
+        * Reply with the user's away status
+        */
+        const user_away_key = `${message.author.id}_${message.guildId}_${eventEnum.GUILD_MEMBER_AWAY}`;
+        if (client.cooldowns.has(user_away_key) === false) {
 
             // Calculate time difference
             const timeDifference = getTimeAgo(awayResult.data.updatedAt);
@@ -66,7 +67,7 @@ module.exports = async (client, message) => {
             });
 
             // Add the user to the cooldowns Collection
-            return client.cooldowns.set(cooldownKey, message, 60)
+            return client.cooldowns.set(user_away_key, message, 60)
         }
     }
 }

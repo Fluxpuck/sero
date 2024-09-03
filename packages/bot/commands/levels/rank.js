@@ -32,14 +32,15 @@ module.exports.run = async (client, interaction) => {
 		})
 	}
 
-	/**
-	  * This code whas a 24 hour cooldown per user
-	  */
-	const cooldownKey = targetUser.id + interaction.id
-	if (client.cooldowns.has(cooldownKey) === false) {
+	// This commmand can only be used once every 2 minutes
+	const cooldown_key = `${interaction.user.id}_${interaction.guildId}_rank`;
+	if (client.cooldowns.has(cooldown_key) === false) {
+
+		// Add the user to a 2 minute cooldowns
+		client.cooldowns.set(cooldown_key, interaction, 0 * 2 * 60);
 
 		// Get the user experience
-		const result = await getRequest(`/levels/${interaction.guildId}/${targetUser.id}`);
+		const result = await getRequest(`/guilds/${interaction.guildId}/levels/${targetUser.id}`);
 
 		// If status code is 404, return an error saying the user is not ranked yet
 		if (result?.status === 404) {
@@ -57,8 +58,7 @@ module.exports.run = async (client, interaction) => {
 		}
 
 		// Get request details
-		const { userLevel, position } = result.data;
-		const { level, experience, nextLevelExp, remainingExp } = userLevel;
+		const { level, experience, position, nextLevelExp, remainingExp, } = result.data;
 
 		// Get the user's rank card
 		const rankCard = await createRankCard(
@@ -85,11 +85,9 @@ module.exports.run = async (client, interaction) => {
 			})
 		}
 
-		// Add the user to the cooldowns Collection
-		return client.cooldowns.set(cooldownKey, interaction, 0 * 2 * 60) // 2 minutes
 	} else {
 		return interaction.reply({
-			content: `You can only check your rank every 2 minutes!`,
+			content: `Hold on, not that fast! You can only check your rank every 2 minutes!`,
 			ephemeral: true
 		})
 	}

@@ -1,9 +1,10 @@
+const { post } = require('../../../api/routes/client/commands');
 const { postRequest, getRequest, deleteRequest } = require('../../database/connection');
 
 async function fetchCommands(commandId) {
     try {
         // Update the endpoint URL based on the presence of commandId
-        const endpoint = commandId ? `/commands/${commandId}` : `/commands`;
+        const endpoint = commandId ? `/client/commands/${commandId}` : `/client/commands`;
         // Make the getRequest with the updated endpoint
         const response = await getRequest(endpoint);
 
@@ -20,10 +21,9 @@ async function fetchCommands(commandId) {
 
 async function postCommands(commandName, data) {
     try {
-        // Update the endpoint URL based on the presence of commandName
-        const endpoint = commandName ? `/commands/${commandName}` : `/command`;
-
-        // Make the postRequest with the updated endpoint
+        // Set the enpoint URL to the commands endpoint
+        const endpoint = `/client/commands`;
+        // Make a postRequest to the commands endpoint	
         const response = await postRequest(endpoint, data);
 
         // Check if response is defined before accessing its status
@@ -40,8 +40,7 @@ async function postCommands(commandName, data) {
 async function deleteCommands(commandName) {
     try {
         // Get the endpoint URL based on the commandName
-        const endpoint = `/commands/${commandName}`;
-
+        const endpoint = `/client/commands/${commandName}`;
         // Make the deleteRequest with the updated endpoint
         const response = await deleteRequest(endpoint);
 

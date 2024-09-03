@@ -27,8 +27,8 @@ module.exports.run = async (client, interaction) => {
     const targetUser = interaction.options.getUser("user")?.user || interaction.user;
 
     // Get the user's career && career snapshots
-    const userCareer = await getRequest(`/career/${interaction.guildId}/${targetUser.id}`);
-    const careerIncome = await getRequest(`/career/income/${interaction.guildId}/${targetUser.id}`)
+    const userCareer = await getRequest(`/guilds/${interaction.guildId}/economy/career/${targetUser.id}`);
+    const careerIncome = await getRequest(`/guilds/${interaction.guildId}/economy/career/snapshots/${targetUser.id}`)
 
     // If the (required) request was not successful, return an error
     if (userCareer.status !== 200) {

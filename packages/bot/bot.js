@@ -25,7 +25,11 @@ subscribeToChannel(client);
 // → Login to Discord API
 client.login(process.env.NODE_ENV === "production"
   ? process.env.PRODUCTION_TOKEN
-  : process.env.DEVELOPMENT_TOKEN).then(() => {
+  : process.env.DEVELOPMENT_TOKEN).then(async () => {
+
+    // → Check API connection
+    const { baseRequest } = require('./database/connection');
+    const apiConnection = await baseRequest();
 
     // → Displays a welcome message in the console 
     // to indicate that the bot has successfully started up.
@@ -41,6 +45,7 @@ client.login(process.env.NODE_ENV === "production"
       Discord bot - Startup details:
        > ${new Date().toUTCString()}
        > ${client.user.tag}
-       > ${redisClient.status === 'ready' ? 'Redis is connected' : 'Redis is not connected!'}
+       > ${redisClient?.status === 'ready' ? 'Redis is connected' : 'Redis is not connected!'}
+       > ${apiConnection?.status === 200 ? 'Sero-api is connected' : 'Sero-api is not connected!'}
       `);
   });

@@ -72,7 +72,7 @@ module.exports.run = async (client, interaction) => {
     const messageOption = interaction.options.get("message")?.value;
 
     // Give the user the experience
-    const result = await postRequest(`/away/${interaction.guildId}/${interaction.user.id}`, { duration: timeInMinutes, message: messageOption });
+    const result = await postRequest(`/guilds/${interaction.guildId}/away`, { userId: interaction.user.id, duration: timeInMinutes, message: messageOption });
 
     // If the request was not successful, return an error
     if (result?.status !== 200) {

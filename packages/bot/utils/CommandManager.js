@@ -45,21 +45,9 @@ module.exports = {
                     // Set the command in the client's collection
                     client.commands.set(command.props.commandName, command);
 
-                    // Post the command to the database
-                    const { commandName, description, usage, defaultMemberPermissions } = command.props;
-                    const { type = 1, options } = command.props?.interaction;
-                    const result = await postCommands(command.props.commandName, {
-                        commandName: commandName,
-                        description: description,
-                        usage: usage,
-                        interactionType: type,
-                        interactionOptions: options,
-                        defaultMemberPermissions: defaultMemberPermissions,
-                    });
-
                     // Log the command to the console if in development mode
                     if (process.env.NODE_ENV === "development") {
-                        console.log("\x1b[2m", `[Database]: ${result}`);
+                        console.log("\x1b[2m", `[Client]: Initialized ${command.props.commandName}`);
                     }
 
                 }

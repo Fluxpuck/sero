@@ -13,8 +13,7 @@ module.exports = async (client) => {
     await loadCommands(client, filePath);
 
     // Create Client Application Commands through a seperate event
-    const applications = await client.application.commands.fetch();
-    client.emit(events.APPLICATION_CREATE, applications);
+    client.emit(events.APPLICATION_CREATE);
 
     // Set global guild active setting
     Array.from(client.guilds.cache.values()).forEach(async guild => {
