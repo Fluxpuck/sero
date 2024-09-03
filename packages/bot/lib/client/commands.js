@@ -1,4 +1,3 @@
-const { post } = require('../../../api/routes/client/commands');
 const { postRequest, getRequest, deleteRequest } = require('../../database/connection');
 
 async function fetchCommands(commandId) {

@@ -29,8 +29,8 @@
     "turbo": "^1.10.12"
   },
   "scripts": {
-    "start-api": "node packages/api/app.js",
-    "start-bot": "node packages/bot/bot.js",
+    "start-api": "npm run start-api --prefix ./packages/api",
+    "start-bot": "npm run start-api --prefix ./packages/bot",
     "seedmanager": "node packages/api/test/_seedManager.js"
   }
 }
