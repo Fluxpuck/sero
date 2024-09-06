@@ -20,6 +20,16 @@ module.exports.props = {
 }
 
 module.exports.run = async (client, interaction) => {
+
+	// Prevent the command from being overflooded and limited by Discord
+	if (interaction.replied || interaction.deferred) {
+		await interaction.deleteReply();
+		return interaction.followUp({
+			content: "Oops! The command is on a cooldown! Please wait a bit before trying again.",
+			ephemeral: true
+		})
+	}
+
 	await interaction.deferReply({ ephemeral: false });
 
 	// Get User details from the interaction options
@@ -37,7 +47,7 @@ module.exports.run = async (client, interaction) => {
 	if (client.cooldowns.has(cooldown_key) === false) {
 
 		// Add the user to a 2 minute cooldowns
-		client.cooldowns.set(cooldown_key, interaction, 0 * 2 * 60);
+		client.cooldowns.set(cooldown_key, interaction, 2 * 60); // Minutes * Seconds
 
 		// Get the user experience
 		const result = await getRequest(`/guilds/${interaction.guildId}/levels/${targetUser.id}`);

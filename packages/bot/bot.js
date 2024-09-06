@@ -13,6 +13,8 @@ client.events = new Collection();
 client.cooldowns = new NodeCache();
 client.dependencies = require('./package.json').dependencies
 client.version = require('./package.json').version
+client.redis = false;
+client.postgres = false;
 
 // → Listen to Client events
 const events = require('./utils/EventManager');
@@ -29,7 +31,13 @@ client.login(process.env.NODE_ENV === "production"
 
     // → Check API connection
     const { baseRequest } = require('./database/connection');
-    const apiConnection = await baseRequest();
+    const apiConnection = baseRequest();
+
+    const isRedisConnected = redisClient?.status === 'ready';
+    const isApiConnected = apiConnection?.status === 200;
+
+    client.redis = isRedisConnected;
+    client.postgres = isApiConnected;
 
     // → Displays a welcome message in the console 
     // to indicate that the bot has successfully started up.
@@ -45,7 +53,9 @@ client.login(process.env.NODE_ENV === "production"
       Discord bot - Startup details:
        > ${new Date().toUTCString()}
        > ${client.user.tag}
-       > ${redisClient?.status === 'ready' ? 'Redis is connected' : 'Redis is not connected!'}
-       > ${apiConnection?.status === 200 ? 'Sero-api is connected' : 'Sero-api is not connected!'}
+       > ${isRedisConnected ? 'Redis is connected' : 'Redis is not connected!'}
+       > ${isApiConnected ? 'Sero-api is connected' : 'Sero-api is not connected!'}
       `);
+
+
   });

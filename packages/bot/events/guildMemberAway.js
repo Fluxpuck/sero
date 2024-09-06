@@ -67,7 +67,7 @@ module.exports = async (client, message) => {
             });
 
             // Add the user to the cooldowns Collection
-            return client.cooldowns.set(user_away_key, message, 60)
+            return client.cooldowns.set(user_away_key, message, 1 * 60) // Minutes * Seconds
         }
     }
 }

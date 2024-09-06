@@ -59,11 +59,11 @@ module.exports.run = async (client, interaction) => {
         }
 
         // Add the user to the cooldowns Collection
-        return client.cooldowns.set(cooldownKey, interaction, 12 * 60 * 60) // 3600 minutes 
+        return client.cooldowns.set(cooldownKey, interaction, 2 * 60); // Minutes * Seconds
     } else {
         await interaction.deleteReply();
         return interaction.followUp({
-            content: `You can only transfer experience once per 12-hours!`,
+            content: `Hold on, not that fast! You can only transfer money every 2 minutes!\n-# Additional conditions apply to this command`,
             ephemeral: true
         })
     }

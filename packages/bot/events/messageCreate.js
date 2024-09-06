@@ -9,7 +9,7 @@ module.exports = async (client, message) => {
 
   // Create a cooldown key based on the userId, guildId and event Enum
   const user_key = `${message.author.id}_${message.guildId}_message`;
-  const timer = 60 * 60 * 1 // 1 hour timer
+  const timer = 1 * 60 * 60; // Hours * Minutes * Seconds
   if (client.cooldowns.has(user_key) === false) {
 
     // Create or update the user
@@ -41,13 +41,13 @@ module.exports = async (client, message) => {
   if (client.cooldowns.has(user_level_key) === false) {
     // Update the User's experience
     const result = await postRequest(`/guilds/${message.guildId}/levels/exp/gain/${message.author.id}`);
-    const { previous, current } = result.data;
+    const { previous, current } = result?.data;
 
     // Trigger guildMemberLevel event
     client.emit(eventEnum.GUILD_MEMBER_LEVEL, message, previous, current);
 
     // Add the user to the cooldowns Collection
-    return client.cooldowns.set(user_level_key, message, 60);
+    return client.cooldowns.set(user_level_key, message, 1 * 60); // Minutes * Seconds
   }
 
 
