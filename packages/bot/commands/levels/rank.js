@@ -96,7 +96,8 @@ module.exports.run = async (client, interaction) => {
 		}
 
 	} else {
-		return interaction.reply({
+		await interaction.deleteReply();
+		return interaction.followUp({
 			content: `Hold on, not that fast! You can only check your rank every 2 minutes!`,
 			ephemeral: true
 		})
