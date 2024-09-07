@@ -19,23 +19,22 @@ const startOfDay = startOfToday();
  */
 router.get("/:userId", async (req, res, next) => {
     const { guildId, userId } = req.params;
-    const { limit = 20, today = true, type = "transfer-exp" } = req.query;
+    const { limit = 20, today = "true", type = "transfer-exp" } = req.query;
 
     const options = { where: { guildId: guildId, userId: userId, type: type }, limit: limit };
-    if (today === true) {
+    if (today === "true") {
         options.where.createdAt = { [Op.gte]: startOfDay };
     }
 
     try {
         const userActivitiesData = await findAllRecords(UserActivities, options);
         if (!userActivitiesData) {
-            throw new CreateError(404, "User not away in the guild");
+            throw new CreateError(404, "User not found in the guild");
         } else {
-
-            let totalAmount = 0
+            let totalAmount = 0;
 
             for (const activity of userActivitiesData) {
-                const { targetId, amount } = activity.additional;
+                const { amount } = activity.additional;
                 totalAmount += amount;
             }
 
