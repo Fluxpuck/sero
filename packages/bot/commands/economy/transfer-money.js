@@ -24,6 +24,7 @@ module.exports.props = {
         ],
     },
     defaultMemberPermissions: ['SendMessages'],
+    cooldown: 2 * 60, // 2 minute cooldown
 }
 
 module.exports.run = async (client, interaction) => {
@@ -33,38 +34,25 @@ module.exports.run = async (client, interaction) => {
     const targetUser = interaction.options.get("user").user;
     const transferAmount = interaction.options.get("amount").value;
 
-    /**
-     * This code whas a 24 hour cooldown per user
-     */
-    const cooldownKey = targetUser.id + interaction.id
-    if (client.cooldowns.has(cooldownKey) === false) {
+    // Remove balance from the author
+    const removeResult = await postRequest(`/guilds/${interaction.guildId}/economy/balance`, { userId: targetUser.id, amount: -transferAmount })
+    // Add balance to the target
+    const addResult = await postRequest(`/guilds/${interaction.guildId}/economy/balance`, { userId: targetUser.id, amount: +transferAmount });
 
-        // Remove balance from the author
-        const removeResult = await postRequest(`/guilds/${interaction.guildId}/economy/balance`, { userId: targetUser.id, amount: -transferAmount })
-        // Add balance to the target
-        const addResult = await postRequest(`/guilds/${interaction.guildId}/economy/balance`, { userId: targetUser.id, amount: +transferAmount });
-
-        // If either request was not successful, return an error
-        if (removeResult.status !== 200 || addResult.status !== 200) {
-            await interaction.deleteReply();
-            interaction.followUp({
-                content: "Something went wrong while transferring money to the user.",
-                ephemeral: true
-            })
-        } else {
-            interaction.editReply({
-                content: `<@${targetUser.id}> has recieved **${transferAmount.toLocaleString()}** of your money!`,
-                ephemeral: false
-            })
-        }
-
-        // Add the user to the cooldowns Collection
-        return client.cooldowns.set(cooldownKey, interaction, 2 * 60); // Minutes * Seconds
-    } else {
+    // If either request was not successful, return an error
+    if (removeResult.status !== 200 || addResult.status !== 200) {
         await interaction.deleteReply();
-        return interaction.followUp({
-            content: `Hold on, not that fast! You can only transfer money every 2 minutes!\n-# Additional conditions apply to this command`,
+        interaction.followUp({
+            content: "Something went wrong while transferring money to the user.",
             ephemeral: true
         })
+    } else {
+        interaction.editReply({
+            content: `<@${targetUser.id}> has recieved **${transferAmount.toLocaleString()}** of your money!`,
+            ephemeral: false
+        })
     }
-}
+
+    // Add the user to the cooldowns Collection
+    return client.cooldowns.set(cooldownKey, interaction, 2 * 60); // Minutes * Seconds
+} 

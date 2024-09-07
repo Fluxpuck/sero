@@ -24,6 +24,7 @@ module.exports.props = {
         ],
     },
     defaultMemberPermissions: ['SendMessages'],
+    cooldown: 2 * 60, // 2 minute cooldown
 }
 
 module.exports.run = async (client, interaction) => {
@@ -45,95 +46,85 @@ module.exports.run = async (client, interaction) => {
         })
     }
 
-    // This commmand can only be used once every 2 minutes
-    const cooldown_key = `${interaction.user.id}_${interaction.guildId}_transfer-exp`;
-    if (client.cooldowns.has(cooldown_key) === false) {
 
-        // Add the user to a 2 minute cooldowns
-        client.cooldowns.set(cooldown_key, interaction, 2 * 60); // Minutes * Seconds
+    // Add the user to a 2 minute cooldowns
+    client.cooldowns.set(cooldown_key, interaction, 2 * 60); // Minutes * Seconds
 
-        // Fetch user transfer activities from today
-        const userActivities = await getRequest(`/guilds/${interaction.guildId}/activities/transfers/${interaction.user.id}?today=true&type=transfer-exp`);
+    // Fetch user transfer activities from today
+    const userActivities = await getRequest(`/guilds/${interaction.guildId}/activities/transfers/${interaction.user.id}?today=true&type=transfer-exp`);
+
+    // If either request was not successful, return an error
+    if (userActivities.status === 200) {
+
+        // Get the activities and total amount of experience transferred
+        const { activities, totalAmount } = userActivities.data;
+
+        // Check if the totalAmount + the transferAmount combined is higher than the limit
+        if (totalAmount + transferAmount > TRANSFER_AMOUNT_LIMIT) {
+            const remainingExp = TRANSFER_AMOUNT_LIMIT - totalAmount;
+            const transferLimitMessage = remainingExp > 0 ?
+                `Uh oh! Your request is exceeding your daily transfer limit! You can only transfer **${remainingExp}** more experience points today.`
+                : "You have reached the maximum transfer limit for today!";
+
+            await interaction.deleteReply();
+            return interaction.followUp({
+                content: `${transferLimitMessage}`,
+                ephemeral: true
+            });
+        }
+
+        // Check if the user has reached the maximum amount of transfers
+        if (activities.length >= TRANSFER_TARGET_LIMIT) {
+            await interaction.deleteReply();
+            return interaction.followUp({
+                content: `You have reached your daily transfer limit! You can only transfer to ${TRANSFER_TARGET_LIMIT} users per day.`,
+                ephemeral: true
+            });
+        }
+
+        // Remove exp from the author
+        const removeResult = await postRequest(`/guilds/${interaction.guildId}/levels/exp/${interaction.user.id}`, { experience: -transferAmount });
+
+        // Add exp to the target
+        const addResult = await postRequest(`/guilds/${interaction.guildId}/levels/exp/${targetUser.id}`, { experience: transferAmount });
 
         // If either request was not successful, return an error
-        if (userActivities.status === 200) {
-
-            // Get the activities and total amount of experience transferred
-            const { activities, totalAmount } = userActivities.data;
-
-            // Check if the totalAmount + the transferAmount combined is higher than the limit
-            if (totalAmount + transferAmount > TRANSFER_AMOUNT_LIMIT) {
-                const remainingExp = TRANSFER_AMOUNT_LIMIT - totalAmount;
-                const transferLimitMessage = remainingExp > 0 ?
-                    `Uh oh! Your request is exceeding your daily transfer limit! You can only transfer **${remainingExp}** more experience points today.`
-                    : "You have reached the maximum transfer limit for today!";
-
-                await interaction.deleteReply();
-                return interaction.followUp({
-                    content: `${transferLimitMessage}`,
-                    ephemeral: true
-                });
-            }
-
-            // Check if the user has reached the maximum amount of transfers
-            if (activities.length >= TRANSFER_TARGET_LIMIT) {
-                await interaction.deleteReply();
-                return interaction.followUp({
-                    content: `You have reached your daily transfer limit! You can only transfer to ${TRANSFER_TARGET_LIMIT} users per day.`,
-                    ephemeral: true
-                });
-            }
-
-            // Remove exp from the author
-            const removeResult = await postRequest(`/guilds/${interaction.guildId}/levels/exp/${interaction.user.id}`, { experience: -transferAmount });
-
-            // Add exp to the target
-            const addResult = await postRequest(`/guilds/${interaction.guildId}/levels/exp/${targetUser.id}`, { experience: transferAmount });
-
-            // If either request was not successful, return an error
-            if (removeResult.status !== 200 || addResult.status !== 200) {
-                await interaction.deleteReply();
-                return interaction.followUp({
-                    content: "Something went wrong while transferring experience to the user.",
-                    ephemeral: true
-                })
-            } else {
-                interaction.editReply({
-                    content: `<@${targetUser.id}> has recieved **${transferAmount}** of your experience!`,
-                    ephemeral: false
-                })
-            }
-
-            // Store the transfer activity in the database
-            postRequest(`/guilds/${interaction.guild.id}/activities`, {
-                guildId: interaction.guild.id,
-                userId: interaction.user.id,
-                type: "transfer-exp",
-                additional: {
-                    targetId: targetUser.id,
-                    amount: transferAmount,
-                }
-            });
-
-            // reply to the user
-            return interaction.editReply({
-                content: `<@${targetUser.id}> has recieved **${transferAmount}** of your experience!`,
-                ephemeral: false
-            })
-
-        } else {
+        if (removeResult.status !== 200 || addResult.status !== 200) {
             await interaction.deleteReply();
-            interaction.followUp({
+            return interaction.followUp({
                 content: "Something went wrong while transferring experience to the user.",
                 ephemeral: true
             })
+        } else {
+            interaction.editReply({
+                content: `<@${targetUser.id}> has recieved **${transferAmount}** of your experience!`,
+                ephemeral: false
+            })
         }
-        eEE
+
+        // Store the transfer activity in the database
+        postRequest(`/guilds/${interaction.guild.id}/activities`, {
+            guildId: interaction.guild.id,
+            userId: interaction.user.id,
+            type: "transfer-exp",
+            additional: {
+                targetId: targetUser.id,
+                amount: transferAmount,
+            }
+        });
+
+        // reply to the user
+        return interaction.editReply({
+            content: `<@${targetUser.id}> has recieved **${transferAmount}** of your experience!`,
+            ephemeral: false
+        })
+
     } else {
         await interaction.deleteReply();
-        return interaction.followUp({
-            content: `Hold on, not that fast! You can only transfer experience every 2 minutes!\n-# Additional conditions apply to this command`,
+        interaction.followUp({
+            content: "Something went wrong while transferring experience to the user.",
             ephemeral: true
         })
     }
-}
+
+} 
