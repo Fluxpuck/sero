@@ -30,6 +30,7 @@ async function createRankCard(
     position,
     experience,
     level,
+    currentLevelExp,
     nextLevelExp,
 ) {
 
@@ -97,8 +98,16 @@ async function createRankCard(
         const barX = 105;
         const barY = 70;
 
-        // Update the experience bar
-        const progressBarWidth = (experience / nextLevelExp) * barWidth;
+
+        // Calculate the total experience required to go from the current level to the next level
+        const totalExpForNextLevel = nextLevelExp - currentLevelExp;
+
+        // Calculate the user's progress within this range
+        const userProgress = experience - currentLevelExp;
+
+        // Calculate the progress bar width based on the user's progress
+        const progressBarWidth = (userProgress / totalExpForNextLevel) * barWidth;
+
         ctx.clearRect(barX, barY, barWidth, barHeight);
         ctx.fillRect(barX, barY, progressBarWidth, barHeight);
         ctx.save();

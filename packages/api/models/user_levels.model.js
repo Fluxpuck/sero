@@ -148,6 +148,7 @@ module.exports = sequelize => {
     };
 
     UserLevels.beforeSave(async (userLevel) => {
+
         // Check if the user has reached a new level
         const newLevel = await updateLevels(userLevel);
 
