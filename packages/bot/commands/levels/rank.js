@@ -43,9 +43,6 @@ module.exports.run = async (client, interaction) => {
 		})
 	}
 
-	// Add the user to a 2 minute cooldowns
-	client.cooldowns.set(cooldown_key, interaction, 2 * 60); // Minutes * Seconds
-
 	// Get the user experience
 	const result = await getRequest(`/guilds/${interaction.guildId}/levels/${targetUser.id}`);
 

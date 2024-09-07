@@ -46,12 +46,11 @@ module.exports.run = async (client, interaction) => {
         })
     }
 
-
-    // Add the user to a 2 minute cooldowns
-    client.cooldowns.set(cooldown_key, interaction, 2 * 60); // Minutes * Seconds
-
     // Fetch user transfer activities from today
     const userActivities = await getRequest(`/guilds/${interaction.guildId}/activities/transfers/${interaction.user.id}?today=true&type=transfer-exp`);
+
+    console.log(userActivities)
+
 
     // If either request was not successful, return an error
     if (userActivities.status === 200) {

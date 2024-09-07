@@ -52,7 +52,4 @@ module.exports.run = async (client, interaction) => {
             ephemeral: false
         })
     }
-
-    // Add the user to the cooldowns Collection
-    return client.cooldowns.set(cooldownKey, interaction, 2 * 60); // Minutes * Seconds
 } 
