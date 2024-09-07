@@ -57,6 +57,7 @@ router.get("/:commandId", async (req, res, next) => {
  * @param {string} interactionType - The type of interaction the command is
  * @param {object} interactionOptions - The options for the interaction
  * @param {object} defaultMemberPermissions - The default permissions for the member
+ * @param {string} cooldown - The cooldown for the command
  */
 router.post("/", async (req, res, next) => {
     const t = await sequelize.transaction();
@@ -69,6 +70,7 @@ router.post("/", async (req, res, next) => {
             interactionType,
             interactionOptions = null,
             defaultMemberPermissions = null,
+            cooldown = null
         } = req.body;
 
         // Check if the required fields are provided
@@ -86,6 +88,7 @@ router.post("/", async (req, res, next) => {
             interactionType,
             interactionOptions,
             defaultMemberPermissions,
+            cooldown
         };
 
         // Conditionally add commandId if it's not null

@@ -44,6 +44,7 @@ module.exports = async (client) => {
                     options: command.interactionOptions,
                     defaultMemberPermissions: command.defaultMemberPermissions,
                     private: command.private,
+                    cooldown: command.cooldown ? command.cooldown : null,
                 })
 
                 if (process.env.NODE_ENV === "development") {
@@ -81,6 +82,7 @@ module.exports = async (client) => {
                     options: command.interactionOptions,
                     defaultMemberPermissions: command.defaultMemberPermissions,
                     private: command.private,
+                    cooldown: command.cooldown ? command.cooldown : null,
                 })
 
                 if (process.env.NODE_ENV === "development") {
