@@ -42,6 +42,10 @@ module.exports = sequelize => {
             type: DataTypes.JSON,
             allowNull: true,
         },
+        cooldown: {
+            type: DataTypes.INTEGER,
+            allowNull: true,
+        },
         private: {
             type: DataTypes.BOOLEAN,
             allowNull: true,
