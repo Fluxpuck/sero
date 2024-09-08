@@ -93,7 +93,7 @@ module.exports.run = async (client, interaction) => {
         const result = await postRequest(`/guilds/boost`, { guildId: interaction.guildId, modifier: targetModifier, duration: duration });
 
         // If the request was not successful, return an error
-        if (result?.status !== 200) {
+        if (result?.status !== 201) {
             await interaction.deleteReply();
             return interaction.followUp({
                 content: `Uh oh! Something went wrong and the modifier has not been set.`,
