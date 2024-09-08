@@ -1,402 +1,402 @@
 [
     {
         "level": 1,
-        "experience": 0
+        "experience": 100
     },
     {
         "level": 2,
-        "experience": 1000
+        "experience": 304
     },
     {
         "level": 3,
-        "experience": 3000
+        "experience": 916
     },
     {
         "level": 4,
-        "experience": 6000
+        "experience": 1936
     },
     {
         "level": 5,
-        "experience": 10000
+        "experience": 3365
     },
     {
         "level": 6,
-        "experience": 15000
+        "experience": 5201
     },
     {
         "level": 7,
-        "experience": 21000
+        "experience": 7446
     },
     {
         "level": 8,
-        "experience": 28000
+        "experience": 10098
     },
     {
         "level": 9,
-        "experience": 36000
+        "experience": 13159
     },
     {
         "level": 10,
-        "experience": 45000
+        "experience": 16628
     },
     {
         "level": 11,
-        "experience": 55000
+        "experience": 20505
     },
     {
         "level": 12,
-        "experience": 66000
+        "experience": 24790
     },
     {
         "level": 13,
-        "experience": 78000
+        "experience": 29483
     },
     {
         "level": 14,
-        "experience": 91000
+        "experience": 34585
     },
     {
         "level": 15,
-        "experience": 105000
+        "experience": 40094
     },
     {
         "level": 16,
-        "experience": 120000
+        "experience": 46011
     },
     {
         "level": 17,
-        "experience": 136000
+        "experience": 52337
     },
     {
         "level": 18,
-        "experience": 153000
+        "experience": 59071
     },
     {
         "level": 19,
-        "experience": 171000
+        "experience": 66212
     },
     {
         "level": 20,
-        "experience": 190000
+        "experience": 73762
     },
     {
         "level": 21,
-        "experience": 210000
+        "experience": 81720
     },
     {
         "level": 22,
-        "experience": 231000
+        "experience": 90086
     },
     {
         "level": 23,
-        "experience": 253000
+        "experience": 98860
     },
     {
         "level": 24,
-        "experience": 276000
+        "experience": 108043
     },
     {
         "level": 25,
-        "experience": 300000
+        "experience": 117633
     },
     {
         "level": 26,
-        "experience": 325000
+        "experience": 127632
     },
     {
         "level": 27,
-        "experience": 351000
+        "experience": 138038
     },
     {
         "level": 28,
-        "experience": 378000
+        "experience": 148853
     },
     {
         "level": 29,
-        "experience": 406000
+        "experience": 160076
     },
     {
         "level": 30,
-        "experience": 435000
+        "experience": 171707
     },
     {
         "level": 31,
-        "experience": 465000
+        "experience": 183746
     },
     {
         "level": 32,
-        "experience": 496000
+        "experience": 196193
     },
     {
         "level": 33,
-        "experience": 528000
+        "experience": 209048
     },
     {
         "level": 34,
-        "experience": 561000
+        "experience": 222311
     },
     {
         "level": 35,
-        "experience": 595000
+        "experience": 235983
     },
     {
         "level": 36,
-        "experience": 630000
+        "experience": 250062
     },
     {
         "level": 37,
-        "experience": 666000
+        "experience": 264550
     },
     {
         "level": 38,
-        "experience": 703000
+        "experience": 279445
     },
     {
         "level": 39,
-        "experience": 741000
+        "experience": 294749
     },
     {
         "level": 40,
-        "experience": 780000
+        "experience": 310461
     },
     {
         "level": 41,
-        "experience": 820000
+        "experience": 326581
     },
     {
         "level": 42,
-        "experience": 861000
+        "experience": 343109
     },
     {
         "level": 43,
-        "experience": 903000
+        "experience": 360045
     },
     {
         "level": 44,
-        "experience": 946000
+        "experience": 377390
     },
     {
         "level": 45,
-        "experience": 990000
+        "experience": 395142
     },
     {
         "level": 46,
-        "experience": 1035000
+        "experience": 413302
     },
     {
         "level": 47,
-        "experience": 1081000
+        "experience": 431871
     },
     {
         "level": 48,
-        "experience": 1128000
+        "experience": 450848
     },
     {
         "level": 49,
-        "experience": 1176000
+        "experience": 470233
     },
     {
         "level": 50,
-        "experience": 1225000
+        "experience": 490026
     },
     {
         "level": 51,
-        "experience": 1275000
+        "experience": 510227
     },
     {
         "level": 52,
-        "experience": 1326000
+        "experience": 530836
     },
     {
         "level": 53,
-        "experience": 1378000
+        "experience": 551853
     },
     {
         "level": 54,
-        "experience": 1431000
+        "experience": 573278
     },
     {
         "level": 55,
-        "experience": 1485000
+        "experience": 595112
     },
     {
         "level": 56,
-        "experience": 1540000
+        "experience": 617353
     },
     {
         "level": 57,
-        "experience": 1596000
+        "experience": 640003
     },
     {
         "level": 58,
-        "experience": 1653000
+        "experience": 663060
     },
     {
         "level": 59,
-        "experience": 1711000
+        "experience": 686526
     },
     {
         "level": 60,
-        "experience": 1770000
+        "experience": 710400
     },
     {
         "level": 61,
-        "experience": 1830000
+        "experience": 734682
     },
     {
         "level": 62,
-        "experience": 1891000
+        "experience": 759372
     },
     {
         "level": 63,
-        "experience": 1953000
+        "experience": 784471
     },
     {
         "level": 64,
-        "experience": 2016000
+        "experience": 809977
     },
     {
         "level": 65,
-        "experience": 2080000
+        "experience": 835891
     },
     {
         "level": 66,
-        "experience": 2145000
+        "experience": 862214
     },
     {
         "level": 67,
-        "experience": 2211000
+        "experience": 888944
     },
     {
         "level": 68,
-        "experience": 2278000
+        "experience": 916083
     },
     {
         "level": 69,
-        "experience": 2346000
+        "experience": 943630
     },
     {
         "level": 70,
-        "experience": 2415000
+        "experience": 971585
     },
     {
         "level": 71,
-        "experience": 2485000
+        "experience": 999948
     },
     {
         "level": 72,
-        "experience": 2556000
+        "experience": 1028719
     },
     {
         "level": 73,
-        "experience": 2628000
+        "experience": 1057898
     },
     {
         "level": 74,
-        "experience": 2701000
+        "experience": 1087486
     },
     {
         "level": 75,
-        "experience": 2775000
+        "experience": 1117481
     },
     {
         "level": 76,
-        "experience": 2850000
+        "experience": 1147885
     },
     {
         "level": 77,
-        "experience": 2926000
+        "experience": 1178696
     },
     {
         "level": 78,
-        "experience": 3003000
+        "experience": 1209916
     },
     {
         "level": 79,
-        "experience": 3081000
+        "experience": 1241544
     },
     {
         "level": 80,
-        "experience": 3160000
+        "experience": 1273580
     },
     {
         "level": 81,
-        "experience": 3240000
+        "experience": 1306024
     },
     {
         "level": 82,
-        "experience": 3321000
+        "experience": 1338876
     },
     {
         "level": 83,
-        "experience": 3403000
+        "experience": 1372136
     },
     {
         "level": 84,
-        "experience": 3486000
+        "experience": 1405805
     },
     {
         "level": 85,
-        "experience": 3570000
+        "experience": 1439881
     },
     {
         "level": 86,
-        "experience": 3655000
+        "experience": 1474366
     },
     {
         "level": 87,
-        "experience": 3741000
+        "experience": 1509258
     },
     {
         "level": 88,
-        "experience": 3828000
+        "experience": 1544559
     },
     {
         "level": 89,
-        "experience": 3916000
+        "experience": 1580268
     },
     {
         "level": 90,
-        "experience": 4005000
+        "experience": 1616385
     },
     {
         "level": 91,
-        "experience": 4095000
+        "experience": 1652910
     },
     {
         "level": 92,
-        "experience": 4186000
+        "experience": 1689843
     },
     {
         "level": 93,
-        "experience": 4278000
+        "experience": 1727184
     },
     {
         "level": 94,
-        "experience": 4371000
+        "experience": 1764934
     },
     {
         "level": 95,
-        "experience": 4465000
+        "experience": 1803091
     },
     {
         "level": 96,
-        "experience": 4560000
+        "experience": 1841657
     },
     {
         "level": 97,
-        "experience": 4656000
+        "experience": 1880630
     },
     {
         "level": 98,
-        "experience": 4753000
+        "experience": 1920012
     },
     {
         "level": 99,
-        "experience": 4851000
+        "experience": 1959802
     },
     {
         "level": 100,
-        "experience": 4950000
+        "experience": 2000000
     }
 ]
