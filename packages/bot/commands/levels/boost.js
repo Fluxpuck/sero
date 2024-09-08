@@ -90,16 +90,17 @@ module.exports.run = async (client, interaction) => {
         const duration = targetDuration ?? 1;
 
         // Give the user the experience
-        const result = await postRequest(`/guilds/boost`, { guildId: guildId, modifier: targetModifier, duration: duration });
+        const result = await postRequest(`/guilds/boost`, { guildId: interaction.guildId, modifier: targetModifier, duration: duration });
 
         // If the request was not successful, return an error
         if (result?.status !== 200) {
-            return interaction.reply({
+            await interaction.deleteReply();
+            return interaction.followUp({
                 content: `Uh oh! Something went wrong and the modifier has not been set.`,
                 ephemeral: true
             })
         } else {
-            return interaction.reply({
+            return interaction.editReply({
                 content: `Boosting the experience with **${targetModifier}X** for **${duration} hour${duration === 1 ? "" : "s"}**!`,
                 ephemeral: false
             })

@@ -128,7 +128,7 @@ router.post("/boost", async (req, res, next) => {
 
         // Check if the guild exists
         const options = { where: { guildId: guildId } };
-        const guild = await findOneRecord(UserBalance, options);
+        const guild = await findOneRecord(Guild, options);
         if (!guild) {
             throw new CreateError(404, "Guild not found");
         }
@@ -143,9 +143,9 @@ router.post("/boost", async (req, res, next) => {
 
         // Send the appropriate response
         if (duration > 0) {
-            res.status(201).json({ message: `Guild boost set successfully at ${modifier}x for ${duration}hours`, data: result });
+            res.status(201).json({ message: `Guild boost set successfully at ${modifier}x for ${duration}hours`, data: guild });
         } else {
-            res.status(200).json({ message: "Guild boost removed successfully", data: result });
+            res.status(200).json({ message: "Guild boost removed successfully", data: guild });
         };
 
     } catch (error) {
