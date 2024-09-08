@@ -37,7 +37,7 @@ module.exports.run = async (client, interaction) => {
 
     // Calculate the experience bonus based on the user's MEE6 level/experience
     function bonusXP(xp, lvl) {
-        const DEVIDE_BY = 10_000, MAX_BONUS = 150_000;
+        const DEVIDE_BY = 10_000, MAX_BONUS = 100_000;
         let bonusXP = (xp / DEVIDE_BY) * lvl * (Math.log(lvl + 1) * 2);
         if (bonusXP > MAX_BONUS) bonusXP = MAX_BONUS;
         return Math.floor(bonusXP);
