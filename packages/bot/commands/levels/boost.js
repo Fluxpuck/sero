@@ -67,7 +67,7 @@ module.exports.run = async (client, interaction) => {
                 const timeLeft = `${durationHours} hour${durationHours === 1 ? "" : "s"} and ${durationMinutes} minute${durationMinutes === 1 ? "" : "s"}`;
 
                 return interaction.editReply({
-                    content: `Currently boosting the server **${modifier}X** for **${duration} hour${duration === 1 ? "" : "s"}**.\n-# There are ${timeLeft} left.`,
+                    content: `Currently boosting the server **${modifier}X** for **${duration} hour${duration === 1 ? "" : "s"}**.\n-# There is ${timeLeft} left.`,
                     ephemeral: false
                 });
             }
