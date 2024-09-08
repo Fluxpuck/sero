@@ -7,8 +7,9 @@ const { findAllRecords, findOneRecord, createOrUpdateRecord } = require("../../.
 const { CreateError, RequestError } = require("../../../../utils/ClassManager");
 
 const { Op } = require('sequelize');
-const { startOfToday } = require('date-fns');
+const { startOfToday, endOfToday } = require('date-fns');
 const startOfDay = startOfToday();
+const endOfDay = endOfToday();
 
 /**
  * GET api/guilds/:guildId/activities
@@ -23,7 +24,7 @@ router.get("/:userId", async (req, res, next) => {
 
     const options = { where: { guildId: guildId, userId: userId, type: type }, limit: limit };
     if (today === "true") {
-        options.where.createdAt = { [Op.gte]: startOfDay };
+        options.where.createdAt = { [Op.between]: [startOfDay, endOfDay] };
     }
 
     try {
