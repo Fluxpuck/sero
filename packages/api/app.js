@@ -27,7 +27,7 @@ require('./utils/jobManager');
     // → Enabling CORS for all requests
     app.use(cors());
 
-    // → Adding morgan to log HTTP request
+    // → Logging the HTTP requests
     const logger = require('./middleware/logging');
     app.use(logger);
 

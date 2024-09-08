@@ -16,6 +16,7 @@ const models = {
     LogChannels: require('../models/log_channels.model')(sequelize),
     Logs: require('../models/logs.model')(sequelize),
     Work_snapshot: require('../models/work_snapshot.model')(sequelize),
+    _Requests: require('../models/_requests.model')(sequelize),
 }
 
 Object.values(models)
