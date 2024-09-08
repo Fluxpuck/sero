@@ -22,7 +22,7 @@ module.exports.props = {
                 description: "The duration of the boost in hours",
                 required: false,
                 minValue: 1,
-                maxValue: 168,
+                maxValue: 120,
             },
         ],
     },
@@ -55,7 +55,7 @@ module.exports.run = async (client, interaction) => {
 
             if (!expireAt || now.isAfter(expireMoment)) {
                 return interaction.editReply({
-                    content: `The current modifier is **${modifier}X**.`,
+                    content: `The current server-modifier is **${modifier}X**.`,
                     ephemeral: false
                 });
             } else {
@@ -67,7 +67,7 @@ module.exports.run = async (client, interaction) => {
                 const timeLeft = `${durationHours} hour${durationHours === 1 ? "" : "s"} and ${durationMinutes} minute${durationMinutes === 1 ? "" : "s"}`;
 
                 return interaction.editReply({
-                    content: `The current experience modifier is **${modifier}X** for **${duration} hour${duration === 1 ? "" : "s"}**. There are ${timeLeft} left.`,
+                    content: `Currently boosting the server **${modifier}X** for **${duration} hour${duration === 1 ? "" : "s"}**.\n-# There are ${timeLeft} left.`,
                     ephemeral: false
                 });
             }
@@ -101,7 +101,7 @@ module.exports.run = async (client, interaction) => {
             })
         } else {
             return interaction.editReply({
-                content: `Boosting the experience with **${targetModifier}X** for **${duration} hour${duration === 1 ? "" : "s"}**!`,
+                content: `Boosting the server **${targetModifier}X** for **${duration} hour${duration === 1 ? "" : "s"}**!`,
                 ephemeral: false
             })
         }
