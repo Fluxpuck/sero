@@ -57,29 +57,28 @@ module.exports = sequelize => {
         createdAt: true,
         updatedAt: true,
         hooks: {
-            beforeCreate: (away, options) => {
+            beforeCreate: (record, options) => {
                 // Calculate expireAt based on duration and createdAt
-                const expireAt = new Date(away.createdAt);
-                expireAt.setMinutes(expireAt.getMinutes() + away.duration);
-                away.expireAt = expireAt;
+                const expireAt = new Date(record.createdAt);
+                expireAt.setMinutes(expireAt.getMinutes() + record.duration);
+                record.expireAt = expireAt;
             },
-            beforeUpdate: (away, options) => {
+            beforeUpdate: (record, options) => {
                 // Calculate expireAt based on duration and createdAt
-                const expireAt = new Date(away.updatedAt);
-                expireAt.setMinutes(expireAt.getMinutes() + away.duration);
-                away.expireAt = expireAt;
+                const expireAt = new Date(record.updatedAt);
+                expireAt.setMinutes(expireAt.getMinutes() + record.duration);
+                record.expireAt = expireAt;
             },
+            beforeFind: (options) => {
+                // Only select records where expireAt is in the future
+                options.where = {
+                    ...(options.where || {}),
+                    expireAt: {
+                        [Sequelize.Op.gt]: new Date(),
+                    },
+                };
+            }
         },
-    });
-
-    // Add a hook to automatically remove records that have passed their expireAt time
-    Away.addHook('beforeFind', (options) => {
-        options.where = {
-            ...(options.where || {}),
-            expireAt: {
-                [Sequelize.Op.gt]: new Date(), // Only select records where expireAt is in the future
-            },
-        };
     });
 
     // Clean up expired records every second
@@ -94,7 +93,7 @@ module.exports = sequelize => {
                 },
             });
         } catch (error) {
-            console.error('Error cleaning up expired records:', error);
+            console.error('Error cleaning up expired away records:', error);
         }
     });
 
