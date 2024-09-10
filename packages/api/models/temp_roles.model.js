@@ -1,4 +1,4 @@
-const { Model, DataTypes } = require('sequelize');
+const { Sequelize, Model, DataTypes } = require('sequelize');
 const { publishMessage, REDIS_CHANNELS } = require('../database/publisher');
 const cron = require('node-cron');
 
