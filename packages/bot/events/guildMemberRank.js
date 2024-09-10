@@ -24,7 +24,9 @@ module.exports = async (client, payload = []) => {
             const role = await guild.roles.fetch(rank.roleId);
             if (role) {
                 // Remove the role from the member
-                await member?.roles?.remove(role, `Remove unattained rank reward role for level ${rank.level}`).catch(err => { });
+                await member?.roles?.remove(role, `Remove unattained rank reward role for level ${rank.level}`).catch(err => {
+                    throw new Error(`Error removing unattained rank reward role for level ${rank.level} from ${member.name}`, err);
+                });
             }
         }
 
@@ -34,12 +36,14 @@ module.exports = async (client, payload = []) => {
             const role = await guild.roles.fetch(rank.roleId);
             if (role) {
                 // Remove the role from the member
-                await member?.roles?.add(role, `Add attained rank reward role for level ${rank.level}`).catch(err => { });
+                await member?.roles?.add(role, `Add attained rank reward role for level ${rank.level}`).catch(err => {
+                    throw new Error(`Error adding attained rank reward role for level ${rank.level} to ${member.name}`, err);
+                });
             }
         }
 
     } catch (err) {
-        console.error("Error updating member rank rewards:", err);
+        console.error(err);
     };
 
 }

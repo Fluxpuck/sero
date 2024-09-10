@@ -1,18 +1,18 @@
 const { Sequelize, Model, DataTypes } = require('sequelize');
+const { publishMessage, REDIS_CHANNELS } = require('../database/publisher');
 const cron = require('node-cron');
 
-class Away extends Model {
+class TempRoles extends Model {
     static associate(models) {
-        this.belongsTo(models.User, { foreignKey: 'userId' })
         this.belongsTo(models.Guild, { foreignKey: 'guildId' })
+        this.belongsTo(models.User, { foreignKey: 'userId' })
     }
 }
 
 module.exports = sequelize => {
-    Away.init({
+    TempRoles.init({
         userId: {
             type: DataTypes.BIGINT,
-            primaryKey: true,
             allowNull: false,
             validate: {
                 is: /^\d{17,20}$/ //Discord Snowflake
@@ -20,10 +20,16 @@ module.exports = sequelize => {
         },
         guildId: {
             type: DataTypes.BIGINT,
-            primaryKey: true,
             allowNull: false,
             validate: {
-                is: /^\d{17,20}$/ // Discord Snowflake
+                is: /^\d{17,20}$/ //Discord Snowflake
+            }
+        },
+        roleId: {
+            type: DataTypes.BIGINT,
+            allowNull: false,
+            validate: {
+                is: /^\d{17,20}$/ //Discord Snowflake
             }
         },
         duration: {
@@ -33,18 +39,13 @@ module.exports = sequelize => {
             validate: {
                 min: {
                     args: [1],
-                    msg: 'Duration must be at least 1 minute.',
+                    msg: 'Duration must be at least 1 hour.',
                 },
                 max: {
-                    args: [1440],
-                    msg: 'Duration cannot be more than 1 day.',
+                    args: [168],
+                    msg: 'Duration cannot be more than 7 day.',
                 },
             },
-        },
-        message: {
-            type: DataTypes.STRING,
-            allowNull: true,
-            maxLength: 250,
         },
         expireAt: {
             type: DataTypes.DATE,
@@ -52,50 +53,52 @@ module.exports = sequelize => {
         },
     }, {
         sequelize,
-        modelName: 'away',
+        modelName: 'temp_roles',
         timestamps: true,
         createdAt: true,
-        updatedAt: true,
         hooks: {
             beforeCreate: (record, options) => {
                 // Calculate expireAt based on duration and createdAt
                 const expireAt = new Date(record.createdAt);
-                expireAt.setMinutes(expireAt.getMinutes() + record.duration);
+                expireAt.setHours(expireAt.getHours() + record.duration);
                 record.expireAt = expireAt;
             },
-            beforeUpdate: (record, options) => {
-                // Calculate expireAt based on duration and createdAt
-                const expireAt = new Date(record.updatedAt);
-                expireAt.setMinutes(expireAt.getMinutes() + record.duration);
-                record.expireAt = expireAt;
-            },
-            beforeFind: (options) => {
-                // Only select records where expireAt is in the future
-                options.where = {
-                    ...(options.where || {}),
-                    expireAt: {
-                        [Sequelize.Op.gt]: new Date(),
-                    },
-                };
-            }
-        },
+        }
     });
 
     // Clean up expired records every second
     cron.schedule('* * * * * *', async () => {
         try {
-            await Away.destroy({
+            // Fetch records that are about to be deleted
+            const expiredRoles = await TempRoles.findAll({
                 where: {
                     expireAt: {
-                        // Select records where expireAt is in the past
+                        [Sequelize.Op.lt]: new Date(),
+                    },
+                },
+            });
+
+            // Publish a message to Redis for each expired role
+            for (const role of expiredRoles) {
+                publishMessage(REDIS_CHANNELS.ROLE, {
+                    guildId: role.guildId,
+                    userId: role.userId,
+                    roleId: role.roleId,
+                });
+            }
+
+            // Delete the expired records
+            await TempRoles.destroy({
+                where: {
+                    expireAt: {
                         [Sequelize.Op.lt]: new Date(),
                     },
                 },
             });
         } catch (error) {
-            console.error('Error cleaning up expired away records:', error);
+            console.error('Error cleaning up expired temp_roles records:', error);
         }
     });
 
-    return Away;
+    return TempRoles;
 }

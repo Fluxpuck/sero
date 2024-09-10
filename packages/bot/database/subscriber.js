@@ -9,6 +9,7 @@ let retryCount = 0;
 const REDIS_CHANNELS = {
     HEARTBEAT: 'heartbeat',
     RANK: 'guildMemberRank',
+    ROLE: 'guildMemberRole',
 };
 
 const createRedisClient = () => {

@@ -89,15 +89,15 @@ router.post("/", async (req, res, next) => {
             active
         }, t);
 
-        // Commit the transaction
-        await t.commit();
-
         // Send the appropriate response
         if (created) {
             res.status(201).json({ message: "User created successfully", user: result });
         } else {
             res.status(200).json({ message: "User updated successfully", user: result });
         };
+
+        // Commit the transaction
+        await t.commit();
 
     } catch (error) {
         t.rollback();

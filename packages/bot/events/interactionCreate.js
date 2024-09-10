@@ -19,7 +19,7 @@ module.exports = async (client, interaction) => {
         if (process.env.NODE_ENV != "development") {
             if (commandFile.props.cooldown) {
                 const cooldown_key = `${interaction.user.id}_${interaction.guildId}_${kebabCase(interaction.commandName)}`;
-                const cooldown_timer = commandFile.props.cooldown || 0;
+                const cooldown_timer = commandFile.props.cooldown;
 
                 if (client.cooldowns.has(cooldown_key)) {
                     const ttl = client.cooldowns.getTtl(cooldown_key);

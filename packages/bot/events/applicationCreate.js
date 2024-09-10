@@ -26,8 +26,8 @@ module.exports = async (client) => {
             await client.application?.commands.create({
                 name: command.commandName,
                 description: command.description,
-                type: command.interactionType,
-                options: command.interactionOptions,
+                type: command.interaction.type,
+                options: command.interaction.options,
                 defaultMemberPermissions: command.defaultMemberPermissions,
             }).then(async (application) => {
 
@@ -40,8 +40,8 @@ module.exports = async (client) => {
                     commandName: application.name,
                     description: command.description,
                     usage: command.usage,
-                    type: command.interactionType,
-                    options: command.interactionOptions,
+                    interactionType: command.interaction.type,
+                    interactionOptions: command.interaction.options,
                     defaultMemberPermissions: command.defaultMemberPermissions,
                     private: command.private,
                     cooldown: command.cooldown ? command.cooldown : null,
@@ -64,8 +64,8 @@ module.exports = async (client) => {
             await application.edit({
                 name: command.commandName,
                 description: command.description,
-                type: command.interactionType,
-                options: command.interactionOptions,
+                type: command.interaction.type,
+                options: command.interaction.options,
                 defaultMemberPermissions: command.defaultMemberPermissions,
             }).then(async (application) => {
 
@@ -78,8 +78,8 @@ module.exports = async (client) => {
                     commandName: application.name,
                     description: command.description,
                     usage: command.usage,
-                    type: command.interactionType,
-                    options: command.interactionOptions,
+                    interactionType: command.interaction.type,
+                    interactionOptions: command.interaction.options,
                     defaultMemberPermissions: command.defaultMemberPermissions,
                     private: command.private,
                     cooldown: command.cooldown ? command.cooldown : null,
@@ -105,6 +105,9 @@ module.exports = async (client) => {
 
             // Delete the command from the application
             await application.delete(key).then(async (application) => {
+
+                // Log the application update
+                console.log("\x1b[34m", `[Client]: ${application.name} deleted successfully.`);
 
                 // Delete the command from the database
                 const result = await deleteCommands(application.name)

@@ -46,10 +46,10 @@ router.post("/:userId", async (req, res, next) => {
         user.experience = (user.experience ?? 0) + experience;
         await user.save({ transaction: t });
 
+        res.status(200).json({ message: `${experience} experience points added to user`, data: user });
+
         // Commit the transaction
         await t.commit();
-
-        res.status(200).json({ message: `${experience} experience points added to user`, data: user });
 
     } catch (error) {
         // Rollback the transaction in case of error

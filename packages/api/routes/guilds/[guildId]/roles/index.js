@@ -2,28 +2,26 @@ const express = require("express");
 const router = express.Router({ mergeParams: true });
 
 const { sequelize } = require('../../../../database/sequelize');
-const { UserActivities } = require("../../../../database/models");
+const { TempRoles } = require("../../../../database/models");
 const { findAllRecords, createUniqueRecord } = require("../../../../utils/RequestManager");
 const { CreateError, RequestError } = require("../../../../utils/ClassManager");
 
 /**
- * GET api/guilds/:guildId/activities
- * @description Get all guild activities
- * @param {string} limit - The number of activities to return
+ * GET api/guilds/:guildId/roles
+ * @description Get all temporary roles for a specific guild user
  * @param {string} guildId - The id of the guild
  * @param {string} userId - The id of the user
  */
 router.get("/:userId", async (req, res, next) => {
     const { guildId, userId } = req.params;
-    const { limit } = req.query;
-    const options = { where: { guildId: guildId, userId: userId }, limit: limit || 20 };
+    const options = { where: { guildId: guildId, userId: userId } };
 
     try {
-        const userActivitiesData = await findAllRecords(UserActivities, options);
-        if (!userActivitiesData) {
-            throw new CreateError(404, "User not away in the guild");
+        const userRoles = await findAllRecords(TempRoles, options);
+        if (!userRoles) {
+            throw new CreateError(404, "No temporary roles were found for the user in the guild");
         } else {
-            res.status(200).json(userActivitiesData);
+            res.status(200).json(userRoles);
         }
     } catch (error) {
         next(error);
@@ -31,41 +29,36 @@ router.get("/:userId", async (req, res, next) => {
 });
 
 /**
- * POST api/guilds/:guildId/activities
- * @description Add a new user activity
+ * POST api/guilds/:guildId/roles/add
+ * @description Create a new temporary role for a specific guild user
  * @param {string} guildId - The id of the guild
  * @param {string} userId - The id of the user
- * @param {string} type - The type of activity
- * @param {object} additional - Additional data for the activity
+ * @param {string} roleId - The id of the role
+ * @param {number} duration - The duration in hours
  */
-router.post("/", async (req, res, next) => {
+router.post("/add", async (req, res, next) => {
     const t = await sequelize.transaction();
-    const { guildId } = req.params;
-
     try {
-        const {
-            userId,
-            type,
-            additional = {},
-        } = req.body;
+        const { guildId } = req.params;
+        const { userId, roleId, duration } = req.body;
 
         // Check if the required fields are provided
-        if (!userId || !type) {
+        if (!userId || !roleId) {
             throw new RequestError(400, "Invalid Request", {
                 method: req.method, path: req.path
             });
         }
 
-        // Create a new activity log
-        const activityData = await createUniqueRecord(UserActivities, {
+        // Create a new work snapshot
+        const result = await createUniqueRecord(TempRoles, {
             guildId: guildId,
             userId: userId,
-            type: type,
-            additional: additional
+            roleId: roleId,
+            duration: duration ?? 1,
         }, t);
 
         // Send the appropriate response
-        res.status(201).json({ message: "User activity stored successfully", data: activityData });
+        res.status(201).json({ message: "User temporary role stored successfully", data: result });
 
         // Commit the transaction
         await t.commit();

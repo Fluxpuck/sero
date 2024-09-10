@@ -81,15 +81,15 @@ router.post("/", async (req, res, next) => {
         // Update or create the away
         const [result, created] = await createOrUpdateRecord(Away, { userId, guildId, duration, message }, t);
 
-        // Commit the transaction
-        await t.commit();
-
         // Send the appropriate response
         if (created) {
             res.status(201).json({ message: "User away status created successfully", data: result });
         } else {
             res.status(200).json({ message: "User away status updated successfully", data: result });
         };
+
+        // Commit the transaction
+        await t.commit();
 
     } catch (error) {
         t.rollback();
