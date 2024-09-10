@@ -48,13 +48,15 @@ module.exports.run = async (client, interaction) => {
 
     // Fetch user transfer activities from today
     const userActivities = await getRequest(`/guilds/${interaction.guildId}/activities/transfers/${interaction.user.id}?type=transfer-exp`);
-    console.log("[Transfer-exp Command]: ", userActivities); // DEBUGGING IN PRODUCTION
 
     // If either request was not successful, return an error
     if (userActivities.status === 200) {
 
         // Get the activities and total amount of experience transferred
         const { activities, totalAmount } = userActivities.data;
+
+        console.log("[Transfer-exp Command]: ", activities); // DEBUGGING IN PRODUCTION
+
 
         // Check if the totalAmount + the transferAmount combined is higher than the limit
         if (totalAmount + transferAmount > TRANSFER_AMOUNT_LIMIT) {
