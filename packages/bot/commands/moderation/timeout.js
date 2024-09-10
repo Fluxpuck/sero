@@ -86,16 +86,16 @@ module.exports.run = async (client, interaction) => {
 
     // Get the duration && reason from the interaction options
     const targetDuration = interaction.options.get("time").value;
-    const targetReason = interaction.options.get("reason").value;
+    const violationReason = interaction.options.get("reason").value;
 
     // Convert the duration to milliseconds
     const duration = parseFloat(targetDuration) * 60 * 1000;
 
     // Mute the target user with reason
-    member.timeout(duration, `${targetReason}`)
+    member.timeout(duration, `${violationReason} - ${interaction.user.name}`)
         .then(() => {
             return interaction.editReply({
-                content: `You successfully muted <@${member.user.id}> for:\n> ${targetReason}`,
+                content: `You successfully muted <@${member.user.id}> for:\n> ${violationReason}`,
                 ephemeral: true,
             });
         })
