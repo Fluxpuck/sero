@@ -69,9 +69,7 @@ router.get("/:logId", async (req, res, next) => {
 router.post("/", async (req, res, next) => {
     const t = await sequelize.transaction();
     try {
-        const {
-            guildId
-        } = req.params;
+        const { guildId } = req.params;
         const {
             id = generateUniqueToken(),
             auditAction,
