@@ -5,7 +5,7 @@
     "version": "2.0.0",
     "configurations": [
         {
-            "name": "Launch API",
+            "name": "Sero API",
             "type": "node",
             "request": "launch",
             "program": "${workspaceFolder}/packages/api/app.js",
@@ -13,7 +13,7 @@
             "runtimeExecutable": "node"
         },
         {
-            "name": "Launch bot",
+            "name": "Sero Bot",
             "type": "node",
             "request": "launch",
             "program": "${workspaceFolder}/packages/bot/bot.js",
@@ -21,7 +21,7 @@
             "runtimeExecutable": "node"
         },
         {
-            "name": "Run SeedManager",
+            "name": "Seeder",
             "type": "node",
             "request": "launch",
             "program": "${workspaceFolder}/packages/api/test/_seedManager.js",
