@@ -29,7 +29,7 @@ router.get("/:userId", async (req, res, next) => {
 });
 
 /**
- * POST api/guilds/:guildId/roles
+ * POST api/guilds/:guildId/roles/add
  * @description Create a new temporary role for a specific guild user
  * @param {string} guildId - The id of the guild
  * @param {string} userId - The id of the user
@@ -68,3 +68,5 @@ router.post("/add", async (req, res, next) => {
         next(error);
     }
 });
+
+module.exports = router;

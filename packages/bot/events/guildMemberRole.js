@@ -16,9 +16,8 @@ module.exports = async (client, payload = []) => {
     try {
         // Remove the role from the member
         await member?.roles?.remove(role, `Remove temp role ${role.name}`).catch(err => {
-            throw new Error(`Error removing temp role ${role.name} from ${member.name}`, err);
+            throw new Error(`Error removing temporary role ${role.name} from ${member.name}`, err);
         });
-
     } catch (err) {
         console.error(err);
     };
