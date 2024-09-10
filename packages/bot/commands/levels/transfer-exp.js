@@ -47,7 +47,8 @@ module.exports.run = async (client, interaction) => {
     }
 
     // Fetch user transfer activities from today
-    const userActivities = await getRequest(`/guilds/${interaction.guildId}/activities/transfers/${interaction.user.id}?today=true&type=transfer-exp`);
+    const userActivities = await getRequest(`/guilds/${interaction.guildId}/activities/transfers/${interaction.user.id}?type=transfer-exp`);
+    console.log("[Transfer-exp Command]: ", userActivities); // DEBUGGING IN PRODUCTION
 
     // If either request was not successful, return an error
     if (userActivities.status === 200) {
