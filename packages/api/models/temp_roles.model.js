@@ -32,6 +32,21 @@ module.exports = sequelize => {
                 is: /^\d{17,20}$/ //Discord Snowflake
             }
         },
+        duration: {
+            type: DataTypes.INTEGER,
+            allowNull: false,
+            defaultValue: 5,
+            validate: {
+                min: {
+                    args: [1],
+                    msg: 'Duration must be at least 1 hour.',
+                },
+                max: {
+                    args: [168],
+                    msg: 'Duration cannot be more than 7 day.',
+                },
+            },
+        },
         expireAt: {
             type: DataTypes.DATE,
             allowNull: true,
@@ -45,7 +60,7 @@ module.exports = sequelize => {
             beforeCreate: (record, options) => {
                 // Calculate expireAt based on duration and createdAt
                 const expireAt = new Date(record.createdAt);
-                expireAt.setMinutes(expireAt.getMinutes() + record.duration);
+                expireAt.setHours(expireAt.getHours() + record.duration);
                 record.expireAt = expireAt;
             },
         }
