@@ -99,15 +99,15 @@ router.post("/", async (req, res, next) => {
             guildId
         }, t);
 
-        // Commit the transaction
-        await t.commit();
-
         // Send the appropriate response
         if (created) {
             res.status(201).json({ message: "Log created successfully", data: result });
         } else {
             res.status(200).json({ message: "Log updated successfully", data: result });
         };
+
+        // Commit the transaction
+        await t.commit();
 
     } catch (error) {
         t.rollback();

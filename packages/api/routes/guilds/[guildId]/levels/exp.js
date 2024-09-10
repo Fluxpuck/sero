@@ -50,9 +50,6 @@ router.post("/:userId", async (req, res, next) => {
         // Save the updated record and use { returning: true } to get updated values back
         await userLevel.save({ transaction: t, returning: true });
 
-        // Commit the transaction
-        await t.commit();
-
         const returnMessage = experience < 0
             ? `${experience} experience points removed from user`
             : `${experience} experience points added to user`;
@@ -62,6 +59,9 @@ router.post("/:userId", async (req, res, next) => {
             previous: previousUserLevel,
             current: userLevel
         });
+
+        // Commit the transaction
+        await t.commit();
 
     } catch (error) {
         t.rollback();

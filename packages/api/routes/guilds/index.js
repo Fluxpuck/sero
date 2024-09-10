@@ -86,15 +86,15 @@ router.post("/", async (req, res, next) => {
             duration
         }, t);
 
-        // Commit the transaction
-        await t.commit();
-
         // Send the appropriate response
         if (created) {
             res.status(201).json({ message: "Guild created successfully", data: result });
         } else {
             res.status(200).json({ message: "Guild updated successfully", data: result });
         };
+
+        // Commit the transaction
+        await t.commit();
 
     } catch (error) {
         t.rollback();
@@ -138,15 +138,15 @@ router.post("/boost", async (req, res, next) => {
         guild.duration = duration;
         await guild.save({ transaction: t });
 
-        // Commit the transaction
-        await t.commit();
-
         // Send the appropriate response
         if (duration > 0) {
             res.status(201).json({ message: `Guild boost set successfully at ${modifier}x for ${duration}hours`, data: guild });
         } else {
             res.status(200).json({ message: "Guild boost removed successfully", data: guild });
         };
+
+        // Commit the transaction
+        await t.commit();
 
     } catch (error) {
         t.rollback();

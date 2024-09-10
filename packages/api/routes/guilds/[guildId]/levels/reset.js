@@ -39,10 +39,10 @@ router.post("/", async (req, res, next) => {
             transaction: t
         });
 
+        res.status(200).json({ message: "All guild user levels reset successfully", data: levelRanks });
+
         // Commit the transaction
         await t.commit();
-
-        res.status(200).json({ message: "All guild user levels reset successfully", data: levelRanks });
 
     } catch (error) {
         t.rollback();
@@ -79,10 +79,11 @@ router.post("/:userId", async (req, res, next) => {
             // Save the updated record
             await userLevel.save({ transaction });
 
+            res.status(200).json({ message: "User level reset successfully", data: userLevel });
+
             // Commit the transaction
             await t.commit();
 
-            res.status(200).json({ message: "User level reset successfully", data: userLevel });
         }
     } catch (error) {
         t.rollback();

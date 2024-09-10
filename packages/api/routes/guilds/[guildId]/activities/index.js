@@ -64,11 +64,11 @@ router.post("/", async (req, res, next) => {
             additional: additional
         }, t);
 
-        // Commit the transaction
-        await t.commit();
-
         // Send the appropriate response
         res.status(201).json({ message: "User activity stored successfully", data: activityData });
+
+        // Commit the transaction
+        await t.commit();
 
     } catch (error) {
         t.rollback();

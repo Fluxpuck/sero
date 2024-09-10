@@ -59,11 +59,11 @@ router.post("/", async (req, res, next) => {
         // Update or create the message
         const message = await createOrUpdateRecord(Messages, { messageId, channelId, userId, guildId }, t);
 
-        // Commit the transaction
-        await t.commit();
-
         // Send the response
         res.status(200).json({ message: "Message stored successfully", data: message });
+
+        // Commit the transaction
+        await t.commit();
 
     } catch (error) {
         t.rollback();

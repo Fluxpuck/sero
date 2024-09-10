@@ -97,11 +97,11 @@ router.post("/", async (req, res, next) => {
             income: income
         }, t);
 
-        // Commit the transaction
-        await t.commit();
-
         // Send the appropriate response
         res.status(201).json({ message: "User career snapshot created successfully", data: result });
+
+        // Commit the transaction
+        await t.commit();
 
     } catch (error) {
         t.rollback();
