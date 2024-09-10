@@ -166,19 +166,17 @@ module.exports = sequelize => {
         // Update rank information if level has changed
         if (hasLevelChanged) {
             const newRank = await updateRank(userLevel);
-            if (userLevel.rank !== newRank.rank) {
-                userLevel.rank = newRank.rank;
+            userLevel.rank = newRank.rank;
 
-                // Publish the user's new rank to the Redis channel
-                publishMessage(REDIS_CHANNELS.RANK,
-                    {
-                        guildId: userLevel.guildId,
-                        userId: userLevel.userId,
-                        userRankRewards: newRank.ranks,
-                        allRankRewards: newRank.rewards,
-                    }
-                );
-            }
+            // Publish the user's new rank to the Redis channel
+            publishMessage(REDIS_CHANNELS.RANK,
+                {
+                    guildId: userLevel.guildId,
+                    userId: userLevel.userId,
+                    userRankRewards: newRank.ranks,
+                    allRankRewards: newRank.rewards,
+                }
+            );
         }
     });
 
