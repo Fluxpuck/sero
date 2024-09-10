@@ -28,9 +28,6 @@ module.exports.run = async (client, interaction) => {
     // If the user is in a voicechannel, disconnect them
     if (member?.voice.channel) {
 
-        // Disconnect the member from the voicechannel
-        await member.voice.disconnect();
-
         // Store the activity in the database
         postRequest(`/guilds/${interaction.guild.id}/activities`, {
             guildId: interaction.guild.id,
@@ -41,6 +38,9 @@ module.exports.run = async (client, interaction) => {
                 executedBy: interaction.user.id
             }
         });
+
+        // Disconnect the member from the voicechannel
+        await member.voice.disconnect();
 
         // Send the success message
         return interaction.editReply({
