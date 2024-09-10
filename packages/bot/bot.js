@@ -31,7 +31,7 @@ client.login(process.env.NODE_ENV === "production"
 
     // → Check API connection
     const { baseRequest } = require('./database/connection');
-    const apiConnection = baseRequest();
+    const apiConnection = await baseRequest();
 
     const isRedisConnected = redisClient?.status === 'ready';
     const isApiConnected = apiConnection?.status === 200;
