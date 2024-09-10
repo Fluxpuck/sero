@@ -53,7 +53,7 @@ router.post("/add", async (req, res, next) => {
         const result = await createUniqueRecord(TempRoles, {
             guildId: guildId,
             userId: userId,
-            roleId: jobId,
+            roleId: roleId,
             duration: duration ?? 1,
         }, t);
 
