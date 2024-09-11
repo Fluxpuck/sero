@@ -2,9 +2,9 @@ const { postRequest } = require("../../database/connection");
 const { findUser } = require("../../lib/resolvers/userResolver");
 
 module.exports.props = {
-    commandName: "temp-role",
+    commandName: "give-role",
     description: "Give a user a temporary role for a specific duration",
-    usage: "/temp-role [user] [role] [duration]",
+    usage: "/give-role [user] [role] (duration)",
     interaction: {
         type: 1,
         options: [
@@ -24,13 +24,13 @@ module.exports.props = {
                 name: "duration",
                 type: 10,
                 description: "The amount (in hours) of time you want to give the role for",
-                required: true,
+                required: false,
                 minValue: 1,
                 maxValue: 168,
             },
         ],
     },
-    defaultMemberPermissions: ['ModerateMembers'],
+    defaultMemberPermissions: ['ManageGuild', 'ManageRoles'],
 }
 
 module.exports.run = async (client, interaction) => {
@@ -41,37 +41,47 @@ module.exports.run = async (client, interaction) => {
     const targetRole = interaction.options.get("role").role;
     const duration = interaction.options.get("duration")?.value;
 
+    const isTemporary = !!duration;
+
     // Fetch full member details
     const member = findUser(interaction.guild, targetUser.id);
-
-    // Post the temporary role to the database
-    const result = await postRequest(`/guilds/${interaction.guildId}/roles/add`, { userId: targetUser.id, roleId: targetRole.id, duration: duration });
-
-    // If the request was not successful, return an error
-    if (result?.status !== 201) {
+    if (!member) {
         await interaction.deleteReply();
         return interaction.followUp({
-            content: "Something went wrong while storing the temporary role",
+            content: "Could not find the user in the guild",
             ephemeral: true
         })
-    } else {
+    }
 
-        try {
-            // Give the user the temporary role
-            await member.roles.add(targetRole, `test`)
-        } catch (error) {
+    // Store the temporary role in the database
+    if (isTemporary) {
+        const result = await postRequest(`/guilds/${interaction.guildId}/roles/add`, { userId: targetUser.id, roleId: targetRole.id, duration: duration });
+        // If the request was not successful, return an error
+        if (result?.status !== 201) {
             await interaction.deleteReply();
             return interaction.followUp({
-                content: "Something went wrong while gifting the temporary role",
+                content: "Something went wrong while storing the temporary role",
                 ephemeral: true
             })
         }
-
-        // Send the success message
-        return interaction.editReply({
-            content: `<@${targetUser.id}> has recieved role "**${targetRole.name}**" for **${duration}** ${duration > 1 ? "hours" : "hour"}!`,
-            ephemeral: false
-        });
     }
 
+    // Give the targetRole to the member
+    try {
+        // Give the user the temporary role
+        await member.roles.add(targetRole, `test`)
+    } catch (error) {
+        await interaction.deleteReply();
+        return interaction.followUp({
+            content: "Something went wrong while gifting the temporary role",
+            ephemeral: true
+        })
+    }
+
+    // Send the success message
+    const contentMessage = isTemporary ? `for **${duration}** ${duration > 1 ? "hours" : "hour"}` : "";
+    return interaction.editReply({
+        content: `Successfully gave <@${targetUser.id}> the role <@&${targetRole.id}> ${contentMessage}`,
+        ephemeral: false
+    });
 }
