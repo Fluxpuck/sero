@@ -17,19 +17,26 @@ module.exports = async (client) => {
 
     // Set global guild active setting
     Array.from(client.guilds.cache.values()).forEach(async guild => {
+
         // Fetch the guild from the database
-        const result = await getRequest(`/guilds/${guild.id}`);
+        const guildResult = await getRequest(`/guilds/${guild.id}`);
         // Set the guild's active status to true
-        if (result?.status === 200) {
-            guild.active = result?.data?.active === true;
+        if (guildResult?.status === 200) {
+            guild.active = guildResult?.data?.active === true;
         }
         // If the guild is not found in the database, create a new entry for the guild
-        if (result?.status === 404) {
+        if (guildResult?.status === 404) {
             await postRequest(`/guilds/${guild.id}`, {
                 guildId: guild.id,
                 guildName: guild.name
             })
         }
-    });
 
+        // Fetch the guild's settings from the database
+        const guildSettings = await getRequest(`/guilds/${guild.id}/settings`);
+        if (guildSettings?.status === 200) {
+            // Add the guilds settings to the guild object
+            guild.guildSettings = guildSettings.data
+        }
+    });
 }
