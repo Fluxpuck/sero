@@ -51,7 +51,7 @@ router.post("/", async (req, res, next) => {
 
         // Check if the required fields are provided
         if (!userId || !type) {
-            throw new RequestError(400, "Invalid Request", {
+            throw new RequestError(400, "Missing required data. Please check and try again", {
                 method: req.method, path: req.path
             });
         }

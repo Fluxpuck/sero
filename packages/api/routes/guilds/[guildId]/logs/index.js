@@ -2,7 +2,7 @@ const express = require("express");
 const router = express.Router({ mergeParams: true });
 
 const { sequelize } = require('../../../../database/sequelize');
-const { Logs, LogChannels } = require("../../../../database/models");
+const { Logs } = require("../../../../database/models");
 const { findAllRecords, findOneRecord, createOrUpdateRecord } = require("../../../../utils/RequestManager");
 const { CreateError, RequestError } = require("../../../../utils/ClassManager");
 
@@ -82,7 +82,7 @@ router.post("/", async (req, res, next) => {
 
         // Check if the required fields are provided
         if (!auditAction || !auditType || !targetId || !executorId) {
-            throw new RequestError(400, "Invalid Request", {
+            throw new RequestError(400, "Missing required data. Please check and try again", {
                 method: req.method, path: req.path
             });
         }

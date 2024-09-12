@@ -72,7 +72,7 @@ router.post("/", async (req, res, next) => {
 
         // Check if the required fields are provided
         if (!guildId) {
-            throw new RequestError(400, "Invalid Request", {
+            throw new RequestError(400, "Missing required data. Please check and try again", {
                 method: req.method, path: req.path
             });
         }
@@ -121,7 +121,7 @@ router.post("/boost", async (req, res, next) => {
 
         // Check if the required fields are provided
         if (!guildId) {
-            throw new RequestError(400, "Invalid Request", {
+            throw new RequestError(400, "Missing required data. Please check and try again", {
                 method: req.method, path: req.path
             });
         }
