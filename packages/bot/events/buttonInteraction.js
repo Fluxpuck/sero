@@ -12,8 +12,9 @@ module.exports = async (client, interaction) => {
 
             // Check if the guild has a rewardDrop object
             const { token, claimed } = interaction.guild.rewardDrop;
+
             // Check if the guild has already claimed the reward
-            if (!claimed) {
+            if (claimed) {
                 await interaction.deferUpdate();
                 return interaction.followUp({
                     content: `Sorry, you are just too late. This reward has already been claimed by someone else.`,
