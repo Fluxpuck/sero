@@ -39,7 +39,7 @@ module.exports = sequelize => {
     });
 
     // Clean up expired records every hour
-    cron.schedule('*/30 * * * * *', async () => {
+    cron.schedule('0 * * * *', async () => {
         try {
             // Find all records with type === 'exp-reward-drops'
             const dropGuilds = await GuildSettings.findAll({
