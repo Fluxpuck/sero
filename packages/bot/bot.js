@@ -56,8 +56,4 @@ client.login(process.env.NODE_ENV === "production"
        > ${isRedisConnected ? 'Redis is connected' : 'Redis is not connected!'}
        > ${isApiConnected ? 'Sero-api is connected' : 'Sero-api is not connected!'}
       `);
-
-    // → Load Cron Job Manager and pass the client
-    require('./utils/jobManager')(client);
-
   });
