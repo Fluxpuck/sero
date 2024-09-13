@@ -56,6 +56,4 @@ client.login(process.env.NODE_ENV === "production"
        > ${isRedisConnected ? 'Redis is connected' : 'Redis is not connected!'}
        > ${isApiConnected ? 'Sero-api is connected' : 'Sero-api is not connected!'}
       `);
-
-
   });

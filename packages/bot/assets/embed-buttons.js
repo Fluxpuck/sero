@@ -54,6 +54,13 @@ const ClientButtonsEnum = {
         .setLabel('No')
         .setCustomId('no')
         .setDisabled(false),
+
+    CLAIM_EXP_DROP: new ButtonBuilder()
+        .setStyle(ButtonStyle.Success)
+        .setLabel('Claim Reward')
+        .setEmoji('🎁')
+        .setCustomId('claim-exp-reward')
+        .setDisabled(false),
 };
 
 module.exports = ClientButtonsEnum;

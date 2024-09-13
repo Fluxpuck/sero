@@ -33,18 +33,18 @@ module.exports.run = async () => {
     for (const userInfo of userData) {
         try {
             // Check if the guild with the specified guildId exists
-                    // User exists get balance
-                    const existingBalance = await UserBalance.findOne({
-                        where: {
-                            userId: userInfo.userId,
-                            guildId: userInfo.guildId,
-                        }
-                    })
-                    if(existingBalance) {
-                        existingBalance.update(userInfo)
-                    } else {
-                        UserBalance.create(userInfo)
-                    }
+            // User exists get balance
+            const existingBalance = await UserBalance.findOne({
+                where: {
+                    userId: userInfo.userId,
+                    guildId: userInfo.guildId,
+                }
+            })
+            if (existingBalance) {
+                existingBalance.update(userInfo)
+            } else {
+                UserBalance.create(userInfo)
+            }
         } catch (error) {
             console.error(`Error creating/updating balance: ${error.message}`);
         }
