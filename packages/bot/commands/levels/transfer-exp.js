@@ -55,9 +55,6 @@ module.exports.run = async (client, interaction) => {
         // Get the activities and total amount of experience transferred
         const { activities, totalAmount } = userActivities.data;
 
-        console.log("[Transfer-exp Command]: ", activities); // DEBUGGING IN PRODUCTION
-
-
         // Check if the totalAmount + the transferAmount combined is higher than the limit
         if (totalAmount + transferAmount > TRANSFER_AMOUNT_LIMIT) {
             const remainingExp = TRANSFER_AMOUNT_LIMIT - totalAmount;

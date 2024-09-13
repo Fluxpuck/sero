@@ -38,8 +38,8 @@ module.exports = sequelize => {
         updatedAt: true,
     });
 
-    // Clean up expired records every hour
-    cron.schedule('0 * * * *', async () => {
+    // Execute a reward drop every 30 minutes
+    cron.schedule('*/30 * * * *', async () => {
         try {
             // Find all records with type === 'exp-reward-drops'
             const dropGuilds = await GuildSettings.findAll({
@@ -51,8 +51,8 @@ module.exports = sequelize => {
             // Iterate over the results and run publishMessage for each record
             dropGuilds.forEach(record => {
 
-                const MIN_HOUR = 5 * 60 * 1000; // 5 minutes in milliseconds
-                const MAX_HOUR = 60 * 60 * 1000; // 1 hour in milliseconds
+                const MIN_HOUR = 2 * 60 * 1000; // 2 minutes in milliseconds
+                const MAX_HOUR = 30 * 60 * 1000; // 30 minutes in milliseconds
 
                 // Calculate a random delay between MIN_HOUR and MAX_HOUR
                 const randomDelay = Math.floor(Math.random() * (MAX_HOUR - MIN_HOUR)) + MIN_HOUR;

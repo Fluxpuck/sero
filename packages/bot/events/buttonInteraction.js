@@ -10,8 +10,8 @@ module.exports = async (client, interaction) => {
     switch (interaction.customId) {
         case "claim-exp-reward":
 
-            // Calculate a random targetAmount between 100 and 1000
-            const min = 100, max = 1_000;
+            // Calculate a random targetAmount between a min and max value
+            const min = 300, max = 800;
             const targetAmount = Math.floor(Math.random() * (max - min + 1)) + min;
 
             try {
@@ -22,6 +22,15 @@ module.exports = async (client, interaction) => {
                 // Return message to the user
                 if (result?.status === 200) {
 
+                    // Create an activity for the user
+                    postRequest(`/guilds/${interaction.guildId}/activities`, {
+                        userId: interaction.member.id,
+                        type: "claim-exp-reward",
+                        additional: {
+                            amount: targetAmount,
+                        }
+                    });
+
                     // Delete the message that the button was associated with
                     await interaction.deferUpdate();
 
@@ -31,18 +40,11 @@ module.exports = async (client, interaction) => {
                     } catch (err) { }
 
                     // Return the message to the user
-                    interaction.followUp({
+                    return interaction.followUp({
                         content: `Congratulations! You have claimed **${targetAmount}** experience!`,
                         ephemeral: true
                     })
 
-                    postRequest(`/guilds/${interaction.guildId}/activities`, {
-                        userId: interaction.member.id,
-                        type: "claim-exp-reward",
-                        additional: {
-                            amount: targetAmount,
-                        }
-                    });
                 }
             } catch (error) {
                 console.error('Error claiming experience:', error);
