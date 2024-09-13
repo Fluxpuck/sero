@@ -10,6 +10,14 @@ module.exports = async (client, interaction) => {
     switch (interaction.customId) {
         case "claim-exp-reward":
 
+            // Delete the message that the button was associated with
+            await interaction.deferUpdate();
+
+            try { // Check if the message is still available
+                const fetchedMessage = await interaction.message.fetch();
+                if (fetchedMessage.deletable) await fetchedMessage.delete();
+            } catch (err) { }
+
             // Calculate a random targetAmount between a min and max value
             const min = 300, max = 800;
             const targetAmount = Math.floor(Math.random() * (max - min + 1)) + min;
@@ -30,14 +38,6 @@ module.exports = async (client, interaction) => {
                             amount: targetAmount,
                         }
                     });
-
-                    // Delete the message that the button was associated with
-                    await interaction.deferUpdate();
-
-                    try { // Check if the message is still available
-                        const fetchedMessage = await interaction.message.fetch();
-                        if (fetchedMessage.deletable) await fetchedMessage.delete();
-                    } catch (err) { }
 
                     // Return the message to the user
                     return interaction.followUp({
