@@ -41,8 +41,11 @@ module.exports = async (client, payload) => {
         });
 
         // Delete the message after 10 seconds
-        setTimeout(() => {
-            sentMessage.delete().catch({});
+        setTimeout(async () => {
+            try { // Check if the message is still available
+                const fetchedMessage = await sentMessage.fetch();
+                if (fetchedMessage.deletable) await fetchedMessage.delete();
+            } catch (err) { }
         }, 10_000); // 10_000 milliseconds = 10 seconds
 
         if (process.env.NODE_ENV === "development") {

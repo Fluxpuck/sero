@@ -2,11 +2,9 @@ const { postRequest } = require("../database/connection");
 
 module.exports = async (client, interaction) => {
 
-
-
-
     /**
-     * Check for button interactions that have to do with /get
+     * Check for button interactions
+     * And handle them accordingly
      * @ButtonInteractions {Object} 
      */
     switch (interaction.customId) {
@@ -26,16 +24,28 @@ module.exports = async (client, interaction) => {
 
                     // Delete the message that the button was associated with
                     await interaction.deferUpdate();
-                    await interaction.message.delete();
+
+                    try { // Check if the message is still available
+                        const fetchedMessage = await interaction.message.fetch();
+                        if (fetchedMessage.deletable) await fetchedMessage.delete();
+                    } catch (err) { }
 
                     // Return the message to the user
-                    return interaction.followUp({
+                    interaction.followUp({
                         content: `Congratulations! You have claimed **${targetAmount}** experience!`,
                         ephemeral: true
                     })
+
+                    postRequest(`/guilds/${interaction.guildId}/activities`, {
+                        userId: interaction.member.id,
+                        type: "claim-exp-reward",
+                        additional: {
+                            amount: targetAmount,
+                        }
+                    });
                 }
             } catch (error) {
-                console.error
+                console.error('Error claiming experience:', error);
             }
 
             break;
