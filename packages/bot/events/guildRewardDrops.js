@@ -46,7 +46,7 @@ module.exports = async (client, payload) => {
                 const fetchedMessage = await sentMessage.fetch();
                 if (fetchedMessage.deletable) await fetchedMessage.delete();
             } catch (err) { }
-        }, 10_000); // 10_000 milliseconds = 10 seconds
+        }, 20_000); // 20_000 milliseconds = 20 seconds
 
         if (process.env.NODE_ENV === "development") {
             console.log("\x1b[95m", "XP Reward dropped at:", new Date().toLocaleTimeString());
