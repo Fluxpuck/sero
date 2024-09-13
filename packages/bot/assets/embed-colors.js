@@ -3,6 +3,9 @@ const ClientEmbedColors = {
     ERROR: "#ff0000",         // Red
     WARNING: "#ff8000",       // Orange
     SUCCESS: "#00ff00",       // Green
+
+    PINK: "#ffc0cb",          // Pink
+    YELLOW: "#ffff00",        // Yellow
 }
 
 module.exports = ClientEmbedColors;
