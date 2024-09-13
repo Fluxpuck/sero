@@ -7,7 +7,7 @@ const { REWARD_MESSAGES, REWARD_GIFS } = require("../assets/reward-messages");
 module.exports = async (client, payload) => {
 
     // Check if all required attributes exist in the payload
-    const requiredAttributes = ['guildId', 'channelId'];
+    const requiredAttributes = ['guildId', 'channelId', 'token'];
     for (const attribute of requiredAttributes) {
         if (!payload.hasOwnProperty(attribute)) return;
     }
@@ -16,6 +16,9 @@ module.exports = async (client, payload) => {
         // Get the guild by guildId and the member by userId
         const guild = await client.guilds.fetch(payload.guildId);
         const channel = await guild.channels.fetch(payload.channelId);
+
+        // Set the rewardDrop object in the guild
+        guild.rewardDrop = { token: payload.token, claimed: false };
 
         // Get random job message, based on the jobId
         let text_idx = Math.floor(Math.random() * REWARD_MESSAGES.length);

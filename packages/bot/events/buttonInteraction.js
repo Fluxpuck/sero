@@ -10,7 +10,21 @@ module.exports = async (client, interaction) => {
     switch (interaction.customId) {
         case "claim-exp-reward":
 
-            // Delete the message that the button was associated with
+            // Check if the guild has a rewardDrop object
+            const { token, claimed } = interaction.guild.rewardDrop;
+            // Check if the guild has already claimed the reward
+            if (!claimed) {
+                await interaction.deferUpdate();
+                return interaction.followUp({
+                    content: `Sorry, you are just too late. This reward has already been claimed by someone else.`,
+                    ephemeral: true
+                })
+            } else {
+                // Set the claimed status to true
+                interaction.guild.rewardDrop.claimed = true;
+            }
+
+            // Defer the interaction
             await interaction.deferUpdate();
 
             try { // Check if the message is still available
@@ -36,6 +50,7 @@ module.exports = async (client, interaction) => {
                         type: "claim-exp-reward",
                         additional: {
                             amount: targetAmount,
+                            token: token
                         }
                     });
 
