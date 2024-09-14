@@ -18,7 +18,7 @@ module.exports.props = {
                 type: 10,
                 description: "The amount of experience to transfer to the user",
                 required: true,
-                minValue: 1,
+                minValue: 10,
                 maxValue: 1000,
             },
         ],
@@ -53,7 +53,13 @@ module.exports.run = async (client, interaction) => {
     if (userActivities.status === 200) {
 
         // Get the activities and total amount of experience transferred
-        const { activities, totalAmount } = userActivities.data;
+        const { activities } = userActivities.data;
+
+        let totalAmount = 0;
+        for (const activity of userActivitiesData) {
+            const { amount } = activity.additional;
+            totalAmount += amount;
+        }
 
         // Check if the totalAmount + the transferAmount combined is higher than the limit
         if (totalAmount + transferAmount > TRANSFER_AMOUNT_LIMIT) {

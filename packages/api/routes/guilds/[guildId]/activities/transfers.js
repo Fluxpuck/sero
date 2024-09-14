@@ -32,14 +32,7 @@ router.get("/:userId", async (req, res, next) => {
         if (!userActivitiesData) {
             throw new CreateError(404, "User not found in the guild");
         } else {
-            let totalAmount = 0;
-
-            for (const activity of userActivitiesData) {
-                const { amount } = activity.additional;
-                totalAmount += amount;
-            }
-
-            res.status(200).json({ activities: userActivitiesData, totalAmount });
+            res.status(200).json({ activities: userActivitiesData });
         }
     } catch (error) {
         next(error);
