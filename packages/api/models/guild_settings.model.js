@@ -69,7 +69,7 @@ module.exports = sequelize => {
 
             });
         } catch (error) {
-            console.error('Error cleaning up expired away records:', error);
+            console.error(`Error drop-reward-exp for ${record.guildId}`, error);
         }
     });
 
