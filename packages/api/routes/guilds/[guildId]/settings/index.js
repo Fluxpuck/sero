@@ -3,7 +3,7 @@ const router = express.Router({ mergeParams: true });
 
 const { sequelize } = require('../../../../database/sequelize');
 const { GuildSettings } = require("../../../../database/models");
-const { findAllRecords, createUniqueRecord } = require("../../../../utils/RequestManager");
+const { findAllRecords, createUniqueRecord, findOneRecord } = require("../../../../utils/RequestManager");
 const { CreateError, RequestError } = require("../../../../utils/ClassManager");
 
 /**
@@ -38,7 +38,7 @@ router.get("/:type", async (req, res, next) => {
     const options = { where: { guildId: guildId, type: type } };
 
     try {
-        const guildSettings = await findAllRecords(GuildSettings, options);
+        const guildSettings = await findOneRecord(GuildSettings, options);
         if (!guildSettings) {
             throw new CreateError(404, "No settings were found for the guild");
         } else {
