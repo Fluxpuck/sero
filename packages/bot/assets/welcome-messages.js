@@ -1,0 +1,31 @@
+const WELCOME_MESSAGES = [
+    "{name}! We are happy to have you here!",
+    "Hello {name}, glad to see you!",
+    "We are delighted to have you among us {name}.",
+    "We are thrilled to have {name} here.",
+    "We hope you'll have an amazing time here {name}!",
+    "Hope you'll enjoy it here {name}!",
+    "We are very excited to have you, {name}",
+    "You hit the join button and joined {name}!",
+    "Want a cup of tea? We got coffee too!",
+    "Hey {name}, hope you brought some pizza!",
+    "{name}, we have been waiting for you!",
+    "We are so excited, {name} finally joined the server!",
+    "We smile and wave to you {name}, glad to see you!",
+    "Salute {name}, enjoy your time here!",
+    "Hi {name}, we're happy to see you in here!",
+    "WOW! It's {name}, glad to see you!",
+    "{name} has finally arrived!",
+    "Good to see you, {name}!",
+    "Pssst, the cool kid has arrived. It's {name}!",
+    "Hey you... Yeah you, {name}. Glad to see you!",
+    "Hey {name}, we have been expecting you!",
+    "May the Force be with you, {name}",
+    "A wild {name} appeared in the server.",
+    "Yer on Discord, ~~Harry~~ {name}.",
+    "My precious, {name}.",
+    "Look who decided to show up, {name}!",
+    "This is the server you're looking for, {name}."
+]
+
+module.exports = { WELCOME_MESSAGES }
