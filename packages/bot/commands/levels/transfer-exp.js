@@ -55,8 +55,9 @@ module.exports.run = async (client, interaction) => {
         // Get the activities and total amount of experience transferred
         const { activities } = userActivities.data;
 
+        // Calculate the total amount of experience transferred today
         let totalAmount = 0;
-        for (const activity of userActivitiesData) {
+        for (const activity of activities) {
             const { amount } = activity.additional;
             totalAmount += amount;
         }
