@@ -1,7 +1,7 @@
-const eventEnum = require('../config/eventEnum')
-const { createCustomEmbed } = require("../assets/embed");
-const { getRequest, deleteRequest } = require("../database/connection");
-const { getTimeAgo } = require('../lib/helpers/TimeDateHelpers/timeHelper');
+const eventEnum = require('../../config/eventEnum')
+const { createCustomEmbed } = require("../../assets/embed");
+const { getRequest, deleteRequest } = require("../../database/connection");
+const { getTimeAgo } = require('../../lib/helpers/TimeDateHelpers/timeHelper');
 
 module.exports = async (client, message) => {
 

@@ -1,8 +1,8 @@
 const { ActionRowBuilder, ComponentType } = require("discord.js");
-const ClientEmbedColors = require("../assets/embed-colors");
-const ClientButtonsEnum = require("../assets/embed-buttons");
-const { createCustomEmbed } = require("../assets/embed");
-const { REWARD_MESSAGES, REWARD_GIFS } = require("../assets/reward-messages");
+const ClientEmbedColors = require("../../assets/embed-colors");
+const ClientButtonsEnum = require("../../assets/embed-buttons");
+const { createCustomEmbed } = require("../../assets/embed");
+const { REWARD_MESSAGES, REWARD_GIFS } = require("../../assets/reward-messages");
 
 module.exports = async (client, payload) => {
 
