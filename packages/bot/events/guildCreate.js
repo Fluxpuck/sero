@@ -9,6 +9,7 @@ module.exports = async (client, guild) => {
         guild: {
             guildId: guild.id,
             guildName: guild.name,
+            active: false
         }
     })
 }
