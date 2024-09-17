@@ -5,10 +5,6 @@ const { getTimeAgo } = require('../lib/helpers/TimeDateHelpers/timeHelper');
 
 module.exports = async (client, message) => {
 
-
-    console.log('guildMemberAway event has been called')
-
-
     /**
      * Check if the message is mentioning someone
      * If it is mentioning someone, check if the mentioned user is away
@@ -18,9 +14,6 @@ module.exports = async (client, message) => {
 
     // Check if the author is away
     const awayResult = await getRequest(`/guilds/${message.guildId}/away/${memberId}`);
-
-    console.log(awayResult)
-
     if (awayResult?.status == 200) {
 
         // If the user is the same as the author, remove away from database
