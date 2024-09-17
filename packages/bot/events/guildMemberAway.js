@@ -1,9 +1,13 @@
-const eventEnum = require('../../config/eventEnum')
-const { createCustomEmbed } = require("../../assets/embed");
-const { getRequest, deleteRequest } = require("../../database/connection");
-const { getTimeAgo } = require('../../lib/helpers/TimeDateHelpers/timeHelper');
+const eventEnum = require('../config/eventEnum')
+const { createCustomEmbed } = require("../assets/embed");
+const { getRequest, deleteRequest } = require("../database/connection");
+const { getTimeAgo } = require('../lib/helpers/TimeDateHelpers/timeHelper');
 
 module.exports = async (client, message) => {
+
+
+    console.log('guildMemberAway event has been called')
+
 
     /**
      * Check if the message is mentioning someone
@@ -14,6 +18,9 @@ module.exports = async (client, message) => {
 
     // Check if the author is away
     const awayResult = await getRequest(`/guilds/${message.guildId}/away/${memberId}`);
+
+    console.log(awayResult)
+
     if (awayResult?.status == 200) {
 
         // If the user is the same as the author, remove away from database

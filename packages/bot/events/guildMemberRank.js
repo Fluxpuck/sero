@@ -1,4 +1,4 @@
-const { findUser } = require("../../lib/resolvers/userResolver");
+const { findUser } = require("../lib/resolvers/userResolver");
 
 module.exports = async (client, payload = []) => {
 
