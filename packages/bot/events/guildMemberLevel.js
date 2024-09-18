@@ -14,12 +14,12 @@ module.exports = async (client, message, oldLevel, newLevel) => {
         // Send a  level up message
         try {
             // Fetch the welcome channel
-            const messageChannel = await getRequest(`/guilds/${member.guild.id}/settings/levelup-channel`);
+            const messageChannel = await getRequest(`/guilds/${message.guild.id}/settings/levelup-channel`);
             if (messageChannel.status === 200) {
 
                 // Get channel from request
                 const { channelId } = messageChannel.data
-                const channel = await member.guild.channels.fetch(channelId);
+                const channel = await message.guild.channels.fetch(channelId);
 
                 // Get a random message
                 let idx = Math.floor(Math.random() * LEVEL_MESSAGES.length);
