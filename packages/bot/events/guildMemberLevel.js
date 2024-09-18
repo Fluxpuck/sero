@@ -1,3 +1,4 @@
+const { getRequest } = require('../database/connection');
 const { LEVEL_MESSAGES } = require("../assets/level-messages");
 
 module.exports = async (client, message, oldLevel, newLevel) => {
