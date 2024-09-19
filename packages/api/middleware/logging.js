@@ -26,6 +26,7 @@ const logger = morgan(
                     });
                 } catch (error) {
                     console.error('Error logging request to the database:', error);
+                    console.error('Body:', body);
                 }
 
                 if (process.env.NODE_ENV === "development") {
