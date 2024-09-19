@@ -48,6 +48,7 @@ module.exports.run = async (client, interaction) => {
 
     // Fetch user transfer activities from today
     const userActivities = await getRequest(`/guilds/${interaction.guildId}/activities/transfers/${interaction.user.id}?type=transfer-exp`);
+    console.log("transfer-exp: userActivities", userActivities);
 
     // If either request was not successful, return an error
     if (userActivities.status === 200) {
@@ -61,6 +62,8 @@ module.exports.run = async (client, interaction) => {
             const { amount } = activity.additional;
             totalAmount += amount;
         }
+
+        console.log("transfer-exp: totalAmount", totalAmount);
 
         // Check if the totalAmount + the transferAmount combined is higher than the limit
         if (totalAmount + transferAmount > TRANSFER_AMOUNT_LIMIT) {
