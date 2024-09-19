@@ -8,8 +8,6 @@ const { CreateError, RequestError } = require("../../../../utils/ClassManager");
 
 const { Op } = require('sequelize');
 const { startOfToday, endOfToday } = require('date-fns');
-const startOfDay = startOfToday();
-const endOfDay = endOfToday();
 
 /**
  * GET api/guilds/:guildId/activities
@@ -19,6 +17,10 @@ const endOfDay = endOfToday();
  * @param {string} userId - The id of the user
  */
 router.get("/:userId", async (req, res, next) => {
+    // Get the start and end of the day
+    const startOfDay = startOfToday();
+    const endOfDay = endOfToday();
+
     const { guildId, userId } = req.params;
     const { limit = 20, today = "true", type = "transfer-exp" } = req.query;
 

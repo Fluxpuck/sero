@@ -62,9 +62,6 @@ module.exports.run = async (client, interaction) => {
             totalAmount += amount;
         }
 
-        console.log("transfer-exp: activities", activities);
-        console.log("transfer-exp: totalAmount", totalAmount);
-
         // Check if the totalAmount + the transferAmount combined is higher than the limit
         if (totalAmount + transferAmount > TRANSFER_AMOUNT_LIMIT) {
             const remainingExp = TRANSFER_AMOUNT_LIMIT - totalAmount;
