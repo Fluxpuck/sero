@@ -32,6 +32,6 @@ const dayPossibilities = {
 
 module.exports = {
     monthOptions,
-    dayPossibilities
+    dayPossibilities,
 }
     
