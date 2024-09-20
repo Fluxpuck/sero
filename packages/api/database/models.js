@@ -18,6 +18,7 @@ const models = {
     Work_snapshot: require('../models/work_snapshot.model')(sequelize),
     TempRoles: require('../models/temp_roles.model')(sequelize),
     _Requests: require('../models/_requests.model')(sequelize),
+    UserBirthday: require('../models/user_birthday.model')(sequelize),
 }
 
 Object.values(models)
