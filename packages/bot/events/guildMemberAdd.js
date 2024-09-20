@@ -1,5 +1,5 @@
-const { getRequest, postRequest } = require("../../database/connection");
-const { WELCOME_MESSAGES } = require("../../assets/welcome-messages");
+const { getRequest, postRequest } = require("../database/connection");
+const { WELCOME_MESSAGES } = require("../assets/welcome-messages");
 
 module.exports = async (client, member) => {
 
@@ -31,7 +31,5 @@ module.exports = async (client, member) => {
     } catch (error) {
         console.log(error)
     }
-
-
 
 }

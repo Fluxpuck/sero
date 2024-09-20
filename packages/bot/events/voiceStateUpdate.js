@@ -1,4 +1,4 @@
-const { postRequest, getRequest } = require('../../database/connection')
+const { postRequest, getRequest } = require('../database/connection')
 
 // In-memory queue to store voice sessions
 const voiceSessionQueue = new Map();

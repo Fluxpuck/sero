@@ -34,7 +34,7 @@ module.exports = sequelize => {
     active: {
       type: DataTypes.BOOLEAN,
       allowNull: false,
-      defaultValue: true
+      defaultValue: false
     },
     modifier: {
       type: DataTypes.FLOAT,

@@ -41,7 +41,7 @@ module.exports = async (client, message) => {
   if (client.cooldowns.has(user_level_key) === false) {
     // Update the User's experience
     const result = await postRequest(`/guilds/${message.guildId}/levels/exp/gain/${message.author.id}`);
-    const { previous, current } = result?.data;
+    const { previous, current } = result?.data || { previous: null, current: null };
 
     // Trigger guildMemberLevel event
     client.emit(eventEnum.GUILD_MEMBER_LEVEL, message, previous, current);
