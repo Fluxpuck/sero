@@ -1,5 +1,4 @@
-const { Model, DataTypes, Op } = require("sequelize");
-const { publishMessage, REDIS_CHANNELS } = require("../database/publisher");
+const { Model, DataTypes } = require("sequelize");
 
 class UserBirthday extends Model {
     static associate(models) {
@@ -90,17 +89,22 @@ module.exports = sequelize => {
             timestamps: true,
             updatedAt: true,
             createdAt: true,
+            hooks: {
+                // Add + 1 to the modifiedAmount when the birthday has been modified
+                //  (this also automatically detects if the birthday has been changed before classifying it as a modification)
+                afterUpdate: (instance, options) => {
+                    if (
+                        instance.changed("birthdayDay") ||
+                        instance.changed("birthdayMonth") ||
+                        instance.changed("birthdayYear")
+                    ) {
+                        instance.modifiedAmount += 1;
+                        instance.save();
+                    }
+                },
+            },
         },
     );
-
-    // Add + 1 to the modifiedAmount when the birthday has been modified 
-    //  (this also automatically detects if the birthday has been changed before classifying it as a modification)
-    UserBirthday.afterUpdate((instance, options) => {
-        if (instance.changed("birthdayDay") || instance.changed("birthdayMonth") || instance.changed("birthdayYear")) {
-            instance.modifiedAmount += 1;
-            instance.save();
-        }
-    });
 
     return UserBirthday;
 };

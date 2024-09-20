@@ -91,7 +91,7 @@ router.post("/:userId", async (req, res, next) => {
                 birthdayDay: birthdayDay,
                 birthdayYear: birthdayYear,
             },
-            { transaction: t },
+            t,
         );
 
         // Commit the transaction

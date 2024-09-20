@@ -9,7 +9,7 @@ const { monthOptions, dayPossibilities } = require("../../assets/date-options");
 const { createCustomEmbed } = require("../../assets/embed");
 const ClientButtonsEnum = require("../../assets/embed-buttons");
 const ClientEmbedColors = require("../../assets/embed-colors");
-const embed = require("../../assets/embed");
+const { getRequest, postRequest } = require("../../database/connection");
 
 module.exports.props = {
     commandName: "birthday",
@@ -55,10 +55,15 @@ module.exports.run = async (client, interaction) => {
     await interaction.deferReply({ ephemeral: true });
 
     // Check if the user has already set their birthday (limit to 2 times)
-    // const userBirthday = await client.db.getBirthday(interaction.user.id);
-    // if (userBirthday) {
-    //     // Do some other checks here (like how many times they've set their birthday)
-    // }
+    const existingResult = await getRequest(`guilds/${interaction.guildId}/birthday/${interaction.user.id}`);
+    const { birthdayDay = null, birthdayMonth = null, birthdayYear = null } = existingResult?.data || {};
+
+    if (existingResult?.status === 200 && existingResult?.data?.modifiedAmount >= 2) {
+        return interaction.editReply({
+            content: `You have already set your birthday more than twice. You cannot set it again. \nPlease contact a moderator if you need to change it.
+            Current birthday: ${birthdayMonth ? `${monthOptions[birthdayMonth]} ${birthdayDay}${birthdayYear ? `, ${birthdayYear}` : ""}` : "Not set"}`,
+        });
+    }
 
     // Get the user's input
     const month = interaction.options.get("month").value;
@@ -135,12 +140,24 @@ module.exports.run = async (client, interaction) => {
         });
     }
 
+    await confirm.deferUpdate();
     // Set the birthday in the database (probably good idea to put this in a try catch)
-    // await client.db.setBirthday(interaction.user.id, { day, month, year });
-    console.log("send to database", { day, month, year });
+    const result = await postRequest(`guilds/${interaction.guildId}/birthday/${interaction.user.id}`, {
+        birthdayMonth: month,
+        birthdayDay: day,
+        birthdayYear: year,
+    });
+
+    if (result?.status !== 200) {
+        return confirm.editReply({
+            content: "Something went wrong while setting your birthday. It has not been set.",
+            embeds: [],
+            components: [],
+        });
+    }
 
     // Return confirmation message
-    return confirm.update({
+    return confirm.editReply({
         content: `Your birthday has been set to ${monthOptions[month]} ${day}${year ? `, ${year}` : ""}.`,
         embeds: [],
         components: [],
