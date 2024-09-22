@@ -63,7 +63,7 @@ module.exports.run = async (client, interaction) => {
     });
 
     // Ban the target user with reason
-    member.ban({ reason: `${violationReason} - ${interaction.user.name}`, days: null })
+    member.ban({ reason: `${violationReason} - ${interaction.user.username}`, days: null })
         .then(() => {
             return interaction.editReply({
                 content: `You successfully banned **${member.user.username}** (${member.user.id}) for:\n> ${violationReason}`,
