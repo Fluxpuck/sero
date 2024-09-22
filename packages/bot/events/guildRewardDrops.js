@@ -43,13 +43,12 @@ module.exports = async (client, payload) => {
             ephemeral: false
         });
 
-        // Delete the message after 10 seconds
         setTimeout(async () => {
             try { // Check if the message is still available
                 const fetchedMessage = await sentMessage.fetch();
                 if (fetchedMessage.deletable) await fetchedMessage.delete();
             } catch (err) { }
-        }, 20_000); // 20_000 milliseconds = 20 seconds
+        }, 15_000); // 15_000 milliseconds = 15 seconds
 
         if (process.env.NODE_ENV === "development") {
             console.log("\x1b[95m", "XP Reward dropped at:", new Date().toLocaleTimeString());
