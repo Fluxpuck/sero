@@ -23,7 +23,7 @@ module.exports.props = {
 module.exports.run = async (client, interaction) => {
 
 	// Prevent the command from being overflooded and limited by Discord
-	if (interaction.replied || interaction.deferred) {
+	if (!interaction.isRepliable()) {
 		await interaction.deleteReply();
 		return interaction.followUp({
 			content: "Oops! The command is on a cooldown! Please wait a bit before trying again.",
