@@ -66,8 +66,9 @@ module.exports = sequelize => {
         }
     });
 
-    // Clean up expired records every second
-    cron.schedule('* * * * * *', async () => {
+    // Clean up expired records every minute
+    cron.schedule('* * * * * ', async () => {
+
         try {
             // Fetch records that are about to be deleted
             const expiredRoles = await TempRoles.findAll({
@@ -80,23 +81,18 @@ module.exports = sequelize => {
 
             // Publish a message to Redis for each expired role
             for (const role of expiredRoles) {
-                publishMessage(REDIS_CHANNELS.ROLE, {
-                    guildId: role.guildId,
-                    userId: role.userId,
-                    roleId: role.roleId,
-                });
+                // Publish the user's new rank to the Redis channel
+                publishMessage(REDIS_CHANNELS.ROLE,
+                    {
+                        guildId: role.guildId,
+                        userId: role.userId,
+                        roleId: role.roleId,
+                    }
+                );
             }
 
-            // Delete the expired records
-            await TempRoles.destroy({
-                where: {
-                    expireAt: {
-                        [Sequelize.Op.lt]: new Date(),
-                    },
-                },
-            });
         } catch (error) {
-            console.error('Error cleaning up expired temp_roles records:', error);
+            console.error('Error finding expired temp_roles records and publishing Redis message:', error);
         }
     });
 

@@ -69,4 +69,46 @@ router.post("/add", async (req, res, next) => {
     }
 });
 
+/**
+ * DELETE api/guilds/:guildId/roles/:userId/:roleId
+ * @description Delete a temporary role for a specific guild user
+ * @param {string} guildId - The id of the guild
+ * @param {string} userId - The id of the user
+ */
+router.delete("/:userId/:roleId", async (req, res, next) => {
+    const t = await sequelize.transaction();
+    try {
+        const { guildId, userId, roleId } = req.params;
+        const options = {
+            where: {
+                guildId: guildId,
+                userId: userId,
+                roleId: roleId
+            }
+        };
+
+        // Check if the required fields are provided
+        if (!guildId || !userId || !roleId) {
+            throw new RequestError(400, "Missing required data. Please check and try again", {
+                method: req.method, path: req.path
+            });
+        }
+
+        // Delete the user temporary role
+        const result = await TempRoles.destroy(options, { transaction: t });
+        if (!result) {
+            throw new CreateError(404, "The temporary role was not found for the user in the guild");
+        } else {
+            res.status(200).json({ message: "User temporary role deleted successfully" });
+        }
+
+        // Commit the transaction
+        await t.commit();
+
+    } catch (error) {
+        t.rollback();
+        next(error);
+    }
+});
+
 module.exports = router;

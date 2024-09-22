@@ -2,6 +2,9 @@ const { findUser } = require("../lib/resolvers/userResolver");
 
 module.exports = async (client, payload = []) => {
 
+    console.log(payload);
+
+
     // Check if all required attributes exist in the payload
     const requiredAttributes = ['guildId', 'userId', 'userRankRewards', 'allRankRewards'];
     for (const attribute of requiredAttributes) {
@@ -10,7 +13,7 @@ module.exports = async (client, payload = []) => {
 
     // Get the guild by guildId and the member by userId
     const guild = await client.guilds.fetch(payload.guildId);
-    const member = findUser(guild, payload.userId);
+    const member = findUser(guild, payload.userId) || await guild.members.fetch(payload.userId);
 
     // Ranks that are unattained by the member
     const unattainedRankRewards = payload.allRankRewards.filter(rank =>
@@ -35,7 +38,7 @@ module.exports = async (client, payload = []) => {
             // Get the role by roleId
             const role = await guild.roles.fetch(rank.roleId);
             if (role) {
-                // Remove the role from the member
+                // Add the role to the member
                 await member?.roles?.add(role, `Add attained rank reward role for level ${rank.level}`).catch(err => {
                     throw new Error(`Error adding attained rank reward role for level ${rank.level} to ${member.name}`, err);
                 });
