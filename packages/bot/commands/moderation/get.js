@@ -47,7 +47,7 @@ module.exports.run = async (client, interaction) => {
         userDescription = bannedUser
             ? `<@${targetUser.id}> is banned from the server for
             > ${bannedUser.reason || 'No reason provided'}`
-            : `<@${targetUser.id}> is no longer the server.`
+            : `<@${targetUser.id}> is not in the server.`
 
     } else {
         // Add member details
