@@ -3,9 +3,6 @@ const { deleteRequest } = require("../database/connection");
 
 module.exports = async (client, payload = []) => {
 
-    console.log(payload);
-
-
     // Check if all required attributes exist in the payload
     const requiredAttributes = ['guildId', 'userId', 'roleId'];
     for (const attribute of requiredAttributes) {
