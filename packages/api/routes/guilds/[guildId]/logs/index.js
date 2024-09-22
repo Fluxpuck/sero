@@ -18,7 +18,16 @@ const { generateUniqueToken } = require("../../../../utils/FunctionManager");
 router.get("/:userId", async (req, res, next) => {
     const { guildId, userId } = req.params;
     const { limit } = req.query;
-    const options = { limit: limit || 10, where: { guildId: guildId, userId: userId } };
+    const options = {
+        limit: limit || 10,
+        where: {
+            guildId: guildId,
+            targetId: userId
+        },
+        order: [
+            ['createdAt', 'DESC']
+        ]
+    };
 
     try {
         const guildLogs = await findAllRecords(Logs, options);
