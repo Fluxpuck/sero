@@ -104,8 +104,6 @@ module.exports.run = async (client, interaction) => {
     });
 
 
-
-
     // Setup the log fields
     const logFields = userLogs.map((log, index) => ({
         name: `(${index + 1}) - ${log.id}`,
@@ -124,9 +122,6 @@ module.exports.run = async (client, interaction) => {
     // Check if there are more than 3 logs
     const logCount = userLogs.length;
     const remainingLogs = userLogs.length - 3;
-    const hasLogs = userLogs.length > 0;
-
-
 
 
     // Collect the button selection
@@ -162,7 +157,6 @@ module.exports.run = async (client, interaction) => {
         }
 
 
-
         /**
          * @selectedButton - Logs
          * Update the embed and add the logs
@@ -185,7 +179,7 @@ module.exports.run = async (client, interaction) => {
 
             // Add logs to embed Fields
             messageEmbed.addFields(
-                { name: '\u200B', value: `**${userLogs.length} User ${userLogs.length === 1 ? "Log" : "Logs"}:**` },
+                { name: '\u200B', value: `**${logCount} User ${logCount === 1 ? "Log" : "Logs"}:**` },
                 ...descriptionPages[page]);
 
             if (remainingLogs > 0) {
@@ -200,6 +194,7 @@ module.exports.run = async (client, interaction) => {
                 components: [messageButtons]
             })
         }
+
 
         /**
          * @selectedButton - Pagination
@@ -234,7 +229,7 @@ module.exports.run = async (client, interaction) => {
             messageEmbed.setFields(
                 [
                     ...userFields,
-                    { name: '\u200B', value: `**${userLogs.length} User ${userLogs.length === 1 ? "Log" : "Logs"}:**` },
+                    { name: '\u200B', value: `**${logCount} User ${logCount === 1 ? "Log" : "Logs"}:**` },
                     ...descriptionPages[page]
                 ]
             );
