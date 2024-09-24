@@ -65,8 +65,8 @@ module.exports = async (client, interaction) => {
 
                     // Return the message to the user
                     return interaction.followUp({
-                        content: `Congratulations! You have claimed **${targetAmount}** experience!`,
-                        ephemeral: true
+                        content: `Congratulations <@${interaction.member.id}>! You claimed **${targetAmount}** experience!`,
+                        ephemeral: false
                     })
 
                 }
