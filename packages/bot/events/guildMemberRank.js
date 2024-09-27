@@ -11,6 +11,7 @@ module.exports = async (client, payload = []) => {
     // Get the guild by guildId and the member by userId
     const guild = await client.guilds.fetch(payload.guildId);
     const member = findUser(guild, payload.userId) || await guild.members.fetch(payload.userId);
+    if (!member) return;
 
     // Ranks that are unattained by the member
     const unattainedRankRewards = payload.allRankRewards.filter(rank =>
