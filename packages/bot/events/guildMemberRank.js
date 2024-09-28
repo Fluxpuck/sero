@@ -8,17 +8,16 @@ module.exports = async (client, payload = []) => {
         if (!payload.hasOwnProperty(attribute)) return;
     }
 
-    // Get the guild by guildId and the member by userId
-    const guild = await client.guilds.fetch(payload.guildId);
-    const member = findUser(guild, payload.userId) || await guild.members.fetch(payload.userId);
-    if (!member) return;
-
-    // Ranks that are unattained by the member
-    const unattainedRankRewards = payload.allRankRewards.filter(rank =>
-        !payload.userRankRewards.some(userRank => userRank.level === rank.level)
-    );
-
     try {
+        // Get the guild by guildId and the member by userId
+        const guild = await client.guilds.fetch(payload.guildId);
+        const member = findUser(guild, payload.userId) || await guild.members.fetch(payload.userId);
+
+        // Ranks that are unattained by the member
+        const unattainedRankRewards = payload.allRankRewards.filter(rank =>
+            !payload.userRankRewards.some(userRank => userRank.level === rank.level)
+        );
+
         // REMOVE unattained rank rewards from the member
         for (const rank of unattainedRankRewards) {
             // Get the role by roleId
@@ -43,8 +42,5 @@ module.exports = async (client, payload = []) => {
             }
         }
 
-    } catch (err) {
-        console.error(err);
-    };
-
+    } catch (err) { };
 }

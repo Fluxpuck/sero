@@ -16,7 +16,6 @@ module.exports = async (client, payload) => {
         // Get the guild by guildId and the member by userId
         const guild = await client.guilds.fetch(payload.guildId);
         const channel = await guild.channels.fetch(payload.channelId);
-        if (!channel) return;
 
         // Set the rewardDrop object in the guild
         guild.rewardDrop = { token: payload.token, claimed: false };
@@ -55,7 +54,5 @@ module.exports = async (client, payload) => {
             console.log("\x1b[95m", "XP Reward dropped at:", new Date().toLocaleTimeString());
         }
 
-    } catch (err) {
-        console.error(err);
-    };
+    } catch (err) { };
 }
