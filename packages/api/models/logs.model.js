@@ -65,7 +65,15 @@ module.exports = sequelize => {
         modelName: 'logs',
         timestamps: true,
         createdAt: true,
-        updatedAt: true
+        updatedAt: true,
+        hooks: {
+            // Set the reason to "No reason provided" if no reason is provided
+            beforeSave: (log, options) => {
+                if (log.reason === null) {
+                    log.reason = "No reason provided";
+                }
+            }
+        }
     });
 
     return Logs;
