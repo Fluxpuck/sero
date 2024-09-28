@@ -74,7 +74,7 @@ module.exports = sequelize => {
             defaultValue: 100
         },
         modifier: {
-            type: DataTypes.INTEGER,
+            type: DataTypes.FLOAT,
             allowNull: false,
             defaultValue: 1,
             validate: {
