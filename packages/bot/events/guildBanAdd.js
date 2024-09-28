@@ -48,7 +48,7 @@ module.exports = async (client, ban) => {
             duration: auditLog.duration ?? null,
         });
 
-        console.log(result)
+        if (result.status != 200) throw new Error(result)
 
     } catch (error) {
         console.log(error)

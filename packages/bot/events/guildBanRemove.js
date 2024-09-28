@@ -34,8 +34,8 @@ module.exports = async (client, unban) => {
     }
 
     /**
- * @description - Store the unban in the database
- */
+     * @description - Store the unban in the database
+     */
     try {
 
         const result = await postRequest(`/guilds/${guild.id}/logs`, {
@@ -48,7 +48,7 @@ module.exports = async (client, unban) => {
             duration: auditLog.duration ?? null,
         });
 
-        console.log(result)
+        if (result.status != 200) throw new Error(result)
 
     } catch (error) {
         console.log(error)
