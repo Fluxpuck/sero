@@ -1,74 +1,18 @@
-const LogTypes = {
-    'memberEvents': 'Member Events',
-    'emojiEvents': 'Emoji Events',
-    'roleEvents': 'Role Events',
-    'messageEvents': 'Message Events',
-    'stickerEvents': 'Sticker Events',
-    'inviteEvents': 'Invite Events'
-}
+const { AuditLogEvent } = require('discord.js'); // Adjust the path as necessary
+
 
 /**
- * Returns the name of the event based on the event number.
- * @param {*} eventNumber - The event number to get the name of.
- * @returns - The name of the event.
+ * Function to get the key in string format of the AuditLogEvent based on the provided number
+ * @param {number} eventNumber - The number corresponding to the AuditLogEvent
+ * @returns {string | null} - The key in string format or null if not found
  */
-function getEventName(eventNumber) {
-    const events = {
-        1: "GuildUpdate",
-        10: "ChannelCreate",
-        11: "ChannelUpdate",
-        12: "ChannelDelete",
-        13: "ChannelOverwriteCreate",
-        14: "ChannelOverwriteUpdate",
-        15: "ChannelOverwriteDelete",
-        20: "MemberKick",
-        21: "MemberPrune",
-        22: "MemberBanAdd",
-        23: "MemberBanRemove",
-        24: "MemberTimeOut", // Originally MemberUpdate
-        25: "MemberRoleUpdate",
-        26: "MemberMove",
-        27: "MemberDisconnect",
-        28: "BotAdd",
-        30: "RoleCreate",
-        31: "RoleUpdate",
-        32: "RoleDelete",
-        40: "InviteCreate",
-        41: "InviteUpdate",
-        42: "InviteDelete",
-        50: "WebhookCreate",
-        51: "WebhookUpdate",
-        52: "WebhookDelete",
-        60: "EmojiCreate",
-        61: "EmojiUpdate",
-        62: "EmojiDelete",
-        73: "MessageBulkDelete",
-        72: "MessageDelete",
-        74: "MessagePin",
-        75: "MessageUnpin",
-        80: "IntegrationCreate",
-        81: "IntegrationUpdate",
-        82: "IntegrationDelete",
-        83: "StageInstanceCreate",
-        84: "StageInstanceUpdate",
-        85: "StageInstanceDelete",
-        90: "StickerCreate",
-        91: "StickerUpdate",
-        92: "StickerDelete",
-        100: "GuildScheduledEventCreate",
-        101: "GuildScheduledEventUpdate",
-        102: "GuildScheduledEventDelete",
-        140: "AutoModerationRuleCreate",
-        141: "AutoModerationRuleUpdate",
-        142: "AutoModerationRuleDelete",
-        143: "AutoModerationBlockMessage",
-        144: "AutoModerationFlagToChannel",
-        145: "AutoModerationUserCommunicationDisabled",
-        121: "ApplicationCommandPermissionUpdate"
-    };
-
-    // If the eventNumber is not in the events object, return "UnknownEvent"
-    return events[eventNumber] || "UnknownEvent";
+function getAuditLogType(eventNumber) {
+    for (const [key, value] of Object.entries(AuditLogEvent)) {
+        if (value === eventNumber) {
+            return key;
+        }
+    }
+    return null;
 }
 
 /**
@@ -124,26 +68,8 @@ function checkModerationAction(eventNumber) {
     return !!moderationActions[eventNumber];
 }
 
-/**
- * Returns the name of the moderation action based on the event number.
- * @param {*} eventNumber - The event number to check
- * @returns - The name of the moderation action
- */
-function getAuditActionName(eventNumber) {
-    const moderationActionName = {
-        20: "Kick",
-        22: "Ban",
-        23: "Unban",
-        24: "Timeout",
-        27: "Disconnect",
-    };
-
-    return moderationActionName[eventNumber] || "Unknown";
-};
-
 module.exports = {
-    getEventName,
+    getAuditLogType,
     getEventCategory,
     checkModerationAction,
-    getAuditActionName,
 };
