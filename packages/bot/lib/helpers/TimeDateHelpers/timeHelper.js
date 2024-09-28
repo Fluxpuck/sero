@@ -165,7 +165,7 @@ module.exports = {
      * @param {*} time - The timestamp to convert
      * @returns - The time in milliseconds
      */
-    unixTimestamp: (time) => {
+    unixTimestamp: (time = new Date()) => {
         const timestamp = Math.floor(time / 1000);
         return timestamp.toString();
     }
