@@ -24,7 +24,7 @@ module.exports = async (client, ban) => {
             const channel = await guild.channels.fetch(channelId);
             if (channel) {
                 channel.send({
-                    content: `<t:${unixTimestamp()}> - <@${auditLog.targetId}> got **banned** from the server by **${auditLog.executor.username}**`,
+                    content: `<t:${unixTimestamp()}> - <@${auditLog.targetId}> got **banned** by **${auditLog.executor.username}** for \`${auditLog.reason ?? "No reason provided"}\` \n-# ${auditLog.target.username} | ${auditLog.targetId}`,
                 });
             }
 

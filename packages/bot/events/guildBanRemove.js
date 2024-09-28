@@ -24,7 +24,7 @@ module.exports = async (client, unban) => {
             const channel = await guild.channels.fetch(channelId);
             if (channel) {
                 channel.send({
-                    content: `<t:${unixTimestamp()}> - **${auditLog.target.username}**'s ban got __revoked__ by **${auditLog.executor.username}**`,
+                    content: `<t:${unixTimestamp()}> - **${auditLog.target.username}** was **unbanned** by **${auditLog.executor.username}** \n-# ${auditLog.target.username} | ${auditLog.targetId}`,
                 });
             }
 
