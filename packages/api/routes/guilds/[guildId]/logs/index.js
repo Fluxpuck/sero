@@ -66,8 +66,8 @@ router.get("/:logId", async (req, res, next) => {
 /**
  * POST api/guilds/:guildId/logs
  * @description Create or update a guild log
- * @param {string} guildId - The id of the guild
  * @param {string} id - The id of the log
+ * @param {string} guildId - The id of the guild
  * @param {string} auditAction - The action of the audit
  * @param {string} auditType - The type of the audit
  * @param {string} targetId - The id of the target

@@ -1,6 +1,6 @@
 const { AuditLogEvent } = require('discord.js');
 const { getRequest, postRequest } = require("../database/connection");
-const { getAuditLogType, getEventCategory } = require('../lib/discord/auditlogevent');
+const { getAuditLogType } = require('../lib/discord/auditlogevent');
 const { unixTimestamp } = require('../lib/helpers/TimeDateHelpers/timeHelper');
 
 module.exports = async (client, unban) => {
@@ -38,16 +38,17 @@ module.exports = async (client, unban) => {
  */
     try {
 
-        await postRequest(`/logs/${guild.id}/${auditLog.targetId}`, {
+        const result = await postRequest(`/guilds/${guild.id}/logs`, {
             id: auditLog.id,
             auditAction: auditLog.action,
             auditType: getAuditLogType(auditLog.action),
-            auditCategory: getEventCategory(auditLog.action),
             targetId: auditLog.targetId,
             reason: auditLog.reason ?? null,
             executorId: auditLog.executorId,
             duration: auditLog.duration ?? null,
         });
+
+        console.log(result)
 
     } catch (error) {
         console.log(error)
