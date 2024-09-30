@@ -25,6 +25,7 @@ module.exports = async (client, payload = []) => {
                 throw new Error(`Error removing temporary role from ${member.name}`, err);
             });
         }
+
     } catch (err) {
         console.error(`Error processing role removal: ${err.message}`);
     }
