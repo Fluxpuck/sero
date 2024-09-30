@@ -15,7 +15,7 @@ module.exports = async (client, unban) => {
         if (!auditLog) return;
 
         // Fetch the unban log channel from the database
-        const banLogChannelResponse = await getRequest(`/guilds/${guild.id}/settings/ban-log`);
+        const banLogChannelResponse = await getRequest(`/guilds/${guild.id}/settings/ban-logs`);
         if (banLogChannelResponse.status !== 200) return;
 
         // Get channel from request and send message

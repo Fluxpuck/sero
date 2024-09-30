@@ -11,7 +11,7 @@ module.exports = async (client, oldMember, newMember) => {
     try {
 
         // Get the member log channel from the database
-        const member_log_channel = await getRequest(`/guilds/${guild.id}/settings/member-log`);
+        const member_log_channel = await getRequest(`/guilds/${guild.id}/settings/member-logs`);
         if (member_log_channel.status !== 200) return;
 
         // Get channel from request and send message
