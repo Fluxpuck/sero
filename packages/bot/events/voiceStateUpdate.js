@@ -1,24 +1,42 @@
 const { postRequest, getRequest } = require('../database/connection')
+const { unixTimestamp, formatTime } = require('../lib/helpers/TimeDateHelpers/timeHelper');
 
 // In-memory queue to store voice sessions
 const voiceSessionQueue = new Map();
 
 // Helper function to log sessions and store in database
-function handleVoiceSessionEnd(session) {
+async function handleVoiceSessionEnd(session) {
     const { joinTimestamp, leaveTimestamp, member, channel, guild } = session;
-    const duration = Math.round((leaveTimestamp - joinTimestamp) / 1000); // Duration in seconds
+    const duration = Math.round((leaveTimestamp - joinTimestamp));
+    const durationFormatted = formatTime(duration, true);
 
     // Store the session in the database
     // If the duration is more than 60 seconds
     if (duration >= 60) {
-        postRequest(`/guilds/${guild.id}/activities`, {
+        await postRequest(`/guilds/${guild.id}/activities`, {
             guildId: guild.id,
             userId: member.id,
             type: "voice-session",
             additional: {
                 channelId: channel.id,
-                duration: duration,
+                duration: (duration / 1000), // Convert to seconds
             }
+        });
+    }
+
+    // Fetch the vc log channel from the database
+    const vcLogChannelResponse = await getRequest(`/guilds/${guild.id}/settings/vc-logs`);
+    if (vcLogChannelResponse.status !== 200) return;
+
+    // Get channel from request and send message
+    const { channelId } = vcLogChannelResponse.data;
+    const logChannel = await guild.channels.fetch(channelId);
+    if (logChannel) {
+        const content = `<t:${unixTimestamp()}> - **${member.user.tag}** was in <#${channel.id}> for \`${durationFormatted}\``;
+        const footer = `-# <@${member.id}> | ${member.id}`;
+
+        logChannel.send({
+            content: `${content}\n${footer}`,
         });
     }
 }
@@ -52,7 +70,7 @@ module.exports = async (client, previousState, newState) => {
             session.leaveTimestamp = Date.now();
 
             // Process the session after they leave
-            handleVoiceSessionEnd(session);
+            await handleVoiceSessionEnd(session);
 
             // Remove session from the queue
             voiceSessionQueue.delete(member.id);
@@ -70,7 +88,7 @@ module.exports = async (client, previousState, newState) => {
             session.leaveTimestamp = Date.now();
 
             // Process the session before switching
-            handleVoiceSessionEnd(session);
+            await handleVoiceSessionEnd(session);
 
             // Remove old session and create a new one
             voiceSessionQueue.delete(member.id);
@@ -87,9 +105,4 @@ module.exports = async (client, previousState, newState) => {
             }
         }
     }
-
-
-
-
-
 };

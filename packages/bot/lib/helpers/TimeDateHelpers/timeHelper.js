@@ -2,25 +2,24 @@ const moment = require('moment');
 
 module.exports = {
     /**
-    * Format a time duration in milliseconds as a string in the format "<day(s)>d <hr>h <min>m <s>s".
-    * @param {number} timeInMilliseconds - The time duration in milliseconds.
-    * @returns {string} The formatted time string.
-    */
-    formatTime: (timeInMilliseconds) => {
-        // Calculate the number of days, hours, minutes, and seconds
-        const days = Math.floor(timeInMilliseconds / 86400000);
-        const hours = Math.floor(timeInMilliseconds / 3600000) % 24;
-        const minutes = Math.floor(timeInMilliseconds / 60000) % 60;
-        const seconds = Math.floor(timeInMilliseconds / 1000) % 60;
+     * Format a time duration in milliseconds as a string in the format "<day(s)>d <hr>h <min>m <s>s".
+     * If "full" is true, show singular/plural forms (e.g., "1 hour" or "2 hours").
+     * @param {number} timeInMilliseconds - The time duration in milliseconds.
+     * @param {boolean} [full=false] - Whether to show full unit names.
+     */
+    formatTime: (timeInMilliseconds, full = false) => {
+        const units = [
+            { label: ['day', 'days', 'd'], value: Math.floor(timeInMilliseconds / 86400000) },
+            { label: ['hour', 'hours', 'h'], value: Math.floor(timeInMilliseconds / 3600000) % 24 },
+            { label: ['minute', 'minutes', 'm'], value: Math.floor(timeInMilliseconds / 60000) % 60 },
+            { label: ['second', 'seconds', 's'], value: Math.floor(timeInMilliseconds / 1000) % 60 }
+        ];
 
-        // Create a display string for each unit of time
-        const dDisplay = days > 0 ? `${days}d ` : '';
-        const hDisplay = hours > 0 ? `${hours}h ` : '';
-        const mDisplay = minutes > 0 ? `${minutes}m ` : '';
-        const sDisplay = seconds > 0 ? `${seconds}s` : '';
-
-        // Return the combined display string
-        return `${dDisplay}${hDisplay}${mDisplay}${sDisplay}`;
+        return units
+            .filter(unit => unit.value > 0)
+            .map(({ label, value }) => `${value}${full ? ` ${label[value === 1 ? 0 : 1]}` : label[2]}`)
+            .join(' ')
+            .trim();
     },
 
     /**
