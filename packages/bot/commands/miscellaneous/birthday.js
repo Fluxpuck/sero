@@ -10,6 +10,7 @@ const { createCustomEmbed } = require("../../assets/embed");
 const ClientButtonsEnum = require("../../assets/embed-buttons");
 const ClientEmbedColors = require("../../assets/embed-colors");
 const { getRequest, postRequest } = require("../../database/connection");
+const { getYearsAgo } = require("../../lib/helpers/TimeDateHelpers/timeHelper");
 
 module.exports.props = {
     commandName: "birthday",
@@ -47,7 +48,7 @@ module.exports.props = {
         ],
     },
     defaultMemberPermissions: ["SendMessages"],
-    cooldown: 2 * 60 // 2 minutes
+    cooldown: 2 * 60, // 2 minutes
 };
 
 module.exports.run = async (client, interaction) => {
@@ -56,20 +57,31 @@ module.exports.run = async (client, interaction) => {
 
     // Check if the user has already set their birthday (limit to 2 times)
     const existingResult = await getRequest(`guilds/${interaction.guildId}/birthday/${interaction.user.id}`);
-    const { birthdayDay = null, birthdayMonth = null, birthdayYear = null } = existingResult?.data || {};
+    const { birthdayAt: birthdayAtString, createdAt, updatedAt } = existingResult?.data || {};
+    const birthdayAt = birthdayAtString ? new Date(birthdayAtString) : null;
 
-    if (existingResult?.status === 200 && existingResult?.data?.modifiedAmount >= 2) {
-        return interaction.editReply({
-            content: `You have already set your birthday more than twice. You cannot set it again. \nPlease contact a moderator if you need to change it.
-            Current birthday: ${birthdayMonth ? `${monthOptions[birthdayMonth]} ${birthdayDay}${birthdayYear ? `, ${birthdayYear}` : ""}` : "Not set"}`,
-        });
+    if (existingResult?.status === 200 && birthdayAt) {
+        if (updatedAt > createdAt) {
+            // Genius way to check if the user has set their birthday twice :)
+            const existingAge = birthdayAt - new Date();
+            return interaction.editReply({
+                content:
+                    "You have already set your birthday twice. You cannot set it again.\n" +
+                    `Your birthday is currently set to \`${
+                        monthOptions[birthdayAt.getMonth() + 1]
+                    } ${birthdayAt.getDate()}${
+                        birthdayAt.getFullYear() && getYearsAgo(birthdayAt) >= 13 ? `, ${birthdayAt.getFullYear()}` : ""
+                    }\`.\n` +
+                    "-# If you need to correct it, please contact a staff member.",
+                ephemeral: true,
+            });
+        }
     }
 
     // Get the user's input
     const month = interaction.options.get("month").value;
     const day = interaction.options.get("day").value;
     const year = interaction.options.get("year")?.value;
-    const age = year ? new Date().getFullYear() - year : null;
 
     // Check that the day is valid for the month
     if (day > dayPossibilities[month] || day < 1) {
@@ -79,18 +91,32 @@ module.exports.run = async (client, interaction) => {
         });
     }
 
+    // Make a date object and if a year is provided, calculate the user's age
+    const birthdate = new Date(year || new Date().getFullYear(), month - 1, day);
+    const age = year ? getYearsAgo(birthdate) : null;
+
     // Confirm the user's input
     const confirmationEmbed = createCustomEmbed({
-        color: ClientEmbedColors.BLUE,
+        color: ClientEmbedColors.LIGHT_BLUE,
         title: "Birthday Confirmation",
-        description: `
-            Are you sure you want to set your birthday to ${monthOptions[month]} ${day}${year ? `, ${year}.` : ""} 
-            ${year ? `That would make you ${age} years old.\n` : ""}
-            Careful, you can only set your birthday twice: 
-            once for setting and once for correcting.
-        `,
+        description:
+            "Please confirm your birthday details:\n" +
+            `**Date:** \`${monthOptions[month]} ${day}${year ? `, ${year}` : ""}\`\n` +
+            `${year ? `**Age:** \`${age} years old\`\n` : ""}` +
+            `${
+                birthdayAt
+                    ? `Note: Your current birthday is set to \`${
+                          monthOptions[birthdayAt.getMonth() + 1]
+                      } ${birthdayAt.getDate()}${
+                          birthdayAt.getFullYear() && getYearsAgo(birthdayAt) >= 13
+                              ? `, ${birthdayAt.getFullYear()}`
+                              : ""
+                      }\`\n`
+                    : ""
+            }`,
         footer: {
-            text: "This command will time out in 15 seconds.",
+            text: "You can only set your birthday twice: once for setting and once for correcting.\nThis command will time out in 15 seconds.",
+            // Maybe nice to have a warning image here, to draw attention
         },
     });
 
@@ -106,10 +132,7 @@ module.exports.run = async (client, interaction) => {
     });
 
     try {
-        confirm = await message.awaitMessageComponent({
-            filter: i => i.user.id === interaction.user.id,
-            time: 15_000,
-        });
+        confirm = await message.awaitMessageComponent({ time: 20_000 });
     } catch (error) {
         // If the user doesn't respond in time, cancel the command
         return interaction.editReply({
@@ -134,7 +157,7 @@ module.exports.run = async (client, interaction) => {
 
         // Inform the user and cancel the command
         return confirm.update({
-            content: "You are under the age of 13, you cannot set your birthday.",
+            content: "You cannot set your birthday with that age.", // Was: "You are under the age of 13, you cannot set your birthday."
             embeds: [],
             components: [],
         });
@@ -143,9 +166,7 @@ module.exports.run = async (client, interaction) => {
     await confirm.deferUpdate();
     // Set the birthday in the database (probably good idea to put this in a try catch)
     const result = await postRequest(`guilds/${interaction.guildId}/birthday/${interaction.user.id}`, {
-        birthdayMonth: month,
-        birthdayDay: day,
-        birthdayYear: year,
+        birthdayAt: birthdate,
     });
 
     if (result?.status !== 200) {
@@ -156,11 +177,17 @@ module.exports.run = async (client, interaction) => {
         });
     }
 
-    // Return confirmation message
+    // Send a new message to the channel, pinging the user with their new set birthday
+    await interaction.channel.send({
+        content: `${interaction.user}'s birthday has been set to ${monthOptions[month]} ${day}${
+            year ? `, ${year}` : ""
+        }.`,
+    });
+
+    // Return confirmation message to the user
     return confirm.editReply({
-        content: `Your birthday has been set to ${monthOptions[month]} ${day}${year ? `, ${year}` : ""}.`,
+        content: "Your birthday has been successfully set.",
         embeds: [],
         components: [],
-        ephemeral: false, // I would like for the message to be public, but we'd have to send a follow-up message to the channel
     });
 };

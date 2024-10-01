@@ -168,6 +168,15 @@ module.exports = {
     unixTimestamp: (time) => {
         const timestamp = Math.floor(time / 1000);
         return timestamp.toString();
-    }
+    },
 
+    /**
+     * Get the years ago from a given date
+     * @param {*} date - The date to calculate the years ago from
+     * @returns - The years ago
+     */
+    getYearsAgo: (date) => {
+        const timeDifferenceInYears = moment().diff(date, 'years');
+        return timeDifferenceInYears;
+    }
 };
