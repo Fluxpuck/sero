@@ -64,6 +64,7 @@ router.post("/", async (req, res, next) => {
         const {
             type,
             channelId,
+            exclude = []
         } = req.body;
 
         // Check if the required fields are provided
@@ -74,7 +75,7 @@ router.post("/", async (req, res, next) => {
         }
 
         // Update or create the setting
-        const setting = await createUniqueRecord(GuildSettings, { guildId, type, channelId }, t);
+        const setting = await createUniqueRecord(GuildSettings, { guildId, type, channelId, exclude }, t);
 
         // Send the response
         res.status(200).json({ message: "Guild setting stored successfully", data: setting });

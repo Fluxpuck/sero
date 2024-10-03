@@ -31,6 +31,10 @@ module.exports = sequelize => {
                 is: /^\d{17,20}$/ //Discord Snowflake
             }
         },
+        exclude: {
+            type: DataTypes.ARRAY(DataTypes.BIGINT),
+            allowNull: true,
+        },
     }, {
         sequelize,
         modelName: 'guild_settings',
