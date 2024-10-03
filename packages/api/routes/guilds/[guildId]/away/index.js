@@ -62,14 +62,8 @@ router.get("/:userId", async (req, res, next) => {
 router.post("/", async (req, res, next) => {
     const t = await sequelize.transaction();
     try {
-        const {
-            guildId
-        } = req.params;
-        const {
-            userId,
-            duration,
-            message = null,
-        } = req.body;
+        const { guildId } = req.params;
+        const { userId, duration = 5, message = null, } = req.body;
 
         // Check if the required fields are provided
         if (!userId || !duration) {
@@ -78,8 +72,13 @@ router.post("/", async (req, res, next) => {
             });
         }
 
+        // TODO - THE MODEL HOOKS ARE BROKEN
+        // SO WE SET THE EXPIRE DATE MANUALLY
+        const now = new Date();
+        const expireAt = new Date(now.getTime() + duration * 60000);
+
         // Update or create the away
-        const [result, created] = await createOrUpdateRecord(Away, { userId, guildId, duration, message }, t);
+        const [result, created] = await createOrUpdateRecord(Away, { userId, guildId, duration, message, expireAt }, t);
 
         // Send the appropriate response
         if (created) {

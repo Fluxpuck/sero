@@ -80,11 +80,10 @@ module.exports = sequelize => {
             },
         });
 
-
     // Update expired records every 5 minutes
     cron.schedule('*/5 * * * *', async () => {
         try {
-            await Guild.update({ modifier: 1 },
+            const result = await Guild.update({ modifier: 1 },
                 {
                     where: {
                         expireAt: {
@@ -92,6 +91,11 @@ module.exports = sequelize => {
                         },
                     },
                 });
+
+            if (result > 0 && process.env.NODE_ENV === "development") {
+                console.log(`Reset ${result} expired guild modifyer records`);
+            }
+
         } catch (error) {
             console.error('Error updating expired records:', error);
         }

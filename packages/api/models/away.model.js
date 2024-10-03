@@ -84,7 +84,7 @@ module.exports = sequelize => {
     // Clean up expired records every second
     cron.schedule('* * * * * *', async () => {
         try {
-            await Away.destroy({
+            const result = await Away.destroy({
                 where: {
                     expireAt: {
                         // Select records where expireAt is in the past
@@ -92,6 +92,11 @@ module.exports = sequelize => {
                     },
                 },
             });
+
+            if (result > 0 && process.env.NODE_ENV === "development") {
+                console.log(`Cleared ${result} expired away records`);
+            }
+
         } catch (error) {
             console.error('Error cleaning up expired away records:', error);
         }
