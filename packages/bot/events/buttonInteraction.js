@@ -10,6 +10,9 @@ module.exports = async (client, interaction) => {
     switch (interaction.customId) {
         case "claim-exp-reward":
 
+            // Defer the interaction
+            await interaction.deferUpdate();
+
             // Check if the user has chatted in the last 5 minutes
             const checkActivityResult = await getRequest(`/guilds/${interaction.guildId}/messages/active/${interaction.member.id}`);
             if (checkActivityResult !== 200 || checkActivityResult.data.length <= 0) {
@@ -24,9 +27,9 @@ module.exports = async (client, interaction) => {
 
             // Check if the guild has already claimed the reward
             if (claimed) {
-                await interaction.deferUpdate();
 
-                if (!token) { // Something went wrong, try to delete the message
+                // Something went wrong, try to delete the message
+                if (!token) {
                     try { // Check if the message is still available
                         const fetchedMessage = await interaction.message.fetch();
                         if (fetchedMessage.deletable) await fetchedMessage.delete();
