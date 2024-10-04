@@ -13,14 +13,15 @@ module.exports = async (client, interaction) => {
             // Defer the interaction
             await interaction.deferUpdate();
 
-            // Check if the user has chatted in the last 5 minutes
-            const checkActivityResult = await getRequest(`/guilds/${interaction.guildId}/messages/active/${interaction.member.id}`);
-            if (checkActivityResult !== 200 || checkActivityResult.data.length <= 0) {
-                return interaction.followUp({
-                    content: `Sorry, you need to be active to be able to claim the reward.`,
-                    ephemeral: true
-                });
-            }
+            // // Fetch the last 100 messages from the channel
+            // const messages = await interaction.channel.messages.fetch({ limit: 100 });
+            // const userMessages = messages.filter(msg => msg.author.id === interaction.member.id);
+            // if (userMessages.size === 0) {
+            //     return interaction.followUp({
+            //         content: `Sorry, you need to be active to be able to claim the reward.`,
+            //         ephemeral: true
+            //     });
+            // }
 
             // Check if the guild has a rewardDrop object
             const { token, claimed = true } = interaction.guild?.rewardDrop
