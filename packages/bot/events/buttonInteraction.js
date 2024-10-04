@@ -1,4 +1,4 @@
-const { getRequest, postRequest } = require("../database/connection");
+const { postRequest } = require("../database/connection");
 
 module.exports = async (client, interaction) => {
 
@@ -10,27 +10,14 @@ module.exports = async (client, interaction) => {
     switch (interaction.customId) {
         case "claim-exp-reward":
 
-            // Defer the interaction
-            await interaction.deferUpdate();
-
-            // // Fetch the last 100 messages from the channel
-            // const messages = await interaction.channel.messages.fetch({ limit: 100 });
-            // const userMessages = messages.filter(msg => msg.author.id === interaction.member.id);
-            // if (userMessages.size === 0) {
-            //     return interaction.followUp({
-            //         content: `Sorry, you need to be active to be able to claim the reward.`,
-            //         ephemeral: true
-            //     });
-            // }
-
             // Check if the guild has a rewardDrop object
             const { token, claimed = true } = interaction.guild?.rewardDrop
 
             // Check if the guild has already claimed the reward
             if (claimed) {
+                await interaction.deferUpdate();
 
-                // Something went wrong, try to delete the message
-                if (!token) {
+                if (!token) { // Something went wrong, try to delete the message
                     try { // Check if the message is still available
                         const fetchedMessage = await interaction.message.fetch();
                         if (fetchedMessage.deletable) await fetchedMessage.delete();
@@ -55,7 +42,7 @@ module.exports = async (client, interaction) => {
             } catch (err) { }
 
             // Calculate a random targetAmount between a min and max value
-            const min = 200, max = 500;
+            const min = 200, max = 600;
             const targetAmount = Math.floor(Math.random() * (max - min + 1)) + min;
 
             try {
