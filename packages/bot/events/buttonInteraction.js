@@ -1,4 +1,4 @@
-const { postRequest } = require("../database/connection");
+const { getRequest, postRequest } = require("../database/connection");
 
 module.exports = async (client, interaction) => {
 
@@ -9,6 +9,15 @@ module.exports = async (client, interaction) => {
      */
     switch (interaction.customId) {
         case "claim-exp-reward":
+
+            // Check if the user has chatted in the last 5 minutes
+            const checkActivityResult = await getRequest(`/guilds/${interaction.guildId}/messages/active/${interaction.member.id}`);
+            if (checkActivityResult !== 200 || checkActivityResult.data.length <= 0) {
+                return interaction.followUp({
+                    content: `Sorry, you need to be active to be able to claim the reward.`,
+                    ephemeral: true
+                });
+            }
 
             // Check if the guild has a rewardDrop object
             const { token, claimed = true } = interaction.guild?.rewardDrop
