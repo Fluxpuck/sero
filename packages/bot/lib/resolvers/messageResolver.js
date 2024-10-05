@@ -1,4 +1,5 @@
 const { Collection } = require('discord.js');
+const { subMinutes, isAfter } = require('date-fns');
 
 module.exports = {
 
@@ -53,5 +54,29 @@ module.exports = {
         }
 
         return messageCollection;
+    },
+
+    /**
+     * Get unique authors from the last X minutes of messages in a channel
+     * @param {*} channel 
+     * @param {*} time 
+     * @returns 
+     */
+    async getUniqueAuthorsFromMessages(channel, time = 5) {
+
+        // Fetch the last 100 messages in the channel
+        const messages = await channel.messages.fetch({ limit: 100 });
+
+        // Calculate the time 5 minutes ago
+        const timeAgo = subMinutes(new Date(), time);
+
+        // Filter messages from the last 5 minutes
+        const recentMessages = messages.filter(msg => isAfter(msg.createdTimestamp, timeAgo));
+
+        // Create an array with all unique message.author.id's
+        const uniqueAuthorIds = [...new Set(recentMessages.map(msg => msg.author.id))];
+
+        // Return the array of unique author IDs (will be empty if no messages match the criteria)
+        return uniqueAuthorIds;
     }
 };

@@ -1,8 +1,10 @@
-const { ActionRowBuilder, ComponentType } = require("discord.js");
+const { ActionRowBuilder } = require("discord.js");
 const ClientEmbedColors = require("../assets/embed-colors");
 const ClientButtonsEnum = require("../assets/embed-buttons");
 const { createCustomEmbed } = require("../assets/embed");
 const { REWARD_MESSAGES, REWARD_GIFS } = require("../assets/reward-messages");
+
+const { getUniqueAuthorsFromMessages } = require("../lib/resolvers/messageResolver");
 
 module.exports = async (client, payload) => {
 
@@ -17,8 +19,11 @@ module.exports = async (client, payload) => {
         const guild = await client.guilds.fetch(payload.guildId);
         const channel = await guild.channels.fetch(payload.channelId);
 
+        // Fetch the last 100 messages in the channel
+        const eligibleIds = await getUniqueAuthorsFromMessages(channel);
+
         // Set the rewardDrop object in the guild
-        guild.rewardDrop = { token: payload.token, claimed: false };
+        guild.rewardDrop = { token: payload.token, claimed: false, eligibleCollection: eligibleIds };
 
         // Get random job message, based on the jobId
         let text_idx = Math.floor(Math.random() * REWARD_MESSAGES.length);

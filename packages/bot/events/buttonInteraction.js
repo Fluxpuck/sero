@@ -10,20 +10,28 @@ module.exports = async (client, interaction) => {
     switch (interaction.customId) {
         case "claim-exp-reward":
 
+            // Defer the interaction
+            await interaction.deferUpdate();
+
             // Check if the guild has a rewardDrop object
-            const { token, claimed = true } = interaction.guild?.rewardDrop
+            const { eligibleCollection, token, claimed = true } = interaction.guild?.rewardDrop
+
+            // Check if the user is eligible to claim the reward
+            if (!eligibleCollection.includes(interaction.member.id)) {
+                return interaction.followUp({
+                    content: `Sorry, you've not been active enough to claim this reward. Try again next time!`,
+                    ephemeral: true
+                })
+            }
 
             // Check if the guild has already claimed the reward
             if (claimed) {
-                await interaction.deferUpdate();
-
                 if (!token) { // Something went wrong, try to delete the message
                     try { // Check if the message is still available
                         const fetchedMessage = await interaction.message.fetch();
                         if (fetchedMessage.deletable) await fetchedMessage.delete();
                     } catch (err) { }
                 }
-
                 return interaction.followUp({
                     content: `Sorry, you are just too late. This reward has already been claimed by someone else.`,
                     ephemeral: true
@@ -32,9 +40,6 @@ module.exports = async (client, interaction) => {
                 // Set the claimed status to true
                 interaction.guild.rewardDrop.claimed = true;
             }
-
-            // Defer the interaction
-            await interaction.deferUpdate();
 
             try { // Check if the message is still available
                 const fetchedMessage = await interaction.message.fetch();
