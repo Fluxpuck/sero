@@ -1,3 +1,4 @@
+const { logEmbed } = require('../assets/embed');
 const { postRequest, getRequest } = require('../database/connection')
 const { unixTimestamp, formatTime } = require('../lib/helpers/TimeDateHelpers/timeHelper');
 
@@ -32,11 +33,17 @@ async function handleVoiceSessionEnd(session) {
     const { channelId, exclude } = vcLogChannelResponse.data;
     const logChannel = await guild.channels.fetch(channelId);
     if (logChannel && !exclude.includes(channel.id)) {
+
         const content = `<t:${unixTimestamp()}> - **${member.user.tag}** was in <#${channel.id}> for \`${durationFormatted}\``;
         const footer = `-# <@${member.id}> | ${member.id}`;
 
+        const embedMessage = logEmbed({
+            description: content,
+            footer: footer
+        })
+
         logChannel.send({
-            content: `${content}\n${footer}`,
+            embeds: [embedMessage]
         });
     }
 }

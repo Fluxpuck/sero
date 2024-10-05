@@ -22,11 +22,11 @@ module.exports = async (client, message) => {
 
             // Return the message
             message.reply(
-                { content: `Welcome back <@${message.author.id}>! Your away status has been removed!` }
+                { content: `Welcome back <@${message.author.id}>` }
             ).then(msg => {
                 setTimeout(() => {
                     msg.delete();
-                }, 4000); // 4 seconds
+                }, 4_000); // 4 seconds
             }).catch(e => { });
 
         }
@@ -63,7 +63,7 @@ module.exports = async (client, message) => {
             }).then(msg => {
                 setTimeout(() => {
                     msg.delete();
-                }, 5000); // 5 seconds
+                }, 5_000); // 5 seconds
             });
 
             // Add the user to the cooldowns Collection

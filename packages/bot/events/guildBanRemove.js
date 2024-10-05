@@ -2,6 +2,7 @@ const { AuditLogEvent } = require('discord.js');
 const { getRequest, postRequest } = require("../database/connection");
 const { getAuditLogType } = require('../lib/discord/auditlogevent');
 const { unixTimestamp } = require('../lib/helpers/TimeDateHelpers/timeHelper');
+const { logEmbed } = require('../assets/embed');
 
 module.exports = async (client, unban) => {
 
@@ -26,8 +27,14 @@ module.exports = async (client, unban) => {
             const content = `<t:${unixTimestamp()}> - **${auditLog.target.username}** was **unbanned** by **${auditLog.executor.username}**`
             const footer = `-# <@${auditLog.targetId}> | ${auditLog.targetId}`
 
+            const embedMessage = logEmbed({
+                type: 'warning',
+                description: content,
+                footer: footer
+            })
+
             channel.send({
-                content: `${content}\n${footer}`,
+                embeds: [embedMessage]
             });
         }
 

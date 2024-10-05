@@ -2,6 +2,7 @@ const { AuditLogEvent } = require('discord.js');
 const { getRequest, postRequest } = require("../database/connection");
 const { getAuditLogType } = require('../lib/discord/auditlogevent');
 const { unixTimestamp } = require('../lib/helpers/TimeDateHelpers/timeHelper');
+const { logEmbed } = require('../assets/embed');
 
 module.exports = async (client, ban) => {
 
@@ -26,8 +27,14 @@ module.exports = async (client, ban) => {
             const content = `<t:${unixTimestamp()}> - **${auditLog.target.username}** got **banned** by **${auditLog.executor.username}** for \`${auditLog.reason ?? "No reason provided"}\``
             const footer = `-# <@${auditLog.targetId}> | ${auditLog.targetId}`
 
+            const embedMessage = logEmbed({
+                type: 'error',
+                description: content,
+                footer: footer
+            })
+
             channel.send({
-                content: `${content}\n${footer}`,
+                embeds: [embedMessage]
             });
         }
 
