@@ -1,6 +1,7 @@
 const express = require("express");
 const router = express.Router({ mergeParams: true });
 
+const { Sequelize } = require('sequelize');
 const { sequelize } = require('../../../../../database/sequelize');
 const { Work_snapshot } = require("../../../../../database/models");
 const { findAllRecords, findOneRecord, createOrUpdateRecord, createUniqueRecord } = require("../../../../../utils/RequestManager");
@@ -29,7 +30,7 @@ router.get("/:userId", async (req, res, next) => {
             // Get the total income for the user in the guild
             const totalIncomeResult = await Work_snapshot.findOne({
                 where: { guildId: guildId, userId: userId },
-                attributes: [[fn('SUM', col('income')), 'totalIncome']],
+                attributes: [[Sequelize.fn('SUM', Sequelize.col('income')), 'totalIncome']],
                 raw: true
             });
 
