@@ -25,11 +25,12 @@ router.post("/:userId", async (req, res, next) => {
 
         // Check if the required fields are provided
         if (!experience) {
-            throw new RequestError(400, "Missing required data. Please check and try again", {
+            throw new RequestError(400, "Missing experience data. Please check and try again", {
                 method: req.method, path: req.path
             });
         }
 
+        // Find existing user level record
         let userLevel = await findOneRecord(UserLevels, options);
         if (!userLevel) {
             // Create a new UserLevels entry if not found
