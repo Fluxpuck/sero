@@ -47,7 +47,7 @@ module.exports = async (client, interaction) => {
             } catch (err) { }
 
             // Calculate a random targetAmount between a min and max value
-            const min = 200, max = 600;
+            const min = 200, max = 500;
             const targetAmount = Math.floor(Math.random() * (max - min + 1)) + min;
 
             try {
