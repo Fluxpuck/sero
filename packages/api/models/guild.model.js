@@ -11,7 +11,6 @@ class Guild extends Model {
         this.hasMany(models.Messages, { foreignKey: 'guildId' })
         this.hasMany(models.GuildSettings, { foreignKey: 'guildId' })
         this.hasMany(models.Away, { foreignKey: 'guildId' })
-        this.hasMany(models.Work_snapshot, { foreignKey: 'guildId' })
         this.hasMany(models.LevelRanks, { foreignKey: 'guildId' })
     }
 }

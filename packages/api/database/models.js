@@ -15,7 +15,6 @@ const models = {
     Messages: require('../models/messages.model')(sequelize),
     LevelRanks: require('../models/level_ranks.model')(sequelize),
     Logs: require('../models/logs.model')(sequelize),
-    Work_snapshot: require('../models/work_snapshot.model')(sequelize),
     TempRoles: require('../models/temp_roles.model')(sequelize),
     _Requests: require('../models/_requests.model')(sequelize),
 }
