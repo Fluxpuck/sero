@@ -30,8 +30,8 @@ module.exports.run = async (client, interaction) => {
 
     // Create an embed to display the user's balance
     const messageEmbed = createCustomEmbed({
-        title: `${targetUser.username}'s balance`,
-        description: `:coin: ${balance.toLocaleString()} coin${balance > 1 ? "s" : ""}`
+        title: `${targetUser.tag}'s balance`,
+        description: `🪙 ${balance.toLocaleString()} coin${balance !== 1 ? "s" : ""}`
     })
 
     // Reply with the messageEmbed

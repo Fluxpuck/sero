@@ -33,20 +33,21 @@ module.exports.run = async (client, interaction) => {
     const targetUser = interaction.options.get("user").user;
     const targetAmount = interaction.options.get("amount").value;
 
-    // Give the user the money
-    const result = await postRequest(`/guilds/${interaction.guildId}/economy/balance`, { userId: targetUser.id, amount: targetAmount });
+    // Give the user the experience
+    const result = await postRequest(`/guilds/${interaction.guildId}/economy/balance/${targetUser.id}`, { amount: targetAmount });
 
     // If the request was not successful, return an error
     if (result?.status !== 200) {
         await interaction.deleteReply();
         return interaction.followUp({
-            content: `Uh oh! The user ${targetUser.username} has no balance yet.`,
+            content: `Uh oh! Something went wrong while giving money to ${targetUser.username}.`,
             ephemeral: true
         })
     } else {
         return interaction.editReply({
-            content: `<@${targetUser.id}> has recieved **${targetAmount.toLocaleString()}** coins!`,
+            content: `<@${targetUser.id}> has recieved **${targetAmount}** money!`,
             ephemeral: false
         })
     }
+
 }

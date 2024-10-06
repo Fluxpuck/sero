@@ -40,7 +40,7 @@ module.exports.run = async (client, interaction) => {
     if (result && result?.status !== 200) {
         await interaction.deleteReply();
         interaction.followUp({
-            content: "Something went wrong while removing experience from the user.",
+            content: `Uh oh! Something went wrong while removing experience from <@${targetUser.id}>.`,
             ephemeral: true
         })
 
