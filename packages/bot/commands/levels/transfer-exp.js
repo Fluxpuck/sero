@@ -53,7 +53,7 @@ module.exports.run = async (client, interaction) => {
     if (userActivities.status === 200) {
 
         // Get the activities and total amount of experience transferred
-        const { activities } = userActivities.data;
+        const activities = userActivities.data;
 
         // Calculate the total amount of experience transferred today
         let totalAmount = 0;
