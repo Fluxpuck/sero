@@ -3,7 +3,7 @@ const router = express.Router({ mergeParams: true });
 
 const { sequelize } = require('../../../../database/sequelize');
 const { UserActivities } = require("../../../../database/models");
-const { findAllRecords, createUniqueRecord } = require("../../../../utils/RequestManager");
+const { findAllRecords, createUniqueRecord, findOneRecord } = require("../../../../utils/RequestManager");
 const { CreateError, RequestError } = require("../../../../utils/ClassManager");
 
 const { Op } = require('sequelize');
@@ -105,7 +105,7 @@ router.get("/:userId/:type", async (req, res, next) => {
         if (!userActivitiesData) {
             throw new CreateError(404, "User not found in the guild");
         } else {
-            res.status(200).json({ activities: userActivitiesData });
+            res.status(200).json(userActivitiesData);
         }
     } catch (error) {
         next(error);
