@@ -47,13 +47,13 @@ module.exports.run = async (client, interaction) => {
     }
 
     // Fetch user transfer activities from today
-    const userActivities = await getRequest(`/guilds/${interaction.guildId}/activities/transfers/${interaction.user.id}?type=transfer-exp`);
+    const userActivities = await getRequest(`/guilds/${interaction.guildId}/activities/${interaction.user.id}/transfer-exp`);
 
     // If either request was not successful, return an error
     if (userActivities.status === 200) {
 
         // Get the activities and total amount of experience transferred
-        const { activities } = userActivities.data;
+        const activities = userActivities.data;
 
         // Calculate the total amount of experience transferred today
         let totalAmount = 0;
