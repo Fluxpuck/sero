@@ -3,7 +3,8 @@ const { createCustomEmbed } = require("../../assets/embed");
 const { JOB_MESSAGES } = require("../../assets/job-messages");
 const { postRequest, getRequest } = require("../../database/connection");
 const { calculateDailyIncome, calculateBaseIncome } = require("../../lib/helpers/EconomyHelpers/economyHelper");
-const { isFromYesterdayOrOlder, getTimeUntilTomorrow, isTimestampFromToday } = require("../../lib/helpers/TimeDateHelpers/timeHelper");
+const { getTimeUntilTomorrow } = require("../../lib/helpers/TimeDateHelpers/timeHelper");
+const { getUserCareerJobOptions } = require("../../lib/resolvers/userJobResolver");
 
 module.exports.props = {
     commandName: "work",
@@ -21,19 +22,118 @@ module.exports.run = async (client, interaction) => {
     const userCareerResult = await getRequest(`/guilds/${interaction.guild.id}/economy/career/${interaction.user.id}`);
     if (userCareerResult.status === 404) {
 
-        // USER HAS NO CAREER!! TIME TO GET A JOB
+        // Fetch the user's job options
+        const jobOptions = await getUserCareerJobOptions(interaction.guild.id, interaction.user.id);
 
+        // Set default career level
+        const DEFAULT_CAREER_LEVEL = 1;
 
+        // Dynamicly create buttons for the jobs
+        const jobButtons = [];
+        jobOptions.forEach(job => {
+            const button = new ButtonBuilder()
+                .setCustomId(`${job.jobId}`)
+                .setLabel(`${job.name}`)
+                .setStyle(ButtonStyle.Primary)
+                .setDisabled(false);
+            jobButtons.push(button);
+        });
+
+        // Add the buttons the ActionRow
+        const messageComponents = new ActionRowBuilder()
+            .addComponents(...jobButtons);
+
+        // Create message fields
+        const jobFields = jobOptions.map(job => {
+
+            // Calculate the income based on the user's career
+            const income = calculateDailyIncome(job.wage, job.raise, DEFAULT_CAREER_LEVEL);
+            const salary = job.wage.toLocaleString();
+
+            return {
+                name: `${job.emoji} - ${job.name}`,
+                value: `*${job.description}*\nSalary: \`$${salary}\`\nDaily Income (base): \`$${income}\`\nRaise (per level): \`${job.raise}%\``,
+                inline: false
+            }
+        })
+
+        // Create message embed
+        const messageEmbed = createCustomEmbed({
+            title: "Available jobs offers",
+            description: "Please select a job to start working!",
+            fields: [...jobFields],
+        })
+
+        // Send the message
+        const response = await interaction.editReply({
+            embeds: [messageEmbed],
+            components: [messageComponents],
+            ephemeral: false
+        })
+
+        // Collect the button selection
+        const options = { componentType: ComponentType.Button, idle: 300_000, time: 3_600_000 }
+        const collector = response.createMessageComponentCollector({ options });
+        collector.on('collect', async i => {
+
+            // Block input from other users
+            if (i.user.id !== interaction.user.id) {
+                return i.reply({
+                    content: `Oops! You can't select a job for someone else.`,
+                    ephemeral: true
+                })
+            }
+
+            const selectedButton = i.customId;
+
+            // Get the selected job
+            const selectedJob = jobOptions.find(job => job.jobId == selectedButton);
+            const income = calculateBaseIncome(selectedJob.wage);
+            const salary = selectedJob.wage.toLocaleString();
+
+            // Update embed Footer && Fields
+            messageEmbed.setTitle(`You have selected a job!`);
+            messageEmbed.setDescription(`You will be able to execute \`/work\` on a daily basis to earn money.`);
+            messageEmbed.data.fields = []; // Empty current fields
+            messageEmbed.setFields(
+                [
+                    {
+                        name: `${selectedJob.emoji} - ${selectedJob.name}`,
+                        value: `*${selectedJob.description}*\nSalary: \`$${salary}\`\nDaily Income (base): \`$${income}\`\nRaise (per level): \`${selectedJob.raise}%\``,
+                        inline: false
+                    }
+                ]
+            );
+
+            // Update the user's career
+            const updateUserCareer = await postRequest(`/guilds/${interaction.guild.id}/economy/career`, { userId: interaction.user.id, jobId: selectedJob.jobId, level: 1 });
+
+            // If the user's career was updated successfully, return a message
+            if (updateUserCareer.status === 200) {
+                // Update the interaction, disabling the buttons
+                return i.update({
+                    embeds: [messageEmbed],
+                    components: [],
+                })
+            }
+
+            // If the user's career was not updated successfully, return an error message
+            return i.update({
+                content: `Oops! Something went wrong while updating your career. Please try again later.`,
+                ephemeral: true
+            })
+
+        });
 
 
     } else if (userCareerResult.status === 200) {
 
         // Check if the user has already worked today...
-        const userActivities = await getRequest(`/guilds/${interaction.guildId}/activities/${interaction.user.id}/daily-work`);
-        if (userActivities.status === 200) {
+        const dailyWorkResult = await getRequest(`/guilds/${interaction.guildId}/activities/${interaction.user.id}/daily-work`);
+        if (dailyWorkResult.status === 200) {
 
             // Get the daily-work activitie(s) of today
-            const { activities } = userActivities.data;
+            const { activities } = dailyWorkResult.data;
             if (activities.length > 0) {
                 // return a message that the user has already worked today
                 await interaction.deleteReply();
@@ -100,142 +200,6 @@ module.exports.run = async (client, interaction) => {
             content: `Oops! Something went wrong while fetching your career. Please try again later.`,
             ephemeral: true
         })
-    }
-
-
-
-    return;
-
-    // If no career, start the process of getting a job
-    if (userCareerResult.status != 200) {
-
-        // Predefine the job data
-        let randomJobData = [];
-
-        // Check if the user already has job-options
-        const userJobOptions = interaction.user?.jobOptions
-
-        if (userJobOptions) {
-
-            randomJobData = userJobOptions
-
-        } else {
-
-            // Get 3 random jobs
-            const jobsResult = await getRequest(`/client/jobs?limit=3`);
-            if (jobsResult.status != 200) {
-                await interaction.deleteReply();
-                return interaction.followUp({
-                    content: `Oops! Something went wrong while fetching available jobs. Please try again later.`,
-                    ephemeral: true
-                })
-            }
-
-            randomJobData = jobsResult.data;
-        }
-
-        // Set default career level
-        const DEFAULT_CAREER_LEVEL = 1;
-
-        // Add job options to the user
-        interaction.user.jobOptions = randomJobData;
-
-        // Dynamicly create buttons for the jobs
-        const jobButtons = [];
-        randomJobData.forEach(job => {
-            const button = new ButtonBuilder()
-                .setCustomId(`${job.jobId}`)
-                .setLabel(`${job.name}`)
-                .setStyle(ButtonStyle.Primary)
-                .setDisabled(false);
-            jobButtons.push(button);
-        });
-
-        // Add the buttons the ActionRow
-        const messageComponents = new ActionRowBuilder()
-            .addComponents(...jobButtons);
-
-        // Create message fields
-        const jobFields = randomJobData.map(job => {
-
-            // Calculate the income based on the user's career
-            const income = calculateDailyIncome(job.wage, job.raise, DEFAULT_CAREER_LEVEL);
-            const salary = job.wage.toLocaleString();
-
-            return {
-                name: `${job.emoji} - ${job.name}`,
-                value: `*${job.description}*\nSalary: \`$${salary}\`\nDaily Income (base): \`$${income}\`\nRaise (per level): \`${job.raise}%\``,
-                inline: false
-            }
-        })
-
-        // Create message embed
-        const messageEmbed = createCustomEmbed({
-            title: "Available jobs offers",
-            description: "Please select a job to start working!",
-            fields: [...jobFields],
-        })
-
-        // Send the message
-        const response = await interaction.editReply({
-            embeds: [messageEmbed],
-            components: [messageComponents],
-            ephemeral: false
-        })
-
-        // Collect the button selection
-        const options = { componentType: ComponentType.Button, idle: 300_000, time: 3_600_000 }
-        const collector = response.createMessageComponentCollector({ options });
-        collector.on('collect', async i => {
-
-            // Block input from other users
-            if (i.user.id !== interaction.user.id) {
-                return i.reply({
-                    content: `Oops! You can't select a job for someone else.`,
-                    ephemeral: true
-                })
-            }
-
-            const selectedButton = i.customId;
-
-            // Get the selected job
-            const selectedJob = randomJobData.find(job => job.jobId == selectedButton);
-            const income = calculateBaseIncome(selectedJob.wage);
-            const salary = selectedJob.wage.toLocaleString();
-
-            // Update embed Footer && Fields
-            messageEmbed.setTitle(`You have selected a job!`);
-            messageEmbed.setDescription(`You will be able to execute \`/work\` on a daily basis to earn money.`);
-            messageEmbed.data.fields = []; // Empty current fields
-            messageEmbed.setFields(
-                [
-                    {
-                        name: `${selectedJob.emoji} - ${selectedJob.name}`,
-                        value: `*${selectedJob.description}*\nSalary: \`$${salary}\`\nDaily Income (base): \`$${income}\`\nRaise (per level): \`${selectedJob.raise}%\``,
-                        inline: false
-                    }
-                ]
-            );
-
-            // Update the user's career
-            const updateUserCareer = await postRequest(`/guilds/${interaction.guild.id}/economy/career`, { userId: interaction.user.id, jobId: selectedJob.jobId, level: 1 });
-
-            // If the user's career was updated successfully, return a message
-            if (updateUserCareer.status === 200) {
-                // Update the interaction, disabling the buttons
-                return i.update({
-                    embeds: [messageEmbed],
-                    components: [],
-                })
-            }
-
-            // If the user's career was not updated successfully, return an error message
-            return i.update({
-                content: `Oops! Something went wrong while updating your career. Please try again later.`,
-                ephemeral: true
-            })
-
-        });
     }
 
 }
