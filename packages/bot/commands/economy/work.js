@@ -133,7 +133,7 @@ module.exports.run = async (client, interaction) => {
         if (dailyWorkResult.status === 200) {
 
             // Get the daily-work activitie(s) of today
-            const { activities } = dailyWorkResult.data;
+            const activities = dailyWorkResult.data;
             if (activities.length > 0) {
                 // return a message that the user has already worked today
                 await interaction.deleteReply();
@@ -154,7 +154,7 @@ module.exports.run = async (client, interaction) => {
         try {
 
             const { job, level } = userCareerResult.data;
-            const { emoji, name, wage, raise } = job;
+            const { jobId, emoji, name, wage, raise } = job;
 
             // Calculate the income based on the user's career
             const income = calculateDailyIncome(wage, raise, level);
