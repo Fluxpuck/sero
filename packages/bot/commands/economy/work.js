@@ -169,14 +169,14 @@ module.exports.run = async (client, interaction) => {
             })
 
             // Store the transfer activity in the database
-            // postRequest(`/guilds/${interaction.guild.id}/activities`, {
-            //     guildId: interaction.guild.id,
-            //     userId: interaction.user.id,
-            //     type: "daily-work",
-            //     additional: {
-            //         income: income,
-            //     }
-            // });
+            postRequest(`/guilds/${interaction.guild.id}/activities`, {
+                guildId: interaction.guild.id,
+                userId: interaction.user.id,
+                type: "daily-work",
+                additional: {
+                    income: income,
+                }
+            });
 
             // reply with the embed
             return interaction.editReply({
