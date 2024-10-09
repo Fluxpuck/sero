@@ -1,5 +1,11 @@
 module.exports = {
 
+    /**
+     * Format the log for an embed
+     * @param {*} log 
+     * @param {*} inline 
+     * @returns 
+     */
     formatLogForEmbedFields: (log, inline = false) => {
         function embedLog(logEntry) {
             return {
@@ -13,8 +19,6 @@ module.exports = {
         const embeddedFields = log.map(entry => embedLog(entry));
         return embeddedFields;
 
-        
     }
-
 
 }

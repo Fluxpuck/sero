@@ -4,6 +4,7 @@ const { createCustomEmbed } = require("../../assets/embed");
 const { chunk } = require("../../lib/helpers/MathHelpers/arrayHelper");
 const { getRequest } = require("../../database/connection");
 const { findUser } = require("../../lib/resolvers/userResolver");
+const { GetAuditLogEventName } = require("../../config/Audittypes");
 
 module.exports.props = {
     commandName: "get",
@@ -107,7 +108,7 @@ module.exports.run = async (client, interaction) => {
     const logFields = userLogs.map((log, index) => ({
         name: `(${index + 1}) - ${log.id}`,
         value: `
-**Type** - ${log.auditAction} ${log.duration ?? `/ ${log.duration} minutes`}
+**Type** - ${log.auditType} ${log.duration ? `/ ${log.duration} minutes` : ''}
 **Reason** - ${log.reason || "No reason provided."}
 **Executor** - <@${log.executorId}> | ${log.executorId}
 **Created** - ${new Date(log.createdAt).toUTCString()}`,
