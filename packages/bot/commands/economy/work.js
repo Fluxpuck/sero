@@ -138,7 +138,6 @@ module.exports.run = async (client, interaction) => {
         // Check if the user has already worked today...
         const dailyWorkResult = await getRequest(`/guilds/${interaction.guildId}/activities/${interaction.user.id}/daily-work`);
         if (dailyWorkResult.status === 200) {
-
             // Get the daily-work activitie(s) of today
             const activities = dailyWorkResult.data;
             if (activities.length > 0) {
@@ -149,13 +148,6 @@ module.exports.run = async (client, interaction) => {
                     ephemeral: true
                 });
             }
-
-        } else {
-            await interaction.deleteReply();
-            return interaction.followUp({
-                content: `Oops! Something went wrong while fetching your daily work activities. Please try again later.`,
-                ephemeral: true
-            });
         }
 
         try {
@@ -172,20 +164,19 @@ module.exports.run = async (client, interaction) => {
 
             // Create message embed
             const embed = createCustomEmbed({
-                title: `${interaction.user.username}'s work day`,
                 description: `${jobMessage}`,
-                footer: { text: `${emoji} ${name}` }
+                footer: { text: `${emoji} ${name} - ${interaction.user.username}` }
             })
 
             // Store the transfer activity in the database
-            postRequest(`/guilds/${interaction.guild.id}/activities`, {
-                guildId: interaction.guild.id,
-                userId: interaction.user.id,
-                type: "daily-work",
-                additional: {
-                    income: income,
-                }
-            });
+            // postRequest(`/guilds/${interaction.guild.id}/activities`, {
+            //     guildId: interaction.guild.id,
+            //     userId: interaction.user.id,
+            //     type: "daily-work",
+            //     additional: {
+            //         income: income,
+            //     }
+            // });
 
             // reply with the embed
             return interaction.editReply({
