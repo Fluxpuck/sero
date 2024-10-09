@@ -3,7 +3,6 @@ const ClientButtonsEnum = require("../../assets/embed-buttons");
 const { createCustomEmbed } = require("../../assets/embed");
 const { chunk } = require("../../lib/helpers/MathHelpers/arrayHelper");
 const { getRequest } = require("../../database/connection");
-const { getAuditActionName } = require("../../lib/discord/auditlogevent");
 const { findUser } = require("../../lib/resolvers/userResolver");
 
 module.exports.props = {
@@ -108,7 +107,7 @@ module.exports.run = async (client, interaction) => {
     const logFields = userLogs.map((log, index) => ({
         name: `(${index + 1}) - ${log.id}`,
         value: `
-**Type** - ${getAuditActionName(log.auditAction)}${log.duration ? ` / ${log.duration} minutes` : ""}
+**Type** - ${log.auditAction} ${log.duration ?? `/ ${log.duration} minutes`}
 **Reason** - ${log.reason || "No reason provided."}
 **Executor** - <@${log.executorId}> | ${log.executorId}
 **Created** - ${new Date(log.createdAt).toUTCString()}`,
