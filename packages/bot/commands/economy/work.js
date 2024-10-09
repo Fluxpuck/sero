@@ -178,11 +178,23 @@ module.exports.run = async (client, interaction) => {
                 }
             });
 
-            // reply with the embed
-            return interaction.editReply({
-                embeds: [embed],
-                ephemeral: false
-            })
+            // Give the user the target amount of money
+            const result = await postRequest(`/guilds/${interaction.guild.id}/economy/balance/${interaction.user.id}`, { amount: income });
+
+            // If the request was not successful, return an error
+            if (result?.status !== 200) {
+                await interaction.deleteReply();
+                return interaction.followUp({
+                    content: `Uh oh! Something went wrong while transferring your hard earned money.`,
+                    ephemeral: true
+                })
+            } else {
+                // reply with the embed
+                return interaction.editReply({
+                    embeds: [embed],
+                    ephemeral: false
+                })
+            }
 
         } catch (error) {
             await interaction.deleteReply();

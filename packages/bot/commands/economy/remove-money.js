@@ -33,7 +33,7 @@ module.exports.run = async (client, interaction) => {
     const targetUser = interaction.options.get("user").user;
     const targetAmount = interaction.options.get("amount").value || 0;
 
-    // Remove the user's experience if has proper amount.
+    // Remove the user's balance by the target amount
     const result = await postRequest(`/guilds/${interaction.guildId}/economy/balance/${targetUser.id}`, { amount: -targetAmount });
 
     // If the request was not successful, return an error
