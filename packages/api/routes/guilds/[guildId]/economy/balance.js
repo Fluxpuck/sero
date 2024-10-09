@@ -82,10 +82,10 @@ router.post("/:userId", async (req, res, next) => {
             });
         }
 
-        // Find the existing balance for the user
-        const userBalance = await findOneRecord(UserBalance, options);
+        let userBalance = await findOneRecord(UserBalance, options);
         if (!userBalance) {
-            userLevel = await UserBalance.create({ guildId: guildId, userId: userId }, { transaction: t });
+            // Create a new UserBalance entry if not found
+            userBalance = await UserBalance.create({ guildId: guildId, userId: userId }, { transaction: t });
         }
 
         // Store the previous user balance details
