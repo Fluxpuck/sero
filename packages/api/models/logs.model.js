@@ -19,6 +19,13 @@ module.exports = sequelize => {
                 is: /^\d{17,20}$/ //Discord Snowflake
             }
         },
+        guildId: {
+            type: DataTypes.BIGINT,
+            allowNull: false,
+            validate: {
+                is: /^\d{17,20}$/ //Discord Snowflake
+            }
+        },
         auditAction: {
             type: DataTypes.INTEGER,
             allowNull: false,
@@ -26,17 +33,6 @@ module.exports = sequelize => {
         auditType: {
             type: DataTypes.STRING,
             allowNull: false,
-        },
-        auditCategory: {
-            type: DataTypes.STRING,
-            allowNull: false,
-        },
-        guildId: {
-            type: DataTypes.BIGINT,
-            allowNull: false,
-            validate: {
-                is: /^\d{17,20}$/ //Discord Snowflake
-            }
         },
         targetId: {
             type: DataTypes.BIGINT,
@@ -65,7 +61,15 @@ module.exports = sequelize => {
         modelName: 'logs',
         timestamps: true,
         createdAt: true,
-        updatedAt: true
+        updatedAt: true,
+        hooks: {
+            // Set the reason to "No reason provided" if no reason is provided
+            beforeSave: (log, options) => {
+                if (!log.reason || log.reason === null) {
+                    log.reason = "No reason provided";
+                }
+            }
+        }
     });
 
     return Logs;

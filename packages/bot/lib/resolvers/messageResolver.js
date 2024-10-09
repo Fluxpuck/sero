@@ -1,73 +1,82 @@
 const { Collection } = require('discord.js');
+const { subMinutes, isAfter } = require('date-fns');
 
 module.exports = {
 
     /**
-     * Fetches limited messages from a user in a channel
+     * Fetches limited messages from a user in a channel with a timeout
      * @param {Interaction} interaction - The interaction object
-     * @param {User?} user - The user to fetch the messages from
+     * @param {User?} user - The user to fetch the messages from (optional)
      * @param {number} amount - The amount of messages to fetch
+     * @param {number} timeoutMs - Timeout in milliseconds (default: 5000)
+     * @returns {Promise<Collection>} A collection of fetched messages
      */
-    async fetchMessages(interaction, user, amount) {
-
+    async fetchMessages(interaction, user, amount, timeoutMs = 5000) {
         const FETCH_AMOUNT = 100; // Maximum number of messages to fetch per request
 
-        // Setup a collection to store the messages &&
-        // a variable to store the last message
-        // a variable to keep fetching messages
-        // and a variable to store the fetched count
-        let messageCollection = new Collection();
+        const messageCollection = new Collection();
+        const startTime = Date.now();
         let lastMessage = null;
         let keepFetching = true;
 
-        // Set a timestamp for 10 seconds from now
-        const timeLimit = Date.now() + 10 * 1000;
-
-        while (keepFetching) {
-
-            // Set the fetch options and fetch the messages
-            const options = { limit: FETCH_AMOUNT, ...(lastMessage?.id ? { before: lastMessage?.id } : {}) };
-            const fetchedMessages = await interaction.channel.messages.fetch(options);
-
-            // Break if there are no messages fetched
-            if (!fetchedMessages.size) keepFetching = false;
-
-            // Set the last fetched message
-            lastMessage = fetchedMessages.last();
-
-            // Process each fetched message
-            fetchedMessages.forEach(message => {
-
-                // Check if the message meets the filtering criteria
-                if (
-                    !message.pinned && // Message is not pinned
-                    message.deletable && // Message is deletable
-                    (!user || message.author.id === user.id) // Message is from the user (if provided)
-                ) {
-
-                    // Add the message to the collection if the size is less than the amount
-                    if (messageCollection.size < amount) {
-                        // Add the message to the collection
-                        messageCollection.set(message.id, message);
-                    }
-
-                    // Break if the desired amount is reached
-                    if (messageCollection.size >= amount) keepFetching = false;
-
+        try {
+            while (keepFetching) {
+                if (Date.now() - startTime >= timeoutMs) {
+                    console.log('Fetch operation timed out');
+                    break;
                 }
 
-            });
+                const options = { limit: FETCH_AMOUNT, ...(lastMessage?.id && { before: lastMessage.id }) };
+                const fetchedMessages = await interaction.channel.messages.fetch(options);
 
-            // Break if last message is not deletable
-            if (lastMessage && !lastMessage.deletable) keepFetching = false;
+                if (fetchedMessages.size === 0) break;
 
-            // Break if the time is up
-            if (Date.now() >= timeLimit) keepFetching = false;
+                lastMessage = fetchedMessages.last();
 
+                for (const [, message] of fetchedMessages) {
+                    if (
+                        !message.pinned &&
+                        message.deletable &&
+                        (!user || message.author.id === user.id)
+                    ) {
+                        messageCollection.set(message.id, message);
+                        if (messageCollection.size >= amount) {
+                            keepFetching = false;
+                            break;
+                        }
+                    }
+                }
+
+                if (lastMessage && !lastMessage.deletable) break;
+            }
+        } catch (error) {
+            console.error('Error fetching messages:', error);
         }
 
-        // Return the message collection
         return messageCollection;
+    },
 
+    /**
+     * Get unique authors from the last X minutes of messages in a channel
+     * @param {*} channel 
+     * @param {*} time 
+     * @returns 
+     */
+    async getUniqueAuthorsFromMessages(channel, time = 5) {
+
+        // Fetch the last 100 messages in the channel
+        const messages = await channel.messages.fetch({ limit: 100 });
+
+        // Calculate the time 5 minutes ago
+        const timeAgo = subMinutes(new Date(), time);
+
+        // Filter messages from the last 5 minutes
+        const recentMessages = messages.filter(msg => isAfter(msg.createdTimestamp, timeAgo));
+
+        // Create an array with all unique message.author.id's
+        const uniqueAuthorIds = [...new Set(recentMessages.map(msg => msg.author.id))];
+
+        // Return the array of unique author IDs (will be empty if no messages match the criteria)
+        return uniqueAuthorIds;
     }
 };

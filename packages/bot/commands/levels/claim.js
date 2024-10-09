@@ -68,7 +68,7 @@ module.exports.run = async (client, interaction) => {
         })
     } else {
         return interaction.editReply({
-            content: `You have claimed your one-time experience reward! 🎁 \n You have been awarded **${EXP_BONUS}** experience points.`,
+            content: `You have claimed your one-time experience reward! 🎁 \nYou have been awarded **${EXP_BONUS}** experience points.`,
             ephemeral: false
         })
     }

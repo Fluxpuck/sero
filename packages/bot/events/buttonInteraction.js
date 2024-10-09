@@ -10,12 +10,28 @@ module.exports = async (client, interaction) => {
     switch (interaction.customId) {
         case "claim-exp-reward":
 
+            // Defer the interaction
+            await interaction.deferUpdate();
+
             // Check if the guild has a rewardDrop object
-            const { token, claimed } = interaction.guild.rewardDrop;
+            const { eligibleCollection, token, claimed = true } = interaction.guild?.rewardDrop
+
+            // Check if the user is eligible to claim the reward
+            if (!eligibleCollection.includes(interaction.member.id)) {
+                return interaction.followUp({
+                    content: `Sorry, you've not been active enough to claim this reward. Try again next time!`,
+                    ephemeral: true
+                })
+            }
 
             // Check if the guild has already claimed the reward
             if (claimed) {
-                await interaction.deferUpdate();
+                if (!token) { // Something went wrong, try to delete the message
+                    try { // Check if the message is still available
+                        const fetchedMessage = await interaction.message.fetch();
+                        if (fetchedMessage.deletable) await fetchedMessage.delete();
+                    } catch (err) { }
+                }
                 return interaction.followUp({
                     content: `Sorry, you are just too late. This reward has already been claimed by someone else.`,
                     ephemeral: true
@@ -25,16 +41,13 @@ module.exports = async (client, interaction) => {
                 interaction.guild.rewardDrop.claimed = true;
             }
 
-            // Defer the interaction
-            await interaction.deferUpdate();
-
             try { // Check if the message is still available
                 const fetchedMessage = await interaction.message.fetch();
                 if (fetchedMessage.deletable) await fetchedMessage.delete();
             } catch (err) { }
 
             // Calculate a random targetAmount between a min and max value
-            const min = 200, max = 600;
+            const min = 200, max = 500;
             const targetAmount = Math.floor(Math.random() * (max - min + 1)) + min;
 
             try {
@@ -57,8 +70,8 @@ module.exports = async (client, interaction) => {
 
                     // Return the message to the user
                     return interaction.followUp({
-                        content: `Congratulations! You have claimed **${targetAmount}** experience!`,
-                        ephemeral: true
+                        content: `Congratulations <@${interaction.member.id}>! You claimed **${targetAmount}** experience!`,
+                        ephemeral: false
                     })
 
                 }

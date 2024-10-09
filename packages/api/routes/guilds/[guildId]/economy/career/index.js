@@ -2,7 +2,7 @@ const express = require("express");
 const router = express.Router({ mergeParams: true });
 
 const { sequelize } = require('../../../../../database/sequelize');
-const { UserCareers } = require("../../../../../database/models");
+const { UserCareers, Jobs } = require("../../../../../database/models");
 const { findAllRecords, findOneRecord, createOrUpdateRecord } = require("../../../../../utils/RequestManager");
 const { CreateError, RequestError } = require("../../../../../utils/ClassManager");
 
@@ -14,7 +14,10 @@ const { CreateError, RequestError } = require("../../../../../utils/ClassManager
  */
 router.get("/:userId", async (req, res, next) => {
     const { guildId, userId } = req.params;
-    const options = { where: { guildId: guildId, userId: userId } };
+    const options = {
+        where: { guildId: guildId, userId: userId },
+        include: [{ model: Jobs, as: 'job' }]
+    };
 
     try {
         const userCareer = await findOneRecord(UserCareers, options);
@@ -27,6 +30,7 @@ router.get("/:userId", async (req, res, next) => {
         next(error);
     }
 });
+
 
 /**
  * POST api/guilds/:guildId/career

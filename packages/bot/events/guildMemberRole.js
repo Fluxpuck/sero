@@ -1,4 +1,5 @@
 const { findUser } = require("../lib/resolvers/userResolver");
+const { deleteRequest } = require("../database/connection");
 
 module.exports = async (client, payload = []) => {
 
@@ -8,19 +9,24 @@ module.exports = async (client, payload = []) => {
         if (!payload.hasOwnProperty(attribute)) return;
     }
 
-    try {
-        // Get the guild by guildId and the member by userId
-        const guild = await client.guilds.fetch(payload.guildId);
-        const member = findUser(guild, payload.userId);
-        const role = await guild.roles.fetch(payload.roleId);
+    // Get the guild by guildId and the member by userId
+    const guild = await client.guilds.fetch(payload.guildId);
+    const member = findUser(guild, payload.userId) || await guild.members.fetch(payload.userId);
 
-        // Remove the role from the member
-        await member?.roles?.remove(role, `Remove temp role ${role.name}`).catch(err => {
-            throw new Error(`Error removing temporary role ${role.name} from ${member.name}`, err);
-        });
+    try {
+        // REMOVE temporary role from the member
+        const role = await guild.roles.fetch(payload.roleId);
+        if (role) {
+            // Remove the role from the member
+            await member?.roles?.remove(role, `Remove temporary role`).then(() => {
+                // Delete the temp role from the database
+                deleteRequest(`/guilds/${payload.guildId}/roles/${payload.userId}/${payload.roleId}`);
+            }).catch(err => {
+                throw new Error(`Error removing temporary role from ${member.name}`, err);
+            });
+        }
 
     } catch (err) {
-        console.error(err);
-    };
-
+        console.error(`Error processing role removal: ${err.message}`);
+    }
 };

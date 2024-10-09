@@ -3,8 +3,8 @@ const { publishMessage, REDIS_CHANNELS } = require('../database/publisher');
 
 /**
  * Send a heartbeat message to the Redis channel
- * @schedule - every 15 minutes
+ * @schedule - every second
  */
-cron.schedule('*/15 * * * * ', () => {
+cron.schedule('* * * * * *', () => {
     publishMessage(REDIS_CHANNELS.HEARTBEAT, {});
 });

@@ -40,7 +40,7 @@ module.exports.run = async (client, interaction) => {
     if (result?.status !== 200) {
         await interaction.deleteReply();
         return interaction.followUp({
-            content: `Uh oh! The user ${targetUser.username} has no levels yet.`,
+            content: `Uh oh! Something went wrong while giving experience to ${targetUser.username}.`,
             ephemeral: true
         })
     } else {

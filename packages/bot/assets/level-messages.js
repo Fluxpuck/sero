@@ -1,14 +1,14 @@
 const LEVEL_MESSAGES = [
-    "Congratulations! {AUTHOR} has just unlocked a new level of awesomeness at **level {LEVEL}**! 🎉",
-    "Level up! {AUTHOR}'s typing-skills is reaching legendary status at **level {LEVEL}**! 🌟",
-    "Boom! {AUTHOR} has leveled up to **level {LEVEL}** and is leaving the competition in the dust! 💥",
-    "New level unlocked! {AUTHOR}'s journey to greatness continues at **level {LEVEL}**! 🚀",
-    "Power move! {AUTHOR} has leveled up to **level {LEVEL}**! 💪",
-    "Ding! {AUTHOR} has reached **level {LEVEL}**. Keep up the amazing work! 🔔",
-    "Level up achieved! {AUTHOR}'s dedication is paying off at **level {LEVEL}**! 🏆",
+    "Your journey to greatness continues! {AUTHOR} has leveled up to **level {LEVEL}**! 🎉",
+    "Congratulations! {AUTHOR} has just unlocked a new level of awesomeness at **level {LEVEL}**! 🌟",
+    "Level up! {AUTHOR}'s typing-skills is reaching new heights at **level {LEVEL}**! 🚀",
+    "{AUTHOR}'s fast fingers helped them reach **level {LEVEL}**! 👈",
+    "You've made your presence known! {AUTHOR} has reached **level {LEVEL}**! ",
+    "Level up! {AUTHOR}'s typing-skills is reaching legendary status at **level {LEVEL}**! 🏆",
+    "{AUTHOR} has reached **level {LEVEL}**! The sky's the limit! 🌌",
+    "{AUTHOR} has reached **level {LEVEL}**. Keep up the amazing work! 💪",
     "{AUTHOR} has just leveled up to **level {LEVEL}**! The adventure only gets more exciting from here! 🗺️",
-    "{AUTHOR} has reached **level {LEVEL}** and earned an honorable mention 🥇",
-    "{AUTHOR} has reached **level {LEVEL}**! The sky's the limit! 🌌"
+    "Level up achieved! {AUTHOR}'s dedication is paying off at **level {LEVEL}**! 🏆",
 ];
 
 module.exports = { LEVEL_MESSAGES }

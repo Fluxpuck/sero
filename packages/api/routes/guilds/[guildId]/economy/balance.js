@@ -66,40 +66,51 @@ router.get("/:userId", async (req, res, next) => {
  * @param {string} userId - The id of the user
  * @param {number} balance - The balance of the user
  */
-router.post("/", async (req, res, next) => {
+router.post("/:userId", async (req, res, next) => {
     const t = await sequelize.transaction();
-    const { guildId } = req.params;
+    const { guildId, userId } = req.params;
+    const options = { where: { guildId: guildId, userId: userId } };
+
 
     try {
-        const {
-            userId,
-            balance = 0,
-        } = req.body;
+        const { amount } = req.body;
 
         // Check if the required fields are provided
-        if (!userId) {
-            throw new RequestError(400, "Missing required data. Please check and try again", {
+        if (!amount) {
+            throw new RequestError(400, "Missing amount data. Please check and try again", {
                 method: req.method, path: req.path
             });
         }
 
         // Find the existing balance for the user
-        const options = { where: { guildId: guildId, userId: userId } };
-        const existingBalance = await findOneRecord(UserBalance, options);
+        const userBalance = await findOneRecord(UserBalance, options);
+        if (!userBalance) {
+            userLevel = await UserBalance.create({ guildId: guildId, userId: userId }, { transaction: t });
+        }
 
-        // Calculate the new balance
-        let newBalance = existingBalance ? existingBalance.balance + balance : balance;
-        newBalance = newBalance < 0 ? 0 : newBalance;
+        // Store the previous user balance details
+        const previousUserBalance = { ...userBalance.dataValues };
 
-        // Update or create the balance
-        const [result, created] = await createOrUpdateRecord(UserBalance, { guildId, userId, balance: newBalance }, t);
+        // Update the user's balance by adding the amount
+        userBalance.balance = (userBalance.balance ?? 0) + amount;
 
-        // Send the appropriate response
-        if (created) {
-            res.status(201).json({ message: "User balance created successfully", data: result });
-        } else {
-            res.status(200).json({ message: "User balance updated successfully", data: result });
-        };
+        // Ensure balance doesn't go below 0
+        if (userBalance.balance < 0) {
+            userBalance.balance = 0;
+        }
+
+        // Save the updated record and use { returning: true } to get updated values back
+        await userBalance.save({ transaction: t, returning: true });
+
+        const returnMessage = amount < 0
+            ? `${amount} coins removed from user`
+            : `${amount} coins added to user`;
+
+        res.status(200).json({
+            message: returnMessage,
+            previous: previousUserBalance,
+            current: userBalance
+        });
 
         // Commit the transaction
         await t.commit();

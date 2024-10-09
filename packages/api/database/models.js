@@ -17,6 +17,7 @@ const models = {
     TempRoles: require('../models/temp_roles.model')(sequelize),
     Messages: require('../models/messages.model')(sequelize),
     Logs: require('../models/logs.model')(sequelize),
+    TempRoles: require('../models/temp_roles.model')(sequelize),
     Work_snapshot: require('../models/work_snapshot.model')(sequelize),
     _Requests: require('../models/_requests.model')(sequelize),
 }

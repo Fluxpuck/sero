@@ -40,7 +40,7 @@ module.exports = sequelize => {
             }
         },
         raise: {
-            type: DataTypes.DECIMAL(3, 1),
+            type: DataTypes.FLOAT,
             allowNull: false,
             min: {
                 args: [0],

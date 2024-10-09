@@ -47,13 +47,13 @@ module.exports.run = async (client, interaction) => {
     }
 
     // Fetch user transfer activities from today
-    const userActivities = await getRequest(`/guilds/${interaction.guildId}/activities/transfers/${interaction.user.id}?type=transfer-exp`);
+    const userActivities = await getRequest(`/guilds/${interaction.guildId}/activities/${interaction.user.id}/transfer-exp`);
 
     // If either request was not successful, return an error
     if (userActivities.status === 200) {
 
         // Get the activities and total amount of experience transferred
-        const { activities } = userActivities.data;
+        const activities = userActivities.data;
 
         // Calculate the total amount of experience transferred today
         let totalAmount = 0;
@@ -85,23 +85,25 @@ module.exports.run = async (client, interaction) => {
             });
         }
 
-        // Remove exp from the author
-        const removeResult = await postRequest(`/guilds/${interaction.guildId}/levels/exp/${interaction.user.id}`, { experience: -transferAmount });
+        try {
 
-        // Add exp to the target
-        const addResult = await postRequest(`/guilds/${interaction.guildId}/levels/exp/${targetUser.id}`, { experience: transferAmount });
+            // Remove exp from the author
+            const removeResult = await postRequest(`/guilds/${interaction.guildId}/levels/exp/${interaction.user.id}`, { experience: -transferAmount });
+            if (removeResult.status !== 200) {
+                throw new Error("Something went wrong while removing experience from your account.");
+            }
 
-        // If either request was not successful, return an error
-        if (removeResult.status !== 200 || addResult.status !== 200) {
+            // Add exp to the target
+            const addResult = await postRequest(`/guilds/${interaction.guildId}/levels/exp/${targetUser.id}`, { experience: transferAmount });
+            if (addResult.status !== 200) {
+                throw new Error(`Something went wrong while adding experience to the target user.`);
+            }
+
+        } catch (error) {
             await interaction.deleteReply();
             return interaction.followUp({
                 content: "Something went wrong while transferring experience to the user.",
                 ephemeral: true
-            })
-        } else {
-            interaction.editReply({
-                content: `<@${targetUser.id}> has recieved **${transferAmount}** of your experience!`,
-                ephemeral: false
             })
         }
 
