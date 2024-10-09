@@ -11,13 +11,10 @@ module.exports = {
     async getUserCareerJobOptions(guildId, userId, force = false) {
         try {
             const userJobOptions = await getRequest(`/guilds/${guildId}/activities/${userId}/job-options`);
-
             if (force === false && userJobOptions.status === 200) {
                 const activities = last(userJobOptions.data);
-                const { additional } = activities;
-                return additional.jobs ?? false;
+                return activities?.additional?.jobs ?? false;
             }
-
             if (force === true || userJobOptions.status === 404) {
                 const clientJobOptions = await getRequest(`/client/jobs?limit=3`);
                 if (clientJobOptions.status === 200) {

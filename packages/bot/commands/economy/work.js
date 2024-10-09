@@ -24,6 +24,13 @@ module.exports.run = async (client, interaction) => {
 
         // Fetch the user's job options
         const jobOptions = await getUserCareerJobOptions(interaction.guild.id, interaction.user.id);
+        if (!jobOptions) {
+            await interaction.deleteReply();
+            return interaction.followUp({
+                content: "Oops! Something went wrong while fetching your job options. Please try again later.",
+                ephemeral: true
+            });
+        }
 
         // Set default career level
         const DEFAULT_CAREER_LEVEL = 1;

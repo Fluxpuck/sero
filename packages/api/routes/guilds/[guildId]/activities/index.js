@@ -26,7 +26,11 @@ router.get("/:userId", async (req, res, next) => {
         if (!userActivitiesData) {
             throw new CreateError(404, "User not away in the guild");
         } else {
-            res.status(200).json(userActivitiesData);
+            if (userActivitiesData.length === 0) {
+                throw new CreateError(404, "No activities found for the user");
+            } else {
+                res.status(200).json(userActivitiesData);
+            }
         }
     } catch (error) {
         next(error);
@@ -105,7 +109,11 @@ router.get("/:userId/:type", async (req, res, next) => {
         if (!userActivitiesData) {
             throw new CreateError(404, "User not found in the guild");
         } else {
-            res.status(200).json(userActivitiesData);
+            if (userActivitiesData.length === 0) {
+                throw new CreateError(404, "No activities found for the user");
+            } else {
+                res.status(200).json(userActivitiesData);
+            }
         }
     } catch (error) {
         next(error);
