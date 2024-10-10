@@ -47,9 +47,15 @@ module.exports.run = async (client, interaction) => {
     }
 
     // Fetch user transfer activities from today
+    let eligibleForTransfer = false;
     const userActivities = await getRequest(`/guilds/${interaction.guildId}/activities/${interaction.user.id}/transfer-exp`);
 
-    // If either request was not successful, return an error
+    // If there are no activities, the user is eligible for transfer
+    if (userActivities.status === 404) {
+        eligibleForTransfer = true;
+    }
+
+    // If there is activity, check if the user is eligible for transfer
     if (userActivities.status === 200) {
 
         // Get the activities and total amount of experience transferred
@@ -74,6 +80,8 @@ module.exports.run = async (client, interaction) => {
                 content: `${transferLimitMessage}`,
                 ephemeral: true
             });
+        } else {
+            eligibleForTransfer = true;
         }
 
         // Check if the user has reached the maximum amount of transfers
@@ -83,7 +91,14 @@ module.exports.run = async (client, interaction) => {
                 content: `You have reached your daily transfer limit! You can only transfer to ${TRANSFER_TARGET_LIMIT} users per day.`,
                 ephemeral: true
             });
+        } else {
+            eligibleForTransfer = true;
         }
+
+    }
+
+
+    if (eligibleForTransfer) {
 
         try {
 
@@ -127,9 +142,8 @@ module.exports.run = async (client, interaction) => {
     } else {
         await interaction.deleteReply();
         interaction.followUp({
-            content: "Something went wrong while transferring experience to the user.",
+            content: "Sorry, you are not eligible to transfer experience. Please try again later.",
             ephemeral: true
         })
     }
-
 } 
