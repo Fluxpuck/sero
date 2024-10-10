@@ -21,6 +21,7 @@ module.exports = async (client, payload) => {
 
         // Fetch the last 100 messages in the channel
         const eligibleIds = await getUniqueAuthorsFromMessages(channel);
+        if (eligibleIds.length === 0) return;
 
         // Set the rewardDrop object in the guild
         guild.rewardDrop = { token: payload.token, claimed: false, eligibleCollection: eligibleIds };
