@@ -2,12 +2,16 @@ const { Model, DataTypes } = require("sequelize");
 
 class UserBirthday extends Model {
     static associate(models) {
-        this.belongsTo(models.User, { foreignKey: { name: "userId", allowNull: false } });
-        this.belongsTo(models.Guild, { foreignKey: { name: "guildId", allowNull: false } });
+        this.belongsTo(models.User, {
+            foreignKey: { name: "userId", allowNull: false },
+        });
+        this.belongsTo(models.Guild, {
+            foreignKey: { name: "guildId", allowNull: false },
+        });
     }
 }
 
-module.exports = sequelize => {
+module.exports = (sequelize) => {
     UserBirthday.init(
         {
             userId: {
@@ -37,7 +41,7 @@ module.exports = sequelize => {
             timestamps: true,
             updatedAt: true,
             createdAt: true,
-        },
+        }
     );
 
     return UserBirthday;

@@ -14,7 +14,8 @@ const { getYearsAgo } = require("../../lib/helpers/TimeDateHelpers/timeHelper");
 
 module.exports.props = {
     commandName: "birthday",
-    description: "Set a birthday for yourself, optionally include your birth year",
+    description:
+        "Set a birthday for yourself, optionally include your birth year",
     usage: "/birthday [month] [day] (year)",
     interaction: {
         type: 1,
@@ -56,8 +57,14 @@ module.exports.run = async (client, interaction) => {
     await interaction.deferReply({ ephemeral: true });
 
     // Check if the user has already set their birthday (limit to 2 times)
-    const existingResult = await getRequest(`guilds/${interaction.guildId}/birthday/${interaction.user.id}`);
-    const { birthdayAt: birthdayAtString, createdAt, updatedAt } = existingResult?.data || {};
+    const existingResult = await getRequest(
+        `guilds/${interaction.guildId}/birthday/${interaction.user.id}`
+    );
+    const {
+        birthdayAt: birthdayAtString,
+        createdAt,
+        updatedAt,
+    } = existingResult?.data || {};
     const birthdayAt = birthdayAtString ? new Date(birthdayAtString) : null;
 
     if (existingResult?.status === 200 && birthdayAt) {
@@ -70,7 +77,10 @@ module.exports.run = async (client, interaction) => {
                     `Your birthday is currently set to \`${
                         monthOptions[birthdayAt.getMonth() + 1]
                     } ${birthdayAt.getDate()}${
-                        birthdayAt.getFullYear() && getYearsAgo(birthdayAt) >= 13 ? `, ${birthdayAt.getFullYear()}` : ""
+                        birthdayAt.getFullYear() &&
+                        getYearsAgo(birthdayAt) >= 13
+                            ? `, ${birthdayAt.getFullYear()}`
+                            : ""
                     }\`.\n` +
                     "-# If you need to correct it, please contact a staff member.",
                 ephemeral: true,
@@ -92,7 +102,11 @@ module.exports.run = async (client, interaction) => {
     }
 
     // Make a date object and if a year is provided, calculate the user's age
-    const birthdate = new Date(year || new Date().getFullYear(), month - 1, day);
+    const birthdate = new Date(
+        year || new Date().getFullYear(),
+        month - 1,
+        day
+    );
     const age = year ? getYearsAgo(birthdate) : null;
 
     // Confirm the user's input
@@ -101,28 +115,30 @@ module.exports.run = async (client, interaction) => {
         title: "Birthday Confirmation",
         description:
             "Please confirm your birthday details:\n" +
-            `**Date:** \`${monthOptions[month]} ${day}${year ? `, ${year}` : ""}\`\n` +
+            `**Date:** \`${monthOptions[month]} ${day}${
+                year ? `, ${year}` : ""
+            }\`\n` +
             `${year ? `**Age:** \`${age} years old\`\n` : ""}` +
             `${
                 birthdayAt
                     ? `Note: Your current birthday is set to \`${
                           monthOptions[birthdayAt.getMonth() + 1]
                       } ${birthdayAt.getDate()}${
-                          birthdayAt.getFullYear() && getYearsAgo(birthdayAt) >= 13
+                          birthdayAt.getFullYear() &&
+                          getYearsAgo(birthdayAt) >= 13
                               ? `, ${birthdayAt.getFullYear()}`
                               : ""
                       }\`\n`
                     : ""
             }`,
         footer: {
-            text: "You can only set your birthday twice: once for setting and once for correcting.\nThis command will time out in 15 seconds.",
-            // Maybe nice to have a warning image here, to draw attention
+            text: "⚠️ You can only set your birthday twice: once for setting and once for correcting.\nThis command will time out in 15 seconds.",
         },
     });
 
     const confirmationComponents = new ActionRowBuilder().addComponents(
         ClientButtonsEnum.AGREE,
-        ClientButtonsEnum.CANCEL,
+        ClientButtonsEnum.CANCEL
     );
 
     const message = await interaction.editReply({
@@ -153,11 +169,11 @@ module.exports.run = async (client, interaction) => {
 
     // Check if the user is under 13, if they provide a year (Discord TOS) (maybe even log it)
     if (year && age < 13) {
-        // TODO: Log the incident
+        // TODO: Log the incident [Optional]
 
         // Inform the user and cancel the command
         return confirm.update({
-            content: "You cannot set your birthday with that age.", // Was: "You are under the age of 13, you cannot set your birthday."
+            content: "You cannot set your birthday with that age.",
             embeds: [],
             components: [],
         });
@@ -165,13 +181,15 @@ module.exports.run = async (client, interaction) => {
 
     await confirm.deferUpdate();
     // Set the birthday in the database (probably good idea to put this in a try catch)
-    const result = await postRequest(`guilds/${interaction.guildId}/birthday/${interaction.user.id}`, {
-        birthdayAt: birthdate,
-    });
+    const result = await postRequest(
+        `guilds/${interaction.guildId}/birthday/${interaction.user.id}`,
+        { birthdayAt: birthdate }
+    );
 
     if (result?.status !== 200) {
         return confirm.editReply({
-            content: "Something went wrong while setting your birthday. It has not been set.",
+            content:
+                "Something went wrong while setting your birthday. It has not been set.",
             embeds: [],
             components: [],
         });
@@ -179,9 +197,9 @@ module.exports.run = async (client, interaction) => {
 
     // Send a new message to the channel, pinging the user with their new set birthday
     await interaction.channel.send({
-        content: `${interaction.user}'s birthday has been set to ${monthOptions[month]} ${day}${
-            year ? `, ${year}` : ""
-        }.`,
+        content: `${interaction.user}'s birthday has been set to ${
+            monthOptions[month]
+        } ${day}${year ? `, ${year}` : ""}.`,
     });
 
     // Return confirmation message to the user
