@@ -28,7 +28,7 @@ module.exports.run = async (client, interaction) => {
 
     // Get the user's career && career snapshots
     const userCareer = await getRequest(`/guilds/${interaction.guildId}/economy/career/${targetUser.id}`);
-    const careerIncome = await getRequest(`/guilds/${interaction.guildId}/economy/career/snapshots/${targetUser.id}`)
+    const careerIncome = await getRequest(`/guilds/${interaction.guildId}/activities/calculate/${targetUser.id}/daily-work?totalType=income`);
 
     // If the (required) request was not successful, return an error
     if (userCareer.status !== 200) {
@@ -41,37 +41,31 @@ module.exports.run = async (client, interaction) => {
 
     // Set the data from the requests
     const { level, updatedAt } = userCareer.data;
-    const { name } = userCareer.data.job;
-    const totalIncome = careerIncome.data.careerIncome || 0;
+    const { name, emoji, description } = userCareer.data.job;
+    const totalIncome = careerIncome.data.total || 0;
     const startCareerDate = new Date(updatedAt);
 
     // Create an embed to display the user's career
     const messageEmbed = createCustomEmbed({
         thumbnail: targetUser.displayAvatarURL({ dynamic: false }),
-        title: `${targetUser.username}'s Career Info`,
         fields: [
             {
-                name: `Job Name`,
-                value: `${name.toString()}`,
+                name: `${emoji} ${name.toString()}`,
+                value: `${description}\n-# Since <t:${unixTimestamp(startCareerDate)}:d> (<t:${unixTimestamp(startCareerDate)}:R>)`,
                 inline: true
             },
-            {
-                name: `Time in Job`,
-                value: `Since <t:${unixTimestamp(startCareerDate)}:d> (<t:${unixTimestamp(startCareerDate)}:R>)`,
-                inline: true
-            },
-            {
-                name: "\t", // Add a blank field
+            { // Add a blank field
+                name: "\t",
                 value: "\t"
-            },
-            {
-                name: `Total Income`,
-                value: `${totalIncome.toLocaleString() ?? `N/A`} coins`,
-                inline: true
             },
             {
                 name: `Career Level`,
                 value: `Level ${level.toLocaleString()}`,
+                inline: true
+            },
+            {
+                name: `Total Income`,
+                value: `${totalIncome.toLocaleString()} coins`,
                 inline: true
             }
         ]
