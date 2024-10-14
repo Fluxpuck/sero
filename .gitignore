@@ -11,6 +11,7 @@ yarn.lock
 /.idea
 npm-debug.log*
 *.env
+.nvmrc
 
 # Node Modules
 node_modules
