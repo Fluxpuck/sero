@@ -33,7 +33,7 @@ module.exports.run = async (client, interaction) => {
     const targetUser = interaction.options.get("user").user;
     const targetAmount = interaction.options.get("amount").value;
 
-    // Give the user the experience
+    // Give the user the target amount of money
     const result = await postRequest(`/guilds/${interaction.guildId}/economy/balance/${targetUser.id}`, { amount: targetAmount });
 
     // If the request was not successful, return an error

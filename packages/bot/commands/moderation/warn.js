@@ -1,4 +1,6 @@
 const { WARN_PREREASONS } = require("../../assets/reason-messages");
+const { postRequest } = require("../../database/connection");
+const { generateSnowflake } = require("../../lib/discord/snowflake");
 const { formatExpression } = require("../../lib/helpers/StringHelpers/stringHelper");
 
 module.exports.props = {
@@ -46,6 +48,7 @@ module.exports.run = async (client, interaction) => {
 
     // Get User details from the interaction options
     const targetUser = interaction.options.get("user").user;
+    const reason = interaction.options.get("reason").value;
 
     // Fetch the user by userId
     const member = await interaction.guild.members.fetch(targetUser.id)
@@ -63,10 +66,10 @@ module.exports.run = async (client, interaction) => {
     });
 
     // Create the private warning message
-    const privateMessage = `<@${member.user.id}>, you have been warned in **${interaction.guild.name}** for the following reason: ${interaction.options.get("reason").value}`;
+    const privateMessage = `<@${member.user.id}>, you have been warned in **${interaction.guild.name}** for the following reason: ${reason}`;
 
     // Send the private warning message to the target user
-    return member.send(privateMessage)
+    member.send(privateMessage)
         .then(() => {
             return interaction.editReply({
                 content: `You successfully warned <@${member.user.id}> with the following message:\n> ${privateMessage}`,
@@ -79,4 +82,15 @@ module.exports.run = async (client, interaction) => {
                 ephemeral: true,
             });
         });
+
+    // Store the warn in the database
+    await postRequest(`/guilds/${interaction.guild.id}/logs`, {
+        id: generateSnowflake(),
+        auditAction: 19,
+        auditType: "MemberWarn",
+        targetId: targetUser.id,
+        reason: reason,
+        executorId: interaction.user.id,
+        duration: null,
+    });
 };

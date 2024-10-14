@@ -55,7 +55,7 @@ module.exports = {
     /** get number of audit type
      * @param {*} types 
      */
-    async GetAuditLogEvent(types) {
+    GetAuditLogEvent(types) {
         const returnArray = []
         //go over all AuditLogEvents
         for (eventtype in AuditLogEvents) {
@@ -65,6 +65,6 @@ module.exports = {
             }
         }
         return returnArray;
-    }
+    },
 
 }
