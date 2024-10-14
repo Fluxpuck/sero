@@ -6,7 +6,7 @@ const { UserBirthday } = require("../../../../database/models");
 const { findAllRecords, findOneRecord, createOrUpdateRecord } = require("../../../../utils/RequestManager");
 const { CreateError, RequestError } = require("../../../../utils/ClassManager");
 
-const { Op } = require("sequelize");
+const { Op, fn, literal } = require("sequelize");
 const { startOfToday, endOfToday } = require("date-fns");
 
 /**
@@ -19,17 +19,30 @@ router.get("/", async (req, res, next) => {
     const startOfDay = startOfToday();
     const endOfDay = endOfToday();
     const { guildId } = req.params;
+    
+    // Get today's month and day
+    const today = new Date();
+    const todayMonth = today.getMonth() + 1; // Months are 0-based in JavaScript
+    const todayDay = today.getDate();
+
+    // Query options
     const options = {
         where: {
             guildId: guildId,
-            birthdayAt: {
-                [Op.between]: [todayStart, todayEnd],
-            },
+            [Op.and]: [
+                fn('EXTRACT', literal('MONTH FROM "birthdayAt"')) === todayMonth,
+                fn('EXTRACT', literal('DAY FROM "birthdayAt"')) === todayDay,
+            ],
         },
     };
 
+    // log the executed query
+    console.log(options);
+
     try {
         const guildBirthdays = await findAllRecords(UserBirthday, options);
+        // log the executed query
+        console.log(guildBirthdays);
         if (!guildBirthdays) {
             throw new CreateError(404, "No user birthdays found in the guild");
         } else {
