@@ -36,13 +36,8 @@ router.get("/", async (req, res, next) => {
         },
     };
 
-    // log the executed query
-    console.log(options);
-
     try {
         const guildBirthdays = await findAllRecords(UserBirthday, options);
-        // log the executed query
-        console.log(guildBirthdays);
         if (!guildBirthdays) {
             throw new CreateError(404, "No user birthdays found in the guild");
         } else {
