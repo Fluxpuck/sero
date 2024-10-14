@@ -22,13 +22,14 @@ module.exports = async (client, payload) => {
         const guild = await client.guilds.fetch(payload.guildId);
         const channel = await guild.channels.fetch(payload.channelId);
 
+        // If a channel is not set or is missing from the server log and return
+        if (!channel) return;
+
         // Get all the birthdays for current guild GET api/guilds/:guildId/birthday
         const result = await getRequest(`/guilds/${payload.guildId}/birthday`);
         const birthdays = result?.data;
 
         if (!birthdays || birthdays.status === 404) return;
-        console.log("Today's birthdays");
-        console.log(birthdays);
 
         // For each birthday get a random message and send a message in the ${channel}
         birthdays.forEach(async (birthday) => {

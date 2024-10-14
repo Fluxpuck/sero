@@ -80,19 +80,19 @@ module.exports = sequelize => {
     // Execute a birthday message event every day at around 6pm CEST (16:00 UTC)
     cron.schedule('0 16 * * *', async () => {
         try {
-            // Find all records with type === 'birthday-message'
+            // Find all records with type === 'birthday-channel'
             const birthdayGuilds = await GuildSettings.findAll({
                 where: {
-                    type: 'birthday-message'
-                }
+                    type: "birthday-channel",
+                },
             });
 
             // Iterate over the results and run publishMessage for each record
-            birthdayGuilds.forEach(record => {
+            birthdayGuilds.forEach((record) => {
                 publishMessage(REDIS_CHANNELS.BIRTHDAY, {
                     guildId: record.guildId,
                     channelId: record.channelId,
-                    token: generateUniqueToken()
+                    token: generateUniqueToken(),
                 });
             });
         } catch (error) {
