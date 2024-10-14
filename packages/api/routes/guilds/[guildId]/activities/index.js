@@ -97,7 +97,7 @@ router.get("/:userId/:type", async (req, res, next) => {
     const endOfDay = endOfToday();
 
     const { guildId, userId, type } = req.params;
-    const { limit = 10, today = "true" } = req.query;
+    const { limit = 10, today = "false" } = req.query;
 
     const options = { where: { guildId: guildId, userId: userId, type: type }, limit: limit };
     if (today === "true") {
