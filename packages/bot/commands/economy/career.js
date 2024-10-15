@@ -24,7 +24,14 @@ module.exports.run = async (client, interaction) => {
     await interaction.deferReply({ ephemeral: false });
 
     // Get User details from the interaction options
-    const targetUser = interaction.options.getUser("user")?.user || interaction.user;
+    const targetUser = interaction.options.get("user")?.user || interaction.user;
+    if (!targetUser) {
+        await interaction.deleteReply();
+        return interaction.followUp({
+            content: "Oops! Something went wrong while trying to fetch the user.",
+            ephemeral: true
+        })
+    }
 
     // Get the user's career && career snapshots
     const userCareer = await getRequest(`/guilds/${interaction.guildId}/economy/career/${targetUser.id}`);
