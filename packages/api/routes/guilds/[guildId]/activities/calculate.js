@@ -9,7 +9,6 @@ const { CreateError, RequestError } = require("../../../../utils/ClassManager");
 /**
  * GET api/guilds/:guildId/activities/calculate
  * @description Get all guild activities
- * @param {string} limit - The number of activities to return
  * @param {string} guildId - The id of the guild
  * @param {string} userId - The id of the user
  * @param {string} type - The type of activity
@@ -35,8 +34,5 @@ router.get("/:userId/:type", async (req, res, next) => {
         next(error);
     }
 });
-
-
-
 
 module.exports = router;

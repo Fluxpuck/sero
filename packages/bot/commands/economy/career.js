@@ -29,6 +29,7 @@ module.exports.run = async (client, interaction) => {
     // Get the user's career && career snapshots
     const userCareer = await getRequest(`/guilds/${interaction.guildId}/economy/career/${targetUser.id}`);
     const careerIncome = await getRequest(`/guilds/${interaction.guildId}/activities/calculate/${targetUser.id}/daily-work?totalType=income`);
+    const careerStreak = await getRequest(`/guilds/${interaction.guildId}/activities/streak/${targetUser.id}/daily-work`);
 
     // If the (required) request was not successful, return an error
     if (userCareer.status !== 200) {
@@ -42,7 +43,10 @@ module.exports.run = async (client, interaction) => {
     // Set the data from the requests
     const { level, updatedAt } = userCareer.data;
     const { name, emoji, description } = userCareer.data.job;
+
     const totalIncome = careerIncome.data.total || 0;
+    const currentStreak = careerStreak.data.streak || 0;
+
     const startCareerDate = new Date(updatedAt);
 
     // Create an embed to display the user's career
@@ -66,6 +70,11 @@ module.exports.run = async (client, interaction) => {
             {
                 name: `Total Income`,
                 value: `${totalIncome.toLocaleString()} coins`,
+                inline: true
+            },
+            {
+                name: `Work Streak`,
+                value: `${currentStreak.toLocaleString()} day${currentStreak === 1 ? "" : "s"}`,
                 inline: true
             }
         ]
