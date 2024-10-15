@@ -5,17 +5,16 @@ module.exports.run = async () => {
     const guildData = [
         {
             guildId: "660103319557111808",
-            guildName: "Fluxpuck's Secret Society"
+            guildName: "Fluxpuck's Secret Society",
+            active: true
         },
         {
             guildId: "552953312073220096",
             guildName: "SSundee",
-            active: false
         },
         {
             guildId: "253740950315204608",
             guildName: "Cali's Fam",
-            active: false
         },
     ]
 
