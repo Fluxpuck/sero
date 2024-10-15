@@ -16,8 +16,8 @@ module.exports = async (client, oldMember, newMember) => {
         if (member_log_channel.status !== 200) return;
 
         // Get channel from request and send message
-        const channel = await guild.channels.fetch(member_log_channel.data.channelId);
-        if (!channel) return;
+        const logChannel = await guild.channels.fetch(member_log_channel.data.channelId);
+        if (!logChannel) return;
 
         /**
          * If the user's name has changed, store the change in the user activities
