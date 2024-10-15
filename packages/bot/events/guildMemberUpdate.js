@@ -2,6 +2,7 @@ const { AuditLogEvent, AttachmentBuilder } = require('discord.js');
 const { getRequest, postRequest } = require("../database/connection");
 const { getAuditLogType } = require('../lib/discord/auditlogevent');
 const { unixTimestamp } = require('../lib/helpers/TimeDateHelpers/timeHelper');
+const { logEmbed } = require('../assets/embed');
 
 module.exports = async (client, oldMember, newMember) => {
 
@@ -28,8 +29,14 @@ module.exports = async (client, oldMember, newMember) => {
             // Construct the message content
             const content = `<t:${unixTimestamp()}> - **${oldMember.displayName}** changed their name to **${newMember.displayName}**`
             const footer = `-# <@${oldMember.id}> | ${oldMember.id}`
-            channel.send({
-                content: `${content}\n${footer}`,
+
+            const embedMessage = logEmbed({
+                description: content,
+                footer: footer
+            })
+
+            logChannel.send({
+                embeds: [embedMessage]
             });
 
             // Store the name change in the database
@@ -67,8 +74,14 @@ module.exports = async (client, oldMember, newMember) => {
             // // Construct the message content
             // const content = `<t:${unixTimestamp()}> - **${oldMember.displayName}** changed their avatar`
             // const footer = `-# <@${oldMember.id}> | ${oldMember.id}`
-            // channel.send({
-            //     content: `${content}\n${footer}`,
+
+            // const embedMessage = logEmbed({
+            //     description: content,
+            //     footer: footer
+            // })
+
+            // logChannel.send({
+            //     embeds: [embedMessage],
             //     files: [oldAvatar, newAvatar]
             // });
 
@@ -125,9 +138,14 @@ module.exports = async (client, oldMember, newMember) => {
             //     }
             //     const footer = `-# <@${oldMember.id}> | ${oldMember.id}`;
 
-            //     channel.send({
-            //         content: `${content}\n${footer}`,
-            //     });
+            // const embedMessage = logEmbed({
+            //     description: content,
+            //     footer: footer
+            // })
+
+            // logChannel.send({
+            //     embeds: [embedMessage]
+            // });
 
             //     // Store the role changes in the database
             //     const result = await postRequest(`/guilds/${guild.id}/activities`, {

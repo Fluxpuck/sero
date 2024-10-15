@@ -36,7 +36,7 @@ module.exports = async (client, payload) => {
             description: `${REWARD_MESSAGES[text_idx]}\nQuick, claim it before someone else does!`,
             image: REWARD_GIFS[url_idx],
             color: ClientEmbedColors.YELLOW,
-        })
+        });
 
         const messageComponents = new ActionRowBuilder()
             .addComponents(
