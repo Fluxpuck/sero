@@ -11,6 +11,7 @@ const eventEnum = {
     GUILD_MEMBER_AWAY: 'guildMemberAway',
     BUTTON_INTERACTION: 'buttonInteraction',
     GUILD_MEMBER_RANK: 'guildMemberRank',
+    GUILD_REWARD_DROPS: 'guildRewardDrops',
 };
 
 module.exports = eventEnum;

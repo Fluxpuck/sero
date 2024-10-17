@@ -69,4 +69,18 @@ module.exports = {
         return uniqueToken;
     },
 
+    /**
+     * Generates a new Discord snowflake ID based on the current date.
+     * @returns {string} Returns the generated snowflake ID as a string.
+     */
+    generateSnowflake() {
+        const epoch = 1420070400000; // Discord's epoch (Jan 1, 2015)
+        const timestamp = BigInt(Date.now() - epoch) << 22n; // Shift timestamp 22 bits to the left
+        const workerId = 1n << 17n; // Example worker ID
+        const processId = 1n << 12n; // Example process ID
+        const increment = 0n; // Example increment (should be unique within a millisecond)
+
+        return (timestamp | workerId | processId | increment).toString();
+    }
+
 }

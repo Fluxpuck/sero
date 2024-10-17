@@ -46,7 +46,7 @@ module.exports.run = async (client, interaction) => {
         customId: "help",
         placeholder: "Select a category",
         options: categoryListDropdown
-    })
+    });
 
     // Reply to the user
     const embedActionRow = new ActionRowBuilder().addComponents(dropdownMenu)
@@ -54,7 +54,7 @@ module.exports.run = async (client, interaction) => {
         embeds: [messageEmbed],
         components: [embedActionRow],
         ephemeral: false
-    })
+    });
 
     // Collect the dropdownMenu selection
     const options = { componentType: ComponentType.StringSelect, idle: 300_000, time: 3_600_000 }

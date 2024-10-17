@@ -17,11 +17,7 @@ router.get("/:userId/:type", async (req, res, next) => {
 
     try {
         const options = {
-            where: {
-                guildId,
-                userId,
-                type
-            },
+            where: { guildId, userId, type },
             order: [['createdAt', 'DESC']]
         };
 
