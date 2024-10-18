@@ -24,7 +24,7 @@ module.exports = async (client, interaction) => {
                 })
             }
 
-            const pastClaimResults = await getRequest(`guilds/${message.guildId}/activities/type/claim-exp-reward`);
+            const pastClaimResults = await getRequest(`guilds/${interaction.guildId}/activities/type/claim-exp-reward`);
             if (pastClaimResults.status === 200) {
                 const userIdCount = pastClaimResults.data.reduce((acc, activity) => {
                     acc[activity.userId] = (acc[activity.userId] || 0) + 1;
