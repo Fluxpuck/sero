@@ -1,5 +1,5 @@
 const { getRequest } = require("../../database/connection");
-const { generateSnowflake } = require("../../../api/utils/FunctionManager");
+const { generateSnowflake } = require("../../lib/discord/snowflake");
 const eventEnum = require("../../config/eventEnum");
 
 module.exports.props = {

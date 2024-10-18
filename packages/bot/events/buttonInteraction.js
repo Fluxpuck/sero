@@ -1,4 +1,4 @@
-const { postRequest } = require("../database/connection");
+const { getRequest, postRequest } = require("../database/connection");
 
 module.exports = async (client, interaction) => {
 
@@ -22,6 +22,21 @@ module.exports = async (client, interaction) => {
                     content: `Sorry, you've not been active enough to claim this reward. Try again next time!`,
                     ephemeral: true
                 })
+            }
+
+            const pastClaimResults = await getRequest(`guilds/${message.guildId}/activities/type/claim-exp-reward`);
+            if (pastClaimResults.status === 200) {
+                const userIdCount = pastClaimResults.data.reduce((acc, activity) => {
+                    acc[activity.userId] = (acc[activity.userId] || 0) + 1;
+                    return acc;
+                }, {});
+
+                if ((userIdCount[interaction.member.id] || 0) >= 5) {
+                    return interaction.followUp({
+                        content: `Sorry, you've already claimed so many rewards. Try again next time!`,
+                        ephemeral: true
+                    })
+                }
             }
 
             // Check if the guild has already claimed the reward

@@ -35,7 +35,7 @@ module.exports.run = async (client, interaction) => {
 
     // Get the user's career && career snapshots
     const userCareer = await getRequest(`/guilds/${interaction.guildId}/economy/career/${targetUser.id}`);
-    const careerIncome = await getRequest(`/guilds/${interaction.guildId}/activities/calculate/${targetUser.id}/daily-work?totalType=income`);
+    const careerIncome = await getRequest(`/guilds/${interaction.guildId}/activities/sum/${targetUser.id}/daily-work?totalType=income`);
     const careerStreak = await getRequest(`/guilds/${interaction.guildId}/activities/streak/${targetUser.id}/daily-work`);
 
     // If the (required) request was not successful, return an error

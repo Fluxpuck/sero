@@ -6,37 +6,6 @@ const { UserActivities } = require("../../../../database/models");
 const { findAllRecords, createUniqueRecord, findOneRecord } = require("../../../../utils/RequestManager");
 const { CreateError, RequestError } = require("../../../../utils/ClassManager");
 
-const { Op } = require('sequelize');
-const { startOfToday, endOfToday } = require('date-fns');
-
-/**
- * GET api/guilds/:guildId/activities
- * @description Get all guild activities
- * @param {string} limit - The number of activities to return
- * @param {string} guildId - The id of the guild
- * @param {string} userId - The id of the user
- */
-router.get("/:userId", async (req, res, next) => {
-    const { guildId, userId } = req.params;
-    const { limit } = req.query;
-    const options = { where: { guildId: guildId, userId: userId }, limit: limit || 20 };
-
-    try {
-        const userActivitiesData = await findAllRecords(UserActivities, options);
-        if (!userActivitiesData) {
-            throw new CreateError(404, "User not away in the guild");
-        } else {
-            if (userActivitiesData.length === 0) {
-                throw new CreateError(404, "No activities found for the user");
-            } else {
-                res.status(200).json(userActivitiesData);
-            }
-        }
-    } catch (error) {
-        next(error);
-    }
-});
-
 /**
  * POST api/guilds/:guildId/activities
  * @description Add a new user activity
@@ -79,43 +48,6 @@ router.post("/", async (req, res, next) => {
 
     } catch (error) {
         t.rollback();
-        next(error);
-    }
-});
-
-/**
- * GET api/guilds/:guildId/activities
- * @description Get all guild activities
- * @param {string} limit - The number of activities to return
- * @param {string} guildId - The id of the guild
- * @param {string} userId - The id of the user
- * @param {string} type - The type of activity
- */
-router.get("/:userId/:type", async (req, res, next) => {
-    // Get the start and end of the day
-    const startOfDay = startOfToday();
-    const endOfDay = endOfToday();
-
-    const { guildId, userId, type } = req.params;
-    const { limit = 10, today = "false" } = req.query;
-
-    const options = { where: { guildId: guildId, userId: userId, type: type }, limit: limit };
-    if (today === "true") {
-        options.where.createdAt = { [Op.between]: [startOfDay, endOfDay] };
-    }
-
-    try {
-        const userActivitiesData = await findAllRecords(UserActivities, options);
-        if (!userActivitiesData) {
-            throw new CreateError(404, "User not found in the guild");
-        } else {
-            if (userActivitiesData.length === 0) {
-                throw new CreateError(404, "No activities found for the user");
-            } else {
-                res.status(200).json(userActivitiesData);
-            }
-        }
-    } catch (error) {
         next(error);
     }
 });

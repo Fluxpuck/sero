@@ -48,7 +48,7 @@ module.exports.run = async (client, interaction) => {
 
     // Fetch user transfer activities from today
     let eligibleForTransfer = false;
-    const userActivities = await getRequest(`/guilds/${interaction.guildId}/activities/${interaction.user.id}/transfer-exp?today=true`);
+    const userActivities = await getRequest(`/guilds/${interaction.guildId}/activities/user/${interaction.user.id}/transfer-exp?today=true`);
 
     // If there are no activities, the user is eligible for transfer
     if (userActivities.status === 404) {

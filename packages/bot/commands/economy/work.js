@@ -136,7 +136,7 @@ module.exports.run = async (client, interaction) => {
     } else if (userCareerResult.status === 200) {
 
         // Check if the user has already worked today
-        const dailyWorkResult = await getRequest(`/guilds/${interaction.guildId}/activities/${interaction.user.id}/daily-work?today=true`);
+        const dailyWorkResult = await getRequest(`/guilds/${interaction.guildId}/activities/user/${interaction.user.id}/daily-work?today=true`);
         if (dailyWorkResult.status === 200) {
             // Get the daily-work activitie(s) of today
             const activities = dailyWorkResult.data;
