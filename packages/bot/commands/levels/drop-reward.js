@@ -20,7 +20,7 @@ module.exports.run = async (client, interaction) => {
     // Set the guildId, channelId, and token
     const { guildId, channelId } = rewardDropSetting.data;
     const token = generateSnowflake();
-    const payload = { guildId, channelId, token };
+    const payload = { guildId, channelId, token, executedBy: interaction.user.id };
 
     try {
         // Emit the guildRewardDrops event
