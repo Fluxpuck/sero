@@ -8,6 +8,7 @@ module.exports.props = {
     usage: "/drop-reward",
     interaction: {},
     defaultMemberPermissions: ['ManageGuild'],
+    cooldown: 1 * 60 // 1 minute cooldown
 }
 
 module.exports.run = async (client, interaction) => {
