@@ -10,14 +10,6 @@ module.exports.props = {
         type: 1,
         options: [
             {
-                name: "month",
-                description: "The month of your birthday (number)",
-                type: 10,
-                required: true,
-                minValue: 1,
-                maxValue: 12,
-            },
-            {
                 name: "day",
                 description: "The day of your birthday",
                 type: 10,
@@ -25,6 +17,15 @@ module.exports.props = {
                 minValue: 1,
                 maxValue: 31,
             },
+            {
+                name: "month",
+                description: "The month of your birthday (number)",
+                type: 10,
+                required: true,
+                minValue: 1,
+                maxValue: 12,
+            },
+
             {
                 name: "year",
                 description: "The year of your birthday. This will be used to calculate your age!",

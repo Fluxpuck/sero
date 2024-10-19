@@ -1,13 +1,11 @@
-const ClientEmbedColors = require("../assets/embed-colors");
-const { createCustomEmbed } = require("../assets/embed");
 const { getRequest } = require("../database/connection");
 const { calculateAge } = require("../lib/helpers/TimeDateHelpers/timeHelper");
+const { findUser } = require("../lib/resolvers/userResolver");
 
 const {
     BIRTHDAY_MESSAGES,
     BIRTHDAY_MESSAGES_AGE,
 } = require("../assets/birthday-messages");
-const { findUser } = require("../lib/resolvers/userResolver");
 
 module.exports = async (client, payload) => {
 
