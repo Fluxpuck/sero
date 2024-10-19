@@ -1,7 +1,7 @@
 const { Model, DataTypes } = require('sequelize');
 const { publishMessage, REDIS_CHANNELS } = require('../database/publisher');
 const cron = require('node-cron');
-const { generateSnowflake } = require('../utils/FunctionManager');
+const { generateUniqueToken } = require('../utils/FunctionManager');
 
 class GuildSettings extends Model {
     static associate(models) {
@@ -43,7 +43,7 @@ module.exports = sequelize => {
         updatedAt: true,
     });
 
-    // Execute a reward drop every 30 minutes
+    // Send a reward drop every 30 minutes
     cron.schedule('*/30 * * * *', async () => {
         try {
             // Find all records with type === 'exp-reward-drops'
@@ -67,7 +67,7 @@ module.exports = sequelize => {
                     publishMessage(REDIS_CHANNELS.DROP, {
                         guildId: record.guildId,
                         channelId: record.channelId,
-                        token: generateSnowflake()
+                        token: generateUniqueToken()
                     });
                 }, randomDelay);
 
@@ -77,7 +77,7 @@ module.exports = sequelize => {
         }
     });
 
-    // Execute a birthday message event every day at around 6pm CEST (16:00 UTC)
+    // Send a birthday message - every day at around 6pm CEST (16:00 UTC)
     cron.schedule('0 16 * * *', async () => {
         try {
             // Find all records with type === 'birthday-channel'
@@ -98,7 +98,7 @@ module.exports = sequelize => {
         } catch (error) {
             console.error(`Error birthday-message for ${record.guildId}`, error);
         }
-    }); 
+    });
 
     return GuildSettings;
 }

@@ -1,6 +1,4 @@
-const { ActionRowBuilder } = require("discord.js");
 const ClientEmbedColors = require("../assets/embed-colors");
-const ClientButtonsEnum = require("../assets/embed-buttons");
 const { createCustomEmbed } = require("../assets/embed");
 const { getRequest } = require("../database/connection");
 const { getYearsAgo } = require("../lib/helpers/TimeDateHelpers/timeHelper");
@@ -11,8 +9,9 @@ const {
 } = require("../assets/birthday-messages");
 
 module.exports = async (client, payload) => {
+
     // Check if all required attributes exist in the payload
-    const requiredAttributes = ["guildId", "channelId", "token"];
+    const requiredAttributes = ["guildId", "channelId", "birthdays"];
     for (const attribute of requiredAttributes) {
         if (!payload.hasOwnProperty(attribute)) return;
     }
@@ -21,8 +20,6 @@ module.exports = async (client, payload) => {
         // Get the guild by guildId and the member by userId
         const guild = await client.guilds.fetch(payload.guildId);
         const channel = await guild.channels.fetch(payload.channelId);
-
-        // If a channel is not set or is missing from the server log and return
         if (!channel) return;
 
         // Get all the birthdays for current guild GET api/guilds/:guildId/birthday
@@ -41,16 +38,16 @@ module.exports = async (client, payload) => {
             // Get a random message based on if someone has set their age from Birthday_Messages_Age or from Birthday_Message if no age
             // Also add the name to the message and age for if the age was set
             if (age >= 12) {
-                var message =
+                let message =
                     BIRTHDAY_MESSAGES_AGE[
-                        Math.floor(Math.random() * BIRTHDAY_MESSAGES_AGE.length)
+                    Math.floor(Math.random() * BIRTHDAY_MESSAGES_AGE.length)
                     ];
                 message = message.replace("{name}", `<@${userId}>`);
                 message = message.replace("{age}", age);
             } else {
-                var message =
+                let message =
                     BIRTHDAY_MESSAGES[
-                        Math.floor(Math.random() * BIRTHDAY_MESSAGES.length)
+                    Math.floor(Math.random() * BIRTHDAY_MESSAGES.length)
                     ];
                 message = message.replace("{name}", `<@${userId}>`);
             }
@@ -75,5 +72,5 @@ module.exports = async (client, payload) => {
             // Add reaction to the message
             await sentMessage.react("🎉"); // Standard emoji, could be nice to add custom emoji ID's to database settings [OPTIONAL]
         });
-    } catch (err) {}
+    } catch (err) { }
 };
