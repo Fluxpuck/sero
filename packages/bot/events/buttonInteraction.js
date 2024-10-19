@@ -22,6 +22,17 @@ module.exports = async (client, interaction) => {
                 } catch (err) { }
             }
 
+            // Check if the guild has already claimed the reward
+            if (claimed) {
+                return interaction.followUp({
+                    content: `Sorry, you are just too late. This reward has already been claimed by someone else.`,
+                    ephemeral: true
+                })
+            } else {
+                // Set the claimed status to true
+                interaction.guild.rewardDrop.claimed = true;
+            }
+
             // Check if the user is eligible to claim the reward
             if (!eligibleCollection.includes(interaction.member.id)) {
                 return interaction.followUp({
@@ -43,17 +54,6 @@ module.exports = async (client, interaction) => {
                         ephemeral: true
                     })
                 }
-            }
-
-            // Check if the guild has already claimed the reward
-            if (claimed) {
-                return interaction.followUp({
-                    content: `Sorry, you are just too late. This reward has already been claimed by someone else.`,
-                    ephemeral: true
-                })
-            } else {
-                // Set the claimed status to true
-                interaction.guild.rewardDrop.claimed = true;
             }
 
             try { // Check if the message is still available
