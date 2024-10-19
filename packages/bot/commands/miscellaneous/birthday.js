@@ -64,18 +64,17 @@ module.exports.run = async (client, interaction) => {
     }
 
     const birthDate = getBirthdate(dayValue, monthValue);
-    const birthDateString = birthDate.date
 
     if (setBirthdayResponse.status === 200) {
         return interaction.editReply({
-            content: `Your birthday has been updated to **${birthDateString}** 🎉 \n-# The bot will now wish you on your special day!`,
+            content: `Your birthday has been updated to **${birthDate.date}** 🎉 \n-# The bot will now wish you on your special day!`,
             ephemeral: true
         });
     }
 
     if (setBirthdayResponse.status === 201) {
         return interaction.editReply({
-            content: `Your birthday has been successfully set to **${birthDateString}** 🎉 \n-# The bot will now wish you on your special day!`,
+            content: `Your birthday has been successfully set to **${birthDate.date}** 🎉 \n-# The bot will now wish you on your special day!`,
             ephemeral: true
         });
     }
