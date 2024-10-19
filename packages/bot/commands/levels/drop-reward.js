@@ -31,6 +31,6 @@ module.exports.run = async (client, interaction) => {
     }
 
     // Reply to the interaction
-    interaction.reply({ content: '*Watch out! A reward drop has been triggered!*', ephemeral: true });
+    interaction.reply({ content: '*Watch out! A reward drop has been triggered.*', ephemeral: true });
 
 }

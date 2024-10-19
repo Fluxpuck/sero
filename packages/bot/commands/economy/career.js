@@ -76,7 +76,7 @@ module.exports.run = async (client, interaction) => {
             },
             {
                 name: `Total Income`,
-                value: `${totalIncome.toLocaleString()} coins`,
+                value: `$${totalIncome.toLocaleString()}`,
                 inline: true
             },
             {
