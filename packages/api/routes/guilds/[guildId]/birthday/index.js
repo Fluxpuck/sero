@@ -6,8 +6,8 @@ const { UserBirthday } = require("../../../../database/models");
 const { findAllRecords, findOneRecord, createOrUpdateRecord } = require("../../../../utils/RequestManager");
 const { CreateError, RequestError } = require("../../../../utils/ClassManager");
 
-const { Op, fn, literal } = require("sequelize");
-const { startOfToday, endOfToday } = require("date-fns");
+const { Op } = require('sequelize');
+const { getMonth, getDate } = require('date-fns');
 
 /**
  * GET api/guilds/:guildId/birthday
@@ -15,62 +15,50 @@ const { startOfToday, endOfToday } = require("date-fns");
  * @param {string} guildId - The id of the guild
  */
 router.get("/", async (req, res, next) => {
-    // Get the start and end of the day
-    const startOfDay = startOfToday();
-    const endOfDay = endOfToday();
-    const { guildId } = req.params;
-    
-    // Get today's month and day
-    const today = new Date();
-    const todayMonth = today.getMonth() + 1; // Months are 0-based in JavaScript
-    const todayDay = today.getDate();
+    const todayMonth = getMonth(new Date()) + 1; // getMonth returns 0-11, so add 1
+    const todayDay = getDate(new Date());
 
-    // Query options
+    const { guildId } = req.params;
+    const { limit = 10 } = req.query;
+
     const options = {
         where: {
-            guildId: guildId,
+            guildId,
             [Op.and]: [
-                fn('EXTRACT', literal('MONTH FROM "birthdayAt"')) === todayMonth,
-                fn('EXTRACT', literal('DAY FROM "birthdayAt"')) === todayDay,
-            ],
+                { month: todayMonth },
+                { day: todayDay }
+            ]
         },
+        limit
     };
 
     try {
-        const guildBirthdays = await findAllRecords(UserBirthday, options);
-        if (!guildBirthdays) {
-            throw new CreateError(404, "No user birthdays found in the guild");
-        } else {
-            res.status(200).json(guildBirthdays);
+        const guildBirthdays = await UserBirthday.findAll(options);
+        if (!guildBirthdays.length) {
+            return res.status(404).json({ message: "No birthdays found in the guild" });
         }
+        res.status(200).json(guildBirthdays);
     } catch (error) {
         next(error);
     }
 });
 
-/**
- * GET api/guilds/:guildId/birthday/:userId
- * @description Get a specific user birthday from the guild (likely for a profile or checking if the user has set a birthday)
- * @param {string} guildId - The id of the guild
- * @param {string} userId - The id of the user
- */
-router.get("/:userId", async (req, res, next) => {
-    const { guildId, userId } = req.params;
-    const options = {
-        where: { guildId: guildId, userId: userId },
-    };
 
-    try {
-        const userBirthday = await findOneRecord(UserBirthday, options);
-        if (!userBirthday) {
-            throw new CreateError(404, "No birthday found for this user in the guild");
-        } else {
-            res.status(200).json(userBirthday);
-        }
-    } catch (error) {
-        next(error);
-    }
-});
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 /**
  * POST api/guilds/:guildId/birthday/:userId

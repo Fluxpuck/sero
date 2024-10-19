@@ -1,16 +1,15 @@
 const ClientEmbedColors = require("../assets/embed-colors");
 const { createCustomEmbed } = require("../assets/embed");
 const { getRequest } = require("../database/connection");
-const { getYearsAgo } = require("../lib/helpers/TimeDateHelpers/timeHelper");
+const { calculateAge } = require("../lib/helpers/TimeDateHelpers/timeHelper");
 
 const {
     BIRTHDAY_MESSAGES,
     BIRTHDAY_MESSAGES_AGE,
 } = require("../assets/birthday-messages");
+const { findUser } = require("../lib/resolvers/userResolver");
 
 module.exports = async (client, payload) => {
-
-    console.log("guildMemberBirthday", payload);
 
     // Check if all required attributes exist in the payload
     const requiredAttributes = ["guildId", "channelId"];
@@ -24,55 +23,44 @@ module.exports = async (client, payload) => {
         const channel = await guild.channels.fetch(payload.channelId);
         if (!channel) return;
 
-        // Get all the birthdays for current guild GET api/guilds/:guildId/birthday
-        const result = await getRequest(`/guilds/${payload.guildId}/birthday`);
-        const birthdays = result?.data;
+        // Get the birthdays for today for the guild
+        const guildBirthdayData = await getRequest(`/guilds/${payload.guildId}/birthday`);
+        if (guildBirthdayData.status !== 200) return;
 
-        if (!birthdays || birthdays.status === 404) return;
+        const birthdayData = guildBirthdayData?.data;
+        if (!birthdayData) return;
 
         // For each birthday get a random message and send a message in the ${channel}
-        birthdays.forEach(async (birthday) => {
-            const { userId, birthdayAt } = birthday;
+        for (const birthday of birthdayData) {
+            const { year, month, day } = birthday;
 
-            // Check if the user has set an age (age above 12)
-            const age = getYearsAgo(birthdayAt);
+            // Find the user in the guild
+            const member = findUser(guild, birthday.userId) || await guild.members.fetch(birthday.userId);
+            if (member) {
 
-            // Get a random message based on if someone has set their age from Birthday_Messages_Age or from Birthday_Message if no age
-            // Also add the name to the message and age for if the age was set
-            if (age >= 12) {
-                let message =
-                    BIRTHDAY_MESSAGES_AGE[
-                    Math.floor(Math.random() * BIRTHDAY_MESSAGES_AGE.length)
-                    ];
-                message = message.replace("{name}", `<@${userId}>`);
-                message = message.replace("{age}", age);
-            } else {
-                let message =
-                    BIRTHDAY_MESSAGES[
-                    Math.floor(Math.random() * BIRTHDAY_MESSAGES.length)
-                    ];
-                message = message.replace("{name}", `<@${userId}>`);
+                // Check if the user has set an age
+                const memberAge = year ? calculateAge({ year, month, day }) : null;
+
+                // Set a random birthday message
+                // based on if someone has set their age (>=13)
+                let birthdayMessage = "";
+                if (memberAge >= 13) {
+                    let idy = Math.floor(Math.random() * BIRTHDAY_MESSAGES_AGE.length);
+                    birthdayMessage = BIRTHDAY_MESSAGES_AGE[idy].replace('{NAME}', `<@${member.id}>`).replace('{AGE}', memberAge);
+                } else {
+                    let idx = Math.floor(Math.random() * BIRTHDAY_MESSAGES.length);
+                    birthdayMessage = BIRTHDAY_MESSAGES[idx].replace('{NAME}', `<@${member.id}>`)
+                }
+
+                // Send the birthday message in the channel
+                const sentMessage = await channel.send({
+                    content: birthdayMessage,
+                    ephemeral: false,
+                });
+
+                // Add reaction to the message
+                await sentMessage.react("🎉");
             }
-
-            // Create an embed to display the user's balance
-            const messageEmbed = createCustomEmbed({
-                description: message,
-                color: ClientEmbedColors.GREEN,
-            });
-
-            // For future claiming birthday exp [OPTIONAL]
-            // const messageComponents = new ActionRowBuilder().addComponents(
-            //     ClientButtonsEnum.CLAIM_BIRTHDAY_GIFT
-            // );
-
-            const sentMessage = await channel.send({
-                embeds: [messageEmbed],
-                components: [], //[messageComponents]
-                ephemeral: false,
-            });
-
-            // Add reaction to the message
-            await sentMessage.react("🎉"); // Standard emoji, could be nice to add custom emoji ID's to database settings [OPTIONAL]
-        });
+        }
     } catch (err) { }
 };
