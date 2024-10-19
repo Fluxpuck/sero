@@ -44,58 +44,49 @@ router.get("/", async (req, res, next) => {
 });
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 /**
- * POST api/guilds/:guildId/birthday/:userId
- * @description Set a user's birthday in the guild
+ * POST api/guilds/:guildId/birthday
+ * @description Create or update a user's birthday in the guild
  * @param {string} guildId - The id of the guild
  * @param {string} userId - The id of the user
- * @param {date} birthdayAt - The user's birthday
+ * @param {string} year - The year of the user's birthday
+ * @param {string} month - The month of the user's birthday
+ * @param {string} day - The day of the user's birthday
  */
-router.post("/:userId", async (req, res, next) => {
+router.post("/", async (req, res, next) => {
     const t = await sequelize.transaction();
     try {
-        const { guildId, userId } = req.params;
-        const { birthdayAt } = req.body;
+        const { guildId } = req.params;
+        const { userId, year = null, month, day } = req.body;
 
         // Check if the required fields are provided
-        if (!birthdayAt) {
-            throw new RequestError(400, "Missing required data. Please check and try again", {
-                method: req.method,
-                path: req.path,
+        if (!userId || !month || !day) {
+            throw new RequestError(400, "Missing userId | month | day. Please check and try again", {
+                method: req.method, path: req.path
             });
         }
 
-        // Create the user's birthday
-        const birthdayData = await createOrUpdateRecord(
-            UserBirthday,
-            {
-                guildId: guildId,
-                userId: userId,
-                birthdayAt: birthdayAt,
-            },
-            t,
-        );
-        // Return message
-        res.status(200).json(birthdayData);
+        // Check if the user birthday already exists
+        const existingBirthday = await UserBirthday.findOne({ where: { guildId, userId } });
+
+        if (existingBirthday) {
+            if (existingBirthday.createdAt.getTime() === existingBirthday.updatedAt.getTime()) {
+                await existingBirthday.update({ year, month, day }, { transaction: t });
+                res.status(200).json({ message: "User birthday updated successfully" });
+            } else {
+                throw new RequestError(403, "User has already updated their birthday once", {
+                    method: req.method, path: req.path
+                });
+            }
+        } else {
+            await UserBirthday.create({ guildId, userId, year, month, day }, { transaction: t });
+            res.status(201).json({ message: "User birthday created successfully" });
+        }
 
         // Commit the transaction
         await t.commit();
+
+
     } catch (error) {
         await t.rollback();
         next(error);

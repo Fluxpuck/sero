@@ -13,7 +13,7 @@ module.exports.run = async (client, interaction) => {
     interaction.editReply(`Pong! → ${message.createdTimestamp - interaction.createdTimestamp}ms`);
 
 
-
+    // TODO - REMOVE | For testing purposes only
     const payload = {
         guildId: interaction.guild.id,
         channelId: interaction.channel.id,
