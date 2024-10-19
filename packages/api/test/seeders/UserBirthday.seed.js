@@ -2,16 +2,23 @@ const { UserBirthday } = require("../../database/models");
 
 module.exports.run = async () => {
 
+    const today = new Date();
+    const todayMonth = today.getMonth() + 1; // Months are zero-based in JavaScript
+    const todayDay = today.getDate();
+
     const bulkData = [
         {
             userId: "377842014290575361",
             guildId: "660103319557111808",
-            birthdayAt: "2024-10-19 00:00:00"
+            year: 2007,
+            month: todayMonth,
+            day: todayDay
         },
         {
             userId: "270640827787771943",
             guildId: "660103319557111808",
-            birthdayAt: "2024-11-19 00:00:00"
+            month: todayMonth,
+            day: todayDay
         },
     ]
 
