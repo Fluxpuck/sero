@@ -10,8 +10,10 @@ const {
 
 module.exports = async (client, payload) => {
 
+    console.log("guildMemberBirthday", payload);
+
     // Check if all required attributes exist in the payload
-    const requiredAttributes = ["guildId", "channelId", "birthdays"];
+    const requiredAttributes = ["guildId", "channelId"];
     for (const attribute of requiredAttributes) {
         if (!payload.hasOwnProperty(attribute)) return;
     }

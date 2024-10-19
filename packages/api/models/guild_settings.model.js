@@ -83,7 +83,7 @@ module.exports = sequelize => {
             // Find all records with type === 'birthday-channel'
             const birthdayGuilds = await GuildSettings.findAll({
                 where: {
-                    type: "birthday-channel",
+                    type: "birthday-messages",
                 },
             });
 
