@@ -20,11 +20,11 @@ module.exports = async (client, payload) => {
         const channel = await guild.channels.fetch(payload.channelId);
 
         // Fetch the last 100 messages in the channel
-        const eligibleIds = await getUniqueAuthorsFromMessages(channel);
+        const eligibleIds = await getUniqueAuthorsFromMessages(channel, 10);
         if (eligibleIds.length === 0) return;
 
         // Set the rewardDrop object in the guild
-        guild.rewardDrop = { token: payload.token, claimed: false, eligibleCollection: eligibleIds };
+        guild.rewardDrop = { payload: payload, claimed: false, eligibleCollection: eligibleIds };
 
         // Get random job message, based on the jobId
         let text_idx = Math.floor(Math.random() * REWARD_MESSAGES.length);
@@ -36,7 +36,7 @@ module.exports = async (client, payload) => {
             description: `${REWARD_MESSAGES[text_idx]}\nQuick, claim it before someone else does!`,
             image: REWARD_GIFS[url_idx],
             color: ClientEmbedColors.YELLOW,
-        })
+        });
 
         const messageComponents = new ActionRowBuilder()
             .addComponents(

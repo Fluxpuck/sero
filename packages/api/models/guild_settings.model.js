@@ -1,7 +1,7 @@
 const { Model, DataTypes } = require('sequelize');
 const { publishMessage, REDIS_CHANNELS } = require('../database/publisher');
 const cron = require('node-cron');
-const { generateUniqueToken } = require('../utils/FunctionManager');
+const { generateSnowflake } = require('../utils/FunctionManager');
 
 class GuildSettings extends Model {
     static associate(models) {
@@ -67,7 +67,7 @@ module.exports = sequelize => {
                     publishMessage(REDIS_CHANNELS.DROP, {
                         guildId: record.guildId,
                         channelId: record.channelId,
-                        token: generateUniqueToken()
+                        token: generateSnowflake()
                     });
                 }, randomDelay);
 

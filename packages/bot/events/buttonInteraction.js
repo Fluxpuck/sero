@@ -1,4 +1,4 @@
-const { postRequest } = require("../database/connection");
+const { getRequest, postRequest } = require("../database/connection");
 
 module.exports = async (client, interaction) => {
 
@@ -14,7 +14,13 @@ module.exports = async (client, interaction) => {
             await interaction.deferUpdate();
 
             // Check if the guild has a rewardDrop object
-            const { eligibleCollection, token, claimed = true } = interaction.guild?.rewardDrop
+            const { eligibleCollection, payload, claimed = true } = interaction.guild?.rewardDrop
+            if (!payload) { // Something went wrong, try to delete the message
+                try { // Check if the message is still available
+                    const fetchedMessage = await interaction.message.fetch();
+                    if (fetchedMessage.deletable) await fetchedMessage.delete();
+                } catch (err) { }
+            }
 
             // Check if the user is eligible to claim the reward
             if (!eligibleCollection.includes(interaction.member.id)) {
@@ -24,14 +30,23 @@ module.exports = async (client, interaction) => {
                 })
             }
 
+            const pastClaimResults = await getRequest(`guilds/${interaction.guildId}/activities/type/claim-exp-reward`);
+            if (pastClaimResults.status === 200) {
+                const userIdCount = pastClaimResults.data.reduce((acc, activity) => {
+                    acc[activity.userId] = (acc[activity.userId] || 0) + 1;
+                    return acc;
+                }, {});
+
+                if ((userIdCount[interaction.member.id] || 0) >= 5) {
+                    return interaction.followUp({
+                        content: `Sorry, you've already claimed so many rewards. Try again next time!`,
+                        ephemeral: true
+                    })
+                }
+            }
+
             // Check if the guild has already claimed the reward
             if (claimed) {
-                if (!token) { // Something went wrong, try to delete the message
-                    try { // Check if the message is still available
-                        const fetchedMessage = await interaction.message.fetch();
-                        if (fetchedMessage.deletable) await fetchedMessage.delete();
-                    } catch (err) { }
-                }
                 return interaction.followUp({
                     content: `Sorry, you are just too late. This reward has already been claimed by someone else.`,
                     ephemeral: true
@@ -58,14 +73,20 @@ module.exports = async (client, interaction) => {
                 // Return message to the user
                 if (result?.status === 200) {
 
+                    const additionalData = {
+                        amount: targetAmount,
+                        token: payload.token,
+                    }
+
+                    if (payload?.executedBy) {
+                        additionalData.executedBy = payload.executedBy;
+                    }
+
                     // Create an activity for the user
                     postRequest(`/guilds/${interaction.guildId}/activities`, {
                         userId: interaction.member.id,
                         type: "claim-exp-reward",
-                        additional: {
-                            amount: targetAmount,
-                            token: token
-                        }
+                        additional: additionalData
                     });
 
                     // Return the message to the user

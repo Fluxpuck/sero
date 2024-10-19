@@ -80,7 +80,7 @@ module.exports.run = async (client, interaction) => {
     });
 
     // Fetch the user Activities
-    // const userActivityData = await getRequest(`/guilds/${interaction.guildId}/activities/${targetUser.id}`);
+    // const userActivityData = await getRequest(`/guilds/${interaction.guildId}/activities/user/${targetUser.id}`);
     // let userActivities = userActivityData.status == 200 ? userActivityData.data : [];
 
     // Fetch the Audit Logs for the user
