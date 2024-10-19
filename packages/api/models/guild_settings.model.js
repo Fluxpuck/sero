@@ -1,7 +1,7 @@
 const { Model, DataTypes } = require('sequelize');
 const { publishMessage, REDIS_CHANNELS } = require('../database/publisher');
 const cron = require('node-cron');
-const { generateSnowflake } = require('../utils/FunctionManager');
+const { generateUniqueToken } = require('../utils/FunctionManager');
 
 class GuildSettings extends Model {
     static associate(models) {
@@ -43,7 +43,7 @@ module.exports = sequelize => {
         updatedAt: true,
     });
 
-    // Execute a reward drop every 30 minutes
+    // Send a reward drop every 30 minutes
     cron.schedule('*/30 * * * *', async () => {
         try {
             // Find all records with type === 'exp-reward-drops'
@@ -67,13 +67,36 @@ module.exports = sequelize => {
                     publishMessage(REDIS_CHANNELS.DROP, {
                         guildId: record.guildId,
                         channelId: record.channelId,
-                        token: generateSnowflake()
+                        token: generateUniqueToken()
                     });
                 }, randomDelay);
 
             });
         } catch (error) {
             console.error(`Error drop-reward-exp for ${record.guildId}`, error);
+        }
+    });
+
+    // Send a birthday message - every day at around 6pm CEST (16:00 UTC)
+    cron.schedule('0 16 * * *', async () => {
+        try {
+            // Find all records with type === 'birthday-channel'
+            const birthdayGuilds = await GuildSettings.findAll({
+                where: {
+                    type: "birthday-messages",
+                },
+            });
+
+            // Iterate over the results and run publishMessage for each record
+            birthdayGuilds.forEach((record) => {
+                publishMessage(REDIS_CHANNELS.BIRTHDAY, {
+                    guildId: record.guildId,
+                    channelId: record.channelId,
+                    token: generateUniqueToken(),
+                });
+            });
+        } catch (error) {
+            console.error(`Error birthday-message for ${record.guildId}`, error);
         }
     });
 

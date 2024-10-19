@@ -1,26 +1,13 @@
 const { Jobs } = require("../../database/models");
 
 module.exports.run = async () => {
-
     const jobsData = require("../data/jobs.json");
 
     for (const jobInfo of jobsData) {
         try {
-            // Check if the job already exists
-            const existingJob = await Jobs.findOne({
-                where: { jobId: jobInfo.jobId }
-            });
-
-            if (existingJob) {
-                // Job already exists, update its data
-                await existingJob.update(jobInfo);
-            } else {
-                // Job doesn't exist, create a new record
-                await Jobs.create(jobInfo);
-            }
+            await Jobs.upsert(jobInfo);
         } catch (error) {
-            console.error(`Error creating/updating jobs: ${error.message}`);
+            console.error(`Error upserting jobs: ${error.message}`);
         }
     }
-
 }

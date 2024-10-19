@@ -7,6 +7,7 @@ const ClientEmbedColors = {
 
     PINK: "#ffc0cb",          // Pink
     YELLOW: "#ffff00",        // Yellow
+    LIGHT_BLUE: "#add8e6",    // Light Blue
 }
 
 module.exports = ClientEmbedColors;

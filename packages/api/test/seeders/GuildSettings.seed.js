@@ -16,7 +16,12 @@ module.exports.run = async () => {
         {
             guildId: "660103319557111808",
             channelId: "1181313001232543804",
-            type: "exp-reward-drop"
+            type: "exp-reward-drops"
+        },
+        {
+            guildId: "660103319557111808",
+            channelId: "1181313001232543804",
+            type: "birthday-messages"
         },
     ]
 

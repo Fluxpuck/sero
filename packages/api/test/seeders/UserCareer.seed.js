@@ -1,7 +1,6 @@
 const { UserCareers } = require("../../database/models");
 
 module.exports.run = async () => {
-
     const userData = [
         {
             userId: "1042558234566860810",
@@ -33,26 +32,13 @@ module.exports.run = async () => {
             guildId: "660103319557111808",
             level: 15
         }
-    ]
+    ];
 
     for (const userInfo of userData) {
         try {
-            // Check if the guild with the specified guildId exists
-            // User exists get job
-            const existingJob = await UserCareers.findOne({
-                where: {
-                    userId: userInfo.userId,
-                    guildId: userInfo.guildId,
-                }
-            })
-            if (existingJob) {
-                existingJob.update(userInfo)
-            } else {
-                UserCareers.create(userInfo)
-            }
+            await UserCareers.upsert(userInfo);
         } catch (error) {
-            console.error(`Error creating/updating job: ${error.message}`);
+            console.error(`Error upserting job: ${error.message}`);
         }
     }
-
 }

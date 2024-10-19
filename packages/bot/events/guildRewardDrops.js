@@ -18,6 +18,7 @@ module.exports = async (client, payload) => {
         // Get the guild by guildId and the member by userId
         const guild = await client.guilds.fetch(payload.guildId);
         const channel = await guild.channels.fetch(payload.channelId);
+        if (!channel) return;
 
         // Fetch the last 100 messages in the channel
         const eligibleIds = await getUniqueAuthorsFromMessages(channel, 10);
