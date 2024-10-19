@@ -43,7 +43,6 @@ router.get("/", async (req, res, next) => {
     }
 });
 
-
 /**
  * POST api/guilds/:guildId/birthday
  * @description Create or update a user's birthday in the guild

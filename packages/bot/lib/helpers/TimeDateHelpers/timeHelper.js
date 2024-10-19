@@ -1,4 +1,4 @@
-const { intervalToDuration, formatDuration, startOfTomorrow,
+const { intervalToDuration, formatDuration, startOfTomorrow, format,
     formatDistanceToNowStrict, getUnixTime, parse, differenceInYears
 } = require('date-fns');
 
@@ -76,6 +76,26 @@ module.exports = {
         }
 
         return differenceInYears(new Date(), birthDate);
-    }
+    },
+
+    /**
+     * Get the birthdate in a formatted string
+     * @param {*} day
+     * @param {*} month
+     * @param {*} year
+     */
+    getBirthdate(day, month, year) {
+        const date = new Date(year ? year : 1900, month - 1, day);
+
+        const dateFormat = year ? 'do MMMM yyyy' : 'do MMMM';
+
+        const currentYear = new Date().getFullYear();
+        const age = year ? currentYear - year : null;
+
+        return {
+            date: format(date, dateFormat),
+            age: age >= 13 ? age : null,
+        };
+    },
 
 };
