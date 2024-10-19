@@ -30,8 +30,16 @@ module.exports = (sequelize) => {
                     is: /^\d{17,20}$/, //Discord Snowflake
                 },
             },
-            birthdayAt: {
-                type: DataTypes.DATE,
+            year: {
+                type: DataTypes.INTEGER,
+                allowNull: true,
+            },
+            month: {
+                type: DataTypes.INTEGER,
+                allowNull: false,
+            },
+            day: {
+                type: DataTypes.INTEGER,
                 allowNull: false,
             },
         },
