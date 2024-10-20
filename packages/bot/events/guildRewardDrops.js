@@ -32,7 +32,12 @@ module.exports = async (client, payload) => {
         const previousClaimedIds = await countUniqueUserIds(pastClaimResults?.data || []);
 
         // Set the rewardDrop object in the guild
-        guild.rewardDrop = { payload: payload, claimed: false, activeMemberCollection: activeMemberIds, previousClaimedCollection: previousClaimedIds };
+        guild.rewardDrop = {
+            payload: payload,
+            claimed: false,
+            activeMemberCollection: activeMemberIds,
+            previousClaimedCollection: previousClaimedIds
+        };
 
         // Get random job message, based on the jobId
         let text_idx = Math.floor(Math.random() * REWARD_MESSAGES.length);

@@ -41,7 +41,7 @@ module.exports = async (client, interaction) => {
 
                 // Check if the user has already claimed plenty rewards
                 const userClaimedInfo = previousClaimedCollection.find(item => item.userId === interaction.member.id);
-                if (userClaimedInfo.claimed >= 5) {
+                if (userClaimedInfo?.claimed >= 5) {
                     return interaction.followUp({
                         content: `Sorry, you've already claimed so many rewards. Try again next time!`,
                         ephemeral: true
