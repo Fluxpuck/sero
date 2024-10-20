@@ -1,10 +1,12 @@
+const { getRequest } = require("../database/connection");
+const { getUniqueAuthorsFromMessages } = require("../lib/resolvers/messageResolver");
+
 const { ActionRowBuilder } = require("discord.js");
+const { createCustomEmbed } = require("../assets/embed");
 const ClientEmbedColors = require("../assets/embed-colors");
 const ClientButtonsEnum = require("../assets/embed-buttons");
-const { createCustomEmbed } = require("../assets/embed");
 const { REWARD_MESSAGES, REWARD_GIFS } = require("../assets/reward-messages");
-
-const { getUniqueAuthorsFromMessages } = require("../lib/resolvers/messageResolver");
+const { countUniqueUserIds } = require("../lib/helpers/ArrayHelpers/arrayHelper");
 
 module.exports = async (client, payload) => {
 
@@ -15,17 +17,22 @@ module.exports = async (client, payload) => {
     }
 
     try {
+
         // Get the guild by guildId and the member by userId
         const guild = await client.guilds.fetch(payload.guildId);
         const channel = await guild.channels.fetch(payload.channelId);
         if (!channel) return;
 
         // Fetch the last 100 messages in the channel
-        const eligibleIds = await getUniqueAuthorsFromMessages(channel, 10);
-        if (eligibleIds.length === 0) return;
+        const activeMemberIds = await getUniqueAuthorsFromMessages(channel, 10);
+        if (activeMemberIds.length === 0) return;
+
+        // Fetch the last 10 claimed rewards from activities
+        const pastClaimResults = await getRequest(`guilds/${guild.id}/activities/type/claim-exp-reward?limit=15`);
+        const previousClaimedIds = await countUniqueUserIds(pastClaimResults?.data || []);
 
         // Set the rewardDrop object in the guild
-        guild.rewardDrop = { payload: payload, claimed: false, eligibleCollection: eligibleIds };
+        guild.rewardDrop = { payload: payload, claimed: false, activeMemberCollection: activeMemberIds, previousClaimedCollection: previousClaimedIds };
 
         // Get random job message, based on the jobId
         let text_idx = Math.floor(Math.random() * REWARD_MESSAGES.length);
@@ -61,5 +68,8 @@ module.exports = async (client, payload) => {
             console.log("\x1b[95m", "XP Reward dropped at:", new Date().toLocaleTimeString());
         }
 
-    } catch (err) { };
+    } catch (err) {
+
+        console.log('Error:', err);
+    };
 }

@@ -10,17 +10,17 @@ module.exports.run = async () => {
         },
         {
             guildId: "660103319557111808",
-            channelId: "1087368064200343592",
+            channelId: "660104519031717896",
             type: "member-logs"
         },
         {
             guildId: "660103319557111808",
-            channelId: "1181313001232543804",
+            channelId: "660104519031717896",
             type: "exp-reward-drops"
         },
         {
             guildId: "660103319557111808",
-            channelId: "1181313001232543804",
+            channelId: "660104519031717896",
             type: "birthday-messages"
         },
     ]

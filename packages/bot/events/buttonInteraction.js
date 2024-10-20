@@ -14,7 +14,7 @@ module.exports = async (client, interaction) => {
             await interaction.deferUpdate();
 
             // Check if the guild has a rewardDrop object
-            const { eligibleCollection, payload, claimed = true } = interaction.guild?.rewardDrop
+            const { activeMemberCollection, previousClaimedCollection, payload, claimed = true } = interaction.guild?.rewardDrop
             if (!payload) { // Something went wrong, try to delete the message
                 try { // Check if the message is still available
                     const fetchedMessage = await interaction.message.fetch();
@@ -29,31 +29,27 @@ module.exports = async (client, interaction) => {
                     ephemeral: true
                 })
             } else {
-                // Set the claimed status to true
-                interaction.guild.rewardDrop.claimed = true;
-            }
 
-            // Check if the user is eligible to claim the reward
-            if (!eligibleCollection.includes(interaction.member.id)) {
-                return interaction.followUp({
-                    content: `Sorry, you've not been active enough to claim this reward. Try again next time!`,
-                    ephemeral: true
-                })
-            }
+                // Check if the user is active enough to claim the reward
+                // If the user is not in the collection, return a message
+                if (!activeMemberCollection.includes(interaction.member.id)) {
+                    return interaction.followUp({
+                        content: `Sorry, you've not been active enough to claim this reward. Try again next time!`,
+                        ephemeral: true
+                    })
+                }
 
-            const pastClaimResults = await getRequest(`guilds/${interaction.guildId}/activities/type/claim-exp-reward`);
-            if (pastClaimResults.status === 200) {
-                const userIdCount = pastClaimResults.data.reduce((acc, activity) => {
-                    acc[activity.userId] = (acc[activity.userId] || 0) + 1;
-                    return acc;
-                }, {});
-
-                if ((userIdCount[interaction.member.id] || 0) >= 5) {
+                // Check if the user has already claimed plenty rewards
+                const userClaimedInfo = previousClaimedCollection.find(item => item.userId === interaction.member.id);
+                if (userClaimedInfo.claimed >= 5) {
                     return interaction.followUp({
                         content: `Sorry, you've already claimed so many rewards. Try again next time!`,
                         ephemeral: true
                     })
                 }
+
+                // Set the claimed status to true
+                interaction.guild.rewardDrop.claimed = true;
             }
 
             try { // Check if the message is still available
