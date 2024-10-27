@@ -8,10 +8,10 @@ module.exports = {
      * @param {Interaction} interaction - The interaction object
      * @param {User?} user - The user to fetch the messages from (optional)
      * @param {number} amount - The amount of messages to fetch
-     * @param {number} timeoutMs - Timeout in milliseconds (default: 5000)
+     * @param {number} timeoutMs - Timeout in milliseconds (default: 3_000, 3 seconds)
      * @returns {Promise<Collection>} A collection of fetched messages
      */
-    async fetchMessages(interaction, user, amount, timeoutMs = 5000) {
+    async fetchMessages(interaction, user, amount, timeoutMs = 3_000) {
         const FETCH_AMOUNT = 100; // Maximum number of messages to fetch per request
 
         const messageCollection = new Collection();
@@ -22,7 +22,6 @@ module.exports = {
         try {
             while (keepFetching) {
                 if (Date.now() - startTime >= timeoutMs) {
-                    console.log('Fetch operation timed out');
                     break;
                 }
 
