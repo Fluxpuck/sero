@@ -11,17 +11,37 @@ module.exports = {
      * @returns 
      */
     formatTime: (timeInMilliseconds, full = false) => {
-        const duration = intervalToDuration({ start: 0, end: timeInMilliseconds });
+        // Convert to number and ensure positive
+        const ms = Math.abs(Number(timeInMilliseconds));
 
-        const format = full ?
-            ['days', 'hours', 'minutes', 'seconds'] :
-            ['d', 'h', 'm', 's'];
+        // Calculate each unit
+        const seconds = Math.floor(ms / 1000);
+        const minutes = Math.floor(seconds / 60);
+        const hours = Math.floor(minutes / 60);
+        const days = Math.floor(hours / 24);
 
-        return formatDuration(duration, {
-            format,
-            zero: false,
-            delimiter: ' ',
-        }).trim();
+        // Get remainders
+        const remainderHours = hours % 24;
+        const remainderMinutes = minutes % 60;
+        const remainderSeconds = seconds % 60;
+
+        // Build the parts array
+        const parts = [];
+
+        if (days > 0) {
+            parts.push(`${days}${full ? ' days' : 'd'}`);
+        }
+        if (remainderHours > 0) {
+            parts.push(`${remainderHours}${full ? ' hours' : 'h'}`);
+        }
+        if (remainderMinutes > 0) {
+            parts.push(`${remainderMinutes}${full ? ' minutes' : 'm'}`);
+        }
+        if (remainderSeconds > 0 || parts.length === 0) {
+            parts.push(`${remainderSeconds}${full ? ' seconds' : 's'}`);
+        }
+
+        return parts.join(' ');
     },
 
     /**
