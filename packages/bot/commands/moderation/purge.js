@@ -46,7 +46,7 @@ module.exports.run = async (client, interaction) => {
     if (messageCollection.size > 0) {
 
         // Delete the messages from the channel
-        const deletedMessages = await interaction.channel.bulkDelete(messageCollection, true);
+        const deletedMessages = await interaction.channel.bulkDelete(messageCollection, true).catch(err => { console.warn(err) });
 
         // Return confirmation message to the user
         interaction.editReply({
