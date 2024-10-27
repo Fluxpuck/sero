@@ -69,7 +69,7 @@ module.exports.run = async (client, interaction) => {
         const commandEmbedFields = selectedCommands.map(command => (
             {
                 name: "\u200b",
-                value: `**${capitalize(command.commandName)}** - ${command.description} \n Usage: \`${command.usage}\``,
+                value: `**${capitalize(command.commandName)}** - ${command.description} \n Usage: \`${command.usage}\` ${command.cooldown ? `\n Cooldown: \`${command.cooldown} seconds\`` : ""}`,
                 inline: false
             }
         ));
