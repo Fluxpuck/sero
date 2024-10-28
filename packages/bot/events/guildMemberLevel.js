@@ -18,8 +18,8 @@ module.exports = async (client, message, oldLevel, newLevel) => {
             if (messageChannel.status === 200) {
 
                 // Get channel from request
-                const { channelId } = messageChannel.data
-                const channel = await message.guild.channels.fetch(channelId);
+                const { targetId } = messageChannel.data
+                const channel = await message.guild.channels.fetch(targetId);
 
                 // Get a random message
                 let idx = Math.floor(Math.random() * LEVEL_MESSAGES.length);

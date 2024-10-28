@@ -18,10 +18,10 @@ module.exports.run = async (client, interaction) => {
         return interaction.reply({ content: 'Oops! Could not fetch the reward drop guild settings.', ephemeral: true });
     }
 
-    // Set the guildId, channelId, and token
-    const { guildId, channelId } = rewardDropSetting.data;
+    // Set the guildId, targetId, and token
+    const { guildId, targetId } = rewardDropSetting.data;
     const token = generateSnowflake();
-    const payload = { guildId, channelId, token, executedBy: interaction.user.id };
+    const payload = { guildId, targetId, token, executedBy: interaction.user.id };
 
     try {
         // Emit the guildRewardDrops event

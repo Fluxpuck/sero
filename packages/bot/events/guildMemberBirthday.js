@@ -10,7 +10,7 @@ const {
 module.exports = async (client, payload) => {
 
     // Check if all required attributes exist in the payload
-    const requiredAttributes = ["guildId", "channelId"];
+    const requiredAttributes = ["guildId", "targetId"];
     for (const attribute of requiredAttributes) {
         if (!payload.hasOwnProperty(attribute)) return;
     }
@@ -18,7 +18,7 @@ module.exports = async (client, payload) => {
     try {
         // Get the guild by guildId and the member by userId
         const guild = await client.guilds.fetch(payload.guildId);
-        const channel = await guild.channels.fetch(payload.channelId);
+        const channel = await guild.channels.fetch(payload.targetId);
         if (!channel) return;
 
         // Get the birthdays for today for the guild

@@ -24,9 +24,9 @@ module.exports = sequelize => {
             primaryKey: true,
             allowNull: false,
         },
-        channelId: {
+        targetId: {
             type: DataTypes.BIGINT,
-            allowNull: false,
+            allowNull: true,
             validate: {
                 is: /^\d{17,20}$/ //Discord Snowflake
             }
@@ -66,7 +66,7 @@ module.exports = sequelize => {
                 setTimeout(() => {
                     publishMessage(REDIS_CHANNELS.DROP, {
                         guildId: record.guildId,
-                        channelId: record.channelId,
+                        targetId: record.targetId,
                         token: generateUniqueToken()
                     });
                 }, randomDelay);
@@ -91,7 +91,7 @@ module.exports = sequelize => {
             birthdayGuilds.forEach((record) => {
                 publishMessage(REDIS_CHANNELS.BIRTHDAY, {
                     guildId: record.guildId,
-                    channelId: record.channelId,
+                    targetId: record.targetId,
                     token: generateUniqueToken(),
                 });
             });

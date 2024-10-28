@@ -30,8 +30,8 @@ async function handleVoiceSessionEnd(session) {
     if (vcLogChannelResponse.status !== 200) return;
 
     // Get channel from request and send message
-    const { channelId, exclude } = vcLogChannelResponse.data;
-    const logChannel = await guild.channels.fetch(channelId);
+    const { targetId, exclude } = vcLogChannelResponse.data;
+    const logChannel = await guild.channels.fetch(targetId);
     if (logChannel && !exclude.includes(channel.id)) {
 
         const content = `<t:${unixTimestamp()}> - **${member.user.tag}** was in <#${channel.id}> for \`${durationFormatted}\``;

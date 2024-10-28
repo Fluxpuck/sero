@@ -5,22 +5,22 @@ module.exports.run = async () => {
     const guildSettingsData = [
         {
             guildId: "660103319557111808",
-            channelId: "660104519031717896",
+            targetId: "660104519031717896",
             type: "vc-logs"
         },
         {
             guildId: "660103319557111808",
-            channelId: "660104519031717896",
+            targetId: "660104519031717896",
             type: "member-logs"
         },
         {
             guildId: "660103319557111808",
-            channelId: "660104519031717896",
+            targetId: "660104519031717896",
             type: "exp-reward-drops"
         },
         {
             guildId: "660103319557111808",
-            channelId: "660104519031717896",
+            targetId: "660104519031717896",
             type: "birthday-messages"
         },
     ]

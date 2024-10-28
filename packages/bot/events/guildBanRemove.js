@@ -20,8 +20,8 @@ module.exports = async (client, unban) => {
         if (banLogChannelResponse.status !== 200) return;
 
         // Get channel from request and send message
-        const { channelId } = banLogChannelResponse.data;
-        const channel = await guild.channels.fetch(channelId);
+        const { targetId } = banLogChannelResponse.data;
+        const channel = await guild.channels.fetch(targetId);
         if (channel) {
 
             const content = `<t:${unixTimestamp()}> - **${auditLog.target.username}** was **unbanned** by **${auditLog.executor.username}**`

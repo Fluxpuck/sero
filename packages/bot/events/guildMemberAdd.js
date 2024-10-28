@@ -18,8 +18,8 @@ module.exports = async (client, member) => {
         if (welcomeChannel.status === 200) {
 
             // Get channel from request
-            const { channelId } = welcomeChannel.data
-            const channel = await member.guild.channels.fetch(channelId);
+            const { targetId } = welcomeChannel.data
+            const channel = await member.guild.channels.fetch(targetId);
 
             // Select a random welcome message
             const text_idx = Math.floor(Math.random() * WELCOME_MESSAGES.length);

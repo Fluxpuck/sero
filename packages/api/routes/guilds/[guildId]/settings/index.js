@@ -54,7 +54,7 @@ router.get("/:type", async (req, res, next) => {
  * @description Create or update a guild setting
  * @param {string} guildId - The id of the guild
  * @param {string} type - The type of the setting
- * @param {string} channelId - The id of the channel
+ * @param {string} targetId - The id of the channel
  */
 router.post("/", async (req, res, next) => {
     const t = await sequelize.transaction();
@@ -63,19 +63,19 @@ router.post("/", async (req, res, next) => {
     try {
         const {
             type,
-            channelId,
+            targetId,
             exclude = []
         } = req.body;
 
         // Check if the required fields are provided
-        if (!type || !channelId) {
+        if (!type || !targetId) {
             throw new RequestError(400, "Missing required data. Please check and try again", {
                 method: req.method, path: req.path
             });
         }
 
         // Update or create the setting
-        const setting = await createUniqueRecord(GuildSettings, { guildId, type, channelId, exclude }, t);
+        const setting = await createUniqueRecord(GuildSettings, { guildId, type, targetId, exclude }, t);
 
         // Send the response
         res.status(200).json({ message: "Guild setting stored successfully", data: setting });

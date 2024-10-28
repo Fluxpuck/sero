@@ -16,7 +16,7 @@ module.exports = async (client, oldMember, newMember) => {
         if (member_log_channel.status !== 200) return;
 
         // Get channel from request and send message
-        const logChannel = await guild.channels.fetch(member_log_channel.data.channelId);
+        const logChannel = await guild.channels.fetch(member_log_channel.data.targetId);
         if (!logChannel) return;
 
         /**

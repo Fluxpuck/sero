@@ -11,7 +11,7 @@ const { countUniqueUserIds } = require("../lib/helpers/ArrayHelpers/arrayHelper"
 module.exports = async (client, payload) => {
 
     // Check if all required attributes exist in the payload
-    const requiredAttributes = ['guildId', 'channelId', 'token'];
+    const requiredAttributes = ['guildId', 'targetId', 'token'];
     for (const attribute of requiredAttributes) {
         if (!payload.hasOwnProperty(attribute)) return;
     }
@@ -20,7 +20,7 @@ module.exports = async (client, payload) => {
 
         // Get the guild by guildId and the member by userId
         const guild = await client.guilds.fetch(payload.guildId);
-        const channel = await guild.channels.fetch(payload.channelId);
+        const channel = await guild.channels.fetch(payload.targetId);
         if (!channel) return;
 
         // Fetch the last 100 messages in the channel
