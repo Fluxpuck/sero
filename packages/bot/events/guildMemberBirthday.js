@@ -1,4 +1,4 @@
-const { getRequest } = require("../database/connection");
+const { getRequest, postRequest } = require("../database/connection");
 const { calculateAge } = require("../lib/helpers/TimeDateHelpers/timeHelper");
 const { findUser } = require("../lib/resolvers/userResolver");
 
@@ -7,10 +7,12 @@ const {
     BIRTHDAY_MESSAGES_AGE,
 } = require("../assets/birthday-messages");
 
+const BIRTHDAY_DURATION = 24; // 24 hours
+
 module.exports = async (client, payload) => {
 
     // Check if all required attributes exist in the payload
-    const requiredAttributes = ["guildId", "targetId"];
+    const requiredAttributes = ["guildId", "channelId"];
     for (const attribute of requiredAttributes) {
         if (!payload.hasOwnProperty(attribute)) return;
     }
@@ -18,8 +20,11 @@ module.exports = async (client, payload) => {
     try {
         // Get the guild by guildId and the member by userId
         const guild = await client.guilds.fetch(payload.guildId);
-        const channel = await guild.channels.fetch(payload.targetId);
+        const channel = await guild.channels.fetch(payload.channelId);
         if (!channel) return;
+
+        // Get the birthday role for the guild
+        const role = await guild.roles.fetch(payload.roleId);
 
         // Get the birthdays for today for the guild
         const guildBirthdayData = await getRequest(`/guilds/${payload.guildId}/birthday`);
@@ -58,6 +63,13 @@ module.exports = async (client, payload) => {
 
                 // Add reaction to the message
                 await sentMessage.react("🎉");
+
+                if (role) {
+                    // Add the role to the user
+                    await member.roles.add(role);
+                    // Store the temporary role in the database
+                    await postRequest(`/guilds/${payload.guildId}/roles/add`, { userId: birthday.userId, roleId: role.id, duration: BIRTHDAY_DURATION });
+                }
             }
         }
     } catch (err) { }

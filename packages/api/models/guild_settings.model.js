@@ -66,7 +66,7 @@ module.exports = sequelize => {
                 setTimeout(() => {
                     publishMessage(REDIS_CHANNELS.DROP, {
                         guildId: record.guildId,
-                        targetId: record.targetId,
+                        channelId: record.targetId,
                         token: generateUniqueToken()
                     });
                 }, randomDelay);
@@ -88,10 +88,21 @@ module.exports = sequelize => {
             });
 
             // Iterate over the results and run publishMessage for each record
-            birthdayGuilds.forEach((record) => {
+            birthdayGuilds.forEach(async (record) => {
+
+                // Find the birthday role for the guild
+                const birthdayRole = await GuildSettings.findOne({
+                    where: {
+                        guildId: record.guildId,
+                        type: "birthday-role",
+                    },
+                });
+
+                // Publish the message
                 publishMessage(REDIS_CHANNELS.BIRTHDAY, {
                     guildId: record.guildId,
-                    targetId: record.targetId,
+                    channelId: record.targetId,
+                    roleId: birthdayRole ? birthdayRole.targetId : null,
                     token: generateUniqueToken(),
                 });
             });
