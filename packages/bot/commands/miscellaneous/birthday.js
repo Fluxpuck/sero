@@ -25,13 +25,12 @@ module.exports.props = {
                 minValue: 1,
                 maxValue: 12,
             },
-
             {
                 name: "year",
                 description: "The year of your birthday. This will be used to calculate your age!",
                 type: 10,
                 required: false,
-                minValue: 1900,
+                minValue: 1980,
                 maxValue: getYear(new Date()) // Current year
             },
         ],
