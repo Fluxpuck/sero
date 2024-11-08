@@ -10,7 +10,7 @@ module.exports.props = {
 }
 
 module.exports.run = async (client, interaction) => {
-    await interaction.deferReply({ ephemeral: false });
+    await interaction.deferReply({ ephemeral: true });
 
     // Check if the user has already claimed their daily work reward
     const weeklyRewardResult = await getRequest(`/guilds/${interaction.guildId}/activities/user/${interaction.user.id}/daily-work-reward?thisWeek=true`);
