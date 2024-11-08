@@ -46,7 +46,7 @@ module.exports.run = async (client, interaction) => {
         });
 
         // Give the user the target amount of money
-        const result = postRequest(`/guilds/${interaction.guildId}/economy/balance/${interaction.user.id}`, { amount: rewardAmount });
+        const result = await postRequest(`/guilds/${interaction.guildId}/economy/balance/${interaction.user.id}`, { amount: rewardAmount });
 
         console.log(result);
 
