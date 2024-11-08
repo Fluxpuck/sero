@@ -1,6 +1,16 @@
-const { intervalToDuration, formatDuration, startOfTomorrow, format,
-    formatDistanceToNowStrict, getUnixTime, parse, differenceInYears
+const {
+    intervalToDuration,
+    formatDuration,
+    startOfTomorrow,
+    format,
+    formatDistanceToNowStrict,
+    getUnixTime,
+    parse,
+    differenceInYears,
+    addWeeks,
+    endOfHour
 } = require('date-fns');
+
 
 module.exports = {
 
@@ -45,17 +55,32 @@ module.exports = {
     },
 
     /**
-     * Get the time until tomorrow
-     * @returns 
+     * Get time until a target time
+     * @param {string} target - 'nextHour' | 'tomorrow' | 'nextWeek'
+     * @returns {string} Formatted duration string
      */
-    getTimeUntilTomorrow: () => {
+    getTimeUntil: (target = 'tomorrow') => {
         const now = new Date();
-        const tomorrow = startOfTomorrow();
+        let endDate;
 
-        const duration = intervalToDuration({ start: now, end: tomorrow });
+        switch (target.toLowerCase()) {
+            case 'nexthour':
+                endDate = endOfHour(now);
+                break;
+            case 'tomorrow':
+                endDate = startOfTomorrow();
+                break;
+            case 'nextweek':
+                endDate = addWeeks(now, 1);
+                break;
+            default:
+                throw new Error('Invalid target. Use: nextHour, tomorrow, or nextWeek');
+        }
+
+        const duration = intervalToDuration({ start: now, end: endDate });
 
         return formatDuration(duration, {
-            format: ['hours', 'minutes'],
+            format: ['days', 'hours', 'minutes'],
             zero: false,
             delimiter: ' ',
         }).trim();

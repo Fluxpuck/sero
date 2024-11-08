@@ -1,5 +1,6 @@
 const { getRequest, postRequest } = require("../../database/connection");
 const { getTimeUntilTomorrow } = require("../../lib/helpers/TimeDateHelpers/timeHelper");
+const { getReward } = require("../../lib/helpers/EconomyHelpers/economyHelper");
 
 module.exports.props = {
     commandName: "work-reward",
@@ -81,32 +82,4 @@ module.exports.run = async (client, interaction) => {
             }
         }
     }
-}
-
-
-
-function getReward(streak) {
-    const rewards = [
-        { days: 5, reward: 100 },
-        { days: 15, reward: 150 },
-        { days: 30, reward: 200 },
-        { days: 50, reward: 250 },
-        { days: 75, reward: 350 },
-        { days: 100, reward: 500 },
-        { days: 130, reward: 650 },
-        { days: 150, reward: 800 },
-        { days: 180, reward: 1000 },
-        { days: 210, reward: 1250 },
-        { days: 250, reward: 1500 },
-        { days: 300, reward: 2000 },
-        { days: 365, reward: 2500 }
-    ];
-
-    for (const tier of rewards) {
-        if (streak <= tier.days) {
-            return tier.reward;
-        }
-    }
-
-    return 2000;
 }
