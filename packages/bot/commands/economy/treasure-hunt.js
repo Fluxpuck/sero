@@ -11,14 +11,15 @@ module.exports.props = {
 }
 
 module.exports.run = async (client, interaction) => {
-    await interaction.deferReply({ ephemeral: true });
+    await interaction.deferReply({ ephemeral: false });
 
     // Check if the user has already claimed their daily work reward
     const hourlyRewardResult = await getRequest(`/guilds/${interaction.guildId}/activities/user/${interaction.user.id}/treasure-hunt?thisHour=true`);
 
     // Check if the user has already claimed their daily work reward
     if (hourlyRewardResult.status === 200) {
-        return interaction.editReply({
+        await interaction.deleteReply();
+        return interaction.followUp({
             content: `You've already searched for treasure! Please try again in ${getTimeUntil('nexthour')}.`,
             ephemeral: true
         });
@@ -47,8 +48,6 @@ module.exports.run = async (client, interaction) => {
 
         // Give the user the target amount of money
         const result = await postRequest(`/guilds/${interaction.guildId}/economy/balance/${interaction.user.id}`, { amount: rewardAmount });
-
-        console.log(result);
 
         // If the request was not successful, return an error
         if (result?.status !== 200) {

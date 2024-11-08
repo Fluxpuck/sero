@@ -11,7 +11,7 @@ module.exports.props = {
 }
 
 module.exports.run = async (client, interaction) => {
-    await interaction.deferReply({ ephemeral: true });
+    await interaction.deferReply({ ephemeral: false });
 
     // Check if the user has already claimed their daily work reward
     const weeklyRewardResult = await getRequest(`/guilds/${interaction.guildId}/activities/user/${interaction.user.id}/daily-work-reward?thisWeek=true`);
@@ -19,7 +19,8 @@ module.exports.run = async (client, interaction) => {
 
     // Check if the user has a career
     if (userCareer.status !== 200) {
-        return interaction.editReply({
+        await interaction.deleteReply();
+        return interaction.followUp({
             content: "Oh no! You do not have a career yet. Use \`/work\` to select a job and start working.",
             ephemeral: true
         });
@@ -27,7 +28,8 @@ module.exports.run = async (client, interaction) => {
 
     // Check if the user has already claimed their daily work reward
     if (weeklyRewardResult.status === 200) {
-        return interaction.editReply({
+        await interaction.deleteReply();
+        return interaction.followUp({
             content: `You have already claimed your reward today! Please try again in ${getTimeUntil('tomorrow')}.`,
             ephemeral: true
         });
@@ -35,7 +37,8 @@ module.exports.run = async (client, interaction) => {
 
         const careerStreak = await getRequest(`/guilds/${interaction.guildId}/activities/streak/${interaction.user.id}/daily-work-reward`);
         if (careerStreak.status !== 200 || careerStreak.data.streak < 5) {
-            return interaction.editReply({
+            await interaction.deleteReply();
+            return interaction.followUp({
                 content: "Oh Uh! You need to have a streak of at least 5 days to claim your weekly reward!",
                 ephemeral: true
             });
