@@ -185,7 +185,7 @@ module.exports.run = async (client, interaction) => {
             if (result?.status !== 200) {
                 await interaction.deleteReply();
                 return interaction.followUp({
-                    content: `Uh oh! Something went wrong while transferring your hard earned money.`,
+                    content: `Uh oh! Something went wrong while sending your hard earned money.`,
                     ephemeral: true
                 })
             } else {

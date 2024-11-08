@@ -6,7 +6,7 @@ const { findAllRecords } = require("../../../../utils/RequestManager");
 const { CreateError } = require("../../../../utils/ClassManager");
 
 const { Op } = require('sequelize');
-const { startOfToday, endOfToday } = require('date-fns');
+const { startOfToday, endOfToday, startOfWeek, endOfWeek } = require('date-fns');
 
 // Helper function to fetch user activities
 const fetchUserActivities = async (options, res, next) => {
@@ -44,15 +44,20 @@ router.get("/:userId", (req, res, next) => {
  * @param {string} type - The type of activity
  */
 router.get("/:userId/:type", (req, res, next) => {
-    const startOfDay = startOfToday();
-    const endOfDay = endOfToday();
-
     const { guildId, userId, type } = req.params;
-    const { limit = 10, today = "false" } = req.query;
+    const { limit = 10, today = "false", thisWeek = "false" } = req.query;
 
     const options = { where: { guildId, userId, type }, limit };
+
+    // Handle date filters
     if (today === "true") {
-        options.where.createdAt = { [Op.between]: [startOfDay, endOfDay] };
+        options.where.createdAt = {
+            [Op.between]: [startOfToday(), endOfToday()]
+        };
+    } else if (thisWeek === "true") {
+        options.where.createdAt = {
+            [Op.between]: [startOfWeek(new Date()), endOfWeek(new Date())]
+        };
     }
 
     fetchUserActivities(options, res, next);
