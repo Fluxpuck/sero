@@ -33,7 +33,7 @@ module.exports.run = async (client, interaction) => {
         fields: [
             {
                 name: `Balance`,
-                value: `$${balance.toLocaleString()}`,
+                value: `:coin: ${balance.toLocaleString()}`,
                 inline: true
             }
         ],

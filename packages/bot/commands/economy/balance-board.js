@@ -46,7 +46,7 @@ module.exports.run = async (client, interaction, leaderboard = []) => {
 
         // Construct the leaderboard fields
         const leaderboardTitle = `${ranking} \`${user.userName}\``
-        const leaderboardValue = `:coin: *${balance.balance} coin(s)*`
+        const leaderboardValue = `:coin: *${balance.balance} coin${balance.balance === 1 ? '' : 's'}*`
         return {
             name: leaderboardTitle,
             value: leaderboardValue,
