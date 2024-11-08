@@ -1,5 +1,5 @@
 const { getRequest, postRequest } = require("../../database/connection");
-const { getTimeUntilTomorrow } = require("../../lib/helpers/TimeDateHelpers/timeHelper");
+const { getTimeUntil } = require("../../lib/helpers/TimeDateHelpers/timeHelper");
 const { getReward } = require("../../lib/helpers/EconomyHelpers/economyHelper");
 
 module.exports.props = {
@@ -28,7 +28,7 @@ module.exports.run = async (client, interaction) => {
     // Check if the user has already claimed their daily work reward
     if (weeklyRewardResult.status === 200) {
         return interaction.editReply({
-            content: `You have already claimed your reward today! Please try again in ${getTimeUntilTomorrow()}.`,
+            content: `You have already claimed your reward today! Please try again in ${getTimeUntil('tomorrow')}.`,
             ephemeral: true
         });
     } else {

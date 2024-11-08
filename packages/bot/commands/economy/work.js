@@ -3,7 +3,7 @@ const { createCustomEmbed } = require("../../assets/embed");
 const { JOB_MESSAGES } = require("../../assets/job-messages");
 const { postRequest, getRequest } = require("../../database/connection");
 const { calculateDailyIncome, calculateBaseIncome } = require("../../lib/helpers/EconomyHelpers/economyHelper");
-const { getTimeUntilTomorrow } = require("../../lib/helpers/TimeDateHelpers/timeHelper");
+const { getTimeUntil } = require("../../lib/helpers/TimeDateHelpers/timeHelper");
 const { getUserCareerJobOptions } = require("../../lib/resolvers/userJobResolver");
 
 module.exports.props = {
@@ -144,7 +144,7 @@ module.exports.run = async (client, interaction) => {
                 // return a message that the user has already worked today
                 await interaction.deleteReply();
                 return interaction.followUp({
-                    content: `You have already worked today! Please try again in ${getTimeUntilTomorrow()}.`,
+                    content: `You have already worked today! Please try again in ${getTimeUntil('tomorrow')}.`,
                     ephemeral: true
                 });
             }
