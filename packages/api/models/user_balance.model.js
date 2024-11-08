@@ -29,14 +29,16 @@ module.exports = sequelize => {
             type: DataTypes.INTEGER,
             allowNull: false,
             defaultValue: 0,
-            min: {
-                args: [-100_000],
-                msg: 'Balance cannot be less than -100,000.',
-            },
-            max: {
-                args: [1_000_000_000],
-                msg: 'Balance cannot be greater than 1,000,000,000.',
-            },
+            validate: {
+                min: {
+                    args: [-100_000],
+                    msg: 'Balance cannot be less than -100,000.',
+                },
+                max: {
+                    args: [1_000_000_000],
+                    msg: 'Balance cannot be greater than 1,000,000,000.',
+                }
+            }
         },
     }, {
         sequelize,

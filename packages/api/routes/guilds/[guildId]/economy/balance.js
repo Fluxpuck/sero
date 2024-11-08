@@ -95,8 +95,8 @@ router.post("/:userId", async (req, res, next) => {
         userBalance.balance = (userBalance.balance ?? 0) + amount;
 
         // Ensure balance doesn't go below 0
-        if (userBalance.balance < 0) {
-            userBalance.balance = 0;
+        if (userBalance.balance <= -100_000) {
+            userBalance.balance = 100_000;
         }
 
         // Save the updated record and use { returning: true } to get updated values back
