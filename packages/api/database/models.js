@@ -1,4 +1,4 @@
-const { sequelize } = require('../database/sequelize')
+const { sequelize } = require('../database/sequelize');
 
 const models = {
     Commands: require('../models/commands.model')(sequelize),
@@ -9,7 +9,8 @@ const models = {
     LevelRanks: require('../models/level_ranks.model')(sequelize),
     User: require('../models/user.model')(sequelize),
     UserActivities: require('../models/user_activities.model')(sequelize),
-    UserBalance: require('../models/user_balance.model')(sequelize),
+    UserWallet: require('../models/user_wallet.model')(sequelize),
+    UserBank: require('../models/user_bank.model')(sequelize),
     UserBirthday: require('../models/user_birthday.model')(sequelize),
     UserCareers: require('../models/user_careers.model')(sequelize),
     UserLevels: require('../models/user_levels.model')(sequelize),

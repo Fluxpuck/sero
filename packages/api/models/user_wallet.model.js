@@ -1,6 +1,6 @@
 const { Model, DataTypes } = require('sequelize');
 
-class UserBalance extends Model {
+class UserWallet extends Model {
     static associate(models) {
         this.belongsTo(models.User, { foreignKey: { name: 'userId', allowNull: false } });
         this.belongsTo(models.Guild, { foreignKey: { name: 'guildId', allowNull: false } });
@@ -8,7 +8,7 @@ class UserBalance extends Model {
 }
 
 module.exports = sequelize => {
-    UserBalance.init({
+    UserWallet.init({
         userId: {
             type: DataTypes.BIGINT,
             primaryKey: true,
@@ -31,22 +31,22 @@ module.exports = sequelize => {
             defaultValue: 0,
             validate: {
                 min: {
-                    args: [-100_000],
-                    msg: 'Balance cannot be less than -100,000.',
+                    args: [0],
+                    msg: 'Wallet balance cannot be less than empty',
                 },
                 max: {
-                    args: [1_000_000_000],
-                    msg: 'Balance cannot be greater than 1,000,000,000.',
+                    args: [10_000],
+                    msg: 'Wallet can not hold more than 10,000',
                 }
             }
         },
     }, {
         sequelize,
-        modelName: 'user_balance',
+        modelName: 'user_wallet',
         timestamps: true,
         updatedAt: true,
         createdAt: true
     });
 
-    return UserBalance;
+    return UserWallet;
 }
