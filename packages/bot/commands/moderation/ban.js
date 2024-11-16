@@ -48,7 +48,11 @@ module.exports.run = async (client, interaction) => {
     const violationReason = interaction.options.get("reason").value;
 
     // Fetch the user by userId
-    const member = await interaction.guild.members.fetch(targetUser.id)
+    const member = await interaction.guild.members.fetch(targetUser.id);
+    if (!member) return interaction.editReply({
+        content: `User not found!`,
+        ephemeral: true,
+    });
 
     // If the target is the author, return message
     if (member.user.id === interaction.user.id) return interaction.editReply({

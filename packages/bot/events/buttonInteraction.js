@@ -2,6 +2,9 @@ const { getRequest, postRequest } = require("../database/connection");
 
 module.exports = async (client, interaction) => {
 
+    // Check if the interaction is valid
+    if (!interaction.isButton()) return;
+
     /**
      * Check for button interactions
      * And handle them accordingly
@@ -96,6 +99,8 @@ module.exports = async (client, interaction) => {
                 console.error('Error claiming experience:', error);
             }
 
+            break;
+        default:
             break;
     }
 }
