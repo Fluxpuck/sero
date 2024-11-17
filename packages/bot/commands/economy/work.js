@@ -54,12 +54,12 @@ module.exports.run = async (client, interaction) => {
         const jobFields = jobOptions.map(job => {
 
             // Calculate the income based on the user's career
-            const income = calculateDailyIncome(job.wage, job.raise, DEFAULT_CAREER_LEVEL);
-            const salary = job.wage.toLocaleString();
+            const income = calculateDailyIncome(job.salary, job.payRaise, DEFAULT_CAREER_LEVEL);
+            const salary = job.salary.toLocaleString();
 
             return {
                 name: `${job.emoji} - ${job.name}`,
-                value: `*${job.description}*\nSalary: \`$${salary}\`\nDaily Income (base): \`$${income}\`\nRaise (per level): \`${job.raise}%\``,
+                value: `*${job.description}*\nSalary: \`$${salary}\`\nDaily Income (base): \`$${income}\`\nRaise (per level): \`${job.payRaise}%\``,
                 inline: false
             }
         })
@@ -95,8 +95,8 @@ module.exports.run = async (client, interaction) => {
 
             // Get the selected job
             const selectedJob = jobOptions.find(job => job.jobId == selectedButton);
-            const income = calculateBaseIncome(selectedJob.wage);
-            const salary = selectedJob.wage.toLocaleString();
+            const income = calculateBaseIncome(selectedJob.salary);
+            const salary = selectedJob.salary.toLocaleString();
 
             // Update embed Footer && Fields
             messageEmbed.setTitle(`You have selected a job!`);
@@ -106,7 +106,7 @@ module.exports.run = async (client, interaction) => {
                 [
                     {
                         name: `${selectedJob.emoji} - ${selectedJob.name}`,
-                        value: `*${selectedJob.description}*\nSalary: \`$${salary}\`\nDaily Income (base): \`$${income}\`\nRaise (per level): \`${selectedJob.raise}%\``,
+                        value: `*${selectedJob.description}*\nSalary: \`$${salary}\`\nDaily Income (base): \`$${income}\`\nRaise (per level): \`${selectedJob.payRaise}%\``,
                         inline: false
                     }
                 ]
@@ -153,10 +153,10 @@ module.exports.run = async (client, interaction) => {
         try {
 
             const { job, level } = userCareerResult.data;
-            const { jobId, emoji, name, wage, raise } = job;
+            const { jobId, emoji, name, salary, payRaise } = job;
 
             // Calculate the income based on the user's career
-            const income = calculateDailyIncome(wage, raise, level);
+            const income = calculateDailyIncome(salary, payRaise, level);
 
             // Get random job message, based on the jobId
             let idx = Math.floor(Math.random() * JOB_MESSAGES[jobId].length);

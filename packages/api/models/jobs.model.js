@@ -25,30 +25,30 @@ module.exports = sequelize => {
             type: DataTypes.STRING,
             allowNull: false,
         },
-        wage: {
+        salary: {
             type: DataTypes.INTEGER,
             allowNull: false,
             validate: {
                 min: {
                     args: [0],
-                    msg: 'Wage cannot be negative.',
+                    msg: 'Salary cannot be negative',
                 },
                 max: {
                     args: [100_000],
-                    msg: 'Wage cannot be greater than 100,000.',
+                    msg: 'Salary cannot be greater than 100,000',
                 },
             }
         },
-        raise: {
+        payRaise: {
             type: DataTypes.FLOAT,
             allowNull: false,
             min: {
                 args: [0],
-                msg: 'Raise cannot be negative.',
+                msg: 'Pay raise cannot be a negative procentage',
             },
             max: {
                 args: [20],
-                msg: 'Raise cannot be greater than 20.',
+                msg: 'Pay raise be greater than 20 procent',
             },
         },
     }, {
