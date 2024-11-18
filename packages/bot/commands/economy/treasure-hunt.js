@@ -13,55 +13,45 @@ module.exports.props = {
 module.exports.run = async (client, interaction) => {
     await interaction.deferReply({ ephemeral: false });
 
-    // Check if the user has already claimed their daily work reward
     const hourlyRewardResult = await getRequest(`/guilds/${interaction.guildId}/activities/user/${interaction.user.id}/treasure-hunt?thisHour=true`);
 
-    // Check if the user has already claimed their daily work reward
     if (hourlyRewardResult.status === 200) {
         await interaction.deleteReply();
         return interaction.followUp({
             content: `You've already searched for treasure! Please try again in ${getTimeUntil('nexthour')}.`,
             ephemeral: true
         });
-    } else {
-
-        // Determine the reward amount
-        const MIN = -1000, MAX = 2500;
-        const rewardAmount = Math.floor(Math.random() * (MAX - (MIN) + 1)) + (MIN);
-
-        // Determine if the reward is positive or negative
-        const isPositive = rewardAmount >= 0;
-        const TREASURE_MESSAGES = isPositive ? TREASURE_MESSAGES_POSITIVE : TREASURE_MESSAGES_NEGATIVE;
-
-        let idx = Math.floor(Math.random() * TREASURE_MESSAGES.length);
-        const treasureMessage = TREASURE_MESSAGES[idx].replace('{COIN}', `**${rewardAmount}**`);
-
-        // Store the transfer activity in the database
-        postRequest(`/guilds/${interaction.guild.id}/activities`, {
-            guildId: interaction.guild.id,
-            userId: interaction.user.id,
-            type: "treasure-hunt",
-            additional: {
-                reward: rewardAmount,
-            }
-        });
-
-        // Give the user the target amount of money
-        const result = await postRequest(`/guilds/${interaction.guildId}/economy/balance/${interaction.user.id}`, { amount: rewardAmount });
-
-        // If the request was not successful, return an error
-        if (result?.status !== 200) {
-            await interaction.deleteReply();
-            return interaction.followUp({
-                content: `Uh oh! Something went wrong while sending your hard earned money.`,
-                ephemeral: true
-            })
-        } else {
-            // reply with the embed
-            return interaction.editReply({
-                content: treasureMessage,
-                ephemeral: false
-            })
-        }
     }
+
+    // Generate random reward amount
+    const isPositive = Math.random() < 0.4;
+    const MIN = isPositive ? 0 : -400;
+    const MAX = isPositive ? 250 : 0;
+    const rewardAmount = Math.floor(Math.random() * (MAX - MIN + 1)) + MIN;
+
+    // Generate random treasure message
+    const TREASURE_MESSAGES = isPositive ? TREASURE_MESSAGES_POSITIVE : TREASURE_MESSAGES_NEGATIVE;
+    const treasureMessage = TREASURE_MESSAGES[Math.floor(Math.random() * TREASURE_MESSAGES.length)].replace('{COIN}', `**${Math.abs(rewardAmount)}**`);
+
+    await postRequest(`/guilds/${interaction.guild.id}/activities`, {
+        guildId: interaction.guild.id,
+        userId: interaction.user.id,
+        type: "treasure-hunt",
+        additional: { reward: rewardAmount }
+    });
+
+    const result = await postRequest(`/guilds/${interaction.guildId}/economy/balance/${interaction.user.id}`, { amount: rewardAmount });
+
+    if (result?.status !== 200) {
+        await interaction.deleteReply();
+        return interaction.followUp({
+            content: `Uh oh! Something went wrong while sending your hard earned money.`,
+            ephemeral: true
+        });
+    }
+
+    return interaction.editReply({
+        content: treasureMessage,
+        ephemeral: false
+    });
 }
