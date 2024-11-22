@@ -81,17 +81,21 @@ module.exports = sequelize => {
         },
     });
 
-    // Clean up expired records every second
-    cron.schedule('* * * * * *', async () => {
+    // Clean up expired records every minute
+    cron.schedule('* * * * *', async () => {
+        const timeout = new Promise((_, reject) => setTimeout(() => reject(new Error('Timeout')), 5000)); // 5 seconds timeout
         try {
-            const result = await Away.destroy({
-                where: {
-                    expireAt: {
-                        // Select records where expireAt is in the past
-                        [Sequelize.Op.lt]: new Date(),
+            const result = await Promise.race([
+                Away.destroy({
+                    where: {
+                        expireAt: {
+                            // Select records where expireAt is in the past
+                            [Sequelize.Op.lt]: new Date(),
+                        },
                     },
-                },
-            });
+                }),
+                timeout
+            ]);
 
             if (result > 0 && process.env.NODE_ENV === "development") {
                 console.log(`Cleared ${result} expired away records`);
