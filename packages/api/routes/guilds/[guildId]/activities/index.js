@@ -2,7 +2,7 @@ const express = require("express");
 const router = express.Router({ mergeParams: true });
 
 const { sequelize } = require('../../../../database/sequelize');
-const { UserActivities } = require("../../../../database/models");
+const { UserActivities, User, Guild } = require("../../../../database/models");
 const { findAllRecords, createUniqueRecord, findOneRecord } = require("../../../../utils/RequestManager");
 const { CreateError, RequestError } = require("../../../../utils/ClassManager");
 
@@ -28,6 +28,22 @@ router.post("/", async (req, res, next) => {
         // Check if the required fields are provided
         if (!userId || !type) {
             throw new RequestError(400, "Missing userId | type data. Please check and try again", {
+                method: req.method, path: req.path
+            });
+        }
+
+        // Check if the guildId exists in the Guilds table
+        const guildExists = await findOneRecord(Guild, { id: guildId });
+        if (!guildExists) {
+            throw new RequestError(400, "Invalid guildId. Guild does not exist.", {
+                method: req.method, path: req.path
+            });
+        }
+
+        // Check if the userId exists in the Users table
+        const userExists = await findOneRecord(User, { id: userId });
+        if (!userExists) {
+            throw new RequestError(400, "Invalid userId. User does not exist.", {
                 method: req.method, path: req.path
             });
         }
