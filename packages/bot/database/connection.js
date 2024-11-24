@@ -59,22 +59,6 @@ module.exports = {
         } catch (error) {
             return error?.response?.data.error
         }
-    },
-
-    /**
-     * @TEMPORARY - CONNECTION TO MEE6
-     * Get the user experience from MEE6
-     * @param {string} userId - The user ID
-     */
-    async getMee6Levels(userId) {
-        try {
-            const response = await axios.get(`https://mee6.xyz/api/plugins/levels/leaderboard/552953312073220096?limit=1000`);
-            const findUser = response.data.players.find(player => player.id === userId);
-
-            return findUser ? findUser : false;
-
-        } catch (error) {
-            return false
-        }
     }
+
 };
