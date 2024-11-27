@@ -9,8 +9,8 @@ async function deferInteraction(interaction, ephemeral = false) {
 
     try {
         if (interaction.deferred) return true;
-        await interaction.deferReply({ ephemeral });
-        return true;
+        const defered = await interaction.deferReply({ ephemeral });
+        return defered;
     } catch (error) {
         console.error('Failed to defer interaction:', error);
         return false;
@@ -34,8 +34,8 @@ async function updateInteraction(interaction, options) {
     if (!interaction || !options) return false;
 
     try {
-        await interaction.update(options);
-        return true;
+        const update = await interaction.update(options);
+        return update;
     } catch (error) {
         console.error('Failed to update interaction:', error);
         return false;
