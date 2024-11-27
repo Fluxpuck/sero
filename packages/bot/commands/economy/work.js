@@ -5,6 +5,7 @@ const { postRequest, getRequest } = require("../../database/connection");
 const { calculateDailyIncome, calculateBaseIncome } = require("../../lib/helpers/EconomyHelpers/economyHelper");
 const { getTimeUntil } = require("../../lib/helpers/TimeDateHelpers/timeHelper");
 const { getUserCareerJobOptions } = require("../../lib/resolvers/userJobResolver");
+const { deferInteraction, replyInteraction, updateInteraction, followUpInteraction } = require("../../utils/InteractionManager");
 
 module.exports.props = {
     commandName: "work",
@@ -16,7 +17,7 @@ module.exports.props = {
 }
 
 module.exports.run = async (client, interaction) => {
-    await interaction.deferReply({ ephemeral: false });
+    await deferInteraction(interaction, false);
 
     // Fetch the user's career (job)
     const userCareerResult = await getRequest(`/guilds/${interaction.guild.id}/economy/career/${interaction.user.id}`);
@@ -72,11 +73,11 @@ module.exports.run = async (client, interaction) => {
         })
 
         // Send the message
-        const response = await interaction.editReply({
+        const response = await replyInteraction(interaction, {
             embeds: [messageEmbed],
             components: [messageComponents],
             ephemeral: false
-        })
+        });
 
         // Collect the button selection
         const options = { componentType: ComponentType.Button, idle: 300_000, time: 3_600_000 }
@@ -118,17 +119,17 @@ module.exports.run = async (client, interaction) => {
             // If the user's career was updated successfully, return a message
             if (updateUserCareer.status === 200) {
                 // Update the interaction, disabling the buttons
-                return i.update({
+                return updateInteraction(i, {
                     embeds: [messageEmbed],
                     components: [],
-                })
+                });
             }
 
             // If the user's career was not updated successfully, return an error message
-            return i.update({
+            return updateInteraction(i, {
                 content: `Oops! Something went wrong while updating your career. Please try again later.`,
                 ephemeral: true
-            })
+            });
 
         });
 
@@ -183,33 +184,30 @@ module.exports.run = async (client, interaction) => {
 
             // If the request was not successful, return an error
             if (result?.status !== 200) {
-                await interaction.deleteReply();
-                return interaction.followUp({
+                await followUpInteraction(interaction, {
                     content: `Uh oh! Something went wrong while sending your hard earned money.`,
                     ephemeral: true
-                })
+                });
             } else {
                 // reply with the embed
-                return interaction.editReply({
+                return replyInteraction(interaction, {
                     embeds: [embed],
                     ephemeral: false
-                })
+                });
             }
 
         } catch (error) {
-            await interaction.deleteReply();
-            return interaction.followUp({
+            await followUpInteraction(interaction, {
                 content: `Oops! Something went wrong while working. Please try again later.`,
                 ephemeral: true
             });
         }
 
     } else {
-        await interaction.deleteReply();
-        return interaction.followUp({
+        await followUpInteraction(interaction, {
             content: `Oops! Something went wrong while fetching your career. Please try again later.`,
             ephemeral: true
-        })
+        });
     }
 
 }
