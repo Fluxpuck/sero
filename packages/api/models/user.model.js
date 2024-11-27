@@ -5,6 +5,7 @@ class User extends Model {
         this.belongsTo(models.Guild, { foreignKey: 'guildId' })
         this.hasMany(models.UserLevels, { foreignKey: 'userId' })
         this.hasMany(models.UserWallet, { foreignKey: 'userId' })
+        this.hasMany(models.UserBank, { foreignKey: 'userId' })
         this.hasMany(models.UserCareers, { foreignKey: 'userId' })
         this.hasMany(models.Logs, { foreignKey: 'userId' })
         this.hasMany(models.Messages, { foreignKey: 'userId' })
