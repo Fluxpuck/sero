@@ -40,9 +40,8 @@ module.exports.run = async (client, interaction) => {
         additional: { reward: rewardAmount }
     });
 
-    const result = await postRequest(`/guilds/${interaction.guildId}/economy/balance/${interaction.user.id}`, { amount: rewardAmount });
-
-    if (result?.status !== 200) {
+    const walletDeposit = await postRequest(`guilds/${interaction.guild.id}/economy/wallet/${interaction.user.id}`, { amount: rewardAmount });
+    if (walletDeposit?.status !== 200) {
         return followUpInteraction(interaction, {
             content: `Uh oh! Something went wrong while sending your hard earned money.`,
             ephemeral: true
