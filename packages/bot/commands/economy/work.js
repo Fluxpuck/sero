@@ -179,17 +179,14 @@ module.exports.run = async (client, interaction) => {
                 }
             });
 
-            // Give the user the target amount of money
-            const result = await postRequest(`/guilds/${interaction.guild.id}/economy/balance/${interaction.user.id}`, { amount: income });
-
-            // If the request was not successful, return an error
-            if (result?.status !== 200) {
+            // Deposit the income in the user's bank account
+            const bankDeposit = await postRequest(`guilds/${interaction.guild.id}/economy/bank/${interaction.user.id}`, { amount: income });
+            if (bankDeposit?.status !== 200) {
                 await followUpInteraction(interaction, {
-                    content: `Uh oh! Something went wrong while sending your hard earned money.`,
+                    content: `Uh oh! Something went wrong while transfering your hard earned money.`,
                     ephemeral: true
                 });
-            } else {
-                // reply with the embed
+            } else { // reply with the embed
                 return replyInteraction(interaction, {
                     embeds: [embed],
                     ephemeral: false
