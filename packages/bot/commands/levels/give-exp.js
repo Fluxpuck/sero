@@ -1,4 +1,5 @@
 const { postRequest } = require("../../database/connection");
+const { deferInteraction, replyInteraction, updateInteraction, followUpInteraction } = require("../../utils/InteractionManager");
 
 module.exports.props = {
     commandName: "give-exp",
@@ -19,7 +20,7 @@ module.exports.props = {
                 description: "The amount of experience to give to the user",
                 required: true,
                 minValue: 1,
-                maxValue: 1000000,
+                maxValue: 1_000_000,
             },
         ],
     },
@@ -27,7 +28,7 @@ module.exports.props = {
 }
 
 module.exports.run = async (client, interaction) => {
-    await interaction.deferReply({ ephemeral: false });
+    await deferInteraction(interaction, false);
 
     // Get User && Amount details from the interaction options
     const targetUser = interaction.options.get("user").user;
@@ -39,14 +40,14 @@ module.exports.run = async (client, interaction) => {
     // If the request was not successful, return an error
     if (result?.status !== 200) {
         await interaction.deleteReply();
-        return interaction.followUp({
+        return followUpInteraction(interaction, {
             content: `Uh oh! Something went wrong while giving experience to ${targetUser.username}.`,
             ephemeral: true
-        })
+        });
     } else {
-        return interaction.editReply({
-            content: `<@${targetUser.id}> has recieved **${targetAmount}** experience!`,
+        return updateInteraction(interaction, {
+            content: `<@${targetUser.id}> has received **${targetAmount}** experience!`,
             ephemeral: false
-        })
+        });
     }
 }

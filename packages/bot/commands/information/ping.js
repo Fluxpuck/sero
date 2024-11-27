@@ -1,3 +1,5 @@
+const { replyInteraction } = require('../../utils/InteractionManager');
+
 module.exports.props = {
     commandName: "ping",
     description: "Check the client latency",
@@ -7,9 +9,9 @@ module.exports.props = {
 }
 
 module.exports.run = async (client, interaction) => {
-
-    // Reply with Discord Latency
-    const message = await interaction.reply({ content: 'Pinging...', fetchReply: true });
-    interaction.editReply(`Pong! → ${message.createdTimestamp - interaction.createdTimestamp}ms`);
-
+    const options = { content: 'Pinging...', fetchReply: true };
+    const message = await replyInteraction(interaction, options);
+    if (message) {
+        await replyInteraction(interaction, { content: `Pong! → ${message.createdTimestamp - interaction.createdTimestamp}ms` });
+    }
 }

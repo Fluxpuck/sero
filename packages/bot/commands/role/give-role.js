@@ -1,5 +1,6 @@
 const { postRequest } = require("../../database/connection");
 const { findUser } = require("../../lib/resolvers/userResolver");
+const { deferInteraction, replyInteraction, updateInteraction, followUpInteraction } = require("../../utils/InteractionManager");
 
 module.exports.props = {
     commandName: "give-role",
@@ -34,7 +35,7 @@ module.exports.props = {
 }
 
 module.exports.run = async (client, interaction) => {
-    await interaction.deferReply({ ephemeral: true });
+    await deferInteraction(interaction, true);
 
     // Get the user and role from the interaction
     const targetUser = interaction.options.get("user").user;
@@ -46,11 +47,11 @@ module.exports.run = async (client, interaction) => {
     // Fetch full member details
     const member = findUser(interaction.guild, targetUser.id);
     if (!member) {
-        await interaction.deleteReply();
-        return interaction.followUp({
+        await followUpInteraction(interaction, {
             content: "Could not find the user in the guild",
             ephemeral: true
-        })
+        });
+        return;
     }
 
     // Store the temporary role in the database
@@ -58,11 +59,11 @@ module.exports.run = async (client, interaction) => {
         const result = await postRequest(`/guilds/${interaction.guildId}/roles/add`, { userId: targetUser.id, roleId: targetRole.id, duration: duration });
         // If the request was not successful, return an error
         if (result?.status !== 201) {
-            await interaction.deleteReply();
-            return interaction.followUp({
+            await followUpInteraction(interaction, {
                 content: "Something went wrong while storing the temporary role",
                 ephemeral: true
-            })
+            });
+            return;
         }
     }
 
@@ -71,16 +72,16 @@ module.exports.run = async (client, interaction) => {
         // Give the user the temporary role
         await member.roles.add(targetRole, `test`)
     } catch (error) {
-        await interaction.deleteReply();
-        return interaction.followUp({
+        await followUpInteraction(interaction, {
             content: "Something went wrong while gifting the temporary role",
             ephemeral: true
-        })
+        });
+        return;
     }
 
     // Send the success message
     const contentMessage = isTemporary ? `for **${duration}** ${duration > 1 ? "hours" : "hour"}` : "";
-    return interaction.editReply({
+    await updateInteraction(interaction, {
         content: `Successfully gave <@${targetUser.id}> the role <@&${targetRole.id}> ${contentMessage}`,
         ephemeral: false
     });

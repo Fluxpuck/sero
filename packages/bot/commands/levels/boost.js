@@ -1,5 +1,6 @@
 const { postRequest, getRequest } = require("../../database/connection");
 const moment = require('moment');
+const { deferInteraction, replyInteraction, updateInteraction, followUpInteraction } = require('../../utils/InteractionManager');
 
 module.exports.props = {
     commandName: "boost",
@@ -30,7 +31,7 @@ module.exports.props = {
 }
 
 module.exports.run = async (client, interaction) => {
-    await interaction.deferReply({ ephemeral: false });
+    await deferInteraction(interaction, false);
 
     // Get modifier && duration details from the interaction options
     const targetModifier = interaction.options.get("modifier")?.value;
@@ -54,7 +55,7 @@ module.exports.run = async (client, interaction) => {
             const expireMoment = moment(expireAt);
 
             if (!expireAt || now.isAfter(expireMoment)) {
-                return interaction.editReply({
+                return await updateInteraction(interaction, {
                     content: `The current server-modifier is **${modifier}X**.`,
                     ephemeral: false
                 });
@@ -66,7 +67,7 @@ module.exports.run = async (client, interaction) => {
 
                 const timeLeft = `${durationHours} hour${durationHours === 1 ? "" : "s"} and ${durationMinutes} minute${durationMinutes === 1 ? "" : "s"}`;
 
-                return interaction.editReply({
+                return await updateInteraction(interaction, {
                     content: `Currently boosting the server **${modifier}X** for **${duration} hour${duration === 1 ? "" : "s"}**.\n-# There is ${timeLeft} left.`,
                     ephemeral: false
                 });
@@ -74,7 +75,7 @@ module.exports.run = async (client, interaction) => {
 
         } else {
             await interaction.deleteReply();
-            return interaction.followUp({
+            return await followUpInteraction(interaction, {
                 content: `Uh oh! Something went wrong fetching the server modifier.`,
                 ephemeral: true
             })
@@ -95,12 +96,12 @@ module.exports.run = async (client, interaction) => {
         // If the request was not successful, return an error
         if (result?.status !== 201) {
             await interaction.deleteReply();
-            return interaction.followUp({
+            return await followUpInteraction(interaction, {
                 content: `Uh oh! Something went wrong and the modifier has not been set.`,
                 ephemeral: true
             })
         } else {
-            return interaction.editReply({
+            return await updateInteraction(interaction, {
                 content: `Boosting the server **${targetModifier}X** for **${duration} hour${duration === 1 ? "" : "s"}**!`,
                 ephemeral: false
             })

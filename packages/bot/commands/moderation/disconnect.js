@@ -1,4 +1,5 @@
 const { postRequest } = require("../../database/connection");
+const { deferInteraction, replyInteraction } = require("../../utils/InteractionManager");
 
 module.exports.props = {
     commandName: "disconnect",
@@ -19,11 +20,11 @@ module.exports.props = {
 };
 
 module.exports.run = async (client, interaction) => {
-    await interaction.deferReply({ ephemeral: true });
+    await deferInteraction(interaction, true);
 
     // Get User details from the interaction options
     const targetUser = interaction.options.get("user").user;
-    const member = await interaction.guild.members.fetch(targetUser.id)
+    const member = await interaction.guild.members.fetch(targetUser.id);
 
     // If the user is in a voicechannel, disconnect them
     if (member?.voice.channel) {
@@ -43,12 +44,12 @@ module.exports.run = async (client, interaction) => {
         await member.voice.disconnect();
 
         // Send the success message
-        return interaction.editReply({
+        return replyInteraction(interaction, {
             content: `You successfully disconnected <@${member.user.id}>`,
             ephemeral: true,
         });
     } else {
-        return interaction.editReply({
+        return replyInteraction(interaction, {
             content: `<@${member.user.id}> is not in a voice channel.`,
             ephemeral: true
         });

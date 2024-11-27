@@ -1,6 +1,7 @@
 const { postRequest } = require("../../database/connection");
 const ClientButtonsEnum = require("../../assets/embed-buttons");
 const { ActionRowBuilder, ComponentType } = require("discord.js");
+const { deferInteraction, replyInteraction, updateInteraction } = require("../../utils/InteractionManager");
 
 module.exports.props = {
     commandName: "reset-exp",
@@ -21,7 +22,7 @@ module.exports.props = {
 }
 
 module.exports.run = async (client, interaction) => {
-    await interaction.deferReply({ ephemeral: false });
+    await deferInteraction(interaction, false);
 
     // Get User details from the interaction options
     const targetUser = interaction.options.get("user")?.user
@@ -37,15 +38,15 @@ module.exports.run = async (client, interaction) => {
         // If the request was not successful, return an error
         if (result?.status !== 200) {
             await interaction.deleteReply();
-            return interaction.followUp({
+            return replyInteraction(interaction, {
                 content: "Something went wrong while resetting the users experience.",
                 ephemeral: true
-            })
+            });
         } else {
-            return interaction.editReply({
+            return replyInteraction(interaction, {
                 content: `<@${targetUser.id}>'s experience has been reset!`,
                 ephemeral: false
-            })
+            });
         }
     } else {
 
@@ -57,7 +58,7 @@ module.exports.run = async (client, interaction) => {
             );
 
         // Send a reply and ask if the user is sure
-        const response = await interaction.editReply({
+        const response = await replyInteraction(interaction, {
             content: "Are you sure you want to reset all experience for all users?\nThis action will also remove any roles associated with current ranks.\n*This action cannot be undone.*",
             components: [messageComponents],
             ephemeral: false
@@ -81,11 +82,11 @@ module.exports.run = async (client, interaction) => {
 
                 // If the request was not successful, return an error
                 if (result?.status !== 200) {
-                    return i.update({
+                    return updateInteraction(i, {
                         content: "Something went wrong while resetting the experience.",
                         components: [],
                         ephemeral: true
-                    })
+                    });
                 } else {
 
                     // @DISABLED - Due to the high number of users, this will take a long time to process
@@ -107,11 +108,11 @@ module.exports.run = async (client, interaction) => {
 
                     // }
 
-                    return i.update({
+                    return updateInteraction(i, {
                         content: `Your server's experience has been reset!`,
                         components: [],
                         ephemeral: false
-                    })
+                    });
                 }
 
             }
@@ -121,11 +122,11 @@ module.exports.run = async (client, interaction) => {
              * Cancel the experience reset
              */
             if (selectedButton === "no") {
-                return i.update({
+                return updateInteraction(i, {
                     content: "The experience reset has been cancelled.",
                     components: [],
                     ephemeral: true
-                })
+                });
             }
 
         });

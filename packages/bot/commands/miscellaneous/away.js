@@ -1,6 +1,7 @@
 const { AWAY_PREREASONS } = require("../../assets/reason-messages");
 const { postRequest } = require("../../database/connection");
 const { formatExpression } = require("../../lib/helpers/StringHelpers/stringHelper");
+const { deferInteraction, replyInteraction, updateInteraction, followUpInteraction } = require("../../utils/InteractionManager");
 
 module.exports.props = {
     commandName: "away",
@@ -64,7 +65,7 @@ module.exports.autocomplete = async (client, interaction) => {
 }
 
 module.exports.run = async (client, interaction) => {
-    await interaction.deferReply({ ephemeral: false });
+    await deferInteraction(interaction, false);
 
     // Get Away time value from the interaction options
     const timeOption = interaction.options.get("time")?.value;
@@ -77,17 +78,17 @@ module.exports.run = async (client, interaction) => {
     // If the request was not successful, return an error
     if (result?.status !== 200) {
         await interaction.deleteReply();
-        return interaction.followUp({
+        return followUpInteraction(interaction, {
             content: "Something went wrong while setting your away status.",
             ephemeral: true
-        })
+        });
     } else {
         let content = `<@${interaction.user.id}> will be away for **${timeInMinutes}** minutes!`;
         if (interaction.options.get("message")) {
             const reason = interaction.options.get("message")?.value;
             content += `\n> **${reason}**`;
         }
-        return interaction.editReply({
+        return updateInteraction(interaction, {
             content: content,
             ephemeral: false
         }).then(msg => {
@@ -95,7 +96,5 @@ module.exports.run = async (client, interaction) => {
                 msg.delete();
             }, 8000); // 8 seconds
         });
-
     }
-
 }

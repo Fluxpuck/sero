@@ -1,6 +1,7 @@
 const { getRequest } = require("../../database/connection");
 const { generateSnowflake } = require("../../lib/discord/snowflake");
 const eventEnum = require("../../config/eventEnum");
+const { deferInteraction, replyInteraction } = require("../../utils/InteractionManager");
 
 module.exports.props = {
     commandName: "drop-reward",
@@ -12,10 +13,11 @@ module.exports.props = {
 }
 
 module.exports.run = async (client, interaction) => {
+    await deferInteraction(interaction, true);
 
     const rewardDropSetting = await getRequest(`/guilds/${interaction.guild.id}/settings/exp-reward-drops`);
     if (rewardDropSetting.status !== 200) {
-        return interaction.reply({ content: 'Oops! Could not fetch the reward drop guild settings.', ephemeral: true });
+        return replyInteraction(interaction, { content: 'Oops! Could not fetch the reward drop guild settings.', ephemeral: true });
     }
 
     // Set the guildId, targetId, and token
@@ -27,10 +29,9 @@ module.exports.run = async (client, interaction) => {
         // Emit the guildRewardDrops event
         client.emit(eventEnum.GUILD_REWARD_DROPS, payload)
     } catch (error) {
-        return interaction.reply({ content: 'Oops! Could not trigger the reward drop.', ephemeral: true });
+        return replyInteraction(interaction, { content: 'Oops! Could not trigger the reward drop.', ephemeral: true });
     }
 
     // Reply to the interaction
-    interaction.reply({ content: '*Watch out! A reward drop has been triggered.*', ephemeral: true });
-
+    replyInteraction(interaction, { content: '*Watch out! A reward drop has been triggered.*', ephemeral: true });
 }

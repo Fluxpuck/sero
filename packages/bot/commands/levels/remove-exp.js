@@ -1,4 +1,5 @@
 const { postRequest, getRequest } = require("../../database/connection");
+const { deferInteraction, replyInteraction, updateInteraction, followUpInteraction } = require("../../utils/InteractionManager");
 
 module.exports.props = {
     commandName: "remove-exp",
@@ -27,7 +28,7 @@ module.exports.props = {
 }
 
 module.exports.run = async (client, interaction) => {
-    await interaction.deferReply({ ephemeral: false });
+    await deferInteraction(interaction, false);
 
     // Get User && Amount details from the interaction options
     const targetUser = interaction.options.get("user").user;
@@ -39,15 +40,15 @@ module.exports.run = async (client, interaction) => {
     // If the request was not successful, return an error
     if (result && result?.status !== 200) {
         await interaction.deleteReply();
-        interaction.followUp({
+        await followUpInteraction(interaction, {
             content: `Uh oh! Something went wrong while removing experience from <@${targetUser.id}>.`,
             ephemeral: true
-        })
+        });
 
     } else {
-        return interaction.editReply({
+        await updateInteraction(interaction, {
             content: `**${targetAmount}** experience was removed from <@${targetUser.id}>!`,
             ephemeral: false
-        })
+        });
     }
 }

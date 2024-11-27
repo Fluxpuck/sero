@@ -1,6 +1,7 @@
 const { getRequest, postRequest } = require("../../database/connection");
 const { getTimeUntil } = require("../../lib/helpers/TimeDateHelpers/timeHelper");
 const { TREASURE_MESSAGES_NEGATIVE, TREASURE_MESSAGES_POSITIVE } = require("../../assets/treasure-messages");
+const { deferInteraction, updateInteraction } = require('../../utils/InteractionManager');
 
 module.exports.props = {
     commandName: "treasure-hunt",
@@ -11,20 +12,17 @@ module.exports.props = {
 }
 
 module.exports.run = async (client, interaction) => {
-    await interaction.deferReply({ ephemeral: false });
+    await deferInteraction(interaction, false);
 
     // Check if the user has already claimed their daily work reward
     const hourlyRewardResult = await getRequest(`/guilds/${interaction.guildId}/activities/user/${interaction.user.id}/treasure-hunt?thisHour=true`);
 
-    // Check if the user has already claimed their daily work reward
     if (hourlyRewardResult.status === 200) {
-        await interaction.deleteReply();
-        return interaction.followUp({
+        await updateInteraction(interaction, {
             content: `You've already searched for treasure! Please try again in ${getTimeUntil('nexthour')}.`,
             ephemeral: true
         });
     } else {
-
         // Determine the reward amount
         const MIN = -1000, MAX = 2500;
         const rewardAmount = Math.floor(Math.random() * (MAX - (MIN) + 1)) + (MIN);
@@ -49,19 +47,16 @@ module.exports.run = async (client, interaction) => {
         // Give the user the target amount of money
         const result = await postRequest(`/guilds/${interaction.guildId}/economy/balance/${interaction.user.id}`, { amount: rewardAmount });
 
-        // If the request was not successful, return an error
         if (result?.status !== 200) {
-            await interaction.deleteReply();
-            return interaction.followUp({
+            await updateInteraction(interaction, {
                 content: `Uh oh! Something went wrong while sending your hard earned money.`,
                 ephemeral: true
-            })
+            });
         } else {
-            // reply with the embed
-            return interaction.editReply({
+            await updateInteraction(interaction, {
                 content: treasureMessage,
                 ephemeral: false
-            })
+            });
         }
     }
 }

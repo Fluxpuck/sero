@@ -1,5 +1,6 @@
 const { BAN_PREREASONS } = require("../../assets/reason-messages");
 const { formatExpression } = require("../../lib/helpers/StringHelpers/stringHelper");
+const { deferInteraction, replyInteraction } = require('../../utils/InteractionManager');
 
 module.exports.props = {
     commandName: "ban",
@@ -41,7 +42,7 @@ module.exports.autocomplete = async (client, interaction) => {
 }
 
 module.exports.run = async (client, interaction) => {
-    await interaction.deferReply({ ephemeral: true });
+    await deferInteraction(interaction, true);
 
     // Get User && Reason details from the interaction options && convert user into a member
     const targetUser = interaction.options.get("user").user || null;
@@ -49,19 +50,19 @@ module.exports.run = async (client, interaction) => {
 
     // Fetch the user by userId
     const member = await interaction.guild.members.fetch(targetUser.id);
-    if (!member) return interaction.editReply({
+    if (!member) return replyInteraction(interaction, {
         content: `User not found!`,
         ephemeral: true,
     });
 
     // If the target is the author, return message
-    if (member.user.id === interaction.user.id) return interaction.editReply({
+    if (member.user.id === interaction.user.id) return replyInteraction(interaction, {
         content: "You cannot ban yourself!",
         ephemeral: true
     });
 
     // If the member is not moderatable, return message
-    if (!member.moderatable) return interaction.editReply({
+    if (!member.moderatable) return replyInteraction(interaction, {
         content: `<@${member.user.id}> is a moderator!`,
         ephemeral: true
     });
@@ -69,13 +70,13 @@ module.exports.run = async (client, interaction) => {
     // Ban the target user with reason
     member.ban({ reason: `${violationReason} - ${interaction.user.username}`, days: null })
         .then(() => {
-            return interaction.editReply({
+            return replyInteraction(interaction, {
                 content: `You successfully banned **${member.user.username}** (${member.user.id}) for:\n> ${violationReason}`,
                 ephemeral: true,
             });
         })
         .catch(err => {
-            return interaction.editReply({
+            return replyInteraction(interaction, {
                 content: `Could not ban **${member.user.username}** (${member.user.id})!`,
                 ephemeral: true,
             });

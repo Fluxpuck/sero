@@ -1,5 +1,7 @@
 const { getRequest } = require("../../database/connection");
-const { createCustomEmbed } = require("../../assets/embed")
+const { createCustomEmbed } = require("../../assets/embed");
+const { deferInteraction, replyInteraction } = require("../../utils/InteractionManager");
+
 module.exports.props = {
     commandName: "balance",
     description: "Get the balance of a user.",
@@ -19,7 +21,7 @@ module.exports.props = {
 }
 
 module.exports.run = async (client, interaction) => {
-    await interaction.deferReply({ ephemeral: false });
+    await deferInteraction(interaction, false);
 
     // Get User details from the interaction options
     const targetUser = interaction.options.get("user")?.user || interaction.user;
@@ -37,12 +39,11 @@ module.exports.run = async (client, interaction) => {
                 inline: true
             }
         ],
-    })
+    });
 
     // Reply with the messageEmbed
-    return interaction.editReply({
+    return replyInteraction(interaction, {
         embeds: [messageEmbed],
         ephemeral: false
-    })
-
+    });
 }
