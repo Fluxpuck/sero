@@ -12,6 +12,7 @@ module.exports.props = {
     commandName: "work",
     description: "Work to earn money!",
     usage: "/work",
+    interaction: {},
     defaultMemberPermissions: ['SendMessages'],
     cooldown: 2 * 60
 };

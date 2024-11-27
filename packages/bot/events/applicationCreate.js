@@ -9,10 +9,11 @@ module.exports = async (client) => {
     const clientCommands = Array.from(client.commands);
 
     // Iterate over the client commands
-    for await (const [commandName, value] of clientCommands) {
+    for await (const [key, value] of clientCommands) {
 
         // Get the command properties
-        const command = value.props;
+        const { commandName, description, interaction = {}, defaultMemberPermissions, usage, private, cooldown } = value.props;
+        const { type = 1, options = [] } = interaction;
 
         // Find the application command
         const application = applications.find(app => app.name === commandName);
@@ -24,11 +25,11 @@ module.exports = async (client) => {
              * @command - The application command details
              */
             await client.application?.commands.create({
-                name: command.commandName,
-                description: command.description,
-                type: command.interaction.type,
-                options: command.interaction.options,
-                defaultMemberPermissions: command.defaultMemberPermissions,
+                name: commandName,
+                description: description,
+                type: type,
+                options: options,
+                defaultMemberPermissions: defaultMemberPermissions,
             }).then(async (application) => {
 
                 // Log the application creation
@@ -38,13 +39,13 @@ module.exports = async (client) => {
                 const result = await postCommands(application.name, {
                     commandId: application.id,
                     commandName: application.name,
-                    description: command.description,
-                    usage: command.usage,
-                    interactionType: command.interaction.type,
-                    interactionOptions: command.interaction.options,
-                    defaultMemberPermissions: command.defaultMemberPermissions,
-                    private: command.private,
-                    cooldown: command.cooldown ? command.cooldown : null,
+                    description: description,
+                    usage: usage,
+                    interactionType: type,
+                    interactionOptions: options,
+                    defaultMemberPermissions: defaultMemberPermissions,
+                    private: private,
+                    cooldown: cooldown ?? null,
                 })
 
                 if (process.env.NODE_ENV === "development") {
@@ -62,11 +63,11 @@ module.exports = async (client) => {
              * @command - The application command details
              */
             await application.edit({
-                name: command.commandName,
-                description: command.description,
-                type: command.interaction?.type || null,
-                options: command.interaction?.options || null,
-                defaultMemberPermissions: command.defaultMemberPermissions,
+                name: commandName,
+                description: description,
+                type: type,
+                options: options,
+                defaultMemberPermissions: defaultMemberPermissions,
             }).then(async (application) => {
 
                 // Log the application update
@@ -76,13 +77,13 @@ module.exports = async (client) => {
                 const result = await postCommands(application.name, {
                     commandId: application.id,
                     commandName: application.name,
-                    description: command.description,
-                    usage: command.usage,
-                    interactionType: command.interaction?.type || null,
-                    interactionOptions: command.interaction?.options || null,
-                    defaultMemberPermissions: command.defaultMemberPermissions,
-                    private: command.private,
-                    cooldown: command.cooldown ? command.cooldown : null,
+                    description: description,
+                    usage: usage,
+                    interactionType: type,
+                    interactionOptions: options,
+                    defaultMemberPermissions: defaultMemberPermissions,
+                    private: private,
+                    cooldown: cooldown ?? null,
                 })
 
                 if (process.env.NODE_ENV === "development") {
