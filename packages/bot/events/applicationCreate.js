@@ -64,8 +64,8 @@ module.exports = async (client) => {
             await application.edit({
                 name: command.commandName,
                 description: command.description,
-                type: command.interaction.type,
-                options: command.interaction.options,
+                type: command.interaction?.type || null,
+                options: command.interaction?.options || null,
                 defaultMemberPermissions: command.defaultMemberPermissions,
             }).then(async (application) => {
 
@@ -78,8 +78,8 @@ module.exports = async (client) => {
                     commandName: application.name,
                     description: command.description,
                     usage: command.usage,
-                    interactionType: command.interaction.type,
-                    interactionOptions: command.interaction.options,
+                    interactionType: command.interaction?.type || null,
+                    interactionOptions: command.interaction?.options || null,
                     defaultMemberPermissions: command.defaultMemberPermissions,
                     private: command.private,
                     cooldown: command.cooldown ? command.cooldown : null,
