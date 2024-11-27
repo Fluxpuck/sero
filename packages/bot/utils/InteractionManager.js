@@ -19,9 +19,8 @@ async function deferInteraction(interaction, ephemeral = false) {
 
 async function replyInteraction(interaction, options) {
     if (!interaction || !options) return false;
-
     try {
-        const response = interaction.deferred
+        const response = interaction.deferred || interaction.replied
             ? await interaction.editReply(options)
             : await interaction.reply(options);
         return response;
