@@ -1,8 +1,9 @@
-const { getRequest } = require('../../database/connection')
+const { getRequest } = require('../../database/connection');
 const { ActionRowBuilder, ComponentType } = require("discord.js");
-const { createCustomEmbed } = require("../../assets/embed")
+const { createCustomEmbed } = require("../../assets/embed");
 const ClientButtonsEnum = require("../../assets/embed-buttons");
 const { chunk } = require("../../lib/helpers/MathHelpers/arrayHelper");
+const { deferInteraction, replyInteraction, updateInteraction } = require('../../utils/InteractionManager');
 
 module.exports.props = {
     commandName: "balance-board",
@@ -13,7 +14,7 @@ module.exports.props = {
 }
 
 module.exports.run = async (client, interaction, leaderboard = []) => {
-    await interaction.deferReply({ ephemeral: false });
+    await deferInteraction(interaction, false);
 
     // Fetch all balances.
     const result = await getRequest(`/guilds/${interaction.guildId}/economy/balance`);
@@ -24,16 +25,16 @@ module.exports.run = async (client, interaction, leaderboard = []) => {
     // If status code is 404, return an error
     if (result?.status === 404) {
         await interaction.deleteReply();
-        return interaction.followUp({
+        return replyInteraction(interaction, {
             content: `Oops! There is no one on the \`\`balance\`\` leaderboard yet!`,
             ephemeral: true
-        })
+        });
     } else if (result?.status !== 200) {
         await interaction.deleteReply();
-        return interaction.followUp({
+        return replyInteraction(interaction, {
             content: `Oops! Something went wrong while trying to fetch the leaderboard!`,
             ephemeral: true
-        })
+        });
     }
 
     // Setup embed description
@@ -45,17 +46,17 @@ module.exports.run = async (client, interaction, leaderboard = []) => {
         let ranking = rankings[index] || `${index + 1}.`;
 
         // Construct the leaderboard fields
-        const leaderboardTitle = `${ranking} \`${user.userName}\``
-        const leaderboardValue = `:coin: *${balance.balance} coin${balance.balance === 1 ? '' : 's'}*`
+        const leaderboardTitle = `${ranking} \`${user.userName}\``;
+        const leaderboardValue = `:coin: *${balance.balance} coin${balance.balance === 1 ? '' : 's'}*`;
         return {
             name: leaderboardTitle,
             value: leaderboardValue,
             inline: false
-        }
+        };
     });
 
     // Slice the leaderboard in chunks of 10
-    const leaderboardPages = chunk(leaderboardValues, 10)
+    const leaderboardPages = chunk(leaderboardValues, 10);
     let page = 0, maxpages = leaderboardPages.length - 1;
 
     // Check if there are more than 3 logs
@@ -87,7 +88,7 @@ module.exports.run = async (client, interaction, leaderboard = []) => {
     });
 
     // Collect the button selection
-    const options = { componentType: ComponentType.Button, idle: 300_000, time: 3_600_000 }
+    const options = { componentType: ComponentType.Button, idle: 300_000, time: 3_600_000 };
     const collector = response.createMessageComponentCollector({ options });
     collector.on('collect', async i => {
 
@@ -100,8 +101,8 @@ module.exports.run = async (client, interaction, leaderboard = []) => {
         if (selectedButton === "previous_pg" || selectedButton === "next_pg") {
 
             // Update the page number based on the button pressed
-            if (selectedButton == 'previous_pg') (page <= 0) ? 0 : page--
-            if (selectedButton == 'next_pg') (page >= maxpages) ? maxpages : page++
+            if (selectedButton == 'previous_pg') (page <= 0) ? 0 : page--;
+            if (selectedButton == 'next_pg') (page >= maxpages) ? maxpages : page++;
 
             // Update the button status, based on the page number
             const previousIndex = messageComponents.components.findIndex(button => button.data.custom_id === "previous_pg");
@@ -126,11 +127,11 @@ module.exports.run = async (client, interaction, leaderboard = []) => {
             messageEmbed.setFields([...leaderboardPages[page]]);
 
             // Update the interaction components
-            await i.update({
+            await updateInteraction(i, {
                 embeds: [messageEmbed],
                 components: [messageComponents]
-            })
+            });
 
         }
-    })
+    });
 }

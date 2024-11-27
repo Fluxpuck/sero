@@ -1,6 +1,7 @@
 const { postRequest } = require("../../database/connection");
 const { getYear } = require('date-fns');
 const { getBirthdate } = require("../../lib/helpers/TimeDateHelpers/timeHelper");
+const { deferInteraction, replyInteraction } = require("../../utils/InteractionManager");
 
 module.exports.props = {
     commandName: "birthday",
@@ -41,7 +42,7 @@ module.exports.props = {
 
 module.exports.run = async (client, interaction) => {
     // Defer the reply to prevent timeout while processing
-    await interaction.deferReply({ ephemeral: true });
+    await deferInteraction(interaction, true);
 
     // Get Birthday values from the interaction options
     const dayValue = interaction.options.get("day").value;
@@ -57,7 +58,7 @@ module.exports.run = async (client, interaction) => {
     });
 
     if (setBirthdayResponse.status === 403) {
-        return interaction.editReply({
+        return replyInteraction(interaction, {
             content: "Oops! You have already set your birthday twice and cannot set it again.",
             ephemeral: true
         });
@@ -66,23 +67,21 @@ module.exports.run = async (client, interaction) => {
     const birthDate = getBirthdate(dayValue, monthValue);
 
     if (setBirthdayResponse.status === 200) {
-        return interaction.editReply({
+        return replyInteraction(interaction, {
             content: `Your birthday has been updated to **${birthDate.date}** 🎉 \n-# The bot will now wish you on your special day!`,
             ephemeral: true
         });
     }
 
     if (setBirthdayResponse.status === 201) {
-        return interaction.editReply({
+        return replyInteraction(interaction, {
             content: `Your birthday has been successfully set to **${birthDate.date}** 🎉 \n-# The bot will now wish you on your special day!`,
             ephemeral: true
         });
     }
 
-
-    return interaction.editReply({
+    return replyInteraction(interaction, {
         content: "Something went wrong while setting your birthday. Please try again later.",
         ephemeral: true
     });
-
 };

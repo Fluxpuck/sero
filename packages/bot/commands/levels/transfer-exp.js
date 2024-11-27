@@ -1,4 +1,5 @@
 const { postRequest, getRequest } = require("../../database/connection");
+const { deferInteraction, replyInteraction, updateInteraction, followUpInteraction } = require("../../utils/InteractionManager");
 
 module.exports.props = {
     commandName: "transfer-exp",
@@ -28,7 +29,7 @@ module.exports.props = {
 }
 
 module.exports.run = async (client, interaction) => {
-    await interaction.deferReply({ ephemeral: false });
+    await deferInteraction(interaction, false);
 
     // Get User && Amount details from the interaction options
     const targetUser = interaction.options.get("user").user;
@@ -40,10 +41,10 @@ module.exports.run = async (client, interaction) => {
 
     // Check if the user is trying to transfer experience to themselves
     if (interaction.user.id === targetUser.id) {
-        return interaction.editReply({
+        return replyInteraction(interaction, {
             content: "You can't transfer experience to yourself!",
             ephemeral: true
-        })
+        });
     }
 
     // Fetch user transfer activities from today
@@ -75,22 +76,22 @@ module.exports.run = async (client, interaction) => {
                 `Uh oh! Your request is exceeding your daily transfer limit! You can only transfer **${remainingExp}** more experience points today.`
                 : "You have reached the maximum transfer limit for today!";
 
-            await interaction.deleteReply();
-            return interaction.followUp({
+            await followUpInteraction(interaction, {
                 content: `${transferLimitMessage}`,
                 ephemeral: true
             });
+            return;
         } else {
             eligibleForTransfer = true;
         }
 
         // Check if the user has reached the maximum amount of transfers
         if (activities.length >= TRANSFER_TARGET_LIMIT) {
-            await interaction.deleteReply();
-            return interaction.followUp({
+            await followUpInteraction(interaction, {
                 content: `You have reached your daily transfer limit! You can only transfer to ${TRANSFER_TARGET_LIMIT} users per day.`,
                 ephemeral: true
             });
+            return;
         } else {
             eligibleForTransfer = true;
         }
@@ -115,11 +116,11 @@ module.exports.run = async (client, interaction) => {
             }
 
         } catch (error) {
-            await interaction.deleteReply();
-            return interaction.followUp({
+            await followUpInteraction(interaction, {
                 content: "Something went wrong while transferring experience to the user.",
                 ephemeral: true
-            })
+            });
+            return;
         }
 
         // Store the transfer activity in the database
@@ -134,16 +135,15 @@ module.exports.run = async (client, interaction) => {
         });
 
         // reply to the user
-        return interaction.editReply({
-            content: `<@${targetUser.id}> has recieved **${transferAmount}** of your experience!`,
+        return replyInteraction(interaction, {
+            content: `<@${targetUser.id}> has received **${transferAmount}** of your experience!`,
             ephemeral: false
-        })
+        });
 
     } else {
-        await interaction.deleteReply();
-        interaction.followUp({
+        followUpInteraction(interaction, {
             content: "Sorry, you are not eligible to transfer experience. Please try again later.",
             ephemeral: true
-        })
+        });
     }
-} 
+}

@@ -1,6 +1,7 @@
 const { EmbedBuilder, version: discordVersion } = require('discord.js');
 const { version: botVersion } = require('../../package.json');
 const { formatTime } = require('../../lib/helpers/TimeDateHelpers/timeHelper');
+const { replyInteraction } = require('../../utils/InteractionManager');
 
 module.exports.props = {
     commandName: "info",
@@ -11,7 +12,6 @@ module.exports.props = {
 }
 
 module.exports.run = async (client, interaction) => {
-
     // Setting up the embedded message
     const messageEmbed = new EmbedBuilder()
         .setTitle(client.user.username)
@@ -24,7 +24,7 @@ module.exports.run = async (client, interaction) => {
         )
 
     // Sending the message
-    return interaction.reply({
+    return replyInteraction(interaction, {
         embeds: [messageEmbed],
         ephemeral: false,
     }).catch((err) => { throw err });
