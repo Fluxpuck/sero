@@ -44,8 +44,8 @@ module.exports.run = async (client, interaction) => {
     await interaction.deferReply({ ephemeral: true });
 
     // Get User && Reason details from the interaction options && convert user into a member
-    const targetUser = interaction.options.get("user").user;
-    const violationReason = interaction.options.get("reason").value;
+    const targetUser = interaction.options.get("user").user || null;
+    const violationReason = interaction.options.get("reason").value || null;
 
     // Fetch the user by userId
     const member = await interaction.guild.members.fetch(targetUser.id);
