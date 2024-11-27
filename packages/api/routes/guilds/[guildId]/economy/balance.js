@@ -78,18 +78,19 @@ router.get("/:userId", async (req, res, next) => {
             throw new CreateError(404, "User not found in the guild");
         }
 
-        if (!userData.UserWallet) {
+        if (!userData.user_wallets) {
             userData.UserWallet = await UserWallet.create({ guildId, userId, balance: 0 });
+
         }
-        if (!userData.UserBank) {
+        if (!userData.user_banks) {
             userData.UserBank = await UserBank.create({ guildId, userId, balance: 0 });
         }
 
         const responseData = {
             userId: userData.userId,
             guildId: userData.guildId,
-            wallet_balance: userData.UserWallet.balance,
-            bank_balance: userData.UserBank.balance
+            wallet_balance: userData.user_wallets[0].balance,
+            bank_balance: userData.user_banks[0].balance
         };
 
         res.status(200).json(responseData);
