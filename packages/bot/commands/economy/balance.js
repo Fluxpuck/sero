@@ -26,19 +26,16 @@ module.exports.run = async (client, interaction) => {
     // Get User details from the interaction options
     const targetUser = interaction.options.get("user")?.user || interaction.user;
 
-    // Get the user's the experience && check if the user has experience.
-    const result = await getRequest(`/guilds/${interaction.guildId}/economy/balance/${targetUser.id}`);
-    const balance = result?.data.balance || 0;
+    // Get the user's bank and wallet balance
+    const userBalance = await getRequest(`/guilds/${interaction.guildId}/economy/balance/${targetUser.id}`);
+    const { bank_balance = 0, wallet_balance = 0 } = userBalance?.data;
 
     // Create an embed to display the user's balance
     const messageEmbed = createCustomEmbed({
-        fields: [
-            {
-                name: `Balance`,
-                value: `:coin: ${balance.toLocaleString()}`,
-                inline: true
-            }
-        ],
+        description: `
+            🪙 - \`${bank_balance}\` bank
+            💵 - \`${wallet_balance}\` wallet
+            `
     });
 
     // Reply with the messageEmbed
