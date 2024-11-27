@@ -5,6 +5,7 @@ const { chunk } = require("../../lib/helpers/MathHelpers/arrayHelper");
 const { getRequest } = require("../../database/connection");
 const { findUser } = require("../../lib/resolvers/userResolver");
 const { GetAuditLogEventName } = require("../../config/Audittypes");
+const { deferInteraction, replyInteraction, updateInteraction, followUpInteraction } = require("../../utils/InteractionManager");
 
 module.exports.props = {
     commandName: "get",
@@ -25,16 +26,16 @@ module.exports.props = {
 };
 
 module.exports.run = async (client, interaction) => {
-    await interaction.deferReply({ ephemeral: false });
+    await deferInteraction(interaction, false);
 
     // Get User details from the interaction options
     const targetUser = interaction.options.get("user")?.user;
     if (!targetUser) {
-        await interaction.deleteReply();
-        return interaction.followUp({
+        await followUpInteraction(interaction, {
             content: "User does not exist.",
             ephemeral: true
         });
+        return;
     }
 
     // Get the user guild details
@@ -97,7 +98,7 @@ module.exports.run = async (client, interaction) => {
     messageButtons.addComponents(ClientButtonsEnum.AVATAR, userLogButton)
 
     // Return the message
-    const returnMessageEmbed = await interaction.editReply({
+    const returnMessageEmbed = await replyInteraction(interaction, {
         embeds: [messageEmbed],
         components: [messageButtons],
         ephemeral: false
@@ -149,10 +150,10 @@ module.exports.run = async (client, interaction) => {
             messageButtons.components[avatarIndex].data.disabled = true;
 
             // Update the interaction, disabling the Avatar button
-            await i.update({ components: [messageButtons] })
+            await updateInteraction(i, { components: [messageButtons] })
 
             // Send the avatar embed
-            await i.followUp({ embeds: [avatarEmbed] })
+            await followUpInteraction(i, { embeds: [avatarEmbed] })
 
         }
 
@@ -189,7 +190,7 @@ module.exports.run = async (client, interaction) => {
             }
 
             // Update the interaction components
-            await i.update({
+            await updateInteraction(i, {
                 embeds: [messageEmbed],
                 components: [messageButtons]
             })
@@ -235,7 +236,7 @@ module.exports.run = async (client, interaction) => {
             );
 
             // Update the interaction components
-            await i.update({
+            await updateInteraction(i, {
                 embeds: [messageEmbed],
                 components: [messageButtons]
             })

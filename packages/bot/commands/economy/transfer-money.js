@@ -1,4 +1,5 @@
 const { postRequest } = require("../../database/connection");
+const { deferInteraction, replyInteraction, followUpInteraction } = require("../../utils/InteractionManager");
 
 module.exports.props = {
     commandName: "transfer-money",
@@ -28,7 +29,7 @@ module.exports.props = {
 }
 
 module.exports.run = async (client, interaction) => {
-    await interaction.deferReply({ ephemeral: false });
+    await deferInteraction(interaction, false);
 
     // Get User && Amount details from the interaction options
     const targetUser = interaction.options.get("user").user;
@@ -41,15 +42,14 @@ module.exports.run = async (client, interaction) => {
 
     // If either request was not successful, return an error
     if (removeResult.status !== 200 || addResult.status !== 200) {
-        await interaction.deleteReply();
-        interaction.followUp({
+        await followUpInteraction(interaction, {
             content: "Something went wrong while transferring money to the user.",
             ephemeral: true
-        })
+        });
     } else {
-        interaction.editReply({
-            content: `<@${targetUser.id}> has recieved **${transferAmount.toLocaleString()}** of your money!`,
+        await replyInteraction(interaction, {
+            content: `<@${targetUser.id}> has received **${transferAmount.toLocaleString()}** of your money!`,
             ephemeral: false
-        })
+        });
     }
-} 
+}

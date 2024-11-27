@@ -1,6 +1,7 @@
 const { createCustomEmbed } = require("../../assets/embed");
 const { getRequest } = require('../../database/connection');
 const { unixTimestamp } = require("../../lib/helpers/TimeDateHelpers/timeHelper");
+const { deferInteraction, followUpInteraction, replyInteraction } = require('../../utils/InteractionManager');
 
 module.exports.props = {
     commandName: "career",
@@ -21,16 +22,16 @@ module.exports.props = {
 }
 
 module.exports.run = async (client, interaction) => {
-    await interaction.deferReply({ ephemeral: false });
+    await deferInteraction(interaction, false);
 
     // Get User details from the interaction options
     const targetUser = interaction.options.get("user")?.user || interaction.user;
     if (!targetUser) {
         await interaction.deleteReply();
-        return interaction.followUp({
+        return followUpInteraction(interaction, {
             content: "Oops! Something went wrong while trying to fetch the user.",
             ephemeral: true
-        })
+        });
     }
 
     // Get the user's career && career snapshots
@@ -41,10 +42,10 @@ module.exports.run = async (client, interaction) => {
     // If the (required) request was not successful, return an error
     if (userCareer.status !== 200) {
         await interaction.deleteReply();
-        return interaction.followUp({
+        return followUpInteraction(interaction, {
             content: `Uh oh! The user ${targetUser.username} has no career yet.`,
             ephemeral: true
-        })
+        });
     }
 
     // Set the data from the requests
@@ -88,8 +89,8 @@ module.exports.run = async (client, interaction) => {
     })
 
     // Reply with the messageEmbed
-    return interaction.editReply({
+    return replyInteraction(interaction, {
         embeds: [messageEmbed],
         ephemeral: false
-    })
+    });
 }

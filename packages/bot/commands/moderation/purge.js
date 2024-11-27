@@ -1,4 +1,5 @@
 const { fetchMessages } = require("../../lib/resolvers/messageResolver");
+const { deferInteraction, replyInteraction, updateInteraction } = require('../../utils/InteractionManager');
 
 module.exports.props = {
     commandName: "purge",
@@ -27,38 +28,36 @@ module.exports.props = {
 }
 
 module.exports.run = async (client, interaction) => {
-    await interaction.deferReply({ ephemeral: true });
+    await deferInteraction(interaction, true);
 
     // Get User && Amount details from the interaction options
-    const targetUser = interaction.options.get("user")?.user
+    const targetUser = interaction.options.get("user")?.user;
     const targetAmount = interaction.options.get("amount").value;
 
     // Start the interaction reply
-    interaction.editReply({
+    await updateInteraction(interaction, {
         content: `*Deleting **${targetAmount}** messages${targetUser ? ` from **${targetUser.tag}**` : ""}...*`,
         ephemeral: true
-    }).catch(e => { });
+    });
 
     // Fetch the messages based on user? and amount
     const messageCollection = await fetchMessages(interaction, targetUser, targetAmount);
 
     // Check if the collection is not empty
     if (messageCollection.size > 0) {
-
         // Delete the messages from the channel
         const deletedMessages = await interaction.channel.bulkDelete(messageCollection, true).catch(err => { console.warn(err) });
 
         // Return confirmation message to the user
-        interaction.editReply({
+        await updateInteraction(interaction, {
             content: `Deleted **${deletedMessages.size}** messages${targetUser ? ` from **${targetUser.tag}**` : ""}`,
             ephemeral: true,
-        }).catch(e => { });
+        });
 
         // Clear the message collection
         return messageCollection.clear();
-
     } else {
-        return interaction.editReply({
+        return updateInteraction(interaction, {
             content: `Oops! I couldn't find any messages${targetUser ? ` from **${targetUser.tag}**` : ""} to delete!`,
             ephemeral: true,
         });

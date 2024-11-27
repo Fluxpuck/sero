@@ -1,4 +1,5 @@
 const { postRequest, getRequest } = require("../../database/connection");
+const { deferInteraction, replyInteraction } = require('../../utils/InteractionManager');
 
 module.exports.props = {
     commandName: "give-money",
@@ -27,7 +28,7 @@ module.exports.props = {
 }
 
 module.exports.run = async (client, interaction) => {
-    await interaction.deferReply({ ephemeral: false });
+    await deferInteraction(interaction, false);
 
     // Get User && Amount details from the interaction options
     const targetUser = interaction.options.get("user").user;
@@ -38,16 +39,14 @@ module.exports.run = async (client, interaction) => {
 
     // If the request was not successful, return an error
     if (result?.status !== 200) {
-        await interaction.deleteReply();
-        return interaction.followUp({
+        await replyInteraction(interaction, {
             content: `Uh oh! Something went wrong while giving money to ${targetUser.username}.`,
             ephemeral: true
-        })
+        });
     } else {
-        return interaction.editReply({
-            content: `<@${targetUser.id}> has recieved **${targetAmount}** money!`,
+        await replyInteraction(interaction, {
+            content: `<@${targetUser.id}> has received **${targetAmount}** money!`,
             ephemeral: false
-        })
+        });
     }
-
 }

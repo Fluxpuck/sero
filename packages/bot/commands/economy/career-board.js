@@ -3,6 +3,8 @@ const { ActionRowBuilder, ComponentType } = require("discord.js");
 const { createCustomEmbed } = require("../../assets/embed")
 const ClientButtonsEnum = require("../../assets/embed-buttons");
 const { chunk } = require("../../lib/helpers/MathHelpers/arrayHelper");
+const { deferInteraction, replyInteraction, updateInteraction } = require('../../utils/InteractionManager'); // Import required functions
+
 module.exports.props = {
     commandName: "career-board",
     description: "Get the career level leaderboard of the server.",
@@ -12,7 +14,7 @@ module.exports.props = {
 }
 
 module.exports.run = async (client, interaction, leaderboard = []) => {
-    await interaction.deferReply({ ephemeral: false });
+    await deferInteraction(interaction, false); // Use deferInteraction
 
     // Fetch all careers.
     const result = await getRequest(`/guilds/${interaction.guildId}/economy/career/`);
@@ -23,16 +25,16 @@ module.exports.run = async (client, interaction, leaderboard = []) => {
     // If status code is 404, return an error
     if (result?.status === 404) {
         await interaction.deleteReply();
-        return interaction.followUp({
+        return replyInteraction(interaction, {
             content: `Oops! There is no one on the \`\`career\`\` leaderboard yet!`,
             ephemeral: true
-        })
+        });
     } else if (result?.status !== 200) {
         await interaction.deleteReply();
-        return interaction.followUp({
+        return replyInteraction(interaction, {
             content: `Oops! Something went wrong while trying to fetch the leaderboard!`,
             ephemeral: true
-        })
+        });
     }
 
     // Setup embed description
@@ -126,11 +128,11 @@ module.exports.run = async (client, interaction, leaderboard = []) => {
             messageEmbed.setFields([...leaderboardPages[page]]);
 
             // Update the interaction components
-            await i.update({
+            await updateInteraction(i, {
                 embeds: [messageEmbed],
                 components: [messageComponents]
-            })
+            });
 
         }
-    })
+    });
 }

@@ -3,6 +3,7 @@ const ClientButtonsEnum = require("../../assets/embed-buttons");
 const { createCustomEmbed } = require("../../assets/embed");
 const { chunk } = require("../../lib/helpers/MathHelpers/arrayHelper");
 const { getRequest } = require("../../database/connection");
+const { deferInteraction, replyInteraction, updateInteraction, followUpInteraction } = require("../../utils/InteractionManager");
 
 module.exports.props = {
     commandName: "rank-board",
@@ -13,7 +14,7 @@ module.exports.props = {
 }
 
 module.exports.run = async (client, interaction, leaderboard = []) => {
-    await interaction.deferReply({ ephemeral: false });
+    await deferInteraction(interaction, false);
 
     // Get all levels for a specific guild from the database
     const result = await getRequest(`/guilds/${interaction.guildId}/levels`);
@@ -23,17 +24,17 @@ module.exports.run = async (client, interaction, leaderboard = []) => {
 
     // If status code is 404, return an error
     if (result?.status === 404) {
-        await interaction.deleteReply();
-        return interaction.followUp({
+        await followUpInteraction(interaction, {
             content: `Uh oh! There are no users on the leaderboard yet!`,
             ephemeral: true
-        })
+        });
+        return;
     } else if (result?.status !== 200) { // If the status code is not 200, return an error that something went wrong
-        await interaction.deleteReply();
-        return interaction.followUp({
+        await followUpInteraction(interaction, {
             content: "Oops! Something went wrong while trying to fetch the leaderboard!",
             ephemeral: true
-        })
+        });
+        return;
     }
 
     // Setup embed description
@@ -80,7 +81,7 @@ module.exports.run = async (client, interaction, leaderboard = []) => {
     messageComponents?.components[nextIndex]?.data && (messageComponents.components[nextIndex].data.disabled = false);
 
     // Return the message
-    const response = await interaction.editReply({
+    const response = await replyInteraction(interaction, {
         embeds: [messageEmbed],
         components: messageComponents ? [messageComponents] : [],
         ephemeral: false
@@ -126,10 +127,10 @@ module.exports.run = async (client, interaction, leaderboard = []) => {
             messageEmbed.setFields([...leaderboardPages[page]]);
 
             // Update the interaction components
-            await i.update({
+            await updateInteraction(i, {
                 embeds: [messageEmbed],
                 components: [messageComponents]
-            })
+            });
 
         }
     });

@@ -1,5 +1,6 @@
 const { getRequest } = require("../../database/connection");
 const { createRankCard } = require("../../lib/canvas/rank");
+const { deferInteraction, replyInteraction, updateInteraction, followUpInteraction } = require("../../utils/InteractionManager");
 
 module.exports.props = {
 	commandName: "rank",
@@ -21,16 +22,16 @@ module.exports.props = {
 }
 
 module.exports.run = async (client, interaction) => {
-	await interaction.deferReply({ ephemeral: false });
+	await deferInteraction(interaction, false);
 
 	// Get User details from the interaction options
 	const targetUser = interaction.options.get("user")?.user || interaction.user;
 	if (!targetUser) {
-		await interaction.deleteReply();
-		return interaction.followUp({
+		await followUpInteraction(interaction, {
 			content: "Oops! Something went wrong while trying to fetch the user.",
 			ephemeral: true
-		})
+		});
+		return;
 	}
 
 	// Get the user experience
@@ -38,17 +39,17 @@ module.exports.run = async (client, interaction) => {
 
 	// If status code is 404, return an error saying the user is not ranked yet
 	if (result?.status === 404) {
-		await interaction.deleteReply();
-		return interaction.followUp({
+		await followUpInteraction(interaction, {
 			content: `Uh oh! The user ${targetUser.username} has no rank yet!`,
 			ephemeral: true
-		})
+		});
+		return;
 	} else if (result?.status !== 200) { // If the status code is not 200, return an error that something went wrong
-		await interaction.deleteReply();
-		return interaction.followUp({
+		await followUpInteraction(interaction, {
 			content: "Oops! Something went wrong while trying to fetch the rank!",
 			ephemeral: true
-		})
+		});
+		return;
 	}
 
 	// Get request details
@@ -69,15 +70,11 @@ module.exports.run = async (client, interaction) => {
 
 	// If creating the rank card was successful, return rankcard
 	if (rankCard) {
-		interaction.editReply(
-			{ files: [rankCard] }
-		)
+		await updateInteraction(interaction, { files: [rankCard] });
 	} else { // Else return an error
-		await interaction.deleteReply();
-		interaction.followUp({
+		await followUpInteraction(interaction, {
 			content: "Oops! Something went wrong creating your rank card!",
 			ephemeral: true
-		})
+		});
 	}
-
 }

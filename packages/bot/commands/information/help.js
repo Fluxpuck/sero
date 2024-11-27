@@ -1,7 +1,8 @@
-const { ActionRowBuilder, ComponentType, } = require('discord.js');
+const { ActionRowBuilder, ComponentType } = require('discord.js');
 const { createCustomEmbed } = require('../../assets/embed');
 const { createCustomDropdown } = require('../../assets/embed-dropdowns');
 const { capitalize } = require('../../lib/helpers/StringHelpers/stringHelper');
+const { replyInteraction, updateInteraction } = require('../../utils/InteractionManager');
 
 module.exports.props = {
     commandName: "help",
@@ -50,7 +51,7 @@ module.exports.run = async (client, interaction) => {
 
     // Reply to the user
     const embedActionRow = new ActionRowBuilder().addComponents(dropdownMenu)
-    const response = await interaction.reply({
+    const response = await replyInteraction(interaction, {
         embeds: [messageEmbed],
         components: [embedActionRow],
         ephemeral: false
@@ -88,7 +89,7 @@ module.exports.run = async (client, interaction) => {
         });
 
         // Update the messageEmbed
-        await i.update({
+        await updateInteraction(i, {
             embeds: [messageEmbed],
             components: [embedActionRow],
         }).catch((error) => { return error; });
