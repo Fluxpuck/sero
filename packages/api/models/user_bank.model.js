@@ -31,7 +31,7 @@ module.exports = sequelize => {
             defaultValue: 0,
             validate: {
                 min: {
-                    args: [-0],
+                    args: [-100_000],
                     msg: 'Balance cannot be less than -100,000.',
                 },
                 max: {

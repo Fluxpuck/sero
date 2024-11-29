@@ -39,15 +39,27 @@ router.post("/:userId", async (req, res, next) => {
         // Store previous balance
         const previousUserBank = { ...userBank.dataValues };
 
-        // Update balance
-        userBank.balance = (userBank.balance ?? 0) + amount;
+        // Update balance with validation
+        const newBalance = (userBank.balance ?? 0) + amount;
 
-        // Balance constraints
-        if (userBank.balance < 0) {
-            userBank.balance = 0;
-        } else if (userBank.balance > 1_000_000_000) {
-            userBank.balance = 1_000_000_000;
+        // Check minimum balance constraints
+        if (newBalance < -100_000) {
+            throw new RequestError(400, "Bank balance cannot be less than -100,000", {
+                method: req.method,
+                path: req.path
+            });
         }
+
+        // Check maximum balance constraints
+        if (newBalance > 1_000_000_000) {
+            throw new RequestError(400, "Bank can not hold more than 1,000,000,000", {
+                method: req.method,
+                path: req.path
+            });
+        }
+
+        // Update balance
+        userBank.balance = newBalance;
 
         // Save changes
         await userBank.save({ transaction: t });

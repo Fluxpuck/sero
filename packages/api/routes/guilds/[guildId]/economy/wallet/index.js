@@ -36,9 +36,10 @@ router.get("/:userId", async (req, res, next) => {
 
 /**
  * POST api/guilds/:guildId/economy/wallet/:userId
- * @description Update a specific guild user's wallet balance
+ * @description Create or update a user's wallet balance in the guild
  * @param {string} guildId - The id of the guild
  * @param {string} userId - The id of the user
+ * @param {number} balance - The balance of the user
  */
 router.post("/:userId", async (req, res, next) => {
     const t = await sequelize.transaction();
@@ -66,15 +67,26 @@ router.post("/:userId", async (req, res, next) => {
         // Store previous balance
         const previousUserWallet = { ...userWallet.dataValues };
 
-        // Update balance
-        userWallet.balance = (userWallet.balance ?? 0) + amount;
+        // Update balance with validation
+        const newBalance = (userWallet.balance ?? 0) + amount;
 
-        // Balance constraints
-        if (userWallet.balance < 0) {
-            userWallet.balance = 0;
-        } else if (userWallet.balance > 1_000_000_000) {
-            userWallet.balance = 1_000_000_000;
+        // Check minimum balance constraint
+        if (newBalance < 0) {
+            throw new RequestError(400, "Wallet balance cannot be less than empty", {
+                method: req.method,
+                path: req.path
+            });
         }
+
+        // Check maximum balance constraint
+        if (newBalance > 10_000) {
+            throw new RequestError(400, "Wallet can not hold more than 10,000", {
+                method: req.method,
+                path: req.path
+            });
+        }
+
+        userWallet.balance = newBalance;
 
         // Save changes
         await userWallet.save({ transaction: t });
