@@ -20,8 +20,18 @@ module.exports.props = {
                 description: "The amount of money to give to the user",
                 required: true,
                 minValue: 1,
-                maxValue: 1000000,
+                maxValue: 1_000_000,
             },
+            {
+                name: "type",
+                type: 3,
+                description: "The type of account to transfer money from",
+                choices: [
+                    { name: "Wallet", value: "wallet" },
+                    { name: "Bank", value: "bank" },
+                ],
+                required: false
+            }
         ],
     },
     defaultMemberPermissions: ['ManageGuild'],
