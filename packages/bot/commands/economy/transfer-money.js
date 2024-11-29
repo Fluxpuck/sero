@@ -52,6 +52,20 @@ module.exports.run = async (client, interaction) => {
             const bankWithdraw = await postRequest(`/guilds/${interaction.guildId}/economy/bank/${interaction.user.id}`, { amount: -transferAmount });
             const bankDeposit = await postRequest(`/guilds/${interaction.guildId}/economy/bank/${targetUser.id}`, { amount: +transferAmount });
 
+            if (bankWithdraw.status === 400) {
+                return followUpInteraction(interaction, {
+                    content: "You don't have enough money in your bank to transfer.",
+                    ephemeral: true
+                });
+            }
+
+            if (bankDeposit.status === 400) {
+                return followUpInteraction(interaction, {
+                    content: "The user you are trying to transfer money to has reached the bank limit.",
+                    ephemeral: true
+                });
+            }
+
             if (bankWithdraw.status !== 200 || bankDeposit.status !== 200) {
                 return followUpInteraction(interaction, {
                     content: "Something went wrong while transferring money to the user.",
@@ -70,7 +84,21 @@ module.exports.run = async (client, interaction) => {
             const walletWithdraw = await postRequest(`/guilds/${interaction.guildId}/economy/wallet/${interaction.user.id}`, { amount: -transferAmount });
             const walletDeposit = await postRequest(`/guilds/${interaction.guildId}/economy/wallet/${targetUser.id}`, { amount: +transferAmount });
 
-            if (bankWithdraw.status !== 200 || bankDeposit.status !== 200) {
+            if (walletWithdraw.status === 400) {
+                return followUpInteraction(interaction, {
+                    content: "You don't have enough money in your wallet to transfer.",
+                    ephemeral: true
+                });
+            }
+
+            if (walletDeposit.status === 400) {
+                return followUpInteraction(interaction, {
+                    content: "The user you are trying to transfer money to has reached the wallet limit.",
+                    ephemeral: true
+                });
+            }
+
+            if (walletWithdraw.status !== 200 || walletDeposit.status !== 200) {
                 return followUpInteraction(interaction, {
                     content: "Something went wrong while transferring money to the user.",
                     ephemeral: true
