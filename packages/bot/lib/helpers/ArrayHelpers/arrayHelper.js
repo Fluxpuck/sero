@@ -6,6 +6,9 @@ module.exports = {
      * @returns 
      */
     async countUniqueUserIds(array = []) {
+        if (!Array.isArray(array)) {
+            return [];
+        }
         return Array.from(
             array.reduce((acc, claim) => {
                 const id = claim.userId; // Extract userId from claim
