@@ -22,6 +22,16 @@ module.exports.props = {
                 minValue: 1,
                 maxValue: 10_000,
             },
+            {
+                name: "type",
+                type: 3,
+                description: "The type of account to transfer money from",
+                choices: [
+                    { name: "Wallet", value: "wallet" },
+                    { name: "Bank", value: "bank" },
+                ],
+                required: false
+            }
         ],
     },
     defaultMemberPermissions: ['SendMessages'],
@@ -34,22 +44,43 @@ module.exports.run = async (client, interaction) => {
     // Get User && Amount details from the interaction options
     const targetUser = interaction.options.get("user").user;
     const transferAmount = interaction.options.get("amount").value;
+    const transferType = interaction.options.get("type")?.value || "wallet";
 
-    // Remove balance from the author
-    const removeResult = await postRequest(`/guilds/${interaction.guildId}/economy/balance`, { userId: targetUser.id, amount: -transferAmount })
-    // Add balance to the target
-    const addResult = await postRequest(`/guilds/${interaction.guildId}/economy/balance`, { userId: targetUser.id, amount: +transferAmount });
+    switch (transferType) {
+        case "bank":
+            // Remove balance from the author and add it to the target
+            const bankWithdraw = await postRequest(`/guilds/${interaction.guildId}/economy/bank/${interaction.user.id}`, { amount: -transferAmount });
+            const bankDeposit = await postRequest(`/guilds/${interaction.guildId}/economy/bank/${targetUser.id}`, { amount: +transferAmount });
 
-    // If either request was not successful, return an error
-    if (removeResult.status !== 200 || addResult.status !== 200) {
-        await followUpInteraction(interaction, {
-            content: "Something went wrong while transferring money to the user.",
-            ephemeral: true
-        });
-    } else {
-        await replyInteraction(interaction, {
-            content: `<@${targetUser.id}> has received **${transferAmount.toLocaleString()}** of your money!`,
-            ephemeral: false
-        });
+            if (bankWithdraw.status !== 200 || bankDeposit.status !== 200) {
+                return followUpInteraction(interaction, {
+                    content: "Something went wrong while transferring money to the user.",
+                    ephemeral: true
+                });
+            }
+
+            await replyInteraction(interaction, {
+                content: `**${transferAmount.toLocaleString()}** was successfully wired to <@${targetUser.id}>!`,
+                ephemeral: false
+            });
+
+            break;
+        default:
+            // Remove balance from the author and add it to the target
+            const walletWithdraw = await postRequest(`/guilds/${interaction.guildId}/economy/wallet/${interaction.user.id}`, { amount: -transferAmount });
+            const walletDeposit = await postRequest(`/guilds/${interaction.guildId}/economy/wallet/${targetUser.id}`, { amount: +transferAmount });
+
+            if (bankWithdraw.status !== 200 || bankDeposit.status !== 200) {
+                return followUpInteraction(interaction, {
+                    content: "Something went wrong while transferring money to the user.",
+                    ephemeral: true
+                });
+            }
+
+            await replyInteraction(interaction, {
+                content: `**${transferAmount.toLocaleString()}** cash was successfully given to <@${targetUser.id}>!`,
+                ephemeral: false
+            });
+
     }
 }
