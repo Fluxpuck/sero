@@ -75,7 +75,8 @@ router.post("/:userId", async (req, res, next) => {
                 userId: userBank.userId,
                 guildId: userBank.guildId,
                 bank_balance: userBank.balance
-            }
+            },
+            transferAmount: (newBalance - previousUserBank.balance),
         };
 
         await t.commit();

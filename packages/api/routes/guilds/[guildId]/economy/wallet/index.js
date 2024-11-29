@@ -68,14 +68,11 @@ router.post("/:userId", async (req, res, next) => {
         const previousUserWallet = { ...userWallet.dataValues };
 
         // Update balance with validation
-        const newBalance = (userWallet.balance ?? 0) + amount;
+        let newBalance = (userWallet.balance ?? 0) + amount;
 
         // Check minimum balance constraint
         if (newBalance < 0) {
-            throw new RequestError(400, "Wallet balance cannot be less than empty", {
-                method: req.method,
-                path: req.path
-            });
+            newBalance = 0;
         }
 
         // Check maximum balance constraint
@@ -102,7 +99,8 @@ router.post("/:userId", async (req, res, next) => {
                 userId: userWallet.userId,
                 guildId: userWallet.guildId,
                 wallet_balance: userWallet.balance
-            }
+            },
+            transferAmount: (newBalance - previousUserWallet.balance),
         };
 
         await t.commit();
