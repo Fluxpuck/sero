@@ -1,4 +1,5 @@
 const { createCustomEmbed } = require("../../assets/embed")
+const { deferInteraction, replyInteraction } = require('../../utils/InteractionManager');
 
 module.exports.props = {
     commandName: "role-info",
@@ -21,6 +22,9 @@ module.exports.props = {
 
 // → Constructing the command and exporting
 module.exports.run = async (client, interaction) => {
+    // Defer the interaction
+    await deferInteraction(interaction);
+
     // Get details from the interaction options
     const targetRole = interaction.options.get("role").role;
 
@@ -61,8 +65,8 @@ module.exports.run = async (client, interaction) => {
         ],
     });
 
-    // Send the embed
-    return interaction.reply({
+    // Send the embed using replyInteraction
+    return replyInteraction(interaction, {
         embeds: [messageEmbed],
         ephemeral: false,
     });
