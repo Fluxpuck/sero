@@ -33,14 +33,22 @@ module.exports.run = async (client, interaction) => {
     const TREASURE_MESSAGES = isPositive ? TREASURE_MESSAGES_POSITIVE : TREASURE_MESSAGES_NEGATIVE;
     const treasureMessage = TREASURE_MESSAGES[Math.floor(Math.random() * TREASURE_MESSAGES.length)].replace('{COIN}', `**${Math.abs(rewardAmount)}**`);
 
-    await postRequest(`/guilds/${interaction.guild.id}/activities`, {
-        guildId: interaction.guild.id,
-        userId: interaction.user.id,
-        type: "treasure-hunt",
-        additional: { reward: rewardAmount }
-    });
+    // await postRequest(`/guilds/${interaction.guild.id}/activities`, {
+    //     guildId: interaction.guild.id,
+    //     userId: interaction.user.id,
+    //     type: "treasure-hunt",
+    //     additional: { reward: rewardAmount }
+    // });
 
     const walletDeposit = await postRequest(`guilds/${interaction.guild.id}/economy/wallet/${interaction.user.id}`, { amount: rewardAmount });
+
+    if (walletDeposit.status === 400) {
+        return followUpInteraction(interaction, {
+            content: "Oops! Seems like you are already broke. Try again later.",
+            ephemeral: true
+        });
+    }
+
     if (walletDeposit?.status !== 200) {
         return followUpInteraction(interaction, {
             content: `Uh oh! Something went wrong while sending your hard earned money.`,
