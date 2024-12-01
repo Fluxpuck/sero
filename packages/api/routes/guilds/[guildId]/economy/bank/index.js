@@ -1,9 +1,8 @@
 const express = require("express");
 const router = express.Router({ mergeParams: true });
 
-const { sequelize } = require('../../../../../database/sequelize');
 const { UserBank } = require("../../../../../database/models");
-const { findOneRecord } = require("../../../../../utils/RequestManager");
+const { withTransaction, findOneRecord } = require("../../../../../utils/RequestManager");
 const { CreateError, RequestError } = require("../../../../../utils/ClassManager");
 
 /**
@@ -11,79 +10,100 @@ const { CreateError, RequestError } = require("../../../../../utils/ClassManager
  * @description Create or update a user's bank balance in the guild
  * @param {string} guildId - The id of the guild
  * @param {string} userId - The id of the user
- * @param {number} balance - The balance of the user
+ * @param {number} amount - The amount to deposit or withdraw from the bank
  */
 router.post("/:userId", async (req, res, next) => {
-    const t = await sequelize.transaction();
     const { guildId, userId } = req.params;
-    const { amount } = req.body;
-    const options = { where: { guildId: guildId, userId: userId } };
+    const { amount, allowNegative = true } = req.body;
+
+    if (!amount || typeof amount !== "number") {
+        throw new RequestError(400, "Invalid amount. Must be a valid number", {
+            method: req.method, path: req.path
+        });
+    }
 
     try {
-        // Validate input
-        if (!amount) {
-            throw new RequestError(400, "Missing amount data. Please check and try again", {
-                method: req.method, path: req.path
+        const result = await withTransaction(async (t) => {
+            let userBank = await findOneRecord(UserBank, {
+                where: { guildId, userId }
             });
-        }
 
-        let userBank = await findOneRecord(UserBank, options);
-        if (!userBank) {
-            userBank = await UserBank.create({
-                guildId: guildId,
-                userId: userId,
-                balance: 0
-            }, { transaction: t });
-        }
+            if (!userBank) {
+                userBank = await UserBank.create({
+                    guildId,
+                    userId,
+                    balance: 0
+                }, { transaction: t });
+            }
 
-        // Store previous balance
-        const previousUserBank = { ...userBank.dataValues };
+            const previousBalance = userBank.balance ?? 0;
+            let newBalance = previousBalance + amount;
 
-        // Update balance with validation
-        const newBalance = (userBank.balance ?? 0) + amount;
+            if (!allowNegative && newBalance < 0) {
+                newBalance = 0;
+            }
 
-        // Check minimum balance constraints
-        if (newBalance < -100_000) {
-            throw new RequestError(400, "Bank balance cannot be less than -100,000", {
-                method: req.method,
-                path: req.path
+            if (newBalance < UserBank.MINIMUM_BALANCE) {
+                throw new CreateError(400, `Bank balance cannot be less than ${UserBank.MINIMUM_BALANCE}`);
+            }
+
+            if (newBalance > UserBank.MAXIMUM_BALANCE) {
+                throw new CreateError(400, `Bank balance cannot exceed ${UserBank.MAXIMUM_BALANCE}`);
+            }
+
+            userBank.balance = newBalance;
+            await userBank.save({ transaction: t });
+
+            return {
+                message: `Successfully ${amount < 0 ? 'withdrawn' : 'deposited'} ${Math.abs(amount)} coins`,
+                transaction: {
+                    userId,
+                    guildId,
+                    currentBalance: newBalance,
+                    amount,
+                    type: amount < 0 ? 'withdrawal' : 'deposit',
+                    timestamp: new Date().toISOString()
+                },
+                previous: {
+                    userId,
+                    guildId,
+                    balance: previousBalance
+                }
+            };
+        });
+
+        res.status(200).json(result);
+    } catch (error) {
+        next(error);
+    }
+});
+
+/**
+ * DELETE api/guilds/:guildId/economy/wallet/:userId
+ * @description Delete a specific guild user's wallet balance
+ * @param {string} guildId - The id of the guild
+ * @param {string} userId - The id of the user
+ */
+router.delete("/:userId", async (req, res, next) => {
+    const { guildId, userId } = req.params;
+
+    try {
+        const result = await withTransaction(async (t) => {
+            const userBank = await findOneRecord(UserBank, {
+                where: { guildId, userId }
             });
-        }
 
-        // Check maximum balance constraints
-        if (newBalance > 1_000_000_000) {
-            throw new RequestError(400, "Bank can not hold more than 1,000,000,000", {
-                method: req.method,
-                path: req.path
-            });
-        }
+            if (!userBank) {
+                throw new CreateError(404, "User bank entry not found");
+            }
 
-        // Update balance
-        userBank.balance = newBalance;
+            await userBank.destroy({ transaction: t });
+            return { message: "User wallet entry deleted successfully", data: userBank };
+        });
 
-        // Save changes
-        await userBank.save({ transaction: t });
-
-        const responseData = {
-            message: amount < 0 ? `${-amount} coins removed from user's bank` : `${amount} coins added to user's bank`,
-            previous: {
-                userId: previousUserBank.userId,
-                guildId: previousUserBank.guildId,
-                bank_balance: previousUserBank.balance || 0
-            },
-            current: {
-                userId: userBank.userId,
-                guildId: userBank.guildId,
-                bank_balance: userBank.balance
-            },
-            transferAmount: (newBalance - previousUserBank.balance),
-        };
-
-        await t.commit();
-        res.status(200).json(responseData);
+        res.status(200).json(result);
 
     } catch (error) {
-        await t.rollback();
         next(error);
     }
 });

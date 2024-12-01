@@ -1,113 +1,80 @@
 const express = require("express");
 const router = express.Router({ mergeParams: true });
 
-const { sequelize } = require('../../../../../database/sequelize');
 const { UserWallet } = require("../../../../../database/models");
-const { findOneRecord } = require("../../../../../utils/RequestManager");
+const { withTransaction, findOneRecord } = require("../../../../../utils/RequestManager");
 const { CreateError, RequestError } = require("../../../../../utils/ClassManager");
-
-/**
- * GET api/guilds/:guildId/economy/wallet/:userId
- * @description Get a specific guild user's wallet balance
- * @param {string} guildId - The id of the guild
- * @param {string} userId - The id of the user
- */
-router.get("/:userId", async (req, res, next) => {
-    const { guildId, userId } = req.params;
-    const options = { where: { guildId: guildId, userId: userId } };
-
-    try {
-        const userWallet = await findOneRecord(UserWallet, options);
-        if (!userWallet) {
-            throw new CreateError(404, "User wallet not found in the guild");
-        }
-
-        const responseData = {
-            userId: userWallet.userId,
-            guildId: userWallet.guildId,
-            wallet_balance: userWallet.balance || 0
-        };
-
-        res.status(200).json(responseData);
-    } catch (error) {
-        next(error);
-    }
-});
 
 /**
  * POST api/guilds/:guildId/economy/wallet/:userId
  * @description Create or update a user's wallet balance in the guild
  * @param {string} guildId - The id of the guild
  * @param {string} userId - The id of the user
- * @param {number} balance - The balance of the user
+ * @param {number} amount - The amount to deposit or withdraw from the wallet
  */
 router.post("/:userId", async (req, res, next) => {
-    const t = await sequelize.transaction();
     const { guildId, userId } = req.params;
-    const { amount } = req.body;
-    const options = { where: { guildId: guildId, userId: userId } };
+    const { amount, allowNegative = false } = req.body;
+
+    // Validate input
+    if (!amount && typeof amount !== "number") {
+        throw new RequestError(400, "Invalid amount. Must be a valid number", {
+            method: req.method, path: req.path
+        });
+    }
 
     try {
-        // Validate input
-        if (!amount) {
-            throw new RequestError(400, "Missing amount data. Please check and try again", {
-                method: req.method, path: req.path
+        const result = await withTransaction(async (t) => {
+            let userWallet = await findOneRecord(UserWallet, {
+                where: { guildId, userId }
             });
-        }
 
-        let userWallet = await findOneRecord(UserWallet, options);
-        if (!userWallet) {
-            userWallet = await UserWallet.create({
-                guildId: guildId,
-                userId: userId,
-                balance: 0
-            }, { transaction: t });
-        }
+            if (!userWallet) {
+                userWallet = await UserWallet.create({
+                    guildId,
+                    userId,
+                    balance: 0
+                }, { transaction: t });
+            }
 
-        // Store previous balance
-        const previousUserWallet = { ...userWallet.dataValues };
+            const previousBalance = userWallet.balance ?? 0;
+            let newBalance = previousBalance + amount;
 
-        // Update balance with validation
-        let newBalance = (userWallet.balance ?? 0) + amount;
+            if (!allowNegative && newBalance < 0) {
+                newBalance = 0;
+            }
 
-        // Check minimum balance constraint
-        if (newBalance < 0) {
-            newBalance = 0;
-        }
+            if (newBalance < UserWallet.MINIMUM_BALANCE) {
+                throw new CreateError(400, `Wallet balance cannot be less than ${userWallet.MINIMUM_BALANCE}`);
+            }
 
-        // Check maximum balance constraint
-        if (newBalance > 10_000) {
-            throw new RequestError(400, "Wallet can not hold more than 10,000", {
-                method: req.method,
-                path: req.path
-            });
-        }
+            if (newBalance > UserWallet.MAXIMUM_BALANCE) {
+                throw new CreateError(400, `Wallet balance cannot exceed ${userWallet.MAXIMUM_BALANCE}`);
+            }
 
-        userWallet.balance = newBalance;
+            userWallet.balance = newBalance;
+            await userWallet.save({ transaction: t });
 
-        // Save changes
-        await userWallet.save({ transaction: t });
+            return {
+                message: `Successfully ${amount < 0 ? 'withdrawn' : 'deposited'} ${Math.abs(amount)} coins`,
+                transaction: {
+                    userId,
+                    guildId,
+                    currentBalance: newBalance,
+                    amount,
+                    type: amount < 0 ? 'withdrawal' : 'deposit',
+                    timestamp: new Date().toISOString()
+                },
+                previous: {
+                    userId,
+                    guildId,
+                    balance: previousBalance
+                }
+            };
+        });
 
-        const responseData = {
-            message: amount < 0 ? `${-amount} coins removed from user's wallet` : `${amount} coins added to user's wallet`,
-            previous: {
-                userId: previousUserWallet.userId,
-                guildId: previousUserWallet.guildId,
-                wallet_balance: previousUserWallet.balance || 0
-            },
-            current: {
-                userId: userWallet.userId,
-                guildId: userWallet.guildId,
-                wallet_balance: userWallet.balance
-            },
-            transferAmount: (newBalance - previousUserWallet.balance),
-        };
-
-        await t.commit();
-        res.status(200).json(responseData);
-
+        res.status(200).json(result);
     } catch (error) {
-        await t.rollback();
         next(error);
     }
 });
@@ -119,21 +86,25 @@ router.post("/:userId", async (req, res, next) => {
  * @param {string} userId - The id of the user
  */
 router.delete("/:userId", async (req, res, next) => {
-    const t = await sequelize.transaction();
     const { guildId, userId } = req.params;
-    const options = { where: { guildId: guildId, userId: userId } };
 
     try {
-        const userWallet = await findOneRecord(UserWallet, options);
-        if (!userWallet) {
-            throw new CreateError(404, "User wallet not found in the guild");
-        } else {
+        const result = await withTransaction(async (t) => {
+            const userWallet = await findOneRecord(UserWallet, {
+                where: { guildId, userId }
+            });
+
+            if (!userWallet) {
+                throw new CreateError(404, "User wallet entry not found");
+            }
+
             await userWallet.destroy({ transaction: t });
-            await t.commit();
-            res.status(200).json({ message: "User wallet deleted successfully", data: userWallet });
-        }
+            return { message: "User wallet entry deleted successfully", data: userWallet };
+        });
+
+        res.status(200).json(result);
+
     } catch (error) {
-        t.rollback();
         next(error);
     }
 });
