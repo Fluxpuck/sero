@@ -1,6 +1,9 @@
 const { Model, DataTypes } = require('sequelize');
 
 class UserWallet extends Model {
+    static MINIMUM_BALANCE = 0;
+    static MAXIMUM_BALANCE = 10_000;
+
     static associate(models) {
         this.belongsTo(models.User, { foreignKey: { name: 'userId', allowNull: false } });
         this.belongsTo(models.Guild, { foreignKey: { name: 'guildId', allowNull: false } });
@@ -31,12 +34,12 @@ module.exports = sequelize => {
             defaultValue: 0,
             validate: {
                 min: {
-                    args: [0],
-                    msg: 'Wallet balance cannot be less than empty',
+                    args: [UserWallet.MINIMUM_BALANCE],
+                    msg: `Balance cannot be less than ${UserWallet.MINIMUM_BALANCE}`,
                 },
                 max: {
-                    args: [10_000],
-                    msg: 'Wallet can not hold more than 10,000',
+                    args: [UserWallet.MAXIMUM_BALANCE],
+                    msg: `Balance cannot be greater than ${UserWallet.MAXIMUM_BALANCE}`,
                 }
             }
         },
