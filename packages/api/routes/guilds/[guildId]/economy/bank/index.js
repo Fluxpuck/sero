@@ -61,6 +61,7 @@ router.post("/:userId", async (req, res, next) => {
                     guildId,
                     currentBalance: newBalance,
                     amount,
+                    trueAmount: previousBalance - newBalance,
                     type: amount < 0 ? 'withdrawal' : 'deposit',
                     timestamp: new Date().toISOString()
                 },
