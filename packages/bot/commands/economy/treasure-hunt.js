@@ -14,8 +14,8 @@ module.exports.props = {
 module.exports.run = async (client, interaction) => {
     await deferInteraction(interaction, false);
 
+    // Check if the user has already searched for treasure this hour
     const hourlyRewardResult = await getRequest(`/guilds/${interaction.guildId}/activities/user/${interaction.user.id}/treasure-hunt?thisHour=true`);
-
     if (hourlyRewardResult.status === 200) {
         return followUpInteraction(interaction, {
             content: `You've already searched for treasure! Please try again in ${getTimeUntil('nexthour')}.`,
@@ -25,22 +25,14 @@ module.exports.run = async (client, interaction) => {
 
     // Generate random reward amount
     const isPositive = Math.random() < 0.4;
-    const MIN = isPositive ? 0 : -400;
-    const MAX = isPositive ? 250 : 0;
-    const rewardAmount = Math.floor(Math.random() * (MAX - MIN + 1)) + MIN;
+    const targetRewardAmount = Math.floor(Math.random() * (isPositive ? 251 : 401)) * (isPositive ? 1 : -1);
 
-    // Generate random treasure message
-    const TREASURE_MESSAGES = isPositive ? TREASURE_MESSAGES_POSITIVE : TREASURE_MESSAGES_NEGATIVE;
-    const treasureMessage = TREASURE_MESSAGES[Math.floor(Math.random() * TREASURE_MESSAGES.length)].replace('{COIN}', `**${Math.abs(rewardAmount)}**`);
+    // Deposit the reward amount to the user's wallet
+    const walletDeposit = await postRequest(`guilds/${interaction.guild.id}/economy/wallet/${interaction.user.id}`, { amount: targetRewardAmount });
+    console.log("walletDeposit", walletDeposit);
 
-    // await postRequest(`/guilds/${interaction.guild.id}/activities`, {
-    //     guildId: interaction.guild.id,
-    //     userId: interaction.user.id,
-    //     type: "treasure-hunt",
-    //     additional: { reward: rewardAmount }
-    // });
-
-    const walletDeposit = await postRequest(`guilds/${interaction.guild.id}/economy/wallet/${interaction.user.id}`, { amount: rewardAmount });
+    // Get the true amount of the transaction
+    const rewardAmount = walletDeposit?.data?.transaction?.trueAmount;
 
     if (walletDeposit.status === 400) {
         return followUpInteraction(interaction, {
@@ -56,8 +48,26 @@ module.exports.run = async (client, interaction) => {
         });
     }
 
+    // Store the activity in the database
+    try {
+        await postRequest(`/guilds/${interaction.guild.id}/activities`, {
+            guildId: interaction.guild.id,
+            userId: interaction.user.id,
+            type: "treasure-hunt",
+            additional: { reward: rewardAmount }
+        });
+    } catch (error) {
+        console.error('Failed to store treasure hunt activity:', error);
+        // Continue execution as this is not critical for the user experience
+    }
+
+    // Generate random treasure message
+    const TREASURE_MESSAGES = isPositive ? TREASURE_MESSAGES_POSITIVE : TREASURE_MESSAGES_NEGATIVE;
+    const treasureMessage = TREASURE_MESSAGES[Math.floor(Math.random() * TREASURE_MESSAGES.length)].replace('{COIN}', `**${Math.abs(rewardAmount)}**`);
+
     return replyInteraction(interaction, {
         content: treasureMessage,
         ephemeral: false
     });
+
 }
