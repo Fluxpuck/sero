@@ -14,7 +14,7 @@ const { CreateError, RequestError } = require("../../../../../utils/ClassManager
  */
 router.post("/:userId", async (req, res, next) => {
     const { guildId, userId } = req.params;
-    const { amount, allowNegative = false } = req.body;
+    const { amount, allowReset = false } = req.body;
 
     // Validate input
     if (!amount && typeof amount !== "number") {
@@ -40,7 +40,7 @@ router.post("/:userId", async (req, res, next) => {
             const previousBalance = userWallet.balance ?? 0;
             let newBalance = previousBalance + amount;
 
-            if (!allowNegative && newBalance < 0) {
+            if (allowReset && newBalance < 0) {
                 newBalance = 0;
             }
 

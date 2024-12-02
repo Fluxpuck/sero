@@ -14,7 +14,7 @@ const { CreateError, RequestError } = require("../../../../../utils/ClassManager
  */
 router.post("/:userId", async (req, res, next) => {
     const { guildId, userId } = req.params;
-    const { amount, allowNegative = true } = req.body;
+    const { amount, allowReset = true } = req.body;
 
     if (!amount || typeof amount !== "number") {
         throw new RequestError(400, "Invalid amount. Must be a valid number", {
@@ -39,7 +39,7 @@ router.post("/:userId", async (req, res, next) => {
             const previousBalance = userBank.balance ?? 0;
             let newBalance = previousBalance + amount;
 
-            if (!allowNegative && newBalance < 0) {
+            if (allowReset && newBalance < 0) {
                 newBalance = 0;
             }
 

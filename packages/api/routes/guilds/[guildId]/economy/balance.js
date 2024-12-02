@@ -37,6 +37,7 @@ router.get("/", async (req, res, next) => {
 
         const responseData = usersData.map(user => ({
             userId: user.userId,
+            userName: user.userName,
             guildId: user.guildId,
             wallet_balance: user.UserWallet?.balance || 0,
             bank_balance: user.UserBank?.balance || 0
