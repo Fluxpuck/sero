@@ -3,42 +3,80 @@ const { ActionRowBuilder, ComponentType } = require("discord.js");
 const { createCustomEmbed } = require("../../assets/embed");
 const ClientButtonsEnum = require("../../assets/embed-buttons");
 const { chunk } = require("../../lib/helpers/MathHelpers/arrayHelper");
-const { deferInteraction, replyInteraction, updateInteraction } = require('../../utils/InteractionManager');
+const { deferInteraction, replyInteraction, updateInteraction, followUpInteraction } = require('../../utils/InteractionManager');
 
 module.exports.props = {
     commandName: "balance-board",
     description: "Get the balance leaderboard of the server.",
     usage: "/economy",
-    interaction: {},
+    interaction: {
+        type: 1,
+        options: [
+            {
+                name: "type",
+                type: 3,
+                description: "Type of balance to display",
+                choices: [
+                    { name: "Wallet", value: "wallet" },
+                    { name: "Bank", value: "bank" },
+                ],
+                required: false
+            }
+        ],
+    },
     defaultMemberPermissions: ['SendMessages'],
 }
 
 module.exports.run = async (client, interaction, leaderboard = []) => {
     await deferInteraction(interaction, false);
 
-    // Fetch all balances.
-    const result = await getRequest(`/guilds/${interaction.guildId}/economy/balance`);
-    if (result?.status === 200) {
-        leaderboard = result.data;
-    }
+    // Get details from the interaction options
+    let balanceType = interaction.options.get("type")?.value || "wallet";
 
-    // If status code is 404, return an error
-    if (result?.status === 404) {
-        await interaction.deleteReply();
-        return replyInteraction(interaction, {
-            content: `Oops! There is no one on the \`\`balance\`\` leaderboard yet!`,
-            ephemeral: true
-        });
-    } else if (result?.status !== 200) {
-        await interaction.deleteReply();
-        return replyInteraction(interaction, {
+    // Fetch all balances
+    const balanceResult = await getRequest(`/guilds/${interaction.guildId}/economy/balance`);
+
+    // Check if the request was successful
+    if (balanceResult?.status !== 200) {
+        return followUpInteraction(interaction, {
             content: `Oops! Something went wrong while trying to fetch the leaderboard!`,
             ephemeral: true
         });
     }
 
+    // Get the leaderboard data
+    const leaderboardData = balanceResult?.data ?? [];
+    const leaderboardValues = leaderboardData.map((user, index) => {
+
+        const rankings = ["🥇", "🥈", "🥉"];
+        let ranking = rankings[index] || `${index + 1}.`;
+
+        let balance = balanceType === "wallet" ? user.wallet_balance : user.bank_balance;
+
+        // Construct the leaderboard fields
+        const leaderboardTitle = `${ranking} \`${userName}\``;
+        const leaderboardValue = `:coin: *${balance} coin${balance.balance === 1 ? '' : 's'}*`;
+        return {
+            name: leaderboardTitle,
+            value: leaderboardValue,
+            inline: false
+        };
+
+        console.log(user);
+
+    });
+
+
+
+    console.log(leaderboardData)
+
+    return
+
+
+
+
     // Setup embed description
-    const leaderboardValues = leaderboard.map((balance, index) => {
+    const leaderboardValue = leaderboard.map((balance, index) => {
         const user = balance.user;
 
         // Setup the Ranking
