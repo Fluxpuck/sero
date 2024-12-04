@@ -27,7 +27,6 @@ module.exports.run = async (client, interaction) => {
     // Get User details from the interaction options
     const targetUser = interaction.options.get("user")?.user || interaction.user;
     if (!targetUser) {
-        await interaction.deleteReply();
         return followUpInteraction(interaction, {
             content: "Oops! Something went wrong while trying to fetch the user.",
             ephemeral: true
@@ -41,7 +40,6 @@ module.exports.run = async (client, interaction) => {
 
     // If the (required) request was not successful, return an error
     if (userCareer.status !== 200) {
-        await interaction.deleteReply();
         return followUpInteraction(interaction, {
             content: `Uh oh! The user ${targetUser.username} has no career yet.`,
             ephemeral: true

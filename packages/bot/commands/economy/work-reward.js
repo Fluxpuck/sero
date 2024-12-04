@@ -12,8 +12,6 @@ module.exports.props = {
 }
 
 module.exports.run = async (client, interaction) => {
-
-    // Defer the interaction
     await deferInteraction(interaction, false);
 
     // Check if the user has already claimed their daily work reward

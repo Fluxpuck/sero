@@ -1,5 +1,5 @@
 const { postRequest, getRequest } = require("../../database/connection");
-const { deferInteraction, replyInteraction } = require('../../utils/InteractionManager');
+const { deferInteraction, replyInteraction, followUpInteraction } = require('../../utils/InteractionManager');
 
 module.exports.props = {
     commandName: "give-money",
@@ -39,7 +39,7 @@ module.exports.run = async (client, interaction) => {
 
     // If the request was not successful, return an error
     if (result?.status !== 200) {
-        await replyInteraction(interaction, {
+        await followUpInteraction(interaction, {
             content: `Uh oh! Something went wrong while giving money to ${targetUser.username}.`,
             ephemeral: true
         });

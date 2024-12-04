@@ -1,7 +1,7 @@
 const { getRequest, postRequest } = require("../../database/connection");
 const { getTimeUntil } = require("../../lib/helpers/TimeDateHelpers/timeHelper");
 const { TREASURE_MESSAGES_NEGATIVE, TREASURE_MESSAGES_POSITIVE } = require("../../assets/treasure-messages");
-const { deferInteraction, updateInteraction } = require('../../utils/InteractionManager');
+const { deferInteraction, replyInteraction, followUpInteraction } = require('../../utils/InteractionManager');
 
 module.exports.props = {
     commandName: "treasure-hunt",
@@ -18,7 +18,7 @@ module.exports.run = async (client, interaction) => {
     const hourlyRewardResult = await getRequest(`/guilds/${interaction.guildId}/activities/user/${interaction.user.id}/treasure-hunt?thisHour=true`);
 
     if (hourlyRewardResult.status === 200) {
-        await updateInteraction(interaction, {
+        await replyInteraction(interaction, {
             content: `You've already searched for treasure! Please try again in ${getTimeUntil('nexthour')}.`,
             ephemeral: true
         });
@@ -48,12 +48,12 @@ module.exports.run = async (client, interaction) => {
         const result = await postRequest(`/guilds/${interaction.guildId}/economy/balance/${interaction.user.id}`, { amount: rewardAmount });
 
         if (result?.status !== 200) {
-            await updateInteraction(interaction, {
+            await followUpInteraction(interaction, {
                 content: `Uh oh! Something went wrong while sending your hard earned money.`,
                 ephemeral: true
             });
         } else {
-            await updateInteraction(interaction, {
+            await replyInteraction(interaction, {
                 content: treasureMessage,
                 ephemeral: false
             });

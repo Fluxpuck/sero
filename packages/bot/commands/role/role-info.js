@@ -1,4 +1,5 @@
-const { createCustomEmbed } = require("../../assets/embed")
+const { createCustomEmbed } = require("../../assets/embed");
+const { replyInteraction } = require("../../utils/InteractionManager");
 
 module.exports.props = {
     commandName: "role-info",
@@ -62,7 +63,7 @@ module.exports.run = async (client, interaction) => {
     });
 
     // Send the embed
-    return interaction.reply({
+    return replyInteraction({
         embeds: [messageEmbed],
         ephemeral: false,
     });

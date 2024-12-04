@@ -3,7 +3,7 @@ const { ActionRowBuilder, ComponentType } = require("discord.js");
 const { createCustomEmbed } = require("../../assets/embed");
 const ClientButtonsEnum = require("../../assets/embed-buttons");
 const { chunk } = require("../../lib/helpers/MathHelpers/arrayHelper");
-const { deferInteraction, replyInteraction, updateInteraction } = require('../../utils/InteractionManager');
+const { deferInteraction, replyInteraction, updateInteraction, followUpInteraction } = require('../../utils/InteractionManager');
 
 module.exports.props = {
     commandName: "balance-board",
@@ -25,13 +25,13 @@ module.exports.run = async (client, interaction, leaderboard = []) => {
     // If status code is 404, return an error
     if (result?.status === 404) {
         await interaction.deleteReply();
-        return replyInteraction(interaction, {
+        return followUpInteraction(interaction, {
             content: `Oops! There is no one on the \`\`balance\`\` leaderboard yet!`,
             ephemeral: true
         });
     } else if (result?.status !== 200) {
         await interaction.deleteReply();
-        return replyInteraction(interaction, {
+        return followUpInteraction(interaction, {
             content: `Oops! Something went wrong while trying to fetch the leaderboard!`,
             ephemeral: true
         });
@@ -81,7 +81,7 @@ module.exports.run = async (client, interaction, leaderboard = []) => {
     messageComponents?.components[nextIndex]?.data && (messageComponents.components[nextIndex].data.disabled = false);
 
     // Return the message
-    const response = await interaction.editReply({
+    const response = await replyInteraction({
         embeds: [messageEmbed],
         components: messageComponents ? [messageComponents] : [],
         ephemeral: false

@@ -1,7 +1,7 @@
 const { postRequest } = require("../../database/connection");
 const { getYear } = require('date-fns');
 const { getBirthdate } = require("../../lib/helpers/TimeDateHelpers/timeHelper");
-const { deferInteraction, replyInteraction } = require("../../utils/InteractionManager");
+const { deferInteraction, replyInteraction, followUpInteraction } = require("../../utils/InteractionManager");
 
 module.exports.props = {
     commandName: "birthday",
@@ -58,7 +58,7 @@ module.exports.run = async (client, interaction) => {
     });
 
     if (setBirthdayResponse.status === 403) {
-        return replyInteraction(interaction, {
+        return followUpInteraction(interaction, {
             content: "Oops! You have already set your birthday twice and cannot set it again.",
             ephemeral: true
         });
@@ -80,7 +80,7 @@ module.exports.run = async (client, interaction) => {
         });
     }
 
-    return replyInteraction(interaction, {
+    return followUpInteraction(interaction, {
         content: "Something went wrong while setting your birthday. Please try again later.",
         ephemeral: true
     });

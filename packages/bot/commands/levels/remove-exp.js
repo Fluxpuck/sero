@@ -1,5 +1,5 @@
-const { postRequest, getRequest } = require("../../database/connection");
-const { deferInteraction, replyInteraction, updateInteraction, followUpInteraction } = require("../../utils/InteractionManager");
+const { postRequest } = require("../../database/connection");
+const { deferInteraction, replyInteraction, followUpInteraction } = require("../../utils/InteractionManager");
 
 module.exports.props = {
     commandName: "remove-exp",
@@ -46,7 +46,7 @@ module.exports.run = async (client, interaction) => {
         });
 
     } else {
-        await updateInteraction(interaction, {
+        await replyInteraction(interaction, {
             content: `**${targetAmount}** experience was removed from <@${targetUser.id}>!`,
             ephemeral: false
         });

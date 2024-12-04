@@ -4,7 +4,6 @@ const { createCustomEmbed } = require("../../assets/embed");
 const { chunk } = require("../../lib/helpers/MathHelpers/arrayHelper");
 const { getRequest } = require("../../database/connection");
 const { findUser } = require("../../lib/resolvers/userResolver");
-const { GetAuditLogEventName } = require("../../config/Audittypes");
 const { deferInteraction, replyInteraction, updateInteraction, followUpInteraction } = require("../../utils/InteractionManager");
 
 module.exports.props = {
@@ -31,7 +30,7 @@ module.exports.run = async (client, interaction) => {
     // Get User details from the interaction options
     const targetUser = interaction.options.get("user")?.user;
     if (!targetUser) {
-        await followUpInteraction(interaction, {
+        await replyInteraction(interaction, {
             content: "User does not exist.",
             ephemeral: true
         });

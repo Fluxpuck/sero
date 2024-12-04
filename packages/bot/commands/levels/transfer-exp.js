@@ -102,7 +102,6 @@ module.exports.run = async (client, interaction) => {
     if (eligibleForTransfer) {
 
         try {
-
             // Remove exp from the author
             const removeResult = await postRequest(`/guilds/${interaction.guildId}/levels/exp/${interaction.user.id}`, { experience: -transferAmount });
             if (removeResult.status !== 200) {
