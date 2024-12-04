@@ -24,7 +24,7 @@ module.exports.run = async (client, interaction) => {
     }
 
     // Generate random reward amount
-    const isPositive = Math.random() < 0.4;
+    const isPositive = Math.random() < 0.35;
     const targetRewardAmount = Math.floor(Math.random() * (isPositive ? 251 : 401)) * (isPositive ? 1 : -1);
 
     // Deposit the reward amount to the user's wallet
