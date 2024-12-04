@@ -1,7 +1,7 @@
 const { postRequest } = require("../../database/connection");
 const ClientButtonsEnum = require("../../assets/embed-buttons");
 const { ActionRowBuilder, ComponentType } = require("discord.js");
-const { deferInteraction, replyInteraction, updateInteraction } = require("../../utils/InteractionManager");
+const { deferInteraction, replyInteraction, updateInteraction, followUpInteraction } = require("../../utils/InteractionManager");
 
 module.exports.props = {
     commandName: "reset-exp",
@@ -38,7 +38,7 @@ module.exports.run = async (client, interaction) => {
         // If the request was not successful, return an error
         if (result?.status !== 200) {
             await interaction.deleteReply();
-            return replyInteraction(interaction, {
+            return followUpInteraction(interaction, {
                 content: "Something went wrong while resetting the users experience.",
                 ephemeral: true
             });

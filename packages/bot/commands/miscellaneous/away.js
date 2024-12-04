@@ -77,7 +77,6 @@ module.exports.run = async (client, interaction) => {
 
     // If the request was not successful, return an error
     if (result?.status !== 200) {
-        await interaction.deleteReply();
         return followUpInteraction(interaction, {
             content: "Something went wrong while setting your away status.",
             ephemeral: true
@@ -88,13 +87,9 @@ module.exports.run = async (client, interaction) => {
             const reason = interaction.options.get("message")?.value;
             content += `\n> **${reason}**`;
         }
-        return updateInteraction(interaction, {
+        return replyInteraction(interaction, {
             content: content,
             ephemeral: false
-        }).then(msg => {
-            setTimeout(() => {
-                msg.delete();
-            }, 8000); // 8 seconds
-        });
+        }, 8_000)
     }
 }

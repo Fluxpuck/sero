@@ -119,7 +119,7 @@ module.exports.run = async (client, interaction, leaderboard = []) => {
     messageComponents?.components[nextIndex]?.data && (messageComponents.components[nextIndex].data.disabled = false);
 
     // Return the message
-    const response = await interaction.editReply({
+    const response = await replyInteraction({
         embeds: [messageEmbed],
         components: messageComponents ? [messageComponents] : [],
         ephemeral: false

@@ -1,5 +1,5 @@
 const { postRequest } = require("../../database/connection");
-const { deferInteraction, replyInteraction, updateInteraction, followUpInteraction } = require("../../utils/InteractionManager");
+const { deferInteraction, replyInteraction, followUpInteraction } = require("../../utils/InteractionManager");
 
 module.exports.props = {
     commandName: "give-exp",
@@ -39,13 +39,12 @@ module.exports.run = async (client, interaction) => {
 
     // If the request was not successful, return an error
     if (result?.status !== 200) {
-        await interaction.deleteReply();
         return followUpInteraction(interaction, {
             content: `Uh oh! Something went wrong while giving experience to ${targetUser.username}.`,
             ephemeral: true
         });
     } else {
-        return updateInteraction(interaction, {
+        return replyInteraction(interaction, {
             content: `<@${targetUser.id}> has received **${targetAmount}** experience!`,
             ephemeral: false
         });

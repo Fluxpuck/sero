@@ -17,12 +17,23 @@ async function deferInteraction(interaction, ephemeral = false) {
     }
 }
 
-async function replyInteraction(interaction, options) {
+async function replyInteraction(interaction, options, timeout = 0) {
     if (!interaction || !options) return false;
     try {
         const response = interaction.deferred || interaction.replied
             ? await interaction.editReply(options)
             : await interaction.reply(options);
+
+        if (timeout > 0) {
+            setTimeout(async () => {
+                try {
+                    await interaction.deleteReply();
+                } catch (error) {
+                    console.error('Failed to delete interaction reply:', error);
+                }
+            }, timeout);
+        }
+
         return response;
     } catch (error) {
         console.error('Failed to reply to interaction:', error);

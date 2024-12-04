@@ -16,8 +16,9 @@ module.exports.run = async (client, interaction) => {
 
     // Check if the user has already searched for treasure this hour
     const hourlyRewardResult = await getRequest(`/guilds/${interaction.guildId}/activities/user/${interaction.user.id}/treasure-hunt?thisHour=true`);
+
     if (hourlyRewardResult.status === 200) {
-        return followUpInteraction(interaction, {
+        await replyInteraction(interaction, {
             content: `You've already searched for treasure! Please try again in ${getTimeUntil('nexthour')}.`,
             ephemeral: true
         });

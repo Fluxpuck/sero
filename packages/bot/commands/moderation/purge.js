@@ -1,5 +1,5 @@
 const { fetchMessages } = require("../../lib/resolvers/messageResolver");
-const { deferInteraction, replyInteraction, updateInteraction } = require('../../utils/InteractionManager');
+const { deferInteraction, replyInteraction } = require('../../utils/InteractionManager');
 
 module.exports.props = {
     commandName: "purge",
@@ -35,7 +35,7 @@ module.exports.run = async (client, interaction) => {
     const targetAmount = interaction.options.get("amount").value;
 
     // Start the interaction reply
-    await updateInteraction(interaction, {
+    await replyInteraction(interaction, {
         content: `*Deleting **${targetAmount}** messages${targetUser ? ` from **${targetUser.tag}**` : ""}...*`,
         ephemeral: true
     });
@@ -49,7 +49,7 @@ module.exports.run = async (client, interaction) => {
         const deletedMessages = await interaction.channel.bulkDelete(messageCollection, true).catch(err => { console.warn(err) });
 
         // Return confirmation message to the user
-        await updateInteraction(interaction, {
+        await replyInteraction(interaction, {
             content: `Deleted **${deletedMessages.size}** messages${targetUser ? ` from **${targetUser.tag}**` : ""}`,
             ephemeral: true,
         });
@@ -57,7 +57,7 @@ module.exports.run = async (client, interaction) => {
         // Clear the message collection
         return messageCollection.clear();
     } else {
-        return updateInteraction(interaction, {
+        return replyInteraction(interaction, {
             content: `Oops! I couldn't find any messages${targetUser ? ` from **${targetUser.tag}**` : ""} to delete!`,
             ephemeral: true,
         });
