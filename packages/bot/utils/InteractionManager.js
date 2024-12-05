@@ -1,9 +1,3 @@
-const { CommandInteraction, InteractionReplyOptions } = require('discord.js');
-
-/**
- * Manages Discord interaction responses
- * @module InteractionManager
- */
 async function deferInteraction(interaction, ephemeral = false) {
     if (!interaction) return false;
 
