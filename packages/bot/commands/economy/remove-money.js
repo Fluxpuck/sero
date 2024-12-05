@@ -50,7 +50,6 @@ module.exports.run = async (client, interaction) => {
         case "bank":
 
             const bankWithdraw = await postRequest(`/guilds/${interaction.guildId}/economy/bank/${targetUser.id}`, { amount: -targetAmount });
-            console.log(bankWithdraw)
 
             // Set the true amount of the transaction
             transactionAmount = bankWithdraw?.data?.transaction?.trueAmount ?? targetAmount;
@@ -78,7 +77,6 @@ module.exports.run = async (client, interaction) => {
         default:
 
             const walletWithdraw = await postRequest(`/guilds/${interaction.guildId}/economy/wallet/${targetUser.id}`, { amount: -targetAmount, allowReset: true });
-            console.log(walletWithdraw)
 
             // Get the true amount of the transaction
             transactionAmount = walletWithdraw?.data?.transaction?.trueAmount ?? targetAmount;
