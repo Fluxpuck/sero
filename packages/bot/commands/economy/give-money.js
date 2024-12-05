@@ -32,16 +32,6 @@ module.exports.props = {
                 ],
                 required: false
             },
-            {
-                name: "type",
-                type: 3,
-                description: "The type of account to transfer money from",
-                choices: [
-                    { name: "Wallet", value: "wallet" },
-                    { name: "Bank", value: "bank" },
-                ],
-                required: false
-            }
         ],
     },
     defaultMemberPermissions: ['ManageGuild'],
@@ -60,9 +50,10 @@ module.exports.run = async (client, interaction) => {
         case "bank":
 
             const bankDeposit = await postRequest(`/guilds/${interaction.guildId}/economy/bank/${targetUser.id}`, { amount: +targetAmount });
+            console.log(bankDeposit)
 
             // Set the true amount of the transaction
-            transactionAmount = bankDeposit?.data?.transaction?.trueAmount || targetAmount;
+            transactionAmount = bankDeposit?.data?.transaction?.trueAmount ?? targetAmount;
 
             if (bankDeposit.status === 400 || transactionAmount === 0) {
                 return followUpInteraction(interaction, {
@@ -86,10 +77,11 @@ module.exports.run = async (client, interaction) => {
             break;
         default:
 
-            const walletDeposit = await postRequest(`/guilds/${interaction.guildId}/economy/wallet/${targetUser.id}`, { amount: -transferAmount, allowReset: true });
+            const walletDeposit = await postRequest(`/guilds/${interaction.guildId}/economy/wallet/${targetUser.id}`, { amount: +targetAmount });
+            console.log(walletDeposit);
 
             // Get the true amount of the transaction
-            transactionAmount = walletDeposit?.data?.transaction?.trueAmount || targetAmount;
+            transactionAmount = walletDeposit?.data?.transaction?.trueAmount ?? targetAmount;
 
             if (walletDeposit.status === 400 || transactionAmount === 0) {
                 return followUpInteraction(interaction, {

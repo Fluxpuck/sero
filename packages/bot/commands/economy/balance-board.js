@@ -48,6 +48,9 @@ module.exports.run = async (client, interaction, leaderboard = []) => {
     const leaderboardData = balanceResult?.data ?? [];
     const leaderboardValues = leaderboardData.map((user, index) => {
 
+        console.log(user, index)
+        return;
+
         const rankings = ["🥇", "🥈", "🥉"];
         let ranking = rankings[index] || `${index + 1}.`;
 
@@ -56,14 +59,12 @@ module.exports.run = async (client, interaction, leaderboard = []) => {
         // Construct the leaderboard fields
         const leaderboardTitle = `${ranking} \`${userName}\``;
         const leaderboardValue = `:coin: *${balance} coin${balance.balance === 1 ? '' : 's'}*`;
+
         return {
             name: leaderboardTitle,
             value: leaderboardValue,
             inline: false
         };
-
-        console.log(user);
-
     });
 
 
