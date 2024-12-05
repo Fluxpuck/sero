@@ -45,68 +45,75 @@ module.exports.run = async (client, interaction) => {
     const targetUser = interaction.options.get("user").user;
     const transferAmount = interaction.options.get("amount").value;
     const transferType = interaction.options.get("type")?.value || "wallet";
+    let transactionAmount = targetAmount;
 
     switch (transferType) {
         case "bank":
-            // Remove balance from the author and add it to the target
+
             const bankWithdraw = await postRequest(`/guilds/${interaction.guildId}/economy/bank/${interaction.user.id}`, { amount: -transferAmount });
             const bankDeposit = await postRequest(`/guilds/${interaction.guildId}/economy/bank/${targetUser.id}`, { amount: +transferAmount });
 
+            // Set the true amount of the transaction
+            transactionAmount = bankDeposit?.data?.transaction?.trueAmount || targetAmount;
+
             if (bankWithdraw.status === 400) {
                 return followUpInteraction(interaction, {
-                    content: "You don't have enough money in your bank to transfer.",
+                    content: "You don't have enough money in the bank to transfer money",
                     ephemeral: true
                 });
             }
 
-            if (bankDeposit.status === 400) {
+            if (bankDeposit.status === 400 || transactionAmount === 0) {
                 return followUpInteraction(interaction, {
-                    content: "The user you are trying to transfer money to has reached the bank limit.",
+                    content: `Something went wrong while transferring money to <@${targetUser.id}>`,
                     ephemeral: true
                 });
             }
 
             if (bankWithdraw.status !== 200 || bankDeposit.status !== 200) {
                 return followUpInteraction(interaction, {
-                    content: "Something went wrong while transferring money to the user.",
+                    content: "Something went wrong while transferring money to the user",
                     ephemeral: true
                 });
             }
 
             await replyInteraction(interaction, {
-                content: `**${transferAmount.toLocaleString()}** was successfully wired to <@${targetUser.id}>!`,
+                content: `**${transferAmount.toLocaleString()}** was wired to <@${targetUser.id}>!`,
                 ephemeral: false
             });
 
             break;
         default:
-            // Remove balance from the author and add it to the target
+
             const walletWithdraw = await postRequest(`/guilds/${interaction.guildId}/economy/wallet/${interaction.user.id}`, { amount: -transferAmount });
             const walletDeposit = await postRequest(`/guilds/${interaction.guildId}/economy/wallet/${targetUser.id}`, { amount: +transferAmount });
 
+            // Set the true amount of the transaction
+            transactionAmount = walletDeposit?.data?.transaction?.trueAmount || targetAmount;
+
             if (walletWithdraw.status === 400) {
                 return followUpInteraction(interaction, {
-                    content: "You don't have enough money in your wallet to transfer.",
+                    content: "You don't have enough cash in your wallet to transfer.",
                     ephemeral: true
                 });
             }
 
-            if (walletDeposit.status === 400) {
+            if (walletDeposit.status === 400 || transactionAmount === 0) {
                 return followUpInteraction(interaction, {
-                    content: "The user you are trying to transfer money to has reached the wallet limit.",
+                    content: `<@${targetUser.id}>'s wallet is too stacked to receive cash`,
                     ephemeral: true
                 });
             }
 
             if (walletWithdraw.status !== 200 || walletDeposit.status !== 200) {
                 return followUpInteraction(interaction, {
-                    content: "Something went wrong while transferring money to the user.",
+                    content: `Something went wrong while transferring cash to <@${targetUser.id}>`,
                     ephemeral: true
                 });
             }
 
             await replyInteraction(interaction, {
-                content: `**${transferAmount.toLocaleString()}** cash was successfully given to <@${targetUser.id}>!`,
+                content: `**${transferAmount.toLocaleString()}** cash was transferred to <@${targetUser.id}>!`,
                 ephemeral: false
             });
 

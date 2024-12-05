@@ -24,42 +24,38 @@ module.exports.run = async (client, interaction) => {
         });
     }
 
-    // Generate random reward amount
-    const isPositive = Math.random() < 0.35;
-    const targetRewardAmount = Math.floor(Math.random() * (isPositive ? 251 : 401)) * (isPositive ? 1 : -1);
+    const isPositive = Math.random() < 0.35; // 35% chance of positive reward
+    const rewardAmount = Math.floor(Math.random() * (isPositive ? 251 : 401)) * (isPositive ? 1 : -1);
 
-    // Deposit the reward amount to the user's wallet
-    const walletDeposit = await postRequest(`guilds/${interaction.guild.id}/economy/wallet/${interaction.user.id}`, { amount: targetRewardAmount });
-    console.log("walletDeposit", walletDeposit);
-
+    // Deposit the reward amount to the user's wallet - allowReset is set to true to allow rewards to empty the wallet
+    const walletTransaction = await postRequest(`guilds/${interaction.guild.id}/economy/wallet/${interaction.user.id}`, { amount: rewardAmount, allowReset: true });
     // Get the true amount of the transaction
-    const rewardAmount = walletDeposit?.data?.transaction?.trueAmount;
+    const transactionAmount = walletTransaction?.data?.transaction?.trueAmount || rewardAmount;
 
-    if (walletDeposit.status === 400) {
+    if (walletTransaction.status === 400 || transactionAmount === 0) {
         return followUpInteraction(interaction, {
-            content: "Oops! Seems like you are already broke. Try again later.",
+            content: "Damn. Seems like you are already too broke to lose any treasure.",
             ephemeral: true
         });
     }
 
-    if (walletDeposit?.status !== 200) {
+    if (walletTransaction?.status !== 200) {
         return followUpInteraction(interaction, {
             content: `Uh oh! Something went wrong while sending your hard earned money.`,
             ephemeral: true
         });
     }
 
-    // Store the activity in the database
     try {
+        // Store the activity in the database
         await postRequest(`/guilds/${interaction.guild.id}/activities`, {
             guildId: interaction.guild.id,
             userId: interaction.user.id,
             type: "treasure-hunt",
-            additional: { reward: rewardAmount }
+            additional: { reward: transactionAmount }
         });
     } catch (error) {
         console.error('Failed to store treasure hunt activity:', error);
-        // Continue execution as this is not critical for the user experience
     }
 
     // Generate random treasure message

@@ -44,60 +44,59 @@ module.exports.run = async (client, interaction) => {
     const targetUser = interaction.options.get("user").user;
     const targetAmount = interaction.options.get("amount").value;
     const targetType = interaction.options.get("type")?.value || "wallet";
-
+    let transactionAmount = targetAmount;
 
     switch (targetType) {
         case "bank":
-        // Remove balance from the target user
-            const bankDeposit = await postRequest(`/guilds/${interaction.guildId}/economy/bank/${targetUser.id}`, { amount: -targetAmount });
 
-            if (bankDeposit.status === 400) {
+            const bankWithdraw = await postRequest(`/guilds/${interaction.guildId}/economy/bank/${targetUser.id}`, { amount: -targetAmount });
+
+            // Set the true amount of the transaction
+            transactionAmount = bankWithdraw?.data?.transaction?.trueAmount || targetAmount;
+
+            if (bankWithdraw.status === 400 || transactionAmount === 0) {
                 return followUpInteraction(interaction, {
-                    content: "The user you are trying to transfer money to has reached the bank limit.",
+                    content: `<@${targetUser.id}> has reached their bank limit`,
                     ephemeral: true
                 });
             }
 
-            if (bankDeposit.status !== 200) {
+            if (bankWithdraw.status !== 200) {
                 return followUpInteraction(interaction, {
-                    content: "Something went wrong while transferring money to the user.",
+                    content: `Something went wrong while withdrawing money from <@${targetUser.id}>`,
                     ephemeral: true
                 });
             }
 
             await replyInteraction(interaction, {
-                conten: `<@${targetUser.id}> recieved **${targetAmount}** money!`,
+                conten: `**${transactionAmount.toLocaleString()}** was removed from <@${targetUser.id}>!`,
                 ephemeral: false
             });
 
             break;
         default:
-            // Remove balance from the target user
-            const walletDeposit = await postRequest(`/guilds/${interaction.guildId}/economy/wallet/${targetUser.id}`, { amount: -transferAmount });
 
-            if (walletWithdraw.status === 400) {
+            const walletWithdraw = await postRequest(`/guilds/${interaction.guildId}/economy/wallet/${targetUser.id}`, { amount: -transferAmount, allowReset: true });
+
+            // Get the true amount of the transaction
+            transactionAmount = walletWithdraw?.data?.transaction?.trueAmount || targetAmount;
+
+            if (walletWithdraw.status === 400 || transactionAmount === 0) {
                 return followUpInteraction(interaction, {
-                    content: "You don't have enough money in your wallet to transfer.",
+                    content: `<@${targetUser.id}> is too broke to take cash from!`,
                     ephemeral: true
                 });
             }
 
-            if (walletDeposit.status === 400) {
+            if (walletWithdraw.status !== 200) {
                 return followUpInteraction(interaction, {
-                    content: "The user you are trying to transfer money to has reached the wallet limit.",
-                    ephemeral: true
-                });
-            }
-
-            if (walletWithdraw.status !== 200 || walletDeposit.status !== 200) {
-                return followUpInteraction(interaction, {
-                    content: "Something went wrong while transferring money to the user.",
+                    content: `Something went wrong while taking cash from <@${targetUser.id}>`,
                     ephemeral: true
                 });
             }
 
             await replyInteraction(interaction, {
-                content: `**${transferAmount.toLocaleString()}** cash was successfully given to <@${targetUser.id}>!`,
+                content: `**${transactionAmount.toLocaleString()}** cash was taken from <@${targetUser.id}>!`,
                 ephemeral: false
             });
 
