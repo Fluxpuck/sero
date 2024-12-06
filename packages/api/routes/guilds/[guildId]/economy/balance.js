@@ -35,13 +35,17 @@ router.get("/", async (req, res, next) => {
             throw new CreateError(404, "No users found in the guild");
         }
 
-        const responseData = usersData.map(user => ({
-            userId: user.userId,
-            userName: user.userName,
-            guildId: user.guildId,
-            wallet_balance: user.UserWallet?.balance || 0,
-            bank_balance: user.UserBank?.balance || 0
-        }));
+        const responseData = usersData.map(user => {
+            const walletBalance = user.user_wallets?.[0]?.balance || 0;
+            const bankBalance = user.user_banks?.[0]?.balance || 0;
+            return {
+                userId: user.userId,
+                userName: user.userName,
+                guildId: user.guildId,
+                wallet_balance: walletBalance,
+                bank_balance: bankBalance
+            }
+        });
 
         res.status(200).json(responseData);
     } catch (error) {

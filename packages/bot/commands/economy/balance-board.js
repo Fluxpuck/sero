@@ -3,6 +3,7 @@ const { ActionRowBuilder, ComponentType } = require("discord.js");
 const { createCustomEmbed } = require("../../assets/embed");
 const ClientButtonsEnum = require("../../assets/embed-buttons");
 const { chunk } = require("../../lib/helpers/MathHelpers/arrayHelper");
+const { capitalize } = require('../../lib/helpers/StringHelpers/stringHelper');
 const { deferInteraction, replyInteraction, updateInteraction, followUpInteraction } = require('../../utils/InteractionManager');
 
 module.exports.props = {
@@ -11,32 +12,63 @@ module.exports.props = {
     usage: "/economy",
     interaction: {
         type: 1,
-        options: [
-            {
-                name: "type",
-                type: 3,
-                description: "Type of balance to display",
-                choices: [
-                    { name: "Wallet", value: "wallet" },
-                    { name: "Bank", value: "bank" },
-                ],
-                required: false
-            }
-        ],
+        options: [],
     },
     defaultMemberPermissions: ['SendMessages'],
 }
 
-module.exports.run = async (client, interaction, leaderboard = []) => {
+const getBalanceData = (user, type) => {
+    const balance = type === "wallet" ? user.wallet_balance : user.bank_balance;
+    const icon = type === "wallet" ? "💵" : "🏦";
+    return { balance, icon };
+};
+
+const updateLeaderboardValues = (leaderboardData, balanceType) => {
+    const sortedData = [...leaderboardData].sort((a, b) => {
+        const balanceA = balanceType === "wallet" ? a.wallet_balance : a.bank_balance;
+        const balanceB = balanceType === "bank" ? b.bank_balance : b.wallet_balance;
+        return balanceB - balanceA;
+    });
+
+    return sortedData.map((user, index) => {
+        const rankings = ["🥇", "🥈", "🥉"];
+        const ranking = rankings[index] || `${index + 1}.`;
+        const { balance, icon } = getBalanceData(user, balanceType);
+        // Return the formatted string
+        return `**${ranking}** \`${user.userName}\` - ${icon} ${balance}`;
+    });
+};
+
+const updateLeaderboardEmbed = (interaction, leaderboardValues, page, maxpages, balanceType) => {
+    const header = `Here is the top ${leaderboardValues.length} users on the  ${balanceType} leaderboard! \n`;
+    const description = leaderboardValues.length > 0 ? [header, ...leaderboardValues].join("\n") : "There are currently no users on the leaderboard yet!";
+    return createCustomEmbed({
+        title: `Economy Leaderboard - ${capitalize(balanceType)}`,
+        description: description,
+        thumbnail: interaction.guild.iconURL({ dynamic: true }),
+        footer: { text: `Leaderboard page ${page + 1} of ${maxpages + 1}` }
+    });
+};
+
+const updateLeaderboardComponents = (leaderboardPages, page, maxpages, balanceType) => {
+    const paginationButtons = leaderboardPages.length > 1 ? [
+        ClientButtonsEnum.PREVIOUS_PAGE.setDisabled(page === 0),
+        ClientButtonsEnum.NEXT_PAGE.setDisabled(page === maxpages)
+    ] : [];
+
+    const balanceButton = balanceType === 'wallet' ? ClientButtonsEnum.BANK : ClientButtonsEnum.WALLET;
+
+    const messageComponents = new ActionRowBuilder().addComponents(
+        [...paginationButtons, balanceButton]
+    );
+
+    return messageComponents;
+};
+
+module.exports.run = async (client, interaction, balanceType = "wallet") => {
     await deferInteraction(interaction, false);
 
-    // Get details from the interaction options
-    let balanceType = interaction.options.get("type")?.value || "wallet";
-
-    // Fetch all balances
     const balanceResult = await getRequest(`/guilds/${interaction.guildId}/economy/balance`);
-
-    // Check if the request was successful
     if (balanceResult?.status !== 200) {
         return followUpInteraction(interaction, {
             content: `Oops! Something went wrong while trying to fetch the leaderboard!`,
@@ -44,133 +76,56 @@ module.exports.run = async (client, interaction, leaderboard = []) => {
         });
     }
 
-    // Get the leaderboard data
     const leaderboardData = balanceResult?.data ?? [];
-    const leaderboardValues = leaderboardData.map((user, index) => {
-
-        console.log(user, index)
-        return;
-
-        const rankings = ["🥇", "🥈", "🥉"];
-        let ranking = rankings[index] || `${index + 1}.`;
-
-        let balance = balanceType === "wallet" ? user.wallet_balance : user.bank_balance;
-
-        // Construct the leaderboard fields
-        const leaderboardTitle = `${ranking} \`${userName}\``;
-        const leaderboardValue = `:coin: *${balance} coin${balance.balance === 1 ? '' : 's'}*`;
-
-        return {
-            name: leaderboardTitle,
-            value: leaderboardValue,
-            inline: false
-        };
-    });
-
-
-
-    console.log(leaderboardData)
-
-    return
-
-
-
-
-    // Setup embed description
-    const leaderboardValue = leaderboard.map((balance, index) => {
-        const user = balance.user;
-
-        // Setup the Ranking
-        const rankings = ["🥇", "🥈", "🥉"];
-        let ranking = rankings[index] || `${index + 1}.`;
-
-        // Construct the leaderboard fields
-        const leaderboardTitle = `${ranking} \`${user.userName}\``;
-        const leaderboardValue = `:coin: *${balance.balance} coin${balance.balance === 1 ? '' : 's'}*`;
-        return {
-            name: leaderboardTitle,
-            value: leaderboardValue,
-            inline: false
-        };
-    });
-
-    // Slice the leaderboard in chunks of 10
-    const leaderboardPages = chunk(leaderboardValues, 10);
+    let leaderboardValues = updateLeaderboardValues(leaderboardData, balanceType);
+    let leaderboardPages = chunk(leaderboardValues, 10);
     let page = 0, maxpages = leaderboardPages.length - 1;
 
-    // Check if there are more than 3 logs
-    const hasLeaderboard = leaderboard.length > 0;
+    let messageEmbed = updateLeaderboardEmbed(interaction, leaderboardValues, page, maxpages, balanceType);
+    let messageComponents = updateLeaderboardComponents(leaderboardPages, page, maxpages, balanceType);
 
-    // Construct message Embed
-    const messageEmbed = createCustomEmbed({
-        title: "Leaderboard",
-        description: `${hasLeaderboard ? `Here are the top ${leaderboardValues.length} users on the leaderboard!` : "Uh oh! There are no users on the leaderboard yet!"}`,
-        fields: [...(leaderboardPages.length > 0 ? leaderboardPages[page] : [])],
-        thumbnail: interaction.guild.iconURL({ dynamic: true }),
-    });
-
-    // Construct Pagination Buttons
-    const paginationButtons = leaderboardPages.length > 1 ? [ClientButtonsEnum.PREVIOUS_PAGE, ClientButtonsEnum.NEXT_PAGE] : [];
-    const messageComponents = paginationButtons.length > 0 ? new ActionRowBuilder().addComponents(...paginationButtons) : null;
-
-    // Double check to set the pagination buttons buttons to their default state...
-    const previousIndex = messageComponents?.components?.findIndex(button => button.data.custom_id === "previous_pg");
-    const nextIndex = messageComponents?.components?.findIndex(button => button.data.custom_id === "next_pg");
-    messageComponents?.components[previousIndex]?.data && (messageComponents.components[previousIndex].data.disabled = true);
-    messageComponents?.components[nextIndex]?.data && (messageComponents.components[nextIndex].data.disabled = false);
-
-    // Return the message
-    const response = await replyInteraction({
+    const response = await replyInteraction(interaction, {
         embeds: [messageEmbed],
-        components: messageComponents ? [messageComponents] : [],
+        components: [messageComponents],
         ephemeral: false
     });
 
-    // Collect the button selection
-    const options = { componentType: ComponentType.Button, idle: 300_000, time: 3_600_000 };
-    const collector = response.createMessageComponentCollector({ options });
-    collector.on('collect', async i => {
+    const collector = response.createMessageComponentCollector({
+        componentType: ComponentType.Button,
+        idle: 300_000,
+        time: 3_600_000
+    });
 
+    collector.on('collect', async i => {
         const selectedButton = i.customId;
 
-        /**
-         * @selectedButton - Pagination
-         * Scroll through the log pages
-         */
-        if (selectedButton === "previous_pg" || selectedButton === "next_pg") {
+        switch (selectedButton) {
+            case 'wallet':
+                balanceType = "wallet";
+                break;
 
-            // Update the page number based on the button pressed
-            if (selectedButton == 'previous_pg') (page <= 0) ? 0 : page--;
-            if (selectedButton == 'next_pg') (page >= maxpages) ? maxpages : page++;
+            case 'bank':
+                balanceType = "bank";
+                break;
 
-            // Update the button status, based on the page number
-            const previousIndex = messageComponents.components.findIndex(button => button.data.custom_id === "previous_pg");
-            const nextIndex = messageComponents.components.findIndex(button => button.data.custom_id === "next_pg");
-            switch (page) {
-                case 0:
-                    messageComponents.components[nextIndex].data.disabled = false;
-                    messageComponents.components[previousIndex].data.disabled = true;
-                    break;
-                case maxpages:
-                    messageComponents.components[nextIndex].data.disabled = true;
-                    messageComponents.components[previousIndex].data.disabled = false;
-                    break;
-                default:
-                    messageComponents.components[nextIndex].data.disabled = false;
-                    messageComponents.components[previousIndex].data.disabled = false;
-            }
+            case 'previous_pg':
+                page = Math.max(0, page - 1);
+                break;
 
-            // Update embed Footer && Fields
-            messageEmbed.setFooter({ text: `Leaderboard page ${page + 1} of ${maxpages + 1}` });
-            messageEmbed.data.fields = []; // Empty current fields
-            messageEmbed.setFields([...leaderboardPages[page]]);
+            case 'next_pg':
+                page = Math.min(maxpages, page + 1);
+                break;
 
-            // Update the interaction components
-            await updateInteraction(i, {
-                embeds: [messageEmbed],
-                components: [messageComponents]
-            });
-
+            default:
+                return;
         }
+
+        const updatedEmbed = updateLeaderboardEmbed(interaction, leaderboardValues, page, maxpages, balanceType);
+        const updatedComponents = updateLeaderboardComponents(leaderboardPages, page, maxpages, balanceType);
+
+        await updateInteraction(i, {
+            embeds: [updatedEmbed],
+            components: [updatedComponents]
+        });
     });
 }
