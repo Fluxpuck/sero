@@ -65,7 +65,7 @@ const ClientButtonsEnum = {
     WALLET: new ButtonBuilder()
         .setStyle(ButtonStyle.Primary)
         .setLabel('Wallet')
-        .setEmoji('💵')
+        .setEmoji('🪙')
         .setCustomId('wallet')
         .setDisabled(false),
 

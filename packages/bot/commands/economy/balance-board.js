@@ -19,7 +19,7 @@ module.exports.props = {
 
 const getBalanceData = (user, type) => {
     const balance = type === "wallet" ? user.wallet_balance : user.bank_balance;
-    const icon = type === "wallet" ? "💵" : "🏦";
+    const icon = type === "wallet" ? "🪙" : "🏦";
     return { balance, icon };
 };
 
@@ -30,23 +30,29 @@ const updateLeaderboardValues = (leaderboardData, balanceType) => {
         return balanceB - balanceA;
     });
 
-    return sortedData.map((user, index) => {
+    const leaderboardValues = sortedData.map((user, index) => {
         const rankings = ["🥇", "🥈", "🥉"];
         const ranking = rankings[index] || `${index + 1}.`;
         const { balance, icon } = getBalanceData(user, balanceType);
         // Return the formatted string
         return `**${ranking}** \`${user.userName}\` - ${icon} ${balance}`;
     });
+
+    const leaderboardPages = chunk(leaderboardValues, 10);
+
+    return { leaderboardPages: leaderboardPages, amount: leaderboardValues.length, maxpages: leaderboardPages.length - 1 };
 };
 
-const updateLeaderboardEmbed = (interaction, leaderboardValues, page, maxpages, balanceType) => {
-    const header = `Here is the top ${leaderboardValues.length} users on the  ${balanceType} leaderboard! \n`;
-    const description = leaderboardValues.length > 0 ? [header, ...leaderboardValues].join("\n") : "There are currently no users on the leaderboard yet!";
+const updateLeaderboardEmbed = (interaction, leaderboardPages, amount, page, maxpages, balanceType) => {
+    const header = `Here is the top ${amount} users on the  ${balanceType} leaderboard! \n\n`;
+    const description = amount > 0 ? leaderboardPages[page].join("\n") : "There are currently no users on the leaderboard yet!";
+    const footerText = maxpages > 0 ? `Leaderboard page ${page + 1} of ${maxpages + 1}` : null;
+
     return createCustomEmbed({
         title: `Economy Leaderboard - ${capitalize(balanceType)}`,
-        description: description,
+        description: header + description,
         thumbnail: interaction.guild.iconURL({ dynamic: true }),
-        footer: { text: `Leaderboard page ${page + 1} of ${maxpages + 1}` }
+        footer: { text: footerText }
     });
 };
 
@@ -65,7 +71,7 @@ const updateLeaderboardComponents = (leaderboardPages, page, maxpages, balanceTy
     return messageComponents;
 };
 
-module.exports.run = async (client, interaction, balanceType = "wallet") => {
+module.exports.run = async (client, interaction, balanceType = "wallet", page = 0) => {
     await deferInteraction(interaction, false);
 
     const balanceResult = await getRequest(`/guilds/${interaction.guildId}/economy/balance`);
@@ -77,11 +83,9 @@ module.exports.run = async (client, interaction, balanceType = "wallet") => {
     }
 
     const leaderboardData = balanceResult?.data ?? [];
-    let leaderboardValues = updateLeaderboardValues(leaderboardData, balanceType);
-    let leaderboardPages = chunk(leaderboardValues, 10);
-    let page = 0, maxpages = leaderboardPages.length - 1;
+    let { leaderboardPages, amount, maxpages } = updateLeaderboardValues(leaderboardData, balanceType);
 
-    let messageEmbed = updateLeaderboardEmbed(interaction, leaderboardValues, page, maxpages, balanceType);
+    let messageEmbed = updateLeaderboardEmbed(interaction, leaderboardPages, amount, page, maxpages, balanceType);
     let messageComponents = updateLeaderboardComponents(leaderboardPages, page, maxpages, balanceType);
 
     const response = await replyInteraction(interaction, {
@@ -120,7 +124,9 @@ module.exports.run = async (client, interaction, balanceType = "wallet") => {
                 return;
         }
 
-        const updatedEmbed = updateLeaderboardEmbed(interaction, leaderboardValues, page, maxpages, balanceType);
+        let { leaderboardPages, amount, maxpages } = updateLeaderboardValues(leaderboardData, balanceType);
+        const updatedEmbed = updateLeaderboardEmbed(interaction, leaderboardPages, amount, page, maxpages, balanceType);
+
         const updatedComponents = updateLeaderboardComponents(leaderboardPages, page, maxpages, balanceType);
 
         await updateInteraction(i, {
