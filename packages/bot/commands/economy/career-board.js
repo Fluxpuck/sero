@@ -3,134 +3,109 @@ const { ActionRowBuilder, ComponentType } = require("discord.js");
 const { createCustomEmbed } = require("../../assets/embed")
 const ClientButtonsEnum = require("../../assets/embed-buttons");
 const { chunk } = require("../../lib/helpers/MathHelpers/arrayHelper");
-const { deferInteraction, replyInteraction, followUpInteraction, updateInteraction } = require('../../utils/InteractionManager'); // Import required functions
+const { deferInteraction, replyInteraction, followUpInteraction, updateInteraction } = require('../../utils/InteractionManager')
 
 module.exports.props = {
     commandName: "career-board",
     description: "Get the career level leaderboard of the server.",
-    usage: "/economy",
+    usage: "/career",
     interaction: {},
     defaultMemberPermissions: ['SendMessages'],
 }
 
-module.exports.run = async (client, interaction, leaderboard = []) => {
-    await deferInteraction(interaction, false); // Use deferInteraction
+const updateLeaderboardEmbed = (interaction, leaderboardPages, amount, page, maxpages) => {
+    const header = `Here is the top ${amount} users on the career leaderboard! \n\n`;
+    const description = amount > 0 ? leaderboardPages[page].join("\n") : "There are currently no users on the leaderboard yet!";
+    const footerText = maxpages > 0 ? `Leaderboard page ${page + 1} of ${maxpages + 1}` : null;
 
-    // Fetch all careers.
-    const result = await getRequest(`/guilds/${interaction.guildId}/economy/career/`);
-    if (result?.status === 200) {
-        leaderboard = result.data;
-    }
+    return createCustomEmbed({
+        title: `Career Leaderboard`,
+        description: header + description,
+        thumbnail: interaction.guild.iconURL({ dynamic: true }),
+        footer: { text: footerText }
+    });
+};
 
-    // If status code is 404, return an error
-    if (result?.status === 404) {
-        return followUpInteraction(interaction, {
-            content: `Oops! There is no one on the \`\`career\`\` leaderboard yet!`,
-            ephemeral: true
-        });
-    } else if (result?.status !== 200) {
+const updateLeaderboardValues = (leaderboardData) => {
+    const leaderboardValues = leaderboardData.map((user, index) => {
+
+        console.log("user", user)
+
+        const rankings = ["🥇", "🥈", "🥉"];
+        const ranking = rankings[index] || `${index + 1}.`;
+        return `**${ranking}** \`${user.userName}\` - ${user.level}`;
+    });
+
+    const leaderboardPages = chunk(leaderboardValues, 10);
+
+    return { leaderboardPages: leaderboardPages, amount: leaderboardValues.length, maxpages: leaderboardPages.length - 1 };
+};
+
+const updateLeaderboardComponents = (leaderboardPages, page, maxpages) => {
+    const paginationButtons = leaderboardPages.length > 1 ? [
+        ClientButtonsEnum.PREVIOUS_PAGE.setDisabled(page === 0),
+        ClientButtonsEnum.NEXT_PAGE.setDisabled(page === maxpages)
+    ] : [];
+
+    return paginationButtons.length > 0 ? new ActionRowBuilder().addComponents(paginationButtons) : [];
+};
+
+module.exports.run = async (client, interaction, page = 0) => {
+    await deferInteraction(interaction, false);
+
+    const careerResult = await getRequest(`/guilds/${interaction.guildId}/economy/career/`);
+    if (careerResult?.status !== 200) {
         return followUpInteraction(interaction, {
             content: `Oops! Something went wrong while trying to fetch the leaderboard!`,
             ephemeral: true
         });
     }
 
-    // Setup embed description
-    const leaderboardValues = leaderboard.map((career, index) => {
-        const user = career.user;
+    const leaderboardData = careerResult?.data ?? [];
+    let { leaderboardPages, amount, maxpages } = updateLeaderboardValues(leaderboardData);
 
-        // Setup the Ranking
-        const rankings = ["🥇", "🥈", "🥉"];
-        let ranking = rankings[index] || `${index + 1}.`;
+    let messageEmbed = updateLeaderboardEmbed(interaction, leaderboardPages, amount, page, maxpages);
+    let messageComponents = updateLeaderboardComponents(leaderboardPages, page, maxpages);
 
-        // Construct the leaderboard fields
-        const leaderboardTitle = `${ranking} \`${user.userName}\``
-        const leaderboardValue = `Level ${career.level}`
-        return {
-            name: leaderboardTitle,
-            value: leaderboardValue,
-            inline: false
-        }
-    });
-
-    // Slice the leaderboard in chunks of 10
-    const leaderboardPages = chunk(leaderboardValues, 10)
-    let page = 0, maxpages = leaderboardPages.length - 1;
-
-    // Check if there are more than 3 logs
-    const hasLeaderboard = leaderboard.length > 0;
-
-    // Construct message Embed
-    const messageEmbed = createCustomEmbed({
-        title: "Leaderboard",
-        description: `${hasLeaderboard ? `Here are the top ${leaderboardValues.length} users on the leaderboard!` : "Uh oh! There are no users on the leaderboard yet!"}`,
-        fields: [...(leaderboardPages.length > 0 ? leaderboardPages[page] : [])],
-        thumbnail: interaction.guild.iconURL({ dynamic: true }),
-    });
-
-    // Construct Pagination Buttons
-    const paginationButtons = leaderboardPages.length > 1 ? [ClientButtonsEnum.PREVIOUS_PAGE, ClientButtonsEnum.NEXT_PAGE] : [];
-    const messageComponents = paginationButtons.length > 0 ? new ActionRowBuilder().addComponents(...paginationButtons) : null;
-
-
-    // Double check to set the pagination buttons buttons to their default state...
-    const previousIndex = messageComponents?.components?.findIndex(button => button.data.custom_id === "previous_pg");
-    const nextIndex = messageComponents?.components?.findIndex(button => button.data.custom_id === "next_pg");
-    messageComponents?.components[previousIndex]?.data && (messageComponents.components[previousIndex].data.disabled = true);
-    messageComponents?.components[nextIndex]?.data && (messageComponents.components[nextIndex].data.disabled = false);
-
-    // Return the message
-    const response = await replyInteraction({
+    const response = await replyInteraction(interaction, {
         embeds: [messageEmbed],
-        components: messageComponents ? [messageComponents] : [],
+        components: messageComponents,
         ephemeral: false
     });
 
-    // Collect the button selection
-    const options = { componentType: ComponentType.Button, idle: 300_000, time: 3_600_000 }
-    const collector = response.createMessageComponentCollector({ options });
+    // Set up collector for button interactions
+    const collector = response.createMessageComponentCollector({
+        componentType: ComponentType.Button,
+        idle: 300_000,
+        time: 3_600_000
+    });
+
     collector.on('collect', async i => {
-
         const selectedButton = i.customId;
-
-        /**
-         * @selectedButton - Pagination
-         * Scroll through the log pages
-         */
-        if (selectedButton === "previous_pg" || selectedButton === "next_pg") {
-
-            // Update the page number based on the button pressed
-            if (selectedButton == 'previous_pg') (page <= 0) ? 0 : page--
-            if (selectedButton == 'next_pg') (page >= maxpages) ? maxpages : page++
-
-            // Update the button status, based on the page number
-            const previousIndex = messageComponents.components.findIndex(button => button.data.custom_id === "previous_pg");
-            const nextIndex = messageComponents.components.findIndex(button => button.data.custom_id === "next_pg");
-            switch (page) {
-                case 0:
-                    messageComponents.components[nextIndex].data.disabled = false;
-                    messageComponents.components[previousIndex].data.disabled = true;
-                    break;
-                case maxpages:
-                    messageComponents.components[nextIndex].data.disabled = true;
-                    messageComponents.components[previousIndex].data.disabled = false;
-                    break;
-                default:
-                    messageComponents.components[nextIndex].data.disabled = false;
-                    messageComponents.components[previousIndex].data.disabled = false;
-            }
-
-            // Update embed Footer && Fields
-            messageEmbed.setFooter({ text: `Leaderboard page ${page + 1} of ${maxpages + 1}` });
-            messageEmbed.data.fields = []; // Empty current fields
-            messageEmbed.setFields([...leaderboardPages[page]]);
-
-            // Update the interaction components
-            await updateInteraction(i, {
-                embeds: [messageEmbed],
-                components: [messageComponents]
-            });
-
+        switch (selectedButton) {
+            case 'previous_pg':
+                page = Math.max(0, page - 1);
+                break;
+            case 'next_pg':
+                page = Math.min(maxpages, page + 1);
+                break;
+            default:
+                return;
         }
+
+        const updatedEmbed = updateLeaderboardEmbed(interaction, leaderboardPages, amount, page, maxpages);
+        const updatedComponents = updateLeaderboardComponents(leaderboardPages, page, maxpages);
+
+        await updateInteraction(i, {
+            embeds: [updatedEmbed],
+            components: [updatedComponents]
+        });
+    });
+
+    collector.on('end', async () => {
+        updatedComponents.components.forEach(button => button.setDisabled(true));
+        await updateInteraction(response, {
+            components: [updatedComponents]
+        });
     });
 }

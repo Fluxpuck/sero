@@ -34,7 +34,6 @@ const updateLeaderboardValues = (leaderboardData, balanceType) => {
         const rankings = ["🥇", "🥈", "🥉"];
         const ranking = rankings[index] || `${index + 1}.`;
         const { balance, icon } = getBalanceData(user, balanceType);
-        // Return the formatted string
         return `**${ranking}** \`${user.userName}\` - ${icon} ${balance}`;
     });
 
@@ -102,35 +101,36 @@ module.exports.run = async (client, interaction, balanceType = "wallet", page = 
 
     collector.on('collect', async i => {
         const selectedButton = i.customId;
-
         switch (selectedButton) {
             case 'wallet':
                 balanceType = "wallet";
                 break;
-
             case 'bank':
                 balanceType = "bank";
                 break;
-
             case 'previous_pg':
                 page = Math.max(0, page - 1);
                 break;
-
             case 'next_pg':
                 page = Math.min(maxpages, page + 1);
                 break;
-
             default:
                 return;
         }
 
         let { leaderboardPages, amount, maxpages } = updateLeaderboardValues(leaderboardData, balanceType);
         const updatedEmbed = updateLeaderboardEmbed(interaction, leaderboardPages, amount, page, maxpages, balanceType);
-
         const updatedComponents = updateLeaderboardComponents(leaderboardPages, page, maxpages, balanceType);
 
         await updateInteraction(i, {
             embeds: [updatedEmbed],
+            components: [updatedComponents]
+        });
+    });
+
+    collector.on('end', async () => {
+        updatedComponents.components.forEach(button => button.setDisabled(true));
+        await updateInteraction(response, {
             components: [updatedComponents]
         });
     });

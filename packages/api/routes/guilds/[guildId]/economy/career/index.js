@@ -2,9 +2,56 @@ const express = require("express");
 const router = express.Router({ mergeParams: true });
 
 const { sequelize } = require('../../../../../database/sequelize');
-const { UserCareers, Jobs } = require("../../../../../database/models");
+const { User, UserCareers, Jobs } = require("../../../../../database/models");
 const { findAllRecords, findOneRecord, createOrUpdateRecord } = require("../../../../../utils/RequestManager");
 const { CreateError, RequestError } = require("../../../../../utils/ClassManager");
+
+/**
+ * GET api/guilds/:guildId/career
+ * @description Get all user careers in the guild
+ * @param {string} guildId - The id of the guild
+ */
+router.get("/", async (req, res, next) => {
+    const { guildId } = req.params;
+
+    const options = {
+        where: { guildId: guildId },
+        include: [
+            {
+                model: User,
+                required: false,
+                where: { guildId: guildId }
+            },
+            {
+                model: Jobs,
+                required: false,
+            }
+        ],
+        order: [['level', 'DESC']],
+    };
+
+    try {
+        const userCareers = await findAllRecords(UserCareers, options);
+        if (!userCareers) {
+            throw new CreateError(404, "No User careers not found in the guild");
+        }
+
+        const responseData = userCareers.map(career => {
+            return {
+                userId: career.userId,
+                userName: career.user.userName,
+                guildId: career.guildId,
+                level: career.level,
+                job: career.job,
+            }
+        });
+
+        res.status(200).json(responseData);
+    } catch (error) {
+        next(error);
+    }
+
+});
 
 /**
  * GET api/guilds/:guildId/career/:userId
