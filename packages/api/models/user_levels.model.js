@@ -51,7 +51,7 @@ module.exports = sequelize => {
         level: {
             type: DataTypes.INTEGER,
             allowNull: false,
-            defaultValue: 0,
+            defaultValue: 1,
         },
         rank: {
             type: DataTypes.INTEGER,

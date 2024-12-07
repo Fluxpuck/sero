@@ -30,6 +30,19 @@ module.exports = sequelize => {
             type: DataTypes.INTEGER,
             allowNull: false,
         },
+        experience: {
+            type: DataTypes.INTEGER,
+            allowNull: false,
+            defaultValue: 0,
+            min: {
+                args: [0],
+                msg: 'Experience cannot be less than 0.',
+            },
+            max: {
+                args: [1_000_000],
+                msg: 'Experience cannot be greater than 1,000,000.',
+            },
+        },
         level: {
             type: DataTypes.INTEGER,
             allowNull: false,

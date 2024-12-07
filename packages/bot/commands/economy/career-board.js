@@ -28,16 +28,12 @@ const updateLeaderboardEmbed = (interaction, leaderboardPages, amount, page, max
 
 const updateLeaderboardValues = (leaderboardData) => {
     const leaderboardValues = leaderboardData.map((user, index) => {
-
-        console.log("user", user)
-
         const rankings = ["🥇", "🥈", "🥉"];
         const ranking = rankings[index] || `${index + 1}.`;
-        return `**${ranking}** \`${user.userName}\` - ${user.level}`;
+        return `**${ranking}** \`${user.userName}\` - lvl ${user.level} | exp ${user.experience}`;
     });
 
     const leaderboardPages = chunk(leaderboardValues, 10);
-
     return { leaderboardPages: leaderboardPages, amount: leaderboardValues.length, maxpages: leaderboardPages.length - 1 };
 };
 

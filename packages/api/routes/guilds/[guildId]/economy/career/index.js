@@ -27,7 +27,7 @@ router.get("/", async (req, res, next) => {
                 required: false,
             }
         ],
-        order: [['level', 'DESC']],
+        order: [['experience', 'DESC']],
     };
 
     try {
@@ -41,6 +41,7 @@ router.get("/", async (req, res, next) => {
                 userId: career.userId,
                 userName: career.user.userName,
                 guildId: career.guildId,
+                experience: career.experience,
                 level: career.level,
                 job: career.job,
             }
