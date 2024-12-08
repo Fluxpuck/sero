@@ -70,17 +70,17 @@ module.exports.run = async (client, interaction) => {
             },
             {
                 name: `Career Level`,
-                value: `Level ${level.toLocaleString()}`,
+                value: `\`Level ${level.toLocaleString()}\``,
                 inline: true
             },
             {
                 name: `Total Income`,
-                value: `$${totalIncome.toLocaleString()}`,
+                value: `\`$${totalIncome.toLocaleString()}\``,
                 inline: true
             },
             {
                 name: `Work Streak`,
-                value: `${currentStreak.toLocaleString()} day${currentStreak === 1 ? "" : "s"}`,
+                value: `\`${currentStreak.toLocaleString()} day${currentStreak === 1 ? "" : "s"}\``,
                 inline: true
             }
         ]

@@ -33,8 +33,8 @@ module.exports.run = async (client, interaction) => {
     // Create an embed to display the user's balance
     const messageEmbed = createCustomEmbed({
         description: `
-            🪙 - \`${bank_balance.toLocaleString()}\` bank
-            💵 - \`${wallet_balance.toLocaleString()}\` wallet
+            🏦 - \`${bank_balance.toLocaleString()}\` bank
+            🪙 - \`${wallet_balance.toLocaleString()}\` wallet
             `
     });
 
