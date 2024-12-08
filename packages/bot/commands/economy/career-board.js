@@ -98,8 +98,8 @@ module.exports.run = async (client, interaction, page = 0) => {
         });
     });
 
-    collector.on('end', async () => {
-        updatedComponents.components.forEach(button => button.setDisabled(true));
+    collector.on('end', async i => {
+        i.components.forEach(button => button.setDisabled(true));
         await updateInteraction(response, {
             components: [updatedComponents]
         });
