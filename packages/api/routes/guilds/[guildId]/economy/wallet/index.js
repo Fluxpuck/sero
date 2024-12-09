@@ -14,7 +14,7 @@ const { CreateError, RequestError } = require("../../../../../utils/ClassManager
  */
 router.post("/:userId", async (req, res, next) => {
     const { guildId, userId } = req.params;
-    const { amount, allowReset = false } = req.body;
+    const { amount, allowReset = false, roundToLimit = true } = req.body;
 
     // Validate input
     if (!amount && typeof amount !== "number") {
@@ -40,16 +40,24 @@ router.post("/:userId", async (req, res, next) => {
             const previousBalance = userWallet.balance ?? 0;
             let newBalance = previousBalance + amount;
 
-            if (allowReset && newBalance < 0) {
+            if (newBalance < 0 && allowReset) {
                 newBalance = 0;
             }
 
             if (newBalance < UserWallet.MINIMUM_BALANCE) {
-                throw new CreateError(400, `Wallet balance cannot be less than ${userWallet.MINIMUM_BALANCE}`);
+                if (roundToLimit) {
+                    newBalance = UserWallet.MINIMUM_BALANCE;
+                } else {
+                    throw new CreateError(400, `Wallet balance cannot be less than ${UserWallet.MINIMUM_BALANCE}`);
+                }
             }
 
             if (newBalance > UserWallet.MAXIMUM_BALANCE) {
-                throw new CreateError(400, `Wallet balance cannot exceed ${userWallet.MAXIMUM_BALANCE}`);
+                if (roundToLimit) {
+                    newBalance = UserWallet.MAXIMUM_BALANCE;
+                } else {
+                    throw new CreateError(400, `Wallet balance cannot exceed ${UserWallet.MAXIMUM_BALANCE}`);
+                }
             }
 
             userWallet.balance = newBalance;

@@ -51,10 +51,11 @@ async function followUpInteraction(interaction, options, deleteInteraction = tru
     if (!interaction || !options) return false;
 
     try {
-        if (deleteInteraction && interaction.replied) {
+        if (deleteInteraction && interaction.deferred) {
             await interaction.deleteReply();
         }
         const response = await interaction.followUp(options);
+
         return response;
     } catch (error) {
         console.error('Failed to follow up interaction:', error);

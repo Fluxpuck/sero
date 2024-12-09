@@ -76,7 +76,7 @@ module.exports.run = async (client, interaction) => {
             break;
         default:
 
-            const walletWithdraw = await postRequest(`/guilds/${interaction.guildId}/economy/wallet/${targetUser.id}`, { amount: -targetAmount, allowReset: true });
+            const walletWithdraw = await postRequest(`/guilds/${interaction.guildId}/economy/wallet/${targetUser.id}`, { amount: -targetAmount, allowReset: false });
 
             // Get the true amount of the transaction
             transactionAmount = walletWithdraw?.data?.transaction?.trueAmount ?? targetAmount;

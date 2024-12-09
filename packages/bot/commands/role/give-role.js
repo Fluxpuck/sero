@@ -35,7 +35,7 @@ module.exports.props = {
 }
 
 module.exports.run = async (client, interaction) => {
-    await deferInteraction(interaction, true);
+    await deferInteraction(interaction, false);
 
     // Get the user and role from the interaction
     const targetUser = interaction.options.get("user").user;
@@ -47,7 +47,7 @@ module.exports.run = async (client, interaction) => {
     // Fetch full member details
     const member = findUser(interaction.guild, targetUser.id);
     if (!member) {
-        await replyInteraction(interaction, {
+        await followUpInteraction(interaction, {
             content: "Could not find the user in the guild",
             ephemeral: true
         });

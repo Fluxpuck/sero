@@ -27,7 +27,7 @@ module.exports.run = async (client, interaction) => {
     const isPositive = Math.random() < 0.35; // 35% chance of positive reward
     const rewardAmount = Math.floor(Math.random() * (isPositive ? 251 : 401)) * (isPositive ? 1 : -1);
 
-    // Deposit the reward amount to the user's wallet - allowReset is set to true to allow rewards to empty the wallet
+    // Deposit the reward amount to the user's wallet - allowReset is set to true by default
     const walletTransaction = await postRequest(`guilds/${interaction.guild.id}/economy/wallet/${interaction.user.id}`, { amount: rewardAmount, allowReset: true });
     // Get the true amount of the transaction
     const transactionAmount = walletTransaction?.data?.transaction?.trueAmount || rewardAmount;

@@ -14,7 +14,7 @@ const { CreateError, RequestError } = require("../../../../../utils/ClassManager
  */
 router.post("/:userId", async (req, res, next) => {
     const { guildId, userId } = req.params;
-    const { amount, allowReset = true } = req.body;
+    const { amount, allowNegative = true, roundToLimit = true } = req.body;
 
     if (!amount || typeof amount !== "number") {
         throw new RequestError(400, "Invalid amount. Must be a valid number", {
@@ -39,16 +39,24 @@ router.post("/:userId", async (req, res, next) => {
             const previousBalance = userBank.balance ?? 0;
             let newBalance = previousBalance + amount;
 
-            if (allowReset && newBalance < 0) {
-                newBalance = 0;
+            if (newBalance < 0 && !allowNegative) {
+                throw new CreateError(400, "You don't have enough money in the bank to withdraw");
             }
 
             if (newBalance < UserBank.MINIMUM_BALANCE) {
-                throw new CreateError(400, `Bank balance cannot be less than ${UserBank.MINIMUM_BALANCE}`);
+                if (roundToLimit) {
+                    newBalance = UserBank.MINIMUM_BALANCE;
+                } else {
+                    throw new CreateError(400, `Bank balance cannot be less than ${UserBank.MINIMUM_BALANCE}`);
+                }
             }
 
             if (newBalance > UserBank.MAXIMUM_BALANCE) {
-                throw new CreateError(400, `Bank balance cannot exceed ${UserBank.MAXIMUM_BALANCE}`);
+                if (roundToLimit) {
+                    newBalance = UserBank.MAXIMUM_BALANCE;
+                } else {
+                    throw new CreateError(400, `Bank balance cannot exceed ${UserBank.MAXIMUM_BALANCE}`);
+                }
             }
 
             userBank.balance = newBalance;
