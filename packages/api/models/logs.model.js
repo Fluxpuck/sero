@@ -55,6 +55,10 @@ module.exports = sequelize => {
         duration: {
             type: DataTypes.INTEGER,
             allowNull: true,
+        },
+        deletedAt: {
+            type: DataTypes.DATE,
+            allowNull: true,
         }
     }, {
         sequelize,
@@ -62,6 +66,7 @@ module.exports = sequelize => {
         timestamps: true,
         createdAt: true,
         updatedAt: true,
+        paranoid: true,
         hooks: {
             // Set the reason to "No reason provided" if no reason is provided
             beforeSave: (log, options) => {
