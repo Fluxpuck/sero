@@ -30,7 +30,7 @@ module.exports.run = async (client, interaction) => {
     // Deposit the reward amount to the user's wallet - allowReset is set to true by default
     const walletTransaction = await postRequest(`guilds/${interaction.guild.id}/economy/wallet/${interaction.user.id}`, { amount: rewardAmount, allowReset: true });
     // Get the true amount of the transaction
-    const transactionAmount = walletTransaction?.data?.transaction?.trueAmount || rewardAmount;
+    const transactionAmount = walletTransaction?.data?.transaction?.trueAmount ?? rewardAmount;
 
     if (walletTransaction?.status !== 200) {
         return followUpInteraction(interaction, {
@@ -51,9 +51,16 @@ module.exports.run = async (client, interaction) => {
         console.error('Failed to store treasure hunt activity:', error);
     }
 
-    if (walletTransaction.status === 400 || transactionAmount <= 0) {
+    if (transactionAmount <= 0) {
         return followUpInteraction(interaction, {
-            content: "Damn. Seems like you are already too broke to lose any treasure.",
+            content: "Damnnnnn! Seems like you are already too broke to lose any more money.",
+            ephemeral: true
+        });
+    }
+
+    if (walletTransaction?.status === 400) {
+        return followUpInteraction(interaction, {
+            content: `You've hit your wallet limit! Please deposit some money in the bank to continue.`,
             ephemeral: true
         });
     }
