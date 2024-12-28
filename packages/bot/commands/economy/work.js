@@ -53,9 +53,6 @@ module.exports.run = async (client, interaction) => {
 
         // Create message fields
         const jobFields = jobOptions.map(job => {
-
-            console.log("Job Option", job)
-
             // Calculate the income based on the user's career
             const income = calculateDailyIncome(job.salary, job.payRaise, DEFAULT_CAREER_LEVEL);
             const salary = job.salary.toLocaleString();
