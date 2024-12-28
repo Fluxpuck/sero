@@ -32,7 +32,7 @@ module.exports.run = async (client, interaction) => {
     // Get the true amount of the transaction
     const transactionAmount = walletTransaction?.data?.transaction?.trueAmount || rewardAmount;
 
-    if (walletTransaction.status === 400 || transactionAmount === 0) {
+    if (walletTransaction.status === 400 || transactionAmount <= 0) {
         return followUpInteraction(interaction, {
             content: "Damn. Seems like you are already too broke to lose any treasure.",
             ephemeral: true
