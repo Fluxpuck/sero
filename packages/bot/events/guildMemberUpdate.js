@@ -111,7 +111,7 @@ module.exports = async (client, oldMember, newMember) => {
             });
 
             if (result.status !== 200 && result.status !== 201) {
-                console.error('Failed to store timeout log:', result.status);
+                console.error('Failed to store timeout log:', result);
                 return;
             }
 
