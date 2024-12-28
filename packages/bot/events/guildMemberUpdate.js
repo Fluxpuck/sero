@@ -89,7 +89,7 @@ module.exports = async (client, oldMember, newMember) => {
 
             // Create log message
             const content = isTimeout
-                ? `<t:${currentTime}> - **${newMember.displayName}** was timed out for ${duration} minutes until <t:${timeoutUntil}> by ${moderator}`
+                ? `<t:${currentTime}> - **${newMember.displayName}** was timed out until <t:${timeoutUntil}> by ${moderator}`
                 : `<t:${currentTime}> - **${newMember.displayName}**'s timeout was removed by ${moderator}`;
             const footer = `-# <@${oldMember.id}> | ${oldMember.id}`;
             const embedMessage = logEmbed({
@@ -102,8 +102,8 @@ module.exports = async (client, oldMember, newMember) => {
             // Store in database
             const result = await postRequest(`/guilds/${guild.id}/logs`, {
                 id: timeoutLog.id,
-                auditAction: isTimeout ? 'MemberTimeout' : 'MemberTimeoutRemove',
-                auditType: getAuditLogType(timeoutLog.action),
+                auditAction: timeoutLog.action,
+                auditType: isTimeout ? 'MemberTimeout' : 'MemberTimeoutRemove',
                 targetId: newMember.id,
                 executorId: timeoutLog?.executor?.id || null,
                 duration: duration,
@@ -112,7 +112,6 @@ module.exports = async (client, oldMember, newMember) => {
 
             if (result.status !== 200 && result.status !== 201) {
                 console.error('Failed to store timeout log:', result);
-                return;
             }
 
             if (process.env.NODE_ENV === 'development') {
