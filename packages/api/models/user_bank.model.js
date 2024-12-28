@@ -35,11 +35,11 @@ module.exports = sequelize => {
             validate: {
                 min: {
                     args: [UserBank.MINIMUM_BALANCE],
-                    msg: `Balance cannot be less than ${UserBank.MINIMUM_BALANCE}`,
+                    msg: `Bank balance cannot be less than ${UserBank.MINIMUM_BALANCE}`,
                 },
                 max: {
                     args: [UserBank.MAXIMUM_BALANCE],
-                    msg: `Balance cannot be greater than ${UserBank.MAXIMUM_BALANCE}`,
+                    msg: `Bank balance cannot be greater than ${UserBank.MAXIMUM_BALANCE}`,
                 }
             }
         },

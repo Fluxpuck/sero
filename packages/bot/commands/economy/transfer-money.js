@@ -21,8 +21,8 @@ module.exports.props = {
                 description: "Where you want to transfer the money to",
                 type: 3,
                 choices: [
-                    { name: "Wallet", value: "wallet" },
-                    { name: "Bank", value: "bank" },
+                    { name: "Wallet", value: "toWallet" },
+                    { name: "Bank", value: "toBank" },
                 ],
                 required: false
             }
@@ -37,84 +37,55 @@ module.exports.run = async (client, interaction) => {
 
     // Get the amount and wallet/bank type from the interaction
     const transferAmount = interaction.options.get("amount").value;
-    const transferType = interaction.options.get("to")?.value || "wallet";
-    let withdrawAmount = transferAmount, depositAmount = transferAmount;
+    const transferType = interaction.options.get("to")?.value || "toWallet";
 
     switch (transferType) {
-        case "wallet":
+        case "toWallet":
 
-            console.log("transfer to wallet");
+            const walletTransfer = await postRequest(`/guilds/${interaction.guildId}/economy/transfer/bank-to-wallet/${interaction.user.id}`, { amount: transferAmount });
 
-            const bankWithdraw = await postRequest(`/guilds/${interaction.guildId}/economy/bank/${interaction.user.id}`, { amount: -withdrawAmount, allowNegative: false });
-            withdrawAmount = bankWithdraw?.data?.transaction?.trueAmount // Set the true amount of the transaction
-            const walletDeposit = await postRequest(`/guilds/${interaction.guildId}/economy/wallet/${interaction.user.id}`, { amount: +depositAmount, });
-            depositAmount = walletDeposit?.data?.transaction?.trueAmount
+            const walletTransaction = walletTransfer.transaction ?? null;
+            if (!walletTransaction) {
+                return followUpInteraction(interaction, {
+                    content: "Oops! An error occurred while transferring the money",
+                    ephemeral: true
+                });
+            }
 
-            console.log("bankWithdraw", bankWithdraw);
-            console.log("walletDeposit", walletDeposit);
-
-            console.log("withdrawAmount", withdrawAmount);
-            console.log("depositAmount", depositAmount);
-
-            if (bankWithdraw.status === 400 || withdrawAmount === 0) {
+            if (walletTransaction.actualTransferAmount === 0) {
                 return followUpInteraction(interaction, {
                     content: "You don't have enough money in the bank to transfer",
                     ephemeral: true
                 });
             }
 
-            if (walletDeposit.status === 400 || depositAmount === 0) {
-                return followUpInteraction(interaction, {
-                    content: `Your wallet is already too stacked`,
-                    ephemeral: true
-                });
-            }
-
-            if (bankWithdraw.status !== 200 || walletDeposit.status !== 200) {
-                return followUpInteraction(interaction, {
-                    content: `Something went wrong while transferring money`,
-                    ephemeral: true
-                });
-            }
-
             await replyInteraction(interaction, {
-                content: `**${depositAmount.toLocaleString()}** cash was withdrawn from your bank to your wallet!`,
+                content: `**${walletTransaction.actualTransferAmount.toLocaleString()}** was transferred from the bank to your wallet!`,
                 ephemeral: false
             });
 
             break;
-        case "bank":
+        case "toBank":
 
-            console.log("transfer to bank");
+            const bankTransfer = await postRequest(`/guilds/${interaction.guildId}/economy/transfer/wallet-to-bank/${interaction.user.id}`, { amount: transferAmount });
 
-            const walletWithdraw = await postRequest(`/guilds/${interaction.guildId}/economy/wallet/${interaction.user.id}`, { amount: -withdrawAmount, allowReset: true });
-            withdrawAmount = walletWithdraw?.data?.transaction?.trueAmount // Set the true amount of the transaction
-            const bankDeposit = await postRequest(`/guilds/${interaction.guildId}/economy/bank/${interaction.user.id}`, { amount: +depositAmount });
-            depositAmount = bankDeposit?.data?.transaction?.trueAmount
-
-            if (walletWithdraw.status === 400 || withdrawAmount === 0) {
+            const bankTransaction = bankTransfer.transaction ?? null;
+            if (!bankTransaction) {
                 return followUpInteraction(interaction, {
-                    content: "You don't have enough cash in your wallet to transfer",
+                    content: "Oops! An error occurred while transferring the money",
                     ephemeral: true
                 });
             }
 
-            if (bankDeposit.status === 400 || depositAmount === 0) {
+            if (bankTransaction.actualTransferAmount === 0) {
                 return followUpInteraction(interaction, {
-                    content: `You've reached your bank limit`,
-                    ephemeral: true
-                });
-            }
-
-            if (walletWithdraw.status !== 200 || bankDeposit.status !== 200) {
-                return followUpInteraction(interaction, {
-                    content: "Something went wrong while transferring money",
+                    content: "You don't have enough money in your wallet to transfer",
                     ephemeral: true
                 });
             }
 
             await replyInteraction(interaction, {
-                content: `**${depositAmount.toLocaleString()}** was deposited from your wallet to the bank!`,
+                content: `**${bankTransaction.actualTransferAmount.toLocaleString()}** was transferred from your wallet to the bank!`,
                 ephemeral: false
             });
 

@@ -129,9 +129,11 @@ module.exports.run = async (client, interaction, balanceType = "wallet", page = 
     });
 
     collector.on('end', async i => {
-        i.components.forEach(button => button.setDisabled(true));
-        await updateInteraction(response, {
-            components: [updatedComponents]
-        });
+        if (i.components) {
+            i.components.forEach(button => button.setDisabled(true));
+            await updateInteraction(response, {
+                components: [updatedComponents]
+            });
+        }
     });
 }
