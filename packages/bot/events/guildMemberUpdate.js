@@ -89,7 +89,7 @@ module.exports = async (client, oldMember, newMember) => {
 
             // Create log message
             const content = isTimeout
-                ? `<t:${currentTime}> - **${newMember.displayName}** was timed out until <t:${timeoutUntil}> by ${moderator}`
+                ? `<t:${currentTime}> - **${newMember.displayName}** was timed out for ${duration} minutes until <t:${timeoutUntil}> by ${moderator}`
                 : `<t:${currentTime}> - **${newMember.displayName}**'s timeout was removed by ${moderator}`;
             const footer = `-# <@${oldMember.id}> | ${oldMember.id}`;
             const embedMessage = logEmbed({
