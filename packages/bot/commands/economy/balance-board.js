@@ -73,7 +73,7 @@ const updateLeaderboardComponents = (leaderboardPages, page, maxpages, balanceTy
 module.exports.run = async (client, interaction, balanceType = "wallet", page = 0) => {
     await deferInteraction(interaction, false);
 
-    const balanceResult = await getRequest(`/guilds/${interaction.guildId}/economy/balance`);
+    const balanceResult = await getRequest(`/guilds/${interaction.guildId}/economy/balance?limit=100`);
     if (balanceResult?.status !== 200) {
         return followUpInteraction(interaction, {
             content: `Oops! Something went wrong while trying to fetch the leaderboard!`,
@@ -100,7 +100,9 @@ module.exports.run = async (client, interaction, balanceType = "wallet", page = 
     });
 
     collector.on('collect', async i => {
+        let { leaderboardPages, amount, maxpages: newMaxPages } = updateLeaderboardValues(leaderboardData, balanceType);
         const selectedButton = i.customId;
+
         switch (selectedButton) {
             case 'wallet':
                 balanceType = "wallet";
@@ -112,15 +114,14 @@ module.exports.run = async (client, interaction, balanceType = "wallet", page = 
                 page = Math.max(0, page - 1);
                 break;
             case 'next_pg':
-                page = Math.min(maxpages, page + 1);
+                page = Math.min(newMaxPages, page + 1);
                 break;
             default:
                 return;
         }
 
-        let { leaderboardPages, amount, maxpages } = updateLeaderboardValues(leaderboardData, balanceType);
-        const updatedEmbed = updateLeaderboardEmbed(interaction, leaderboardPages, amount, page, maxpages, balanceType);
-        const updatedComponents = updateLeaderboardComponents(leaderboardPages, page, maxpages, balanceType);
+        const updatedEmbed = updateLeaderboardEmbed(interaction, leaderboardPages, amount, page, newMaxPages, balanceType);
+        const updatedComponents = updateLeaderboardComponents(leaderboardPages, page, newMaxPages, balanceType);
 
         await updateInteraction(i, {
             embeds: [updatedEmbed],
@@ -130,9 +131,11 @@ module.exports.run = async (client, interaction, balanceType = "wallet", page = 
 
     collector.on('end', async i => {
         if (i.components) {
-            i.components.forEach(button => button.setDisabled(true));
+            const disabledComponents = new ActionRowBuilder().addComponents(
+                messageComponents.components[0].components.map(button => button.setDisabled(true))
+            );
             await updateInteraction(response, {
-                components: [updatedComponents]
+                components: [disabledComponents]
             });
         }
     });

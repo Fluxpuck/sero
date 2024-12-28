@@ -13,6 +13,8 @@ const { CreateError, RequestError } = require("../../../../utils/ClassManager");
  */
 router.get("/", async (req, res, next) => {
     const { guildId } = req.params;
+    const { limit = 1000 } = req.query;
+
     const options = {
         where: { guildId: guildId },
         include: [
@@ -26,7 +28,8 @@ router.get("/", async (req, res, next) => {
                 required: false,
                 where: { guildId: guildId }
             }
-        ]
+        ],
+        limit: parseInt(limit)
     };
 
     try {
