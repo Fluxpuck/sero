@@ -6,7 +6,7 @@ const { Logs } = require("../../../../database/models");
 const { findAllRecords, findOneRecord, createOrUpdateRecord } = require("../../../../utils/RequestManager");
 const { CreateError, RequestError } = require("../../../../utils/ClassManager");
 
-const { generateUniqueToken } = require("../../../../utils/FunctionManager");
+const { generateSnowflake } = require("../../../../utils/FunctionManager");
 
 /**
  * GET api/guilds/:guildId/logs
@@ -80,7 +80,7 @@ router.post("/", async (req, res, next) => {
     try {
         const { guildId } = req.params;
         const {
-            id = generateUniqueToken(),
+            id = generateSnowflake(),
             auditAction,
             auditType,
             targetId,
