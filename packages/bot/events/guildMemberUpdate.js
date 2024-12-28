@@ -3,6 +3,8 @@ const { getRequest, postRequest } = require("../database/connection");
 const { getAuditLogType } = require('../lib/discord/auditlogevent');
 const { unixTimestamp } = require('../lib/helpers/TimeDateHelpers/timeHelper');
 const { logEmbed } = require('../assets/embed');
+const { differenceInMinutes, getUnixTime } = require('date-fns');
+const ClientEmbedColors = require('../assets/embed-colors.js');
 
 module.exports = async (client, oldMember, newMember) => {
 
@@ -78,23 +80,28 @@ module.exports = async (client, oldMember, newMember) => {
             }
             const timeoutLog = auditLogs.entries.first();
             const moderator = timeoutLog?.executor ? `<@${timeoutLog.executor.id}>` : 'Unknown';
+            const reason = timeoutLog?.reason;
 
             // Get timeout details
             const isTimeout = Boolean(newMember.communicationDisabledUntilTimestamp);
-            const timeoutUntil = Math.floor(newMember.communicationDisabledUntilTimestamp / 1000);
-            const currentTime = Math.floor(Date.now() / 1000);
+            const timeoutDate = new Date(newMember.communicationDisabledUntilTimestamp);
+            const timeoutUntil = getUnixTime(timeoutDate);
+            const currentTime = getUnixTime(new Date());
             const duration = isTimeout
-                ? Math.floor((newMember.communicationDisabledUntilTimestamp - Date.now()) / (1000 * 60))
+                ? Math.ceil(differenceInMinutes(timeoutDate, new Date())) + 1 // We add 1 minute to the difference to account for the current minute
                 : null;
 
             // Create log message
             const content = isTimeout
-                ? `<t:${currentTime}> - **${newMember.displayName}** was timed out for ${duration} minutes until <t:${timeoutUntil}> by ${moderator}`
+                ? `<t:${currentTime}> - **${newMember.displayName}** was timed out for ${duration} minutes until <t:${timeoutUntil}> by ${moderator} ${reason ? `- \`${reason}\`` : ''}`
                 : `<t:${currentTime}> - **${newMember.displayName}**'s timeout was removed by ${moderator}`;
+
             const footer = `-# <@${oldMember.id}> | ${oldMember.id}`;
+
             const embedMessage = logEmbed({
                 description: content,
                 footer: footer,
+                color: isTimeout ? ClientEmbedColors.ERROR : ClientEmbedColors.BASE_COLOR
             });
 
             await logChannel.send({ embeds: [embedMessage] });

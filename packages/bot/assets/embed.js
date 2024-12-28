@@ -57,19 +57,16 @@ function logEmbed({
     user,
     title,
     description,
-    type = 'base_color',
+    color = ClientEmbedColors.BASE_COLOR,
     hasThumbnail = false,
     footer,
 }) {
-
-    const theme = ClientEmbedColors[type.toUpperCase()] || ClientEmbedColors.BASE_COLOR;
-
     const content = footer ? `${description}\n${footer}` : description;
 
     return createCustomEmbed({
         title: title || null,
         description: content || null,
-        color: theme,
+        color: color,
         thumbnail: hasThumbnail ? user.displayAvatarURL({ dynamic: true }) : null,
     });
 }
