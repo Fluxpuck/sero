@@ -32,13 +32,6 @@ module.exports.run = async (client, interaction) => {
     // Get the true amount of the transaction
     const transactionAmount = walletTransaction?.data?.transaction?.trueAmount || rewardAmount;
 
-    if (walletTransaction.status === 400 || transactionAmount <= 0) {
-        return followUpInteraction(interaction, {
-            content: "Damn. Seems like you are already too broke to lose any treasure.",
-            ephemeral: true
-        });
-    }
-
     if (walletTransaction?.status !== 200) {
         return followUpInteraction(interaction, {
             content: `Uh oh! Something went wrong while sending your hard earned money.`,
@@ -56,6 +49,13 @@ module.exports.run = async (client, interaction) => {
         });
     } catch (error) {
         console.error('Failed to store treasure hunt activity:', error);
+    }
+
+    if (walletTransaction.status === 400 || transactionAmount <= 0) {
+        return followUpInteraction(interaction, {
+            content: "Damn. Seems like you are already too broke to lose any treasure.",
+            ephemeral: true
+        });
     }
 
     // Generate random treasure message
