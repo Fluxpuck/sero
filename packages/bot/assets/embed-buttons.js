@@ -61,6 +61,20 @@ const ClientButtonsEnum = {
         .setEmoji('🎁')
         .setCustomId('claim-exp-reward')
         .setDisabled(false),
+
+    WALLET: new ButtonBuilder()
+        .setStyle(ButtonStyle.Primary)
+        .setLabel('Wallet')
+        .setEmoji('🪙')
+        .setCustomId('wallet')
+        .setDisabled(false),
+
+    BANK: new ButtonBuilder()
+        .setStyle(ButtonStyle.Primary)
+        .setLabel('Bank')
+        .setEmoji('🏦')
+        .setCustomId('bank')
+        .setDisabled(false),
 };
 
 module.exports = ClientButtonsEnum;

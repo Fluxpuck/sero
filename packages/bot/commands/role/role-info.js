@@ -63,7 +63,7 @@ module.exports.run = async (client, interaction) => {
     });
 
     // Send the embed
-    return replyInteraction({
+    return replyInteraction(interaction, {
         embeds: [messageEmbed],
         ephemeral: false,
     });

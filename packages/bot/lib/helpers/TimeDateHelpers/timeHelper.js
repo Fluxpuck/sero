@@ -8,7 +8,8 @@ const {
     parse,
     differenceInYears,
     addWeeks,
-    endOfHour
+    endOfHour,
+    startOfWeek
 } = require('date-fns');
 
 
@@ -71,7 +72,7 @@ module.exports = {
                 endDate = startOfTomorrow();
                 break;
             case 'nextweek':
-                endDate = addWeeks(now, 1);
+                endDate = startOfWeek(addWeeks(now, 1), { weekStartsOn: 1 });
                 break;
             default:
                 throw new Error('Invalid target. Use: nextHour, tomorrow, or nextWeek');

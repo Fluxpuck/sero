@@ -11,17 +11,27 @@ module.exports.props = {
             {
                 name: "user",
                 type: 6,
-                description: "Select a user to remove money from",
+                description: "Select a user to give money to.",
                 required: true
             },
             {
                 name: "amount",
                 type: 10,
-                description: "The amount of money to remove from the user",
+                description: "The amount of money to give to the user",
                 required: true,
                 minValue: 1,
-                maxValue: 1000000,
+                maxValue: 1_000_000,
             },
+            {
+                name: "type",
+                type: 3,
+                description: "The type of account to transfer money from",
+                choices: [
+                    { name: "Wallet", value: "wallet" },
+                    { name: "Bank", value: "bank" },
+                ],
+                required: false
+            }
         ],
     },
     defaultMemberPermissions: ['ManageGuild'],
@@ -32,21 +42,64 @@ module.exports.run = async (client, interaction) => {
 
     // Get User && Amount details from the interaction options
     const targetUser = interaction.options.get("user").user;
-    const targetAmount = interaction.options.get("amount").value || 0;
+    const targetAmount = interaction.options.get("amount").value;
+    const targetType = interaction.options.get("type")?.value || "wallet";
+    let transactionAmount = targetAmount;
 
-    // Remove the user's balance by the target amount
-    const result = await postRequest(`/guilds/${interaction.guildId}/economy/balance/${targetUser.id}`, { amount: -targetAmount });
+    switch (targetType) {
+        case "bank":
 
-    // If the request was not successful, return an error
-    if (result && result?.status !== 200) {
-        await followUpInteraction(interaction, {
-            content: `Uh oh! Something went wrong while removing money from <@${targetUser.id}>.`,
-            ephemeral: true
-        }, true);
-    } else {
-        return replyInteraction(interaction, {
-            content: `**${targetAmount}** money was removed from <@${targetUser.id}>!`,
-            ephemeral: false
-        });
+            const bankWithdraw = await postRequest(`/guilds/${interaction.guildId}/economy/bank/${targetUser.id}`, { amount: -targetAmount });
+
+            // Set the true amount of the transaction
+            transactionAmount = bankWithdraw?.data?.transaction?.trueAmount ?? targetAmount;
+
+            if (bankWithdraw.status === 400 || transactionAmount === 0) {
+                return followUpInteraction(interaction, {
+                    content: `<@${targetUser.id}> has reached their bank limit`,
+                    ephemeral: true
+                });
+            }
+
+            if (bankWithdraw.status !== 200) {
+                return followUpInteraction(interaction, {
+                    content: `Something went wrong while withdrawing money from <@${targetUser.id}>`,
+                    ephemeral: true
+                });
+            }
+
+            await replyInteraction(interaction, {
+                conten: `**${transactionAmount.toLocaleString()}** was removed from <@${targetUser.id}>!`,
+                ephemeral: false
+            });
+
+            break;
+        default:
+
+            const walletWithdraw = await postRequest(`/guilds/${interaction.guildId}/economy/wallet/${targetUser.id}`, { amount: -targetAmount, allowReset: false });
+
+            // Get the true amount of the transaction
+            transactionAmount = walletWithdraw?.data?.transaction?.trueAmount ?? targetAmount;
+
+            if (walletWithdraw.status === 400 || transactionAmount === 0) {
+                return followUpInteraction(interaction, {
+                    content: `<@${targetUser.id}> is too broke to take cash from!`,
+                    ephemeral: true
+                });
+            }
+
+            if (walletWithdraw.status !== 200) {
+                return followUpInteraction(interaction, {
+                    content: `Something went wrong while taking cash from <@${targetUser.id}>`,
+                    ephemeral: true
+                });
+            }
+
+            await replyInteraction(interaction, {
+                content: `**${transactionAmount.toLocaleString()}** cash was taken from <@${targetUser.id}>!`,
+                ephemeral: false
+            });
+
     }
+
 }

@@ -3,53 +3,98 @@ const { deferInteraction, replyInteraction, followUpInteraction } = require("../
 
 module.exports.props = {
     commandName: "transfer-money",
-    description: "Transfer money to another user",
-    usage: "/transfer-money [user] [amount]",
+    description: "Transfer money between your wallet and bank",
+    usage: "/transfer-money [amount] [to]",
     interaction: {
         type: 1,
         options: [
             {
-                name: "user",
-                type: 6,
-                description: "Select a user to transfer money to",
-                required: true
-            },
-            {
                 name: "amount",
-                type: 10,
                 description: "The amount of coins to transfer to the user",
+                type: 10,
                 required: true,
                 minValue: 1,
                 maxValue: 10_000,
             },
+            {
+                name: "to",
+                description: "Where you want to transfer the money to",
+                type: 3,
+                choices: [
+                    { name: "Wallet", value: "toWallet" },
+                    { name: "Bank", value: "toBank" },
+                ],
+                required: false
+            }
         ],
     },
     defaultMemberPermissions: ['SendMessages'],
-    cooldown: 2 * 60, // 2 minute cooldown
+    cooldown: 2 * 60,
 }
 
 module.exports.run = async (client, interaction) => {
     await deferInteraction(interaction, false);
 
-    // Get User && Amount details from the interaction options
-    const targetUser = interaction.options.get("user").user;
+    // Get the amount and wallet/bank type from the interaction
     const transferAmount = interaction.options.get("amount").value;
+    const transferType = interaction.options.get("to")?.value || "toWallet";
 
-    // Remove balance from the author
-    const removeResult = await postRequest(`/guilds/${interaction.guildId}/economy/balance`, { userId: targetUser.id, amount: -transferAmount })
-    // Add balance to the target
-    const addResult = await postRequest(`/guilds/${interaction.guildId}/economy/balance`, { userId: targetUser.id, amount: +transferAmount });
+    switch (transferType) {
+        case "toWallet":
 
-    // If either request was not successful, return an error
-    if (removeResult.status !== 200 || addResult.status !== 200) {
-        await followUpInteraction(interaction, {
-            content: "Something went wrong while transferring money to the user.",
-            ephemeral: true
-        });
-    } else {
-        await replyInteraction(interaction, {
-            content: `<@${targetUser.id}> has received **${transferAmount.toLocaleString()}** of your money!`,
-            ephemeral: false
-        });
+            const walletTransfer = await postRequest(`/guilds/${interaction.guildId}/economy/transfer/bank-to-wallet/${interaction.user.id}`, { amount: transferAmount });
+
+            const walletTransaction = walletTransfer.transaction ?? null;
+            if (!walletTransaction) {
+                return followUpInteraction(interaction, {
+                    content: "Oops! An error occurred while transferring the money",
+                    ephemeral: true
+                });
+            }
+
+            if (walletTransaction.actualTransferAmount === 0) {
+                return followUpInteraction(interaction, {
+                    content: "You don't have enough money in the bank to transfer",
+                    ephemeral: true
+                });
+            }
+
+            await replyInteraction(interaction, {
+                content: `**${walletTransaction.actualTransferAmount.toLocaleString()}** was transferred from the bank to your wallet!`,
+                ephemeral: false
+            });
+
+            break;
+        case "toBank":
+
+            const bankTransfer = await postRequest(`/guilds/${interaction.guildId}/economy/transfer/wallet-to-bank/${interaction.user.id}`, { amount: transferAmount });
+
+            const bankTransaction = bankTransfer.transaction ?? null;
+            if (!bankTransaction) {
+                return followUpInteraction(interaction, {
+                    content: "Oops! An error occurred while transferring the money",
+                    ephemeral: true
+                });
+            }
+
+            if (bankTransaction.actualTransferAmount === 0) {
+                return followUpInteraction(interaction, {
+                    content: "You don't have enough money in your wallet to transfer",
+                    ephemeral: true
+                });
+            }
+
+            await replyInteraction(interaction, {
+                content: `**${bankTransaction.actualTransferAmount.toLocaleString()}** was transferred from your wallet to the bank!`,
+                ephemeral: false
+            });
+
+            break;
+        default:
+            return followUpInteraction(interaction, {
+                content: "Invalid transfer type",
+                ephemeral: true
+            });
+
     }
 }

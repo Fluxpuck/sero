@@ -2,35 +2,52 @@ const express = require("express");
 const router = express.Router({ mergeParams: true });
 
 const { sequelize } = require('../../../../database/sequelize');
-const { User, UserBalance } = require("../../../../database/models");
-const { findAllRecords, findOneRecord, createOrUpdateRecord } = require("../../../../utils/RequestManager");
+const { User, UserWallet, UserBank } = require("../../../../database/models");
+const { findAllRecords, findOneRecord } = require("../../../../utils/RequestManager");
 const { CreateError, RequestError } = require("../../../../utils/ClassManager");
 
 /**
  * GET api/guilds/:guildId/balance
- * @description Get all guild users balance
+ * @description Get all guild users' bank and wallet balances
  * @param {string} guildId - The id of the guild
  */
 router.get("/", async (req, res, next) => {
     const { guildId } = req.params;
-    const { limit } = req.query;
     const options = {
-        limit: limit || 100,
         where: { guildId: guildId },
-        order: [['balance', 'DESC']],
-        include: [{
-            model: User,
-            where: { guildId: guildId }
-        }],
+        include: [
+            {
+                model: UserWallet,
+                required: false,
+                where: { guildId: guildId }
+            },
+            {
+                model: UserBank,
+                required: false,
+                where: { guildId: guildId }
+            }
+        ]
     };
 
     try {
-        const userBalances = await findAllRecords(UserBalance, options);
-        if (!userBalances) {
-            throw new CreateError(404, "No users balances were found in the guild");
-        } else {
-            res.status(200).json(userBalances);
+        const usersData = await findAllRecords(User, options);
+        if (!usersData || usersData.length === 0) {
+            throw new CreateError(404, "No users found in the guild");
         }
+
+        const responseData = usersData.map(user => {
+            const walletBalance = user.user_wallets?.[0]?.balance || 0;
+            const bankBalance = user.user_banks?.[0]?.balance || 0;
+            return {
+                userId: user.userId,
+                userName: user.userName,
+                guildId: user.guildId,
+                wallet_balance: walletBalance,
+                bank_balance: bankBalance
+            }
+        });
+
+        res.status(200).json(responseData);
     } catch (error) {
         next(error);
     }
@@ -38,92 +55,58 @@ router.get("/", async (req, res, next) => {
 
 /**
  * GET api/guilds/:guildId/balance/:userId
- * @description Get a specific guild user balance
+ * @description Get a specific guild user's bank and wallet balances
  * @param {string} guildId - The id of the guild
  * @param {string} userId - The id of the user
  */
 router.get("/:userId", async (req, res, next) => {
     const { guildId, userId } = req.params;
-    const options = { where: { guildId: guildId, userId: userId } };
+    const options = {
+        where: { guildId: guildId, userId: userId },
+        include: [
+            {
+                model: UserWallet,
+                required: false,
+                where: { guildId: guildId, userId: userId }
+            },
+            {
+                model: UserBank,
+                required: false,
+                where: { guildId: guildId, userId: userId }
+            }
+        ]
+    };
 
     try {
-        const userBalance = await findOneRecord(UserBalance, options);
-        if (!userBalance) {
-            throw new CreateError(404, "User balance not found in the guild");
-        } else {
-            res.status(200).json(userBalance);
+        let userData = await findOneRecord(User, options);
+        if (!userData) {
+            throw new CreateError(404, "User not found in the guild");
         }
+
+        if (!userData.user_wallets) {
+            userData.UserWallet = await UserWallet.create({ guildId, userId, balance: 0 });
+
+        }
+        if (!userData.user_banks) {
+            userData.UserBank = await UserBank.create({ guildId, userId, balance: 0 });
+        }
+
+        const responseData = {
+            userId: userData.userId,
+            guildId: userData.guildId,
+            wallet_balance: userData.user_wallets[0].balance,
+            bank_balance: userData.user_banks[0].balance
+        };
+
+        res.status(200).json(responseData);
     } catch (error) {
-        next(error);
-    }
-});
-
-
-/**
- * POST api/guilds/:guildId/balance
- * @description Create user wallet or update a user balance in the guild
- * @param {string} guildId - The id of the guild
- * @param {string} userId - The id of the user
- * @param {number} balance - The balance of the user
- */
-router.post("/:userId", async (req, res, next) => {
-    const t = await sequelize.transaction();
-    const { guildId, userId } = req.params;
-    const options = { where: { guildId: guildId, userId: userId } };
-
-
-    try {
-        const { amount } = req.body;
-
-        // Check if the required fields are provided
-        if (!amount) {
-            throw new RequestError(400, "Missing amount data. Please check and try again", {
-                method: req.method, path: req.path
-            });
-        }
-
-        let userBalance = await findOneRecord(UserBalance, options);
-        if (!userBalance) {
-            // Create a new UserBalance entry if not found
-            userBalance = await UserBalance.create({ guildId: guildId, userId: userId }, { transaction: t });
-        }
-
-        // Store the previous user balance details
-        const previousUserBalance = { ...userBalance.dataValues };
-
-        // Update the user's balance by adding the amount
-        userBalance.balance = (userBalance.balance ?? 0) + amount;
-
-        // Ensure balance doesn't go below 0
-        if (userBalance.balance <= -100_000) {
-            userBalance.balance = 100_000;
-        }
-
-        // Save the updated record and use { returning: true } to get updated values back
-        await userBalance.save({ transaction: t, returning: true });
-
-        const returnMessage = amount < 0
-            ? `${amount} coins removed from user`
-            : `${amount} coins added to user`;
-
-        res.status(200).json({
-            message: returnMessage,
-            previous: previousUserBalance,
-            current: userBalance
-        });
-
-        // Commit the transaction
-        await t.commit();
-
-    } catch (error) {
-        t.rollback();
         next(error);
     }
 });
 
 /**
  * DELETE api/guilds/:guildId/balance/:userId
- * @description Delete a specific guild user balance
+ * @description Delete a specific guild user's bank and wallet balances
  * @param {string} guildId - The id of the guild
  * @param {string} userId - The id of the user
  */
@@ -133,16 +116,24 @@ router.delete("/:userId", async (req, res, next) => {
     const options = { where: { guildId: guildId, userId: userId } };
 
     try {
-        const userBalance = await findOneRecord(UserBalance, options);
-        if (!userBalance) {
-            throw new CreateError(404, "User balance not found in the guild");
-        } else {
-            await userBalance.destroy({ transaction: t });
-            await t.commit();
-            res.status(200).json({ message: "User balance deleted successfully", data: userBalance });
+        const userWallet = await findOneRecord(UserWallet, options);
+        const userBank = await findOneRecord(UserBank, options);
+
+        if (!userWallet && !userBank) {
+            throw new CreateError(404, "User balances not found in the guild");
         }
+
+        if (userWallet) {
+            await userWallet.destroy({ transaction: t });
+        }
+        if (userBank) {
+            await userBank.destroy({ transaction: t });
+        }
+
+        await t.commit();
+        res.status(200).json({ message: "User balances deleted successfully" });
     } catch (error) {
-        t.rollback();
+        await t.rollback();
         next(error);
     }
 });

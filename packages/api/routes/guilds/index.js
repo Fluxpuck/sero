@@ -166,7 +166,7 @@ router.delete("/:guildId", async (req, res, next) => {
     try {
 
         // Check if the guild exists
-        const guild = await findOneRecord(UserBalance, options);
+        const guild = await findOneRecord(UserWallet, options);
         if (!guild) {
             throw new CreateError(404, "Guild not found");
         }

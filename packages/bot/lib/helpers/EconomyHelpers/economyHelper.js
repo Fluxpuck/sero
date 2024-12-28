@@ -1,17 +1,17 @@
-const WORK_DAYS_VALUE = 365;
+const WORK_DAYS_VALUE = 340;
 
 module.exports = {
     /**
      * Calculate the daily income of a user
-     * @param {Number} wage 
+     * @param {Number} salary 
      * @param {Percentage} raise 
      * @param {Integer} level 
      * @returns - The daily income of the user
      */
-    calculateDailyIncome: (wage, raise, level) => {
+    calculateDailyIncome: (salary, raise, level) => {
 
         // Calculate the base income of the user
-        const baseIncome = module.exports.calculateBaseIncome(wage);
+        const baseIncome = module.exports.calculateBaseIncome(salary);
 
         // Calculate the pay raise of the user
         const onePercentage = baseIncome / 100;
@@ -25,11 +25,11 @@ module.exports = {
 
     /**
      * Calculate the base income of a user
-     * @param {Number} wage 
+     * @param {Number} salary 
      * @returns - The base income of the user
      */
-    calculateBaseIncome: (wage) => {
-        return Math.round(wage / WORK_DAYS_VALUE);
+    calculateBaseIncome: (salary) => {
+        return Math.round(salary / WORK_DAYS_VALUE);
     },
 
     /**

@@ -1,15 +1,17 @@
 const { Model, DataTypes } = require('sequelize');
 
-class UserCareers extends Model {
+class UserBank extends Model {
+    static MINIMUM_BALANCE = -100_000;
+    static MAXIMUM_BALANCE = 1_000_000_000;
+
     static associate(models) {
         this.belongsTo(models.User, { foreignKey: { name: 'userId', allowNull: false } });
         this.belongsTo(models.Guild, { foreignKey: { name: 'guildId', allowNull: false } });
-        this.belongsTo(models.Jobs, { foreignKey: 'jobId', allowNull: false });
     }
 }
 
 module.exports = sequelize => {
-    UserCareers.init({
+    UserBank.init({
         userId: {
             type: DataTypes.BIGINT,
             primaryKey: true,
@@ -26,43 +28,28 @@ module.exports = sequelize => {
                 is: /^\d{17,20}$/ //Discord Snowflake
             }
         },
-        jobId: {
-            type: DataTypes.INTEGER,
-            allowNull: false,
-        },
-        experience: {
+        balance: {
             type: DataTypes.INTEGER,
             allowNull: false,
             defaultValue: 0,
-            min: {
-                args: [0],
-                msg: 'Experience cannot be less than 0.',
-            },
-            max: {
-                args: [1_000_000],
-                msg: 'Experience cannot be greater than 1,000,000.',
-            },
-        },
-        level: {
-            type: DataTypes.INTEGER,
-            allowNull: false,
-            defaultValue: 1,
-            min: {
-                args: [1],
-                msg: 'Career level cannot be less than 1.',
-            },
-            max: {
-                args: [1_000],
-                msg: 'Career level cannot be greater than 1,000.',
-            },
+            validate: {
+                min: {
+                    args: [UserBank.MINIMUM_BALANCE],
+                    msg: `Bank balance cannot be less than ${UserBank.MINIMUM_BALANCE}`,
+                },
+                max: {
+                    args: [UserBank.MAXIMUM_BALANCE],
+                    msg: `Bank balance cannot be greater than ${UserBank.MAXIMUM_BALANCE}`,
+                }
+            }
         },
     }, {
         sequelize,
-        modelName: 'user_careers',
+        modelName: 'user_bank',
         timestamps: true,
         updatedAt: true,
         createdAt: true
     });
 
-    return UserCareers;
+    return UserBank;
 }

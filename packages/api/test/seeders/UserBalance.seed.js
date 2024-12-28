@@ -1,4 +1,4 @@
-const { UserBalance } = require("../../database/models");
+const { UserWallet } = require("../../database/models");
 
 module.exports.run = async () => {
     const userData = [
@@ -31,7 +31,7 @@ module.exports.run = async () => {
 
     for (const userInfo of userData) {
         try {
-            await UserBalance.upsert(userInfo);
+            await UserWallet.upsert(userInfo);
         } catch (error) {
             console.error(`Error upserting balance: ${error.message}`);
         }

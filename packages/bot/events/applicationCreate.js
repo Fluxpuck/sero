@@ -53,7 +53,7 @@ module.exports = async (client) => {
                 }
 
             }).catch((error) => {
-                console.error(`[Error]: Something went wrong trying to create an application for ${command.commandName}`, error);
+                console.error(`[Error]: Something went wrong trying to create an application for ${commandName}`, error);
             });
         } else {
 
@@ -91,7 +91,7 @@ module.exports = async (client) => {
                 }
 
             }).catch((error) => {
-                console.error(`[Error]: Something went wrong trying to update the application ${command.commandName}`, error);
+                console.error(`[Error]: Something went wrong trying to update the application ${commandName}`, error);
             });
 
         }

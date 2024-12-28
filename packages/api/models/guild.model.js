@@ -5,7 +5,7 @@ class Guild extends Model {
     static associate(models) {
         this.hasMany(models.User, { foreignKey: 'guildId' })
         this.hasMany(models.UserLevels, { foreignKey: 'guildId' })
-        this.hasMany(models.UserBalance, { foreignKey: 'guildId' })
+        this.hasMany(models.UserWallet, { foreignKey: 'guildId' })
         this.hasMany(models.UserCareers, { foreignKey: 'guildId' })
         this.hasMany(models.Logs, { foreignKey: 'guildId' })
         this.hasMany(models.Messages, { foreignKey: 'guildId' })

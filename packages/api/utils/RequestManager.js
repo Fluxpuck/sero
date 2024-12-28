@@ -1,8 +1,26 @@
-// → Functions to manage requests to the API
+const { sequelize } = require('../database/sequelize');
 
+// Timeout function for requests
 const withTimeout = (promise, ms) => {
     const timeout = new Promise((_, reject) => setTimeout(() => reject(new Error('Request timed out')), ms));
     return Promise.race([promise, timeout]);
+};
+
+/**
+ * Execute a transaction
+ * @param {*} callback 
+ * @returns 
+ */
+const withTransaction = async (callback) => {
+    const t = await sequelize.transaction();
+    try {
+        const result = await callback(t);
+        await t.commit();
+        return result;
+    } catch (error) {
+        await t.rollback();
+        throw error;
+    }
 };
 
 /**
@@ -76,6 +94,7 @@ const createUniqueRecord = async (model, data, transaction, timeout = 5000) => {
 };
 
 module.exports = {
+    withTransaction,
     findAllRecords,
     findOneRecord,
     createOrUpdateRecord,

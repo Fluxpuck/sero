@@ -3,7 +3,7 @@ const { UserCareers } = require("../../database/models");
 module.exports.run = async () => {
     const userData = [
         {
-            userId: "1042558234566860810",
+            userId: "270640827787771943", // FLUXPUCK
             jobId: 8,
             guildId: "660103319557111808",
             level: 69
@@ -26,12 +26,6 @@ module.exports.run = async () => {
             guildId: "660103319557111808",
             level: 20
         },
-        {
-            userId: "113809103071399344",
-            jobId: 9,
-            guildId: "660103319557111808",
-            level: 15
-        }
     ];
 
     for (const userInfo of userData) {

@@ -4,7 +4,8 @@ class User extends Model {
     static associate(models) {
         this.belongsTo(models.Guild, { foreignKey: 'guildId' })
         this.hasMany(models.UserLevels, { foreignKey: 'userId' })
-        this.hasMany(models.UserBalance, { foreignKey: 'userId' })
+        this.hasMany(models.UserWallet, { foreignKey: 'userId' })
+        this.hasMany(models.UserBank, { foreignKey: 'userId' })
         this.hasMany(models.UserCareers, { foreignKey: 'userId' })
         this.hasMany(models.Logs, { foreignKey: 'userId' })
         this.hasMany(models.Messages, { foreignKey: 'userId' })
