@@ -17,23 +17,18 @@ module.exports.props = {
     defaultMemberPermissions: ['SendMessages'],
 }
 
-const getBalanceData = (user, type) => {
-    const balance = type === "wallet" ? user.wallet_balance : user.bank_balance;
-    const icon = type === "wallet" ? "🪙" : "🏦";
-    return { balance, icon };
-};
-
 const updateLeaderboardValues = (leaderboardData, balanceType) => {
     const sortedData = [...leaderboardData].sort((a, b) => {
         const balanceA = balanceType === "wallet" ? a.wallet_balance : a.bank_balance;
-        const balanceB = balanceType === "bank" ? b.bank_balance : b.wallet_balance;
+        const balanceB = balanceType === "wallet" ? b.wallet_balance : b.bank_balance;
         return balanceB - balanceA;
     });
 
     const leaderboardValues = sortedData.map((user, index) => {
         const rankings = ["🥇", "🥈", "🥉"];
         const ranking = rankings[index] || `${index + 1}.`;
-        const { balance, icon } = getBalanceData(user, balanceType);
+        const balance = balanceType === "wallet" ? user.wallet_balance : user.bank_balance;
+        const icon = balanceType === "wallet" ? "🪙" : "🏦";
         return `**${ranking}** \`${user.userName}\` - ${icon} ${balance}`;
     });
 
