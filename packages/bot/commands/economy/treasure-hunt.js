@@ -51,7 +51,7 @@ module.exports.run = async (client, interaction) => {
         console.error('Failed to store treasure hunt activity:', error);
     }
 
-    if (transactionAmount <= 0) {
+    if (transactionAmount === 0) {
         return followUpInteraction(interaction, {
             content: "Damnnnnn! Seems like you are already too broke to lose any more money.",
             ephemeral: true
