@@ -106,19 +106,21 @@ module.exports = async (client, oldMember, newMember) => {
 
             await logChannel.send({ embeds: [embedMessage] });
 
-            // Store in database
-            const result = await postRequest(`/guilds/${guild.id}/logs`, {
-                id: timeoutLog.id,
-                auditAction: timeoutLog.action,
-                auditType: isTimeout ? 'MemberTimeout' : 'MemberTimeoutRemove',
-                targetId: newMember.id,
-                executorId: timeoutLog?.executor?.id || null,
-                duration: duration,
-                reason: timeoutLog?.reason || null
-            });
+            // Store in database, only if the action is a timeout
+            if (isTimeout) {
+                const result = await postRequest(`/guilds/${guild.id}/logs`, {
+                    id: timeoutLog.id,
+                    auditAction: timeoutLog.action,
+                    auditType: isTimeout ? 'MemberTimeout' : 'MemberTimeoutRemove',
+                    targetId: newMember.id,
+                    executorId: timeoutLog?.executor?.id || null,
+                    duration: duration,
+                    reason: timeoutLog?.reason || null
+                });
 
-            if (result.status !== 200 && result.status !== 201) {
-                console.error('Failed to store timeout log:', result);
+                if (result.status !== 200 && result.status !== 201) {
+                    console.error('Failed to store timeout log:', result);
+                }
             }
 
             if (process.env.NODE_ENV === 'development') {
