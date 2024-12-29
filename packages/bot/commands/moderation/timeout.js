@@ -93,7 +93,7 @@ module.exports.run = async (client, interaction) => {
     const duration = parseFloat(targetDuration) * 60 * 1000;
 
     // Mute the target user with reason
-    member.timeout(duration, `${violationReason} - ${interaction.user.name}`)
+    member.timeout(duration, `${violationReason} - ${interaction.user.username}`)
         .then(() => {
             return replyInteraction(interaction, {
                 content: `You successfully muted <@${member.user.id}> for:\n> ${violationReason}`,

@@ -64,7 +64,7 @@ module.exports.run = async (client, interaction) => {
     });
 
     // Kick the target member with reason
-    return member.kick(`${violationReason} - ${interaction.user.name}`)
+    return member.kick(`${violationReason} - ${interaction.user.username}`)
         .then(() => {
             return replyInteraction(interaction, {
                 content: `You successfully kicked **${member.user.username}** (${member.user.id}) for:\n> ${violationReason}`,
