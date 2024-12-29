@@ -21,8 +21,7 @@ module.exports = async (client, oldMember, newMember) => {
 
 
     /**
-     * If the user's name has changed, store the change in the user activities
-     * And send a message to the member log channel
+     * If the user's name has changed, store the change in the user activities and send a message to the member log channel
      */
     if (oldMember.displayName !== newMember.displayName
         && oldMember.nickname !== null) {
@@ -63,68 +62,67 @@ module.exports = async (client, oldMember, newMember) => {
 
 
     /**
-     * If a user is timed out or the timeout is removed, store the action in the user activities
-     * And send a message to the member log channel
+     * If a user is timed out or the timeout is removed, store the action in the user activities and send a message to the member log channel
      */
     if (oldMember.communicationDisabledUntilTimestamp != newMember.communicationDisabledUntilTimestamp) {
         try {
-            // Fetch audit logs
+
             const auditLogs = await guild.fetchAuditLogs({
                 type: AuditLogEvent.MemberUpdate,
+                targetId: newMember.id,
                 limit: 1
             }).catch(() => null);
 
-            if (!auditLogs) {
-                console.error('Failed to fetch audit logs');
-                return;
-            }
             const timeoutLog = auditLogs.entries.first();
-            const moderator = timeoutLog?.executor ? `<@${timeoutLog.executor.id}>` : 'Unknown';
-            const reason = timeoutLog?.reason;
+            const { changes, target, executor, reason = "", createdAt } = timeoutLog
 
-            // Get timeout details
-            const isTimeout = Boolean(newMember.communicationDisabledUntilTimestamp);
-            const timeoutDate = new Date(newMember.communicationDisabledUntilTimestamp);
-            const timeoutUntil = getUnixTime(timeoutDate);
-            const currentTime = getUnixTime(new Date());
-            const duration = isTimeout
-                ? Math.ceil(differenceInMinutes(timeoutDate, new Date())) + 1 // We add 1 minute to the difference to account for the current minute
-                : null;
+            const isTimeout = Boolean(newMember.communicationDisabledUntilTimestamp) && changes.includes(changes.find(change => change.key === 'communication_disabled_until'));
+            if (!!auditLogs && isTimeout) {
 
-            // Create log message
-            const content = isTimeout
-                ? `<t:${currentTime}> - **${newMember.displayName}** was timed out for ${duration} minutes until <t:${timeoutUntil}> by ${moderator} ${reason ? `- \`${reason}\`` : ''}`
-                : `<t:${currentTime}> - **${newMember.displayName}**'s timeout was removed by ${moderator}`;
+                // Get the moderator who timed out the user
+                const executorModerator = (executor && executor?.bot === false) ? `<@${executor.id}>` : '';
 
-            const footer = `-# <@${oldMember.id}> | ${oldMember.id}`;
+                const timeoutDate = new Date(newMember.communicationDisabledUntilTimestamp);
+                const timeoutUntil = getUnixTime(timeoutDate);
+                const currentTime = getUnixTime(new Date());
 
-            const embedMessage = logEmbed({
-                description: content,
-                footer: footer,
-                color: isTimeout ? ClientEmbedColors.ERROR : ClientEmbedColors.BASE_COLOR
-            });
+                const duration = Math.ceil(differenceInMinutes(timeoutDate, createdAt)) + 1; // Add 1 minute to account for the current minute
 
-            await logChannel.send({ embeds: [embedMessage] });
+                // Construct the message content
+                const timeoutMessage = `<t:${currentTime}> - **${target.displayName}** was timed out for ${duration} ${duration == 1 ? "minute" : "minutes"} until <t:${timeoutUntil}> by ${executorModerator}${reason ? ` - \`${reason}\`` : ''}`;
+                const timeoutRemovalMessage = `<t:${currentTime}> - **${target.displayName}**'s timeout was removed by ${executorModerator}`;
 
-            // Store in database, only if the action is a timeout
-            if (isTimeout) {
-                const result = await postRequest(`/guilds/${guild.id}/logs`, {
-                    id: timeoutLog.id,
-                    auditAction: timeoutLog.action,
-                    auditType: isTimeout ? 'MemberTimeout' : 'MemberTimeoutRemove',
-                    targetId: newMember.id,
-                    executorId: timeoutLog?.executor?.id || null,
-                    duration: duration,
-                    reason: timeoutLog?.reason || null
+                const content = isTimeout ? timeoutMessage : timeoutRemovalMessage;
+                const footer = `-# <@${oldMember.id}> | ${oldMember.id}`;
+
+                const embedMessage = logEmbed({
+                    description: content,
+                    footer: footer,
+                    color: isTimeout ? ClientEmbedColors.ERROR : ClientEmbedColors.BASE_COLOR
                 });
 
-                if (result.status !== 200 && result.status !== 201) {
-                    console.error('Failed to store timeout log:', result);
-                }
-            }
+                await logChannel.send({ embeds: [embedMessage] });
 
-            if (process.env.NODE_ENV === 'development') {
-                console.log('\x1b[2m', `[Event]: ${result?.data?.message}`);
+                // Store in database, only if the action is a timeout
+                if (isTimeout) {
+                    const result = await postRequest(`/guilds/${guild.id}/logs`, {
+                        id: timeoutLog.id,
+                        auditAction: timeoutLog.action,
+                        auditType: isTimeout ? 'MemberTimeout' : 'MemberTimeoutRemove',
+                        targetId: newMember.id,
+                        executorId: timeoutLog?.executor?.id || null,
+                        duration: duration,
+                        reason: timeoutLog?.reason || null
+                    });
+
+                    if (result.status !== 200 && result.status !== 201) {
+                        console.error('Failed to store timeout log:', result);
+                    }
+
+                    if (process.env.NODE_ENV === 'development') {
+                        console.log('\x1b[2m', `[Event]: ${result?.data?.message}`);
+                    }
+                }
             }
         } catch (error) {
             console.error(`Error logging timeout for user ${user.id}:`, error);
