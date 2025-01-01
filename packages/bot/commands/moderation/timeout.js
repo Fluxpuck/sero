@@ -40,9 +40,7 @@ module.exports.props = {
 module.exports.autocomplete = async (client, interaction) => {
     const focusedReason = interaction.options.getFocused();
 
-    // If the focused reason is the time, return the time options
     if (interaction.options.getFocused(true).name === "time") {
-        // We could put this somewhere else, but I'll leave it here for now
         var time = [
             { name: "5 minutes", value: "5" },
             { name: "10 minutes", value: "10" },
@@ -67,43 +65,49 @@ module.exports.autocomplete = async (client, interaction) => {
 module.exports.run = async (client, interaction) => {
     await deferInteraction(interaction, true);
 
-    // Get User details from the interaction options && convert user into a member object.
     const targetUser = interaction.options.get("user").user;
-
-    // Fetch the user by userId
-    const member = await interaction.guild.members.fetch(targetUser.id);
-
-    // If the target is the author, return message
-    if (member.user.id === interaction.user.id) return replyInteraction(interaction, {
-        content: "You cannot mute yourself!",
-        ephemeral: true
-    });
-
-    // If the member is not moderatable, return message
-    if (!member.moderatable) return replyInteraction(interaction, {
-        content: `<@${member.user.id}> is a moderator!`,
-        ephemeral: true
-    });
-
-    // Get the duration && reason from the interaction options
     const targetDuration = interaction.options.get("time").value;
-    const violationReason = interaction.options.get("reason").value;
+    const violationReason = interaction.options.get("reason").value || "";
 
-    // Convert the duration to milliseconds
-    const duration = parseFloat(targetDuration) * 60 * 1000;
-
-    // Mute the target user with reason
-    member.timeout(duration, `${violationReason} - ${interaction.user.username}`)
-        .then(() => {
-            return replyInteraction(interaction, {
-                content: `You successfully muted <@${member.user.id}> for:\n> ${violationReason}`,
-                ephemeral: true,
-            });
-        })
-        .catch(err => {
-            return replyInteraction(interaction, {
-                content: `Could not mute <@${member.user.id}>!`,
-                ephemeral: true,
-            });
+    if (!targetUser) {
+        return followUpInteraction(interaction, {
+            content: "Oops! Could not find the user",
+            ephemeral: true,
         });
+    }
+
+    try {
+        const member = await interaction.guild.members.fetch(targetUser.id).catch(() => null);
+
+        if (targetUser.id === interaction.user.id) {
+            return followUpInteraction(interaction, {
+                content: "Uhm... You cannot timeout yourself",
+                ephemeral: true
+            });
+        }
+
+        if (member && !member.moderatable) {
+            return followUpInteraction(interaction, {
+                content: `<@${targetUser.id}> is a moderator!`,
+                ephemeral: true
+            });
+        }
+
+        // Convert the duration to milliseconds
+        const duration = parseFloat(targetDuration) * 60 * 1000;
+
+        member.timeout(duration, `${violationReason} - ${interaction.user.username}`)
+
+        return replyInteraction(interaction, {
+            content: `You successfully muted <@${member.user.id}> for:\n> ${violationReason}`,
+            ephemeral: true,
+        });
+
+    } catch (error) {
+        console.error(`Failed to timeout user ${targetUser.id}:`, error);
+        return followUpInteraction(interaction, {
+            content: `Oops! Something went wrong while trying to timeout **${targetUser.username}**`,
+            ephemeral: true,
+        });
+    }
 }
