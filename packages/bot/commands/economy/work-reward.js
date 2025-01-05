@@ -34,7 +34,7 @@ module.exports.run = async (client, interaction) => {
     }
 
     // Check if the user has a streak of at least 5 days
-    const careerStreak = await getRequest(`/guilds/${interaction.guildId}/activities/streak/${interaction.user.id}/daily-work-reward`);
+    const careerStreak = await getRequest(`/guilds/${interaction.guildId}/activities/streak/${interaction.user.id}/daily-work`);
     if (careerStreak.status !== 200 || careerStreak.data.streak < 5) {
         return followUpInteraction(interaction, {
             content: "Oh Uh! You need to have a streak of at least 5 days to claim your weekly reward!",

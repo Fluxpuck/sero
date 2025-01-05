@@ -65,6 +65,7 @@ module.exports.run = async (client, interaction) => {
             });
 
             break;
+        
         case "toBank":
 
             const bankTransfer = await postRequest(`/guilds/${interaction.guildId}/economy/transfer/wallet-to-bank/${interaction.user.id}`, { amount: transferAmount });

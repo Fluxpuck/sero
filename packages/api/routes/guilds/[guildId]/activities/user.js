@@ -46,7 +46,6 @@ router.get("/:userId", (req, res, next) => {
 router.get("/:userId/:type", (req, res, next) => {
     const { guildId, userId, type } = req.params;
     const { limit = 10, today = "false", thisWeek = "false", thisHour = "false" } = req.query;
-
     const options = { where: { guildId, userId, type }, limit };
 
     // Handle date filters
@@ -64,7 +63,7 @@ router.get("/:userId/:type", (req, res, next) => {
         };
     }
 
-    fetchUserActivities(options, res, next);
+    fetchUserActiivities(options, res, next);
 });
 
 module.exports = router;
