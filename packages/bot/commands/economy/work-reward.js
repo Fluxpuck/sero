@@ -19,16 +19,24 @@ module.exports.run = async (client, interaction) => {
     const userCareer = await getRequest(`/guilds/${interaction.guildId}/economy/career/${interaction.user.id}`);
     if (userCareer.status !== 200) {
         return followUpInteraction(interaction, {
-            content: "Oh no! You do not have a career yet. Use \`/work\` to select a job and start working.",
+            content: "Oh no! You do not have a career yet. Use `/work` to select a job and start working.",
             ephemeral: true
         });
     }
 
     // Check if the user has already claimed their weekly reward
     const weeklyRewardResult = await getRequest(`/guilds/${interaction.guildId}/activities/user/${interaction.user.id}/daily-work-reward?thisWeek=true`);
+    
     if (weeklyRewardResult.status === 200) {
         return followUpInteraction(interaction, {
             content: `You have already claimed your reward this week! Please try again in ${getTimeUntil('nextweek')}.`,
+            ephemeral: true
+        });
+    }
+
+    if (weeklyRewardResult.status !== 404) {
+        return followUpInteraction(interaction, {
+            content: "An error occurred while checking your weekly reward status.",
             ephemeral: true
         });
     }

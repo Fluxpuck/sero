@@ -63,7 +63,7 @@ router.get("/:userId/:type", (req, res, next) => {
         };
     }
 
-    fetchUserActiivities(options, res, next);
+    fetchUserActivities(options, res, next);
 });
 
 module.exports = router;
