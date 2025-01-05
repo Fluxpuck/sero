@@ -13,16 +13,25 @@ const BANK_MIN = -UserBank.MINIMUM_BALANCE;
 const BANK_MAX = UserBank.MAXIMUM_BALANCE;
 
 function transferMoney(source, destination, amount, type) {
+    // Prevent negative transfers
+    if (amount <= 0) {
+        return {
+            sourceBalance: source.balance,
+            destinationBalance: destination.balance,
+            transferredAmount: 0
+        };
+    }
+
     let actualTransferAmount = amount;
     const sourceBalance = source.balance;
     const destinationBalance = destination.balance;
 
-    // Check source has sufficient funds (considering minimum limits)
-    const maxFromSource = type === 'toBank'
-        ? sourceBalance - WALLET_MIN
-        : sourceBalance - BANK_MIN;
+    // Check source has sufficient funds
+    const availableFromSource = type === 'toBank' 
+        ? Math.max(0, sourceBalance - WALLET_MIN)  // For wallet: can only use what's above minimum
+        : Math.max(0, sourceBalance + BANK_MIN);   // For bank: can use up to negative minimum
 
-    actualTransferAmount = Math.min(actualTransferAmount, maxFromSource);
+    actualTransferAmount = Math.min(actualTransferAmount, availableFromSource);
 
     // Check destination won't exceed maximum
     const spaceInDestination = type === 'toBank'
@@ -34,10 +43,6 @@ function transferMoney(source, destination, amount, type) {
     // Calculate new balances
     const newSourceBalance = sourceBalance - actualTransferAmount;
     const newDestinationBalance = destinationBalance + actualTransferAmount;
-
-    // Update balances
-    source.balance = newSourceBalance;
-    destination.balance = newDestinationBalance;
 
     return {
         sourceBalance: newSourceBalance,
@@ -130,6 +135,15 @@ router.post("/bank-to-wallet/:userId", async (req, res, next) => {
         const previousBankBalance = userBank.balance;
 
         const { sourceBalance: newBankBalance, destinationBalance: newWalletBalance, transferredAmount } = transferMoney(userBank, userWallet, amount, 'toWallet');
+
+        // Store transaction in database
+        await sequelize.transaction(async (t) => {
+            userBank.balance = newBankBalance;
+            userWallet.balance = newWalletBalance;
+
+            await userBank.save({ transaction: t });
+            await userWallet.save({ transaction: t });
+        });
 
         res.status(200).json({
             message: "Transfer from bank to wallet successful",

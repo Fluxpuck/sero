@@ -44,7 +44,7 @@ module.exports.run = async (client, interaction) => {
 
             const walletTransfer = await postRequest(`/guilds/${interaction.guildId}/economy/transfer/bank-to-wallet/${interaction.user.id}`, { amount: transferAmount });
 
-            const walletTransaction = walletTransfer.transaction ?? null;
+            const walletTransaction = walletTransfer?.data?.transaction;
             if (!walletTransaction) {
                 return followUpInteraction(interaction, {
                     content: "Oops! An error occurred while transferring the money",
@@ -69,7 +69,7 @@ module.exports.run = async (client, interaction) => {
 
             const bankTransfer = await postRequest(`/guilds/${interaction.guildId}/economy/transfer/wallet-to-bank/${interaction.user.id}`, { amount: transferAmount });
 
-            const bankTransaction = bankTransfer.transaction ?? null;
+            const bankTransaction = bankTransfer?.data?.transaction;
             if (!bankTransaction) {
                 return followUpInteraction(interaction, {
                     content: "Oops! An error occurred while transferring the money",
