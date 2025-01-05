@@ -6,14 +6,53 @@ const { User, UserWallet, UserBank } = require("../../../../database/models");
 const { findAllRecords, findOneRecord } = require("../../../../utils/RequestManager");
 const { CreateError, RequestError } = require("../../../../utils/ClassManager");
 
-const BALANCE_LIMIT = 0;
+// Define limits
+const WALLET_MIN = UserWallet.MINIMUM_BALANCE;
+const WALLET_MAX = UserWallet.MAXIMUM_BALANCE;
+const BANK_MIN = -UserBank.MINIMUM_BALANCE;
+const BANK_MAX = UserBank.MAXIMUM_BALANCE;
+
+function transferMoney(source, destination, amount, type) {
+    let actualTransferAmount = amount;
+    const sourceBalance = source.balance;
+    const destinationBalance = destination.balance;
+
+    // Check source has sufficient funds (considering minimum limits)
+    const maxFromSource = type === 'toBank'
+        ? sourceBalance - WALLET_MIN
+        : sourceBalance - BANK_MIN;
+
+    actualTransferAmount = Math.min(actualTransferAmount, maxFromSource);
+
+    // Check destination won't exceed maximum
+    const spaceInDestination = type === 'toBank'
+        ? BANK_MAX - destinationBalance
+        : WALLET_MAX - destinationBalance;
+
+    actualTransferAmount = Math.min(actualTransferAmount, spaceInDestination);
+
+    // Calculate new balances
+    const newSourceBalance = sourceBalance - actualTransferAmount;
+    const newDestinationBalance = destinationBalance + actualTransferAmount;
+
+    // Update balances
+    source.balance = newSourceBalance;
+    destination.balance = newDestinationBalance;
+
+    return {
+        sourceBalance: newSourceBalance,
+        destinationBalance: newDestinationBalance,
+        transferredAmount: actualTransferAmount
+    };
+}
 
 router.post("/wallet-to-bank/:userId", async (req, res, next) => {
+
     const { guildId, userId } = req.params;
     const { amount } = req.body;
 
     // Validate input
-    if (!amount && typeof amount !== "number") {
+    if (!amount || typeof amount !== "number") {
         throw new RequestError(400, "Invalid amount. Must be a valid number", {
             method: req.method, path: req.path
         });
@@ -32,26 +71,10 @@ router.post("/wallet-to-bank/:userId", async (req, res, next) => {
             throw new CreateError(404, "User bank or wallet not found");
         }
 
-        let actualTransferAmount = amount;
         const previousWalletBalance = userWallet.balance;
         const previousBankBalance = userBank.balance;
-        let newWalletBalance = userWallet.balance - amount;
-        let newBankBalance = userBank.balance + amount;
 
-        // Check if transfer would result in balance below minimum
-        if (newWalletBalance < BALANCE_LIMIT) {
-            newWalletBalance = BALANCE_LIMIT;
-            actualTransferAmount = newWalletBalance - previousWalletBalance;
-            newBankBalance = userBank.balance += actualTransferAmount;
-        }
-
-        //  Check if transfer would result in balance above maximum
-        if (newBankBalance > BALANCE_LIMIT) {
-            newBankBalance = BALANCE_LIMIT;
-            actualTransferAmount = newBankBalance - previousBankBalance;
-            newWalletBalance = userWallet.balance + actualTransferAmount;
-        }
-
+        const { sourceBalance: newWalletBalance, destinationBalance: newBankBalance, transferredAmount } = transferMoney(userWallet, userBank, amount, 'toBank');
 
         // Store transaction in database
         await sequelize.transaction(async (t) => {
@@ -70,7 +93,7 @@ router.post("/wallet-to-bank/:userId", async (req, res, next) => {
                 newWalletBalance,
                 newBankBalance,
                 requestedAmount: amount,
-                actualTransferAmount,
+                actualTransferAmount: transferredAmount,
             }
         });
     } catch (error) {
@@ -83,7 +106,7 @@ router.post("/bank-to-wallet/:userId", async (req, res, next) => {
     const { amount } = req.body;
 
     // Validate input
-    if (!amount && typeof amount !== "number") {
+    if (!amount || typeof amount !== "number") {
         throw new RequestError(400, "Invalid amount. Must be a valid number", {
             method: req.method, path: req.path
         });
@@ -103,34 +126,10 @@ router.post("/bank-to-wallet/:userId", async (req, res, next) => {
             throw new CreateError(404, "User bank or wallet not found");
         }
 
-        let actualTransferAmount = amount;
         const previousWalletBalance = userWallet.balance;
         const previousBankBalance = userBank.balance;
-        let newWalletBalance = userWallet.balance + amount;
-        let newBankBalance = userBank.balance - amount;
 
-        // Check if transfer would result in balance below minimum
-        if (newBankBalance < UserBank.MINIMUM_BALANCE) {
-            newBankBalance = UserBank.MINIMUM_BALANCE;
-            actualTransferAmount = newBankBalance - previousBankBalance;
-            newWalletBalance = userWallet.balance + actualTransferAmount;
-        }
-
-        //  Check if transfer would result in balance above maximum
-        if (newWalletBalance > UserWallet.MAXIMUM_BALANCE) {
-            newWalletBalance = UserWallet.MAXIMUM_BALANCE;
-            actualTransferAmount = newWalletBalance - previousWalletBalance;
-            newBankBalance = userBank.balance - actualTransferAmount;
-        }
-
-        // Store transaction in database
-        await sequelize.transaction(async (t) => {
-            userWallet.balance = newWalletBalance;
-            userBank.balance = newBankBalance;
-
-            await userWallet.save({ transaction: t });
-            await userBank.save({ transaction: t });
-        });
+        const { sourceBalance: newBankBalance, destinationBalance: newWalletBalance, transferredAmount } = transferMoney(userBank, userWallet, amount, 'toWallet');
 
         res.status(200).json({
             message: "Transfer from bank to wallet successful",
@@ -140,7 +139,7 @@ router.post("/bank-to-wallet/:userId", async (req, res, next) => {
                 newWalletBalance,
                 newBankBalance,
                 requestedAmount: amount,
-                actualTransferAmount,
+                actualTransferAmount: transferredAmount,
             }
         });
 
