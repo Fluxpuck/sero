@@ -77,7 +77,8 @@ module.exports = async (client, oldMember, newMember) => {
             const { changes, target, executor, reason = "", createdAt } = timeoutLog
 
             const isTimeout = Boolean(newMember.communicationDisabledUntilTimestamp) && changes.includes(changes.find(change => change.key === 'communication_disabled_until'));
-            if (auditLogs) {
+
+            if (auditLogs && timeoutLog) {
 
                 // Get the moderator who timed out the user
                 const executorModerator = (executor && executor?.bot === false) ? `<@${executor.id}>` : '';
@@ -110,7 +111,7 @@ module.exports = async (client, oldMember, newMember) => {
                         auditAction: timeoutLog.action,
                         auditType: isTimeout ? 'MemberTimeout' : 'MemberTimeoutRemove',
                         targetId: newMember.id,
-                        executorId: timeoutLog?.executor?.id || null,
+                        executorId: executor?.id || null,
                         duration: duration,
                         reason: timeoutLog?.reason || null
                     });
