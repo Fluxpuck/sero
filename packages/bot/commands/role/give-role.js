@@ -35,7 +35,7 @@ module.exports.props = {
 }
 
 module.exports.run = async (client, interaction) => {
-    await deferInteraction(interaction, false);
+    await deferInteraction(interaction, true);
 
     // Get the user and role from the interaction
     const targetUser = interaction.options.get("user").user;
@@ -47,7 +47,7 @@ module.exports.run = async (client, interaction) => {
     // Fetch full member details
     const member = findUser(interaction.guild, targetUser.id);
     if (!member) {
-        await followUpInteraction(interaction, {
+        await replyInteraction(interaction, {
             content: "Could not find the user in the guild",
             ephemeral: true
         });
@@ -59,7 +59,7 @@ module.exports.run = async (client, interaction) => {
         const result = await postRequest(`/guilds/${interaction.guildId}/roles/add`, { userId: targetUser.id, roleId: targetRole.id, duration: duration });
         // If the request was not successful, return an error
         if (result?.status !== 201) {
-            return await followUpInteraction(interaction, {
+            return await replyInteraction(interaction, {
                 content: "Something went wrong while storing the temporary role",
                 ephemeral: true
             });
@@ -71,7 +71,7 @@ module.exports.run = async (client, interaction) => {
         // Give the user the temporary role
         await member.roles.add(targetRole, `test`)
     } catch (error) {
-        return await followUpInteraction(interaction, {
+        return await replyInteraction(interaction, {
             content: "Something went wrong while gifting the temporary role",
             ephemeral: true
         });
