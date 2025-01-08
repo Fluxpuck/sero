@@ -33,7 +33,7 @@ module.exports = async (client, member) => {
             // Get the moderator who timed out the user
             const executorModerator = (executor && executor?.bot === false) ? `<@${executor.id}>` : '';
 
-            const content = `<t:${unixTimestamp(createdAt)}> - **${target.username}** was kicked by **${executor.username}**${reason ? ` for \`${reason}\`` : ''}`;
+            const content = `<t:${unixTimestamp(createdAt)}> - **${target.username}** was kicked by **${executorModerator}**${reason ? ` for \`${reason}\`` : ''}`;
             const footer = `-# <@${target.id}> | ${target.id}`;
 
             const embedMessage = logEmbed({
