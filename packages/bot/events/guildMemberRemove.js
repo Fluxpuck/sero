@@ -19,13 +19,13 @@ module.exports = async (client, member) => {
 
     try {
 
-        const auditLog = (await member.guild.fetchAuditLogs({
-            limit: 1,
+        const auditLogs = await guild.fetchAuditLogs({
             type: AuditLogEvent.MemberKick,
-            target: member.user
-        })).catch(() => null);
+            target: member.user,
+            limit: 1
+        }).catch(() => null);
 
-        const kickLog = auditLog.entries.first();
+        const kickLog = auditLogs.entries.first();
         const { target, executor, reason, createdAt } = kickLog;
 
         if (auditLog && kickLog) {
