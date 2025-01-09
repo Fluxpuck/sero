@@ -25,7 +25,14 @@ module.exports.run = async (client, interaction) => {
     }
 
     const isPositive = Math.random() < 0.35; // 35% chance of positive reward
-    const rewardAmount = Math.floor(Math.random() * (isPositive ? 251 : 401)) * (isPositive ? 1 : -1);
+    const MIN_POSITIVE_REWARD = 80;
+    const MAX_POSITIVE_REWARD = 350;
+    const MIN_NEGATIVE_REWARD = -100;
+    const MAX_NEGATIVE_REWARD = 0;
+
+    const rewardAmount = isPositive
+        ? Math.floor(Math.random() * (MAX_POSITIVE_REWARD - MIN_POSITIVE_REWARD + 1)) + MIN_POSITIVE_REWARD
+        : Math.floor(Math.random() * (MAX_NEGATIVE_REWARD - MIN_NEGATIVE_REWARD + 1)) + MIN_NEGATIVE_REWARD;
 
     // Deposit the reward amount to the user's wallet - allowReset is set to true by default
     const walletTransaction = await postRequest(`guilds/${interaction.guild.id}/economy/wallet/${interaction.user.id}`, { amount: rewardAmount, allowReset: true });
