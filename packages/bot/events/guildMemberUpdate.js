@@ -71,15 +71,14 @@ module.exports = async (client, oldMember, newMember) => {
                 type: AuditLogEvent.MemberUpdate,
                 targetId: newMember.id,
                 limit: 1
-            });
+            }).catch(() => null);
 
             if (!auditLogs?.entries?.size) return;
 
             const timeoutLog = auditLogs.entries.first();
             const { changes, target, executor, reason = "", createdAt } = timeoutLog;
 
-            // Verify this is a recent timeout change
-            if ((Date.now() - timeoutLog.createdTimestamp) > 10000) return;
+            if ((Date.now() - timeoutLog.createdTimestamp) > 10_000) return;
 
             // Get timeout details
             const timeoutChange = changes.find(change => change.key === 'communication_disabled_until');

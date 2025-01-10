@@ -25,43 +25,44 @@ module.exports = async (client, member) => {
             limit: 1
         }).catch(() => null);
 
+        if (!auditLogs?.entries?.size) return;
+
         const kickLog = auditLogs.entries.first();
         const { target, executor, reason, createdAt } = kickLog;
 
-        if (auditLogs && kickLog) {
+        if ((Date.now() - kickLog.createdTimestamp) > 10_000) return;
 
-            // Get the moderator who timed out the user
-            const executorModerator = (executor && executor?.bot === false) ? `<@${executor.id}>` : '';
+        // Get the moderator who timed out the user
+        const executorName = executor?.bot ? 'System' : `<@${executor.id}> (${executor.tag})`;
 
-            const content = `<t:${unixTimestamp(createdAt)}> - **${target.username}** was kicked by **${executorModerator}**${reason ? ` for \`${reason}\`` : ''}`;
-            const footer = `-# <@${target.id}> | ${target.id}`;
+        const content = `<t:${unixTimestamp(createdAt)}> - **${target.username}** was kicked by **${executorName}**${reason ? ` for \`${reason}\`` : ''}`;
+        const footer = `-# <@${target.id}> | ${target.id}`;
 
-            const embedMessage = logEmbed({
-                description: content,
-                footer: footer,
-                color: ClientEmbedColors.ERROR
-            });
+        const embedMessage = logEmbed({
+            description: content,
+            footer: footer,
+            color: ClientEmbedColors.WARNING
+        });
 
-            await logChannel.send({ embeds: [embedMessage] });
+        await logChannel.send({ embeds: [embedMessage] });
 
-            // Store the kick in the database
-            const result = await postRequest(`/guilds/${guild.id}/logs`, {
-                id: kickLog.id,
-                auditAction: kickLog.action,
-                auditType: getAuditLogType(kickLog.action),
-                targetId: target.id,
-                executorId: executor?.id || null,
-                reason: kickLog.reason ?? null,
-            });
+        // Store the kick in the database
+        const result = await postRequest(`/guilds/${guild.id}/logs`, {
+            id: kickLog.id,
+            auditAction: kickLog.action,
+            auditType: getAuditLogType(kickLog.action),
+            targetId: target.id,
+            executorId: executor?.id || null,
+            reason: kickLog.reason ?? null,
+        });
 
 
-            if (result.status !== 200 && result.status !== 201) {
-                console.error('Failed to store kick log:', result);
-            }
+        if (result.status !== 200 && result.status !== 201) {
+            console.error('Failed to store kick log:', result);
+        }
 
-            if (process.env.NODE_ENV === 'development') {
-                console.log('\x1b[2m', `[Event]: ${result?.data?.message}`);
-            }
+        if (process.env.NODE_ENV === 'development') {
+            console.log('\x1b[2m', `[Event]: ${result?.data?.message}`);
         }
 
     } catch (error) {
