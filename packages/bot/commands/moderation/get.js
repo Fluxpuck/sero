@@ -92,9 +92,12 @@ module.exports.run = async (client, interaction) => {
     userLogButton.data.label = `${userLogs.length} ${userLogs.length === 1 ? "Log" : "Logs"}`;
     userLogButton.data.disabled = userLogs.length <= 0;
 
-    // Construct message components
+    // Setup the Avatar Button || Make sure it is enabled
+    const avatarButton = { ...ClientButtonsEnum.AVATAR };
+    avatarButton.data.disabled = false;
+
     const messageButtons = new ActionRowBuilder()
-    messageButtons.addComponents(ClientButtonsEnum.AVATAR, userLogButton)
+    messageButtons.addComponents(avatarButton, userLogButton)
 
     // Return the message
     const returnMessageEmbed = await replyInteraction(interaction, {
