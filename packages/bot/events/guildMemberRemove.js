@@ -30,7 +30,7 @@ module.exports = async (client, member) => {
         const kickLog = auditLogs.entries.first();
         const { target, executor, reason, createdAt } = kickLog;
 
-        if ((Date.now() - kickLog.createdTimestamp) > 10_000) return;
+        if ((Date.now() - kickLog.createdTimestamp) > 3_000) return;
 
         // Get the moderator who timed out the user
         const executorName = executor?.bot ? 'System' : `<@${executor.id}> (${executor.tag})`;

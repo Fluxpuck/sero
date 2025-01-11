@@ -78,7 +78,7 @@ module.exports = async (client, oldMember, newMember) => {
             const timeoutLog = auditLogs.entries.first();
             const { changes, target, executor, reason = "", createdAt } = timeoutLog;
 
-            if ((Date.now() - timeoutLog.createdTimestamp) > 10_000) return;
+            if ((Date.now() - timeoutLog.createdTimestamp) > 3_000) return;
 
             // Get timeout details
             const timeoutChange = changes.find(change => change.key === 'communication_disabled_until');
@@ -88,7 +88,7 @@ module.exports = async (client, oldMember, newMember) => {
             const timeoutDate = new Date(newMember.communicationDisabledUntilTimestamp || 0);
             const timeoutUntil = getUnixTime(timeoutDate);
             const currentTime = unixTimestamp();
-            const duration = Math.ceil(differenceInMinutes(timeoutDate, createdAt));
+            const duration = Math.ceil(differenceInMinutes(timeoutDate, createdAt) + 1);
 
             // Validate timeout duration (0-10081 minutes / 1 week)
             if (isTimeout && (duration <= 0 || duration > 10081)) {
