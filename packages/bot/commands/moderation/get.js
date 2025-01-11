@@ -92,10 +92,10 @@ module.exports.run = async (client, interaction) => {
     userLogButton.data.label = `${userLogs.length} ${userLogs.length === 1 ? "Log" : "Logs"}`;
     userLogButton.data.disabled = userLogs.length <= 0;
 
-    // Setup the Avatar Button || Make sure it is enabled
-    const avatarButton = { ...ClientButtonsEnum.AVATAR };
+    const avatarButton = ClientButtonsEnum.AVATAR;
     avatarButton.data.disabled = false;
 
+    // Construct message components
     const messageButtons = new ActionRowBuilder()
     messageButtons.addComponents(avatarButton, userLogButton)
 
