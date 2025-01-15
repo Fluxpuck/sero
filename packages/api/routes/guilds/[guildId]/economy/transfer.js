@@ -27,7 +27,7 @@ function transferMoney(source, destination, amount, type) {
     const destinationBalance = destination.balance;
 
     // Check source has sufficient funds
-    const availableFromSource = type === 'toBank' 
+    const availableFromSource = type === 'toBank'
         ? Math.max(0, sourceBalance - WALLET_MIN)  // For wallet: can only use what's above minimum
         : Math.max(0, sourceBalance + BANK_MIN);   // For bank: can use up to negative minimum
 

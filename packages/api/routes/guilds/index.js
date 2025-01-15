@@ -1,9 +1,8 @@
 const express = require("express");
 const router = express.Router({ mergeParams: true });
 
-const { sequelize } = require('../../database/sequelize');
 const { Guild } = require("../../database/models");
-const { findAllRecords, findOneRecord, createOrUpdateRecord } = require("../../utils/RequestManager");
+const { withTransaction, findAllRecords, findOneRecord, createOrUpdateRecord } = require("../../utils/RequestManager");
 const { CreateError, RequestError } = require("../../utils/ClassManager");
 
 /**
@@ -53,51 +52,34 @@ router.get("/:guildId", async (req, res, next) => {
  * @description Create or update a guild
  * @param {string} guildId - The id of the guild
  * @param {string} guildName - The name of the guild
- * @param {boolean} active - The active status of the guild
- * @param {number} modifier - The modifier of the guild
- * @param {number} duration - The duration of the guild
- * @param {date} expireAt - The expireAt of the guild
  */
 router.post("/", async (req, res, next) => {
-    const t = await sequelize.transaction();
+    const { guildId, guildName } = req.body;
+
+    if (!guildId || !guildName) {
+        throw new RequestError(400, "Missing required fields: guildId and guildName are required", {
+            method: req.method,
+            path: req.path,
+        });
+    }
 
     try {
-        const {
-            guildId,
-            guildName,
-            active = true,
-            modifier = 1,
-            duration = null,
-        } = req.body;
+        const result = await withTransaction(async (t) => {
 
-        // Check if the required fields are provided
-        if (!guildId) {
-            throw new RequestError(400, "Missing required data. Please check and try again", {
-                method: req.method, path: req.path
-            });
-        }
+            const [result, created] = await createOrUpdateRecord(Guild, {
+                guildId,
+                guildName,
+            }, t);
 
-        // Update or create the message
-        const [result, created] = await createOrUpdateRecord(Guild, {
-            guildId,
-            guildName,
-            active,
-            modifier,
-            duration
-        }, t);
+            return {
+                message: created ? "Guild created successfully" : "Guild updated successfully",
+                data: result,
+            };
 
-        // Send the appropriate response
-        if (created) {
-            res.status(201).json({ message: "Guild created successfully", data: result });
-        } else {
-            res.status(200).json({ message: "Guild updated successfully", data: result });
-        };
+        });
 
-        // Commit the transaction
-        await t.commit();
-
+        res.status(200).json(result);
     } catch (error) {
-        t.rollback();
         next(error);
     }
 });
@@ -110,46 +92,38 @@ router.post("/", async (req, res, next) => {
  * @param {number} duration - The duration of the guild
  */
 router.post("/boost", async (req, res, next) => {
-    const t = await sequelize.transaction();
+    const { guildId, modifier = 1, duration = null } = req.body;
+
+    // Check if the required fields are provided
+    if (!guildId) {
+        throw new RequestError(400, "Missing required data. Please check and try again", {
+            method: req.method, path: req.path
+        });
+    }
 
     try {
-        const {
-            guildId,
-            modifier = 1,
-            duration = null,
-        } = req.body;
+        const result = await withTransaction(async (t) => {
 
-        // Check if the required fields are provided
-        if (!guildId) {
-            throw new RequestError(400, "Missing required data. Please check and try again", {
-                method: req.method, path: req.path
-            });
-        }
+            const guild = await findOneRecord(Guild, { where: { guildId: guildId } });
+            if (!guild) {
+                throw new CreateError(404, "Guild not found");
+            }
 
-        // Check if the guild exists
-        const options = { where: { guildId: guildId } };
-        const guild = await findOneRecord(Guild, options);
-        if (!guild) {
-            throw new CreateError(404, "Guild not found");
-        }
+            // Update the guild with the new modifier and duration
+            guild.modifier = modifier;
+            guild.duration = duration;
 
-        // Update the guild with the new modifier and duration
-        guild.modifier = modifier;
-        guild.duration = duration;
-        await guild.save({ transaction: t });
+            await guild.save({ transaction: t });
 
-        // Send the appropriate response
-        if (duration > 0) {
-            res.status(201).json({ message: `Guild boost set successfully at ${modifier}x for ${duration}hours`, data: guild });
-        } else {
-            res.status(200).json({ message: "Guild boost removed successfully", data: guild });
-        };
+            return {
+                message: duration > 0 ? `Guild boost set successfully at ${modifier}x for ${duration} hours` : "Guild boost removed successfully",
+                data: guild,
+            }
 
-        // Commit the transaction
-        await t.commit();
+        });
 
+        res.status(200).json(result);
     } catch (error) {
-        t.rollback();
         next(error);
     }
 });
@@ -161,25 +135,23 @@ router.post("/boost", async (req, res, next) => {
  */
 router.delete("/:guildId", async (req, res, next) => {
     const { guildId } = req.params;
-    const options = { where: { guildId: guildId } };
 
     try {
+        const result = await withTransaction(async (t) => {
 
-        // Check if the guild exists
-        const guild = await findOneRecord(UserWallet, options);
-        if (!guild) {
-            throw new CreateError(404, "Guild not found");
-        }
+            const guild = await findOneRecord(Guild, { where: { guildId: guildId } });
+            if (!guild) {
+                throw new CreateError(404, "Guild not found");
+            }
 
-        // Deactivate the guild
-        guild.active = false;
-        await guild.save({ transaction: t });
+            guild.active = false; // Deactivate the guild
 
-        // Commit the transaction
-        await t.commit();
+            await guild.save({ transaction: t });
 
-        // Send the appropriate response
-        res.status(200).json({ message: "Guild deactivated successfully", data: result });
+            return { message: "Guild deactivated successfully", data: result };
+        });
+
+        res.status(200).json(result);
 
     } catch (error) {
         next(error);
