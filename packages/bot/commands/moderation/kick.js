@@ -1,6 +1,6 @@
 const { KICK_PREREASONS } = require("../../assets/reason-messages");
 const { formatExpression } = require("../../lib/helpers/StringHelpers/stringHelper");
-const { deferInteraction, replyInteraction } = require('../../utils/InteractionManager');
+const { deferInteraction, replyInteraction, followUpInteraction } = require('../../utils/InteractionManager');
 
 module.exports.props = {
     commandName: "kick",
@@ -71,9 +71,7 @@ module.exports.run = async (client, interaction) => {
             });
         }
 
-        await interaction.guild.kick.create(targetUser.id, {
-            reason: `${violationReason} - ${interaction.user.username}`
-        });
+        await member.kick(`${violationReason} - ${interaction.user.username}`);
 
         return replyInteraction(interaction, {
             content: `You successfully kicked **${targetUser.username}** (${targetUser.id}) for:\n> ${violationReason}`,
