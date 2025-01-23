@@ -1,3 +1,4 @@
+const { MessageFlags } = require('discord.js');
 const { postRequest, getRequest } = require("../../database/connection");
 const moment = require('moment');
 const { deferInteraction, replyInteraction, followUpInteraction } = require('../../utils/InteractionManager');
@@ -76,7 +77,7 @@ module.exports.run = async (client, interaction) => {
         } else {
             return await followUpInteraction(interaction, {
                 content: `Uh oh! Something went wrong fetching the server modifier.`,
-                ephemeral: true
+                flags: MessageFlags.Ephemeral
             })
         }
 
@@ -96,7 +97,7 @@ module.exports.run = async (client, interaction) => {
         if (result?.status !== 201) {
             return await followUpInteraction(interaction, {
                 content: `Uh oh! Something went wrong and the modifier has not been set.`,
-                ephemeral: true
+                flags: MessageFlags.Ephemeral
             })
         } else {
             return await replyInteraction(interaction, {

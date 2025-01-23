@@ -1,3 +1,4 @@
+const { MessageFlags } = require('discord.js');
 const { postRequest } = require("../../database/connection");
 const { deferInteraction, replyInteraction } = require("../../utils/InteractionManager");
 
@@ -46,12 +47,12 @@ module.exports.run = async (client, interaction) => {
         // Send the success message
         return replyInteraction(interaction, {
             content: `You successfully disconnected <@${member.user.id}>`,
-            ephemeral: true,
+            flags: MessageFlags.Ephemeral,
         });
     } else {
         return replyInteraction(interaction, {
             content: `<@${member.user.id}> is not in a voice channel.`,
-            ephemeral: true
+            flags: MessageFlags.Ephemeral
         });
     }
 };

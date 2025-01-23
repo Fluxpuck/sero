@@ -1,3 +1,4 @@
+const { MessageFlags } = require('discord.js');
 const { postRequest } = require("../../database/connection");
 const { getYear } = require('date-fns');
 const { getBirthdate } = require("../../lib/helpers/TimeDateHelpers/timeHelper");
@@ -60,7 +61,7 @@ module.exports.run = async (client, interaction) => {
     if (setBirthdayResponse.status === 403) {
         return followUpInteraction(interaction, {
             content: "Oops! You have already set your birthday twice and cannot set it again.",
-            ephemeral: true
+            flags: MessageFlags.Ephemeral
         });
     }
 
@@ -69,19 +70,19 @@ module.exports.run = async (client, interaction) => {
     if (setBirthdayResponse.status === 200) {
         return replyInteraction(interaction, {
             content: `Your birthday has been updated to **${birthDate.date}** 🎉 \n-# The bot will now wish you on your special day!`,
-            ephemeral: true
+            flags: MessageFlags.Ephemeral
         });
     }
 
     if (setBirthdayResponse.status === 201) {
         return replyInteraction(interaction, {
             content: `Your birthday has been successfully set to **${birthDate.date}** 🎉 \n-# The bot will now wish you on your special day!`,
-            ephemeral: true
+            flags: MessageFlags.Ephemeral
         });
     }
 
     return followUpInteraction(interaction, {
         content: "Something went wrong while setting your birthday. Please try again later.",
-        ephemeral: true
+        flags: MessageFlags.Ephemeral
     });
 };

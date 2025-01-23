@@ -1,3 +1,4 @@
+const { MessageFlags } = require('discord.js');
 const { postRequest } = require("../../database/connection");
 const { deferInteraction, replyInteraction, followUpInteraction } = require("../../utils/InteractionManager");
 
@@ -48,14 +49,14 @@ module.exports.run = async (client, interaction) => {
             if (!walletTransaction) {
                 return followUpInteraction(interaction, {
                     content: "Oops! An error occurred while transferring the money",
-                    ephemeral: true
+                    flags: MessageFlags.Ephemeral
                 });
             }
 
             if (walletTransaction.actualTransferAmount === 0) {
                 return followUpInteraction(interaction, {
                     content: "You don't have enough money in the bank to transfer",
-                    ephemeral: true
+                    flags: MessageFlags.Ephemeral
                 });
             }
 
@@ -65,7 +66,7 @@ module.exports.run = async (client, interaction) => {
             });
 
             break;
-        
+
         case "toBank":
 
             const bankTransfer = await postRequest(`/guilds/${interaction.guildId}/economy/transfer/wallet-to-bank/${interaction.user.id}`, { amount: transferAmount });
@@ -74,14 +75,14 @@ module.exports.run = async (client, interaction) => {
             if (!bankTransaction) {
                 return followUpInteraction(interaction, {
                     content: "Oops! An error occurred while transferring the money",
-                    ephemeral: true
+                    flags: MessageFlags.Ephemeral
                 });
             }
 
             if (bankTransaction.actualTransferAmount === 0) {
                 return followUpInteraction(interaction, {
                     content: "You don't have enough money in your wallet to transfer",
-                    ephemeral: true
+                    flags: MessageFlags.Ephemeral
                 });
             }
 
@@ -94,7 +95,7 @@ module.exports.run = async (client, interaction) => {
         default:
             return followUpInteraction(interaction, {
                 content: "Invalid transfer type",
-                ephemeral: true
+                flags: MessageFlags.Ephemeral
             });
 
     }

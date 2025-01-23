@@ -1,3 +1,4 @@
+const { MessageFlags } = require('discord.js');
 const { postRequest, getRequest } = require("../../database/connection");
 const { deferInteraction, replyInteraction, updateInteraction, followUpInteraction } = require("../../utils/InteractionManager");
 
@@ -43,7 +44,7 @@ module.exports.run = async (client, interaction) => {
     if (interaction.user.id === targetUser.id) {
         return replyInteraction(interaction, {
             content: "You can't transfer experience to yourself!",
-            ephemeral: true
+            flags: MessageFlags.Ephemeral
         });
     }
 
@@ -78,7 +79,7 @@ module.exports.run = async (client, interaction) => {
 
             await followUpInteraction(interaction, {
                 content: `${transferLimitMessage}`,
-                ephemeral: true
+                flags: MessageFlags.Ephemeral
             });
             return;
         } else {
@@ -89,7 +90,7 @@ module.exports.run = async (client, interaction) => {
         if (activities.length >= TRANSFER_TARGET_LIMIT) {
             await followUpInteraction(interaction, {
                 content: `You have reached your daily transfer limit! You can only transfer to ${TRANSFER_TARGET_LIMIT} users per day.`,
-                ephemeral: true
+                flags: MessageFlags.Ephemeral
             });
             return;
         } else {
@@ -117,7 +118,7 @@ module.exports.run = async (client, interaction) => {
         } catch (error) {
             await followUpInteraction(interaction, {
                 content: "Something went wrong while transferring experience to the user.",
-                ephemeral: true
+                flags: MessageFlags.Ephemeral
             });
             return;
         }
@@ -142,7 +143,7 @@ module.exports.run = async (client, interaction) => {
     } else {
         followUpInteraction(interaction, {
             content: "Sorry, you are not eligible to transfer experience. Please try again later.",
-            ephemeral: true
+            flags: MessageFlags.Ephemeral
         });
     }
 }

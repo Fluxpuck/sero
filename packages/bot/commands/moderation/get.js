@@ -1,4 +1,4 @@
-const { ActionRowBuilder, ComponentType } = require("discord.js");
+const { ActionRowBuilder, ComponentType, MessageFlags } = require("discord.js");
 const ClientButtonsEnum = require("../../assets/embed-buttons");
 const { createCustomEmbed } = require("../../assets/embed");
 const { chunk } = require("../../lib/helpers/MathHelpers/arrayHelper");
@@ -32,7 +32,7 @@ module.exports.run = async (client, interaction) => {
     if (!targetUser) {
         await replyInteraction(interaction, {
             content: "User does not exist.",
-            ephemeral: true
+            flags: MessageFlags.Ephemeral
         });
         return;
     }

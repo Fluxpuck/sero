@@ -1,6 +1,6 @@
 const { postRequest } = require("../../database/connection");
 const ClientButtonsEnum = require("../../assets/embed-buttons");
-const { ActionRowBuilder, ComponentType } = require("discord.js");
+const { ActionRowBuilder, ComponentType, MessageFlags } = require("discord.js");
 const { deferInteraction, replyInteraction, updateInteraction, followUpInteraction } = require("../../utils/InteractionManager");
 
 module.exports.props = {
@@ -40,7 +40,7 @@ module.exports.run = async (client, interaction) => {
             await interaction.deleteReply();
             return followUpInteraction(interaction, {
                 content: "Something went wrong while resetting the users experience.",
-                ephemeral: true
+                flags: MessageFlags.Ephemeral
             });
         } else {
             return replyInteraction(interaction, {
@@ -85,7 +85,7 @@ module.exports.run = async (client, interaction) => {
                     return updateInteraction(i, {
                         content: "Something went wrong while resetting the experience.",
                         components: [],
-                        ephemeral: true
+                        flags: MessageFlags.Ephemeral
                     });
                 } else {
 
@@ -125,7 +125,7 @@ module.exports.run = async (client, interaction) => {
                 return updateInteraction(i, {
                     content: "The experience reset has been cancelled.",
                     components: [],
-                    ephemeral: true
+                    flags: MessageFlags.Ephemeral
                 });
             }
 

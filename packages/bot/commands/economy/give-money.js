@@ -1,3 +1,4 @@
+const { MessageFlags } = require('discord.js');
 const { postRequest, getRequest } = require("../../database/connection");
 const { deferInteraction, replyInteraction, followUpInteraction } = require('../../utils/InteractionManager');
 
@@ -57,14 +58,14 @@ module.exports.run = async (client, interaction) => {
             if (bankDeposit.status === 400 || transactionAmount === 0) {
                 return followUpInteraction(interaction, {
                     content: `<@${targetUser.id}> has reached their bank limit`,
-                    ephemeral: true
+                    flags: MessageFlags.Ephemeral
                 });
             }
 
             if (bankDeposit.status !== 200) {
                 return followUpInteraction(interaction, {
                     content: `Something went wrong while depositing money to <@${targetUser.id}>`,
-                    ephemeral: true
+                    flags: MessageFlags.Ephemeral
                 });
             }
 
@@ -84,14 +85,14 @@ module.exports.run = async (client, interaction) => {
             if (walletDeposit.status === 400 || transactionAmount === 0) {
                 return followUpInteraction(interaction, {
                     content: `<@${targetUser.id}>'s wallet is too stacked to receive cash`,
-                    ephemeral: true
+                    flags: MessageFlags.Ephemeral
                 });
             }
 
             if (walletDeposit.status !== 200) {
                 return followUpInteraction(interaction, {
                     content: `Something went wrong while sending cash to <@${targetUser.id}>`,
-                    ephemeral: true
+                    flags: MessageFlags.Ephemeral
                 });
             }
 

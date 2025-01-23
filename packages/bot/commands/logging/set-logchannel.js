@@ -1,3 +1,4 @@
+const { MessageFlags } = require('discord.js');
 const { getRequest, postRequest } = require("../../database/connection")
 const { createCustomEmbed } = require("../../assets/embed")
 const { formatExpression } = require("../../lib/helpers/StringHelpers/stringHelper")
@@ -46,11 +47,11 @@ module.exports.autocomplete = async (client, interaction) => {
 }
 
 module.exports.run = async (client, interaction) => {
-    await interaction.deferReply({ ephemeral: true });
+    await interaction.deferReply({ flags: MessageFlags.Ephemeral });
 
     return interaction.editReply({
         content: "This command is currently disabled.",
-        ephemeral: true
+        flags: MessageFlags.Ephemeral
     });
 
 
@@ -68,7 +69,7 @@ module.exports.run = async (client, interaction) => {
     if (!Object.values(LOGGING_CATEGORIES).includes(targetLogCategory)) {
         return interaction.editReply({
             content: `Oops! The log-type you provided is not valid`,
-            ephemeral: true
+            flags: MessageFlags.Ephemeral
         })
     }
 
@@ -81,12 +82,12 @@ module.exports.run = async (client, interaction) => {
     if (result?.status !== 200) {
         return interaction.editReply({
             content: `Something went wrong while setting the log-channel \`${targetLogCategory}\`.`,
-            ephemeral: true
+            flags: MessageFlags.Ephemeral
         })
     } else {
         return interaction.editReply({
             content: `The log-channel for \`${targetLogCategory}\` has been set to <#${targetChannel.id}>.`,
-            ephemeral: true
+            flags: MessageFlags.Ephemeral
         })
     }
 }

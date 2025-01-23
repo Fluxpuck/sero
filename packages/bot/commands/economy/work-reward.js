@@ -1,3 +1,4 @@
+const { MessageFlags } = require('discord.js');
 const { getRequest, postRequest } = require("../../database/connection");
 const { createCustomEmbed } = require("../../assets/embed");
 const { getTimeUntil } = require("../../lib/helpers/TimeDateHelpers/timeHelper");
@@ -20,24 +21,24 @@ module.exports.run = async (client, interaction) => {
     if (userCareer.status !== 200) {
         return followUpInteraction(interaction, {
             content: "Oh no! You do not have a career yet. Use `/work` to select a job and start working.",
-            ephemeral: true
+            flags: MessageFlags.Ephemeral
         });
     }
 
     // Check if the user has already claimed their weekly reward
     const weeklyRewardResult = await getRequest(`/guilds/${interaction.guildId}/activities/user/${interaction.user.id}/daily-work-reward?thisWeek=true`);
-    
+
     if (weeklyRewardResult.status === 200) {
         return followUpInteraction(interaction, {
             content: `You have already claimed your reward this week! Please try again in ${getTimeUntil('nextweek')}.`,
-            ephemeral: true
+            flags: MessageFlags.Ephemeral
         });
     }
 
     if (weeklyRewardResult.status !== 404) {
         return followUpInteraction(interaction, {
             content: "An error occurred while checking your weekly reward status.",
-            ephemeral: true
+            flags: MessageFlags.Ephemeral
         });
     }
 
@@ -46,7 +47,7 @@ module.exports.run = async (client, interaction) => {
     if (careerStreak.status !== 200 || careerStreak.data.streak < 5) {
         return followUpInteraction(interaction, {
             content: "Oh Uh! You need to have a streak of at least 5 days to claim your weekly reward!",
-            ephemeral: true
+            flags: MessageFlags.Ephemeral
         });
     }
 
@@ -79,7 +80,7 @@ module.exports.run = async (client, interaction) => {
     if (bankDeposit?.status !== 200) {
         return followUpInteraction(interaction, {
             content: `Uh oh! Something went wrong while sending your hard earned money.`,
-            ephemeral: true
+            flags: MessageFlags.Ephemeral
         })
     } else { // reply with the embed
         return replyInteraction(interaction, {

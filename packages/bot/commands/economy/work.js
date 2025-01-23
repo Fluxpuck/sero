@@ -1,4 +1,4 @@
-const { ActionRowBuilder, ButtonBuilder, ComponentType, ButtonStyle } = require("discord.js");
+const { ActionRowBuilder, ButtonBuilder, ComponentType, ButtonStyle, MessageFlags } = require("discord.js");
 const { createCustomEmbed } = require("../../assets/embed");
 const { JOB_MESSAGES } = require("../../assets/job-messages");
 const { postRequest, getRequest } = require("../../database/connection");
@@ -29,7 +29,7 @@ module.exports.run = async (client, interaction) => {
             await interaction.deleteReply();
             return interaction.followUp({
                 content: "Oops! Something went wrong while fetching your job options. Please try again later.",
-                ephemeral: true
+                flags: MessageFlags.Ephemeral
             });
         }
 
@@ -87,7 +87,7 @@ module.exports.run = async (client, interaction) => {
             if (i.user.id !== interaction.user.id) {
                 return i.reply({
                     content: `Oops! You can't select a job for someone else.`,
-                    ephemeral: true
+                    flags: MessageFlags.Ephemeral
                 })
             }
 
@@ -127,7 +127,7 @@ module.exports.run = async (client, interaction) => {
             // If the user's career was not updated successfully, return an error message
             return updateInteraction(i, {
                 content: `Oops! Something went wrong while updating your career. Please try again later.`,
-                ephemeral: true
+                flags: MessageFlags.Ephemeral
             });
 
         });
@@ -145,7 +145,7 @@ module.exports.run = async (client, interaction) => {
                 await interaction.deleteReply();
                 return interaction.followUp({
                     content: `You have already worked today! Please try again in ${getTimeUntil('tomorrow')}.`,
-                    ephemeral: true
+                    flags: MessageFlags.Ephemeral
                 });
             }
         }
@@ -183,7 +183,7 @@ module.exports.run = async (client, interaction) => {
             if (bankDeposit?.status !== 200) {
                 await followUpInteraction(interaction, {
                     content: `Uh oh! Something went wrong while transfering your hard earned money.`,
-                    ephemeral: true
+                    flags: MessageFlags.Ephemeral
                 });
             } else { // reply with the embed
                 return replyInteraction(interaction, {
@@ -195,14 +195,14 @@ module.exports.run = async (client, interaction) => {
         } catch (error) {
             await followUpInteraction(interaction, {
                 content: `Oops! Something went wrong while working. Please try again later.`,
-                ephemeral: true
+                flags: MessageFlags.Ephemeral
             });
         }
 
     } else {
         await followUpInteraction(interaction, {
             content: `Oops! Something went wrong while fetching your career. Please try again later.`,
-            ephemeral: true
+            flags: MessageFlags.Ephemeral
         });
     }
 

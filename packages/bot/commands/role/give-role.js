@@ -1,6 +1,7 @@
+const { MessageFlags } = require('discord.js');
 const { postRequest } = require("../../database/connection");
 const { findUser } = require("../../lib/resolvers/userResolver");
-const { deferInteraction, replyInteraction, followUpInteraction } = require("../../utils/InteractionManager");
+const { deferInteraction, replyInteraction } = require("../../utils/InteractionManager");
 
 module.exports.props = {
     commandName: "give-role",
@@ -49,7 +50,7 @@ module.exports.run = async (client, interaction) => {
     if (!member) {
         await replyInteraction(interaction, {
             content: "Could not find the user in the guild",
-            ephemeral: true
+            flags: MessageFlags.Ephemeral
         });
         return;
     }
@@ -61,7 +62,7 @@ module.exports.run = async (client, interaction) => {
         if (result?.status !== 201) {
             return await replyInteraction(interaction, {
                 content: "Something went wrong while storing the temporary role",
-                ephemeral: true
+                flags: MessageFlags.Ephemeral
             });
         }
     }
@@ -73,7 +74,7 @@ module.exports.run = async (client, interaction) => {
     } catch (error) {
         return await replyInteraction(interaction, {
             content: "Something went wrong while gifting the temporary role",
-            ephemeral: true
+            flags: MessageFlags.Ephemeral
         });
     }
 

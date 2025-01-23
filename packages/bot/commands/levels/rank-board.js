@@ -1,4 +1,4 @@
-const { ActionRowBuilder, ComponentType } = require("discord.js");
+const { ActionRowBuilder, ComponentType, MessageFlags } = require("discord.js");
 const ClientButtonsEnum = require("../../assets/embed-buttons");
 const { createCustomEmbed } = require("../../assets/embed");
 const { chunk } = require("../../lib/helpers/MathHelpers/arrayHelper");
@@ -26,13 +26,13 @@ module.exports.run = async (client, interaction, leaderboard = []) => {
     if (result?.status === 404) {
         await followUpInteraction(interaction, {
             content: `Uh oh! There are no users on the leaderboard yet!`,
-            ephemeral: true
+            flags: MessageFlags.Ephemeral
         });
         return;
     } else if (result?.status !== 200) { // If the status code is not 200, return an error that something went wrong
         await followUpInteraction(interaction, {
             content: "Oops! Something went wrong while trying to fetch the leaderboard!",
-            ephemeral: true
+            flags: MessageFlags.Ephemeral
         });
         return;
     }

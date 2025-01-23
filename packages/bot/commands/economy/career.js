@@ -1,3 +1,4 @@
+const { MessageFlags } = require('discord.js');
 const { createCustomEmbed } = require("../../assets/embed");
 const { getRequest } = require('../../database/connection');
 const { unixTimestamp } = require("../../lib/helpers/TimeDateHelpers/timeHelper");
@@ -29,7 +30,7 @@ module.exports.run = async (client, interaction) => {
     if (!targetUser) {
         return followUpInteraction(interaction, {
             content: "Oops! Something went wrong while trying to fetch the user.",
-            ephemeral: true
+            flags: MessageFlags.Ephemeral
         });
     }
 
@@ -42,7 +43,7 @@ module.exports.run = async (client, interaction) => {
     if (userCareer.status !== 200) {
         return followUpInteraction(interaction, {
             content: `Uh oh! The user ${targetUser.username} has no career yet.`,
-            ephemeral: true
+            flags: MessageFlags.Ephemeral
         });
     }
 
@@ -89,6 +90,6 @@ module.exports.run = async (client, interaction) => {
     // Reply with the messageEmbed
     return replyInteraction(interaction, {
         embeds: [messageEmbed],
-        ephemeral: false
+        flags: MessageFlags.Ephemeral
     });
 }

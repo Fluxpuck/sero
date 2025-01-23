@@ -1,4 +1,5 @@
-const { deferInteraction, replyInteraction, updateInteraction, followUpInteraction } = require('../../utils/InteractionManager');
+const { MessageFlags } = require('discord.js');
+const { deferInteraction, replyInteraction } = require('../../utils/InteractionManager');
 
 module.exports.props = {
     commandName: "move",
@@ -41,7 +42,7 @@ module.exports.run = async (client, interaction) => {
     if (!from || !to || from.type !== 2 || to.type !== 2) {
         return replyInteraction(interaction, {
             content: `Invalid voice channels provided.`,
-            ephemeral: true
+            flags: MessageFlags.Ephemeral
         });
     }
 
@@ -50,7 +51,7 @@ module.exports.run = async (client, interaction) => {
     if (voiceStates.size === 0) {
         return replyInteraction(interaction, {
             content: "There are no members in the source channel.",
-            ephemeral: true
+            flags: MessageFlags.Ephemeral
         });
     }
 
@@ -64,6 +65,6 @@ module.exports.run = async (client, interaction) => {
     // Return confirmation message
     replyInteraction(interaction, {
         content: `Moved all users to the <#${to.id}>.`,
-        ephemeral: true
+        flags: MessageFlags.Ephemeral
     });
 }

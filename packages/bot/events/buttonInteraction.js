@@ -1,3 +1,4 @@
+const { MessageFlags } = require('discord.js');
 const { getRequest, postRequest } = require("../database/connection");
 
 module.exports = async (client, interaction) => {
@@ -29,7 +30,7 @@ module.exports = async (client, interaction) => {
             if (claimed) {
                 return interaction.followUp({
                     content: `Sorry, you are just too late. This reward has already been claimed by someone else.`,
-                    ephemeral: true
+                    flags: MessageFlags.Ephemeral
                 })
             } else {
 
@@ -38,7 +39,7 @@ module.exports = async (client, interaction) => {
                 if (!activeMemberCollection.includes(interaction.member.id)) {
                     return interaction.followUp({
                         content: `Sorry, you've not been active enough to claim this reward. Try again next time!`,
-                        ephemeral: true
+                        flags: MessageFlags.Ephemeral
                     })
                 }
 
@@ -47,7 +48,7 @@ module.exports = async (client, interaction) => {
                 if (userClaimedInfo?.claimed >= 5) {
                     return interaction.followUp({
                         content: `Sorry, you've already claimed so many rewards. Try again next time!`,
-                        ephemeral: true
+                        flags: MessageFlags.Ephemeral
                     })
                 }
 

@@ -1,3 +1,4 @@
+const { MessageFlags } = require('discord.js');
 const { MUTE_PREREASONS } = require("../../assets/reason-messages");
 const { formatExpression } = require("../../lib/helpers/StringHelpers/stringHelper");
 const { deferInteraction, replyInteraction } = require('../../utils/InteractionManager');
@@ -72,7 +73,7 @@ module.exports.run = async (client, interaction) => {
     if (!targetUser) {
         return followUpInteraction(interaction, {
             content: "Oops! Could not find the user",
-            ephemeral: true,
+            flags: MessageFlags.Ephemeral,
         });
     }
 
@@ -82,14 +83,14 @@ module.exports.run = async (client, interaction) => {
         if (targetUser.id === interaction.user.id) {
             return followUpInteraction(interaction, {
                 content: "Uhm... You cannot timeout yourself",
-                ephemeral: true
+                flags: MessageFlags.Ephemeral
             });
         }
 
         if (member && !member.moderatable) {
             return followUpInteraction(interaction, {
                 content: `<@${targetUser.id}> is a moderator!`,
-                ephemeral: true
+                flags: MessageFlags.Ephemeral
             });
         }
 
@@ -100,14 +101,14 @@ module.exports.run = async (client, interaction) => {
 
         return replyInteraction(interaction, {
             content: `You successfully muted <@${member.user.id}> for:\n> ${violationReason}`,
-            ephemeral: true,
+            flags: MessageFlags.Ephemeral,
         });
 
     } catch (error) {
         console.error(`Failed to timeout user ${targetUser.id}:`, error);
         return followUpInteraction(interaction, {
             content: `Oops! Something went wrong while trying to timeout **${targetUser.username}**`,
-            ephemeral: true,
+            flags: MessageFlags.Ephemeral,
         });
     }
 }

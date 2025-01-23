@@ -1,3 +1,4 @@
+const { MessageFlags } = require('discord.js');
 const eventEnum = require('../config/eventEnum');
 const { kebabCase } = require('lodash')
 
@@ -8,7 +9,7 @@ module.exports = async (client, interaction) => {
         && interaction.isRepliable()) {
         return interaction.reply({
             content: `Your guild is not yet active!`,
-            ephemeral: true
+            flags: MessageFlags.Ephemeral
         });
     }
 
@@ -44,7 +45,7 @@ module.exports = async (client, interaction) => {
 
                         return interaction.reply({
                             content: `This command is on a cooldown! Please wait ${remainingTime} more seconds.`,
-                            ephemeral: true
+                            flags: MessageFlags.Ephemeral
                         });
                     }
 
@@ -52,7 +53,7 @@ module.exports = async (client, interaction) => {
                     if (!interaction.isRepliable()) {
                         return interaction.reply({
                             content: "Oops! The command is on a cooldown! Please wait a bit before trying again.",
-                            ephemeral: true
+                            flags: MessageFlags.Ephemeral
                         })
                     }
 

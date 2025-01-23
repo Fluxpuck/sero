@@ -1,3 +1,4 @@
+const { MessageFlags } = require('discord.js');
 const { fetchMessages } = require("../../lib/resolvers/messageResolver");
 const { deferInteraction, replyInteraction } = require('../../utils/InteractionManager');
 
@@ -37,7 +38,7 @@ module.exports.run = async (client, interaction) => {
     // Start the interaction reply
     await replyInteraction(interaction, {
         content: `*Deleting **${targetAmount}** messages${targetUser ? ` from **${targetUser.tag}**` : ""}...*`,
-        ephemeral: true
+        flags: MessageFlags.Ephemeral
     });
 
     // Fetch the messages based on user? and amount
@@ -51,7 +52,7 @@ module.exports.run = async (client, interaction) => {
         // Return confirmation message to the user
         await replyInteraction(interaction, {
             content: `Deleted **${deletedMessages.size}** messages${targetUser ? ` from **${targetUser.tag}**` : ""}`,
-            ephemeral: true,
+            flags: MessageFlags.Ephemeral,
         });
 
         // Clear the message collection
@@ -59,7 +60,7 @@ module.exports.run = async (client, interaction) => {
     } else {
         return replyInteraction(interaction, {
             content: `Oops! I couldn't find any messages${targetUser ? ` from **${targetUser.tag}**` : ""} to delete!`,
-            ephemeral: true,
+            flags: MessageFlags.Ephemeral,
         });
     }
 }

@@ -1,3 +1,4 @@
+const { MessageFlags } = require('discord.js');
 const { postRequest } = require("../../database/connection");
 const { deferInteraction, replyInteraction, followUpInteraction } = require("../../utils/InteractionManager");
 
@@ -42,7 +43,7 @@ module.exports.run = async (client, interaction) => {
         await interaction.deleteReply();
         await followUpInteraction(interaction, {
             content: `Uh oh! Something went wrong while removing experience from <@${targetUser.id}>.`,
-            ephemeral: true
+            flags: MessageFlags.Ephemeral
         });
 
     } else {

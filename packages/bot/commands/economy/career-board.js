@@ -1,5 +1,5 @@
 const { getRequest } = require('../../database/connection')
-const { ActionRowBuilder, ComponentType } = require("discord.js");
+const { ActionRowBuilder, ComponentType, MessageFlags} = require("discord.js");
 const { createCustomEmbed } = require("../../assets/embed")
 const ClientButtonsEnum = require("../../assets/embed-buttons");
 const { chunk } = require("../../lib/helpers/MathHelpers/arrayHelper");
@@ -53,7 +53,7 @@ module.exports.run = async (client, interaction, page = 0) => {
     if (careerResult?.status !== 200) {
         return followUpInteraction(interaction, {
             content: `Oops! Something went wrong while trying to fetch the leaderboard!`,
-            ephemeral: true
+            flags: MessageFlags.Ephemeral
         });
     }
 

@@ -1,3 +1,4 @@
+const { MessageFlags } = require('discord.js');
 const { getRequest } = require("../../database/connection");
 const { createRankCard } = require("../../lib/canvas/rank");
 const { deferInteraction, replyInteraction, followUpInteraction } = require("../../utils/InteractionManager");
@@ -29,7 +30,7 @@ module.exports.run = async (client, interaction) => {
     if (!targetUser) {
         return await followUpInteraction(interaction, {
             content: "Oops! Something went wrong while trying to fetch the user.",
-            ephemeral: true
+            flags: MessageFlags.Ephemeral
         });
     }
 
@@ -40,12 +41,12 @@ module.exports.run = async (client, interaction) => {
     if (result?.status === 404) {
         return await followUpInteraction(interaction, {
             content: `Uh oh! The user ${targetUser.username} has no rank yet!`,
-            ephemeral: true
+            flags: MessageFlags.Ephemeral
         });
     } else if (result?.status !== 200) { // If the status code is not 200, return an error that something went wrong
         return await followUpInteraction(interaction, {
             content: "Oops! Something went wrong while trying to fetch the rank!",
-            ephemeral: true
+            flags: MessageFlags.Ephemeral
         });
     }
 
@@ -71,7 +72,7 @@ module.exports.run = async (client, interaction) => {
     } else { // Else return an error
         await followUpInteraction(interaction, {
             content: "Oops! Something went wrong creating your rank card!",
-            ephemeral: true
+            flags: MessageFlags.Ephemeral
         });
     }
 }

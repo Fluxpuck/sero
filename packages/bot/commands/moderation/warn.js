@@ -1,3 +1,4 @@
+const { MessageFlags } = require('discord.js');
 const { WARN_PREREASONS } = require("../../assets/reason-messages");
 const { postRequest } = require("../../database/connection");
 const { generateSnowflake } = require("../../lib/discord/snowflake");
@@ -57,13 +58,13 @@ module.exports.run = async (client, interaction) => {
     // If the target is the author, return message
     if (member.user.id === interaction.user.id) return replyInteraction(interaction, {
         content: "You cannot warn yourself!",
-        ephemeral: true
+        flags: MessageFlags.Ephemeral
     });
 
     // If the member is not moderatable, return message
     if (!member.moderatable) return replyInteraction(interaction, {
         content: `<@${member.user.id}> is a moderator!`,
-        ephemeral: true
+        flags: MessageFlags.Ephemeral
     });
 
     // Create the private warning message
@@ -74,13 +75,13 @@ module.exports.run = async (client, interaction) => {
         .then(() => {
             return replyInteraction(interaction, {
                 content: `You successfully warned <@${member.user.id}> with the following message:\n> ${privateMessage}`,
-                ephemeral: true,
+                flags: MessageFlags.Ephemeral,
             });
         })
         .catch(err => {
             return replyInteraction(interaction, {
                 content: `Could not warn <@${member.user.id}>, but a warning has been logged.`,
-                ephemeral: true,
+                flags: MessageFlags.Ephemeral,
             });
         });
 

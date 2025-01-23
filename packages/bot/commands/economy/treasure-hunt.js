@@ -1,3 +1,4 @@
+const { MessageFlags } = require('discord.js');
 const { getRequest, postRequest } = require("../../database/connection");
 const { getTimeUntil } = require("../../lib/helpers/TimeDateHelpers/timeHelper");
 const { TREASURE_MESSAGES_NEGATIVE, TREASURE_MESSAGES_POSITIVE } = require("../../assets/treasure-messages");
@@ -20,7 +21,7 @@ module.exports.run = async (client, interaction) => {
     if (hourlyRewardResult.status === 200) {
         return await followUpInteraction(interaction, {
             content: `You've already searched for treasure! Please try again in ${getTimeUntil('nexthour')}.`,
-            ephemeral: true
+            flags: MessageFlags.Ephemeral
         });
     }
 
@@ -42,7 +43,7 @@ module.exports.run = async (client, interaction) => {
     if (walletTransaction?.status !== 200) {
         return followUpInteraction(interaction, {
             content: `Uh oh! Something went wrong while sending your hard earned money.`,
-            ephemeral: true
+            flags: MessageFlags.Ephemeral
         });
     }
 
@@ -61,14 +62,14 @@ module.exports.run = async (client, interaction) => {
     if (transactionAmount === 0) {
         return followUpInteraction(interaction, {
             content: "Damnnnnn! Seems like you are already too broke to lose any more money. Better luck next time!",
-            ephemeral: true
+            flags: MessageFlags.Ephemeral
         });
     }
 
     if (walletTransaction?.status === 400) {
         return followUpInteraction(interaction, {
             content: `You've hit your wallet limit! Please deposit some money in the bank to continue.`,
-            ephemeral: true
+            flags: MessageFlags.Ephemeral
         });
     }
 

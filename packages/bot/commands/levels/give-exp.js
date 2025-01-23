@@ -1,3 +1,4 @@
+const { MessageFlags } = require('discord.js');
 const { postRequest } = require("../../database/connection");
 const { deferInteraction, replyInteraction, followUpInteraction } = require("../../utils/InteractionManager");
 
@@ -41,7 +42,7 @@ module.exports.run = async (client, interaction) => {
     if (result?.status !== 200) {
         return followUpInteraction(interaction, {
             content: `Uh oh! Something went wrong while giving experience to ${targetUser.username}.`,
-            ephemeral: true
+            flags: MessageFlags.Ephemeral
         });
     } else {
         return replyInteraction(interaction, {

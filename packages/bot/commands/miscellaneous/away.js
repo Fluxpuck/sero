@@ -1,7 +1,8 @@
+const { MessageFlags } = require('discord.js');
 const { AWAY_PREREASONS } = require("../../assets/reason-messages");
 const { postRequest } = require("../../database/connection");
 const { formatExpression } = require("../../lib/helpers/StringHelpers/stringHelper");
-const { deferInteraction, replyInteraction, updateInteraction, followUpInteraction } = require("../../utils/InteractionManager");
+const { deferInteraction, replyInteraction, followUpInteraction } = require("../../utils/InteractionManager");
 
 module.exports.props = {
     commandName: "away",
@@ -79,7 +80,7 @@ module.exports.run = async (client, interaction) => {
     if (result?.status !== 200) {
         return followUpInteraction(interaction, {
             content: "Something went wrong while setting your away status.",
-            ephemeral: true
+            flags: MessageFlags.Ephemeral
         });
     } else {
         let content = `<@${interaction.user.id}> will be away for **${timeInMinutes}** minutes!`;
