@@ -122,7 +122,7 @@ router.post("/boost", async (req, res, next) => {
 
         });
 
-        res.status(200).json(result);
+        res.status(201).json(result);
     } catch (error) {
         next(error);
     }
