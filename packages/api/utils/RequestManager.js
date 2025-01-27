@@ -2,7 +2,7 @@ const { sequelize } = require('../database/sequelize');
 
 // Timeout function for requests
 const withTimeout = (promise, ms) => {
-    const timeout = new Promise((_, reject) => setTimeout(() => reject(new Error('Request timed out')), ms));
+    const timeout = new Promise((_, reject) => setTimeout(() => reject(new Error('Request has timed out')), ms));
     return Promise.race([promise, timeout]);
 };
 
