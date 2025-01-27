@@ -6,7 +6,9 @@ async function deferInteraction(interaction, ephemeral = false) {
         const defered = await interaction.deferReply({ ephemeral });
         return defered;
     } catch (error) {
-        console.error('Failed to defer interaction:', error);
+        if (process.env.NODE_ENV === 'development') {
+            console.error('Failed to defer interaction:', error);
+        }
         return false;
     }
 }
@@ -23,14 +25,18 @@ async function replyInteraction(interaction, options, timeout = 0) {
                 try {
                     await interaction.deleteReply();
                 } catch (error) {
-                    console.error('Failed to delete interaction reply:', error);
+                    if (process.env.NODE_ENV === 'development') {
+                        console.error('Failed to delete interaction reply:', error);
+                    }
                 }
             }, timeout);
         }
 
         return response;
     } catch (error) {
-        console.error('Failed to reply to interaction:', error);
+        if (process.env.NODE_ENV === 'development') {
+            console.error('Failed to reply to interaction:', error);
+        }
         return false;
     }
 }
@@ -42,7 +48,9 @@ async function updateInteraction(interaction, options) {
         const update = await interaction.update(options);
         return update;
     } catch (error) {
-        console.error('Failed to update interaction:', error);
+        if (process.env.NODE_ENV === 'development') {
+            console.error('Failed to update interaction:', error);
+        }
         return false;
     }
 }
@@ -58,7 +66,9 @@ async function followUpInteraction(interaction, options, deleteInteraction = tru
 
         return response;
     } catch (error) {
-        console.error('Failed to follow up interaction:', error);
+        if (process.env.NODE_ENV === 'development') {
+            console.error('Failed to follow up interaction:', error);
+        }
         return false;
     }
 }
