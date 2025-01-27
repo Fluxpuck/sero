@@ -79,6 +79,6 @@ module.exports.run = async (client, interaction) => {
 
     return replyInteraction(interaction, {
         content: treasureMessage,
-        ephemeral: false
+        flags: MessageFlags.Ephemeral
     });
 }
