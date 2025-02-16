@@ -1,12 +1,13 @@
 const { MessageFlags } = require('discord.js');
 const eventEnum = require('../config/eventEnum');
-const { kebabCase } = require('lodash')
+const { kebabCase } = require('lodash');
+const { getGuildActiveStatus } = require('../utils/cache/guild.cache');
 
 module.exports = async (client, interaction) => {
 
-    // Return if guild is not active!
-    if (!interaction.guild.active
-        && interaction.isRepliable()) {
+    // Check if the guild from the interaction is active
+    const isActive = await getGuildActiveStatus(interaction.guild.id);
+    if (!isActive) {
         return interaction.reply({
             content: `Your guild is not yet active!`,
             flags: MessageFlags.Ephemeral

@@ -17,14 +17,8 @@ module.exports = async (client) => {
 
     // Set global guild active setting
     Array.from(client.guilds.cache.values()).forEach(async guild => {
-
-        // Fetch the guild from the database
+        // Check if guild is available, else create a new entry
         const guildResult = await getRequest(`/guilds/${guild.id}`);
-        // Set the guild's active status to true
-        if (guildResult?.status === 200) {
-            guild.active = guildResult?.data?.active === true;
-        }
-        // If the guild is not found in the database, create a new entry for the guild
         if (guildResult?.status === 404) {
             await postRequest(`/guilds/${guild.id}`, {
                 guildId: guild.id,
