@@ -25,11 +25,11 @@ module.exports.run = async (client, interaction) => {
         });
     }
 
-    const isPositive = Math.random() < 0.35; // 35% chance of positive reward
+    const isPositive = Math.random() < 0.60; // 60% chance of positive reward
     const MIN_POSITIVE_REWARD = 80;
-    const MAX_POSITIVE_REWARD = 350;
-    const MIN_NEGATIVE_REWARD = -100;
-    const MAX_NEGATIVE_REWARD = 0;
+    const MAX_POSITIVE_REWARD = 250;
+    const MIN_NEGATIVE_REWARD = -200;
+    const MAX_NEGATIVE_REWARD = -80;
 
     const rewardAmount = isPositive
         ? Math.floor(Math.random() * (MAX_POSITIVE_REWARD - MIN_POSITIVE_REWARD + 1)) + MIN_POSITIVE_REWARD
