@@ -2,7 +2,8 @@ const Redis = require('ioredis');
 
 // Cache configuration
 const CACHE_CONFIG = {
-    TTL: 3600, // 1 hour in seconds
+    // TTL: 3600, // 1 hour in seconds
+    TTL: 600, // 10 minutes in seconds
     PREFIXES: {
         GUILD_ACTIVE: 'guild:active:',
         GUILD_SETTINGS: 'guild:settings:',
