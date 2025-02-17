@@ -144,8 +144,6 @@ router.delete("/:guildId", async (req, res, next) => {
                 throw new CreateError(404, "Guild not found");
             }
 
-            guild.active = false; // Deactivate the guild
-
             await guild.save({ transaction: t });
 
             return { message: "Guild deactivated successfully", data: result };

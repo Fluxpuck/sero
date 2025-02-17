@@ -8,7 +8,7 @@ module.exports = async (client, interaction) => {
     if (!interaction.isButton()) return;
 
     // Check if the guild from the interaction is active
-    const isActive = await getGuildActiveStatus(guild.id);
+    const isActive = await getGuildActiveStatus(interaction.guild.id);
     if (!isActive) return;
 
     /**

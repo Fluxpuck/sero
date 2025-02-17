@@ -1,8 +1,12 @@
 const eventEnum = require('../config/eventEnum')
 const { postRequest, getRequest } = require('../database/connection')
+const { getGuildActiveStatus } = require('../utils/cache/guild.cache')
 
 module.exports = async (client, message) => {
-    if (!message.guild.active) return;
+
+    // Check if the guild from the interaction is active
+    const isActive = await getGuildActiveStatus(message.guild.id);
+    if (!isActive) return;
 
     // If the message is from a bot, return
     if (message.author.bot) return;
