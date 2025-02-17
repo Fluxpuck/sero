@@ -26,6 +26,6 @@ module.exports.run = async (client, interaction) => {
     // Sending the message
     return replyInteraction(interaction, {
         embeds: [messageEmbed],
-        ephemeral: false,
+        : false,
     }).catch((err) => { throw err });
 }

@@ -58,19 +58,19 @@ module.exports = async (client, payload) => {
                 // Send the birthday message in the channel
                 const sentMessage = await channel.send({
                     content: birthdayMessage,
-                    ephemeral: false,
+                    : false,
                 });
 
-                // Add reaction to the message
-                await sentMessage.react("🎉");
+            // Add reaction to the message
+            await sentMessage.react("🎉");
 
-                if (role) {
-                    // Add the role to the user
-                    await member.roles.add(role);
-                    // Store the temporary role in the database
-                    await postRequest(`/guilds/${payload.guildId}/roles/add`, { userId: birthday.userId, roleId: role.id, duration: BIRTHDAY_DURATION });
-                }
+            if (role) {
+                // Add the role to the user
+                await member.roles.add(role);
+                // Store the temporary role in the database
+                await postRequest(`/guilds/${payload.guildId}/roles/add`, { userId: birthday.userId, roleId: role.id, duration: BIRTHDAY_DURATION });
             }
         }
+    }
     } catch (err) { }
 };

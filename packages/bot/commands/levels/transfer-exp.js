@@ -137,7 +137,7 @@ module.exports.run = async (client, interaction) => {
         // reply to the user
         return replyInteraction(interaction, {
             content: `<@${targetUser.id}> has received **${transferAmount}** of your experience!`,
-            ephemeral: false
+            : false
         });
 
     } else {

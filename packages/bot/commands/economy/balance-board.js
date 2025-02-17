@@ -85,7 +85,6 @@ module.exports.run = async (client, interaction, balanceType = "wallet", page = 
     const response = await replyInteraction(interaction, {
         embeds: [messageEmbed],
         components: [messageComponents],
-        ephemeral: false
     });
 
     const collector = response.createMessageComponentCollector({
