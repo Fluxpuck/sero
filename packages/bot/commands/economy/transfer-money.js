@@ -62,6 +62,7 @@ module.exports.run = async (client, interaction) => {
 
             await replyInteraction(interaction, {
                 content: `**${walletTransaction.actualTransferAmount.toLocaleString()}** was transferred from the bank to your wallet!`,
+                ephemeral: false
             });
 
             break;
@@ -87,6 +88,7 @@ module.exports.run = async (client, interaction) => {
 
             await replyInteraction(interaction, {
                 content: `**${bankTransaction.actualTransferAmount.toLocaleString()}** was transferred from your wallet to the bank!`,
+                ephemeral: false
             });
 
             break;

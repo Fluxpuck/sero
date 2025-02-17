@@ -1,9 +1,9 @@
-async function deferInteraction(interaction,  = false) {
+async function deferInteraction(interaction, ephemeral = false) {
     if (!interaction) return false;
 
     try {
         if (interaction.deferred) return true;
-        const defered = await interaction.deferReply({});
+        const defered = await interaction.deferReply({ ephemeral });
         return defered;
     } catch (error) {
         if (process.env.NODE_ENV === 'development') {

@@ -84,54 +84,54 @@ module.exports.run = async (client, interaction, leaderboard = []) => {
     const response = await replyInteraction(interaction, {
         embeds: [messageEmbed],
         components: messageComponents ? [messageComponents] : [],
-        : false
-});
+        ephemeral: false
+    });
 
-// Collect the button selection
-const options = { componentType: ComponentType.Button, idle: 300_000, time: 3_600_000 }
-const collector = response.createMessageComponentCollector({ options });
-collector.on('collect', async i => {
+    // Collect the button selection
+    const options = { componentType: ComponentType.Button, idle: 300_000, time: 3_600_000 }
+    const collector = response.createMessageComponentCollector({ options });
+    collector.on('collect', async i => {
 
-    const selectedButton = i.customId;
+        const selectedButton = i.customId;
 
-    /**
-     * @selectedButton - Pagination
-     * Scroll through the log pages
-     */
-    if (selectedButton === "previous_pg" || selectedButton === "next_pg") {
+        /**
+         * @selectedButton - Pagination
+         * Scroll through the log pages
+         */
+        if (selectedButton === "previous_pg" || selectedButton === "next_pg") {
 
-        // Update the page number based on the button pressed
-        if (selectedButton == 'previous_pg') (page <= 0) ? 0 : page--
-        if (selectedButton == 'next_pg') (page >= maxpages) ? maxpages : page++
+            // Update the page number based on the button pressed
+            if (selectedButton == 'previous_pg') (page <= 0) ? 0 : page--
+            if (selectedButton == 'next_pg') (page >= maxpages) ? maxpages : page++
 
-        // Update the button status, based on the page number
-        const previousIndex = messageComponents.components.findIndex(button => button.data.custom_id === "previous_pg");
-        const nextIndex = messageComponents.components.findIndex(button => button.data.custom_id === "next_pg");
-        switch (page) {
-            case 0:
-                messageComponents.components[nextIndex].data.disabled = false;
-                messageComponents.components[previousIndex].data.disabled = true;
-                break;
-            case maxpages:
-                messageComponents.components[nextIndex].data.disabled = true;
-                messageComponents.components[previousIndex].data.disabled = false;
-                break;
-            default:
-                messageComponents.components[nextIndex].data.disabled = false;
-                messageComponents.components[previousIndex].data.disabled = false;
+            // Update the button status, based on the page number
+            const previousIndex = messageComponents.components.findIndex(button => button.data.custom_id === "previous_pg");
+            const nextIndex = messageComponents.components.findIndex(button => button.data.custom_id === "next_pg");
+            switch (page) {
+                case 0:
+                    messageComponents.components[nextIndex].data.disabled = false;
+                    messageComponents.components[previousIndex].data.disabled = true;
+                    break;
+                case maxpages:
+                    messageComponents.components[nextIndex].data.disabled = true;
+                    messageComponents.components[previousIndex].data.disabled = false;
+                    break;
+                default:
+                    messageComponents.components[nextIndex].data.disabled = false;
+                    messageComponents.components[previousIndex].data.disabled = false;
+            }
+
+            // Update embed Footer && Fields
+            messageEmbed.setFooter({ text: `Leaderboard page ${page + 1} of ${maxpages + 1}` });
+            messageEmbed.data.fields = []; // Empty current fields
+            messageEmbed.setFields([...leaderboardPages[page]]);
+
+            // Update the interaction components
+            await updateInteraction(i, {
+                embeds: [messageEmbed],
+                components: [messageComponents]
+            });
+
         }
-
-        // Update embed Footer && Fields
-        messageEmbed.setFooter({ text: `Leaderboard page ${page + 1} of ${maxpages + 1}` });
-        messageEmbed.data.fields = []; // Empty current fields
-        messageEmbed.setFields([...leaderboardPages[page]]);
-
-        // Update the interaction components
-        await updateInteraction(i, {
-            embeds: [messageEmbed],
-            components: [messageComponents]
-        });
-
-    }
-});
+    });
 }

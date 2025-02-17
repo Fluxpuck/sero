@@ -82,6 +82,6 @@ module.exports.run = async (client, interaction) => {
     const contentMessage = isTemporary ? `for **${duration}** ${duration > 1 ? "hours" : "hour"}` : "";
     await replyInteraction(interaction, {
         content: `Successfully gave <@${targetUser.id}> the role <@&${targetRole.id}> ${contentMessage}`,
-        : false
+        ephemeral: false
     });
 }

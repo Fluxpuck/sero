@@ -54,45 +54,45 @@ module.exports.run = async (client, interaction) => {
     const response = await replyInteraction(interaction, {
         embeds: [messageEmbed],
         components: [embedActionRow],
-        : false
-});
-
-// Collect the dropdownMenu selection
-const options = { componentType: ComponentType.StringSelect, idle: 300_000, time: 3_600_000 }
-const collector = response.createMessageComponentCollector({ options });
-collector.on('collect', async i => {
-
-    const selectedCategory = i.values[0];
-
-    // Filter commands from the selected category
-    const selectedCommands = client.commands.map(c => c.props)
-        .filter(c => c.private != true && c.category === selectedCategory)
-    const commandEmbedFields = selectedCommands.map(command => (
-        {
-            name: "\u200b",
-            value: `**${capitalize(command.commandName)}** - ${command.description} \n Usage: \`${command.usage}\` ${command.cooldown ? `\n Cooldown: \`${command.cooldown} seconds\`` : ""}`,
-            inline: false
-        }
-    ));
-
-    // Update the messageEmbed 
-    messageEmbed.data.title = `${client.user.username} | ${capitalize(selectedCategory)}`
-    messageEmbed.data.description = null;
-    messageEmbed.data.fields = commandEmbedFields;
-
-    // Update the dropdownMenu
-    embedActionRow.components[0].options.forEach(option => {
-        option.data.default = false;
-        if (option.data.value === selectedCategory) {
-            option.data.default = true;
-        }
+        ephemeral: false
     });
 
-    // Update the messageEmbed
-    await updateInteraction(i, {
-        embeds: [messageEmbed],
-        components: [embedActionRow],
-    }).catch((error) => { return error; });
+    // Collect the dropdownMenu selection
+    const options = { componentType: ComponentType.StringSelect, idle: 300_000, time: 3_600_000 }
+    const collector = response.createMessageComponentCollector({ options });
+    collector.on('collect', async i => {
 
-});
+        const selectedCategory = i.values[0];
+
+        // Filter commands from the selected category
+        const selectedCommands = client.commands.map(c => c.props)
+            .filter(c => c.private != true && c.category === selectedCategory)
+        const commandEmbedFields = selectedCommands.map(command => (
+            {
+                name: "\u200b",
+                value: `**${capitalize(command.commandName)}** - ${command.description} \n Usage: \`${command.usage}\` ${command.cooldown ? `\n Cooldown: \`${command.cooldown} seconds\`` : ""}`,
+                inline: false
+            }
+        ));
+
+        // Update the messageEmbed 
+        messageEmbed.data.title = `${client.user.username} | ${capitalize(selectedCategory)}`
+        messageEmbed.data.description = null;
+        messageEmbed.data.fields = commandEmbedFields;
+
+        // Update the dropdownMenu
+        embedActionRow.components[0].options.forEach(option => {
+            option.data.default = false;
+            if (option.data.value === selectedCategory) {
+                option.data.default = true;
+            }
+        });
+
+        // Update the messageEmbed
+        await updateInteraction(i, {
+            embeds: [messageEmbed],
+            components: [embedActionRow],
+        }).catch((error) => { return error; });
+
+    });
 }

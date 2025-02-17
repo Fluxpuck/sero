@@ -58,7 +58,7 @@ module.exports.run = async (client, interaction) => {
             if (!expireAt || now.isAfter(expireMoment)) {
                 return await replyInteraction(interaction, {
                     content: `The current server-modifier is **${modifier}X**.`,
-                    : false
+                    ephemeral: false
                 });
             } else {
                 const diff = expireMoment.diff(now);
@@ -70,7 +70,7 @@ module.exports.run = async (client, interaction) => {
 
                 return await replyInteraction(interaction, {
                     content: `Currently boosting the server **${modifier}X** for **${duration} hour${duration === 1 ? "" : "s"}**.\n-# There is ${timeLeft} left.`,
-                    : false
+                    ephemeral: false
                 });
             }
 
@@ -102,7 +102,7 @@ module.exports.run = async (client, interaction) => {
         } else {
             return await replyInteraction(interaction, {
                 content: `Boosting the server **${targetModifier}X** for **${duration} hour${duration === 1 ? "" : "s"}**!`,
-                : false
+                ephemeral: false
             })
         }
     }

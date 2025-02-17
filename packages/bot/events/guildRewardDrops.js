@@ -59,22 +59,22 @@ module.exports = async (client, payload) => {
         const sentMessage = await channel.send({
             embeds: [messageEmbed],
             components: [messageComponents],
-            : false
-    });
+            ephemeral: false
+        });
 
-    setTimeout(async () => {
-        try { // Check if the message is still available
-            const fetchedMessage = await sentMessage.fetch();
-            if (fetchedMessage.deletable) await fetchedMessage.delete();
-        } catch (err) { }
-    }, 15_000); // 15_000 milliseconds = 15 seconds
+        setTimeout(async () => {
+            try { // Check if the message is still available
+                const fetchedMessage = await sentMessage.fetch();
+                if (fetchedMessage.deletable) await fetchedMessage.delete();
+            } catch (err) { }
+        }, 15_000); // 15_000 milliseconds = 15 seconds
 
-    if (process.env.NODE_ENV === "development") {
-        console.log("\x1b[95m", "XP Reward dropped at:", new Date().toLocaleTimeString());
-    }
+        if (process.env.NODE_ENV === "development") {
+            console.log("\x1b[95m", "XP Reward dropped at:", new Date().toLocaleTimeString());
+        }
 
-} catch (err) {
+    } catch (err) {
 
-    console.log('Error:', err);
-};
+        console.log('Error:', err);
+    };
 }

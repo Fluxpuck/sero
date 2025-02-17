@@ -49,7 +49,7 @@ module.exports.run = async (client, interaction) => {
     } else {
         await replyInteraction(interaction, {
             content: `**${targetAmount}** experience was removed from <@${targetUser.id}>!`,
-            : false
+            ephemeral: false
         });
     }
 }
