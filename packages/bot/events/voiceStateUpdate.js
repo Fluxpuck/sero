@@ -1,6 +1,7 @@
 const { logEmbed } = require('../assets/embed');
 const { postRequest, getRequest } = require('../database/connection')
 const { unixTimestamp, formatTime } = require('../lib/helpers/TimeDateHelpers/timeHelper');
+const { getGuildActiveStatus } = require('../utils/cache/guild.cache');
 
 // In-memory queue to store voice sessions
 const voiceSessionQueue = new Map();
@@ -52,6 +53,10 @@ module.exports = async (client, previousState, newState) => {
 
     const member = newState.member;
     const guild = newState.guild;
+
+    // Check if the guild from the interaction is active
+    const isActive = await getGuildActiveStatus(guild.id);
+    if (!isActive) return;
 
     // User joined a voice channel
     if (!previousState.channel && newState.channel) {

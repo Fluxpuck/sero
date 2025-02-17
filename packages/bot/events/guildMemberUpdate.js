@@ -1,15 +1,19 @@
-const { AuditLogEvent, AttachmentBuilder } = require('discord.js');
+const { AuditLogEvent } = require('discord.js');
 const { getRequest, postRequest } = require("../database/connection");
-const { getAuditLogType } = require('../lib/discord/auditlogevent');
 const { unixTimestamp } = require('../lib/helpers/TimeDateHelpers/timeHelper');
 const { logEmbed } = require('../assets/embed');
 const { differenceInMinutes, getUnixTime } = require('date-fns');
+const { getGuildActiveStatus } = require('../utils/cache/guild.cache.js');
 const ClientEmbedColors = require('../assets/embed-colors.js');
 
 module.exports = async (client, oldMember, newMember) => {
 
     // Get Guild from the oldMember object
     const { guild, user } = oldMember
+
+    // Check if the guild from the interaction is active
+    const isActive = await getGuildActiveStatus(guild.id);
+    if (!isActive) return
 
     // Get the log channel for the guild from the database
     const member_log_channel = await getRequest(`/guilds/${guild.id}/settings/member-logs`);

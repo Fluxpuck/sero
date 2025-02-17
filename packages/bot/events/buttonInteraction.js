@@ -1,10 +1,15 @@
 const { MessageFlags } = require('discord.js');
 const { getRequest, postRequest } = require("../database/connection");
+const { getGuildActiveStatus } = require('../utils/cache/guild.cache');
 
 module.exports = async (client, interaction) => {
 
     // Check if the interaction is valid
     if (!interaction.isButton()) return;
+
+    // Check if the guild from the interaction is active
+    const isActive = await getGuildActiveStatus(guild.id);
+    if (!isActive) return;
 
     /**
      * Check for button interactions
