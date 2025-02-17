@@ -59,7 +59,7 @@ module.exports = async (client, payload) => {
         const sentMessage = await channel.send({
             embeds: [messageEmbed],
             components: [messageComponents],
-            ephemeral: false
+
         });
 
         setTimeout(async () => {

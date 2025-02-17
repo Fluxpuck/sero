@@ -54,7 +54,7 @@ module.exports.run = async (client, interaction) => {
     const response = await replyInteraction(interaction, {
         embeds: [messageEmbed],
         components: [embedActionRow],
-        ephemeral: false
+
     });
 
     // Collect the dropdownMenu selection

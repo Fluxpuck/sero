@@ -58,7 +58,7 @@ module.exports = async (client, payload) => {
                 // Send the birthday message in the channel
                 const sentMessage = await channel.send({
                     content: birthdayMessage,
-                    ephemeral: false,
+
                 });
 
                 // Add reaction to the message

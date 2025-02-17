@@ -41,6 +41,6 @@ module.exports.run = async (client, interaction) => {
     // Reply with the messageEmbed
     return replyInteraction(interaction, {
         embeds: [messageEmbed],
-        ephemeral: false
+
     });
 }

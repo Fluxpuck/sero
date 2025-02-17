@@ -1,5 +1,5 @@
 const { getRequest } = require('../../database/connection')
-const { ActionRowBuilder, ComponentType, MessageFlags} = require("discord.js");
+const { ActionRowBuilder, ComponentType, MessageFlags } = require("discord.js");
 const { createCustomEmbed } = require("../../assets/embed")
 const ClientButtonsEnum = require("../../assets/embed-buttons");
 const { chunk } = require("../../lib/helpers/MathHelpers/arrayHelper");
@@ -66,7 +66,7 @@ module.exports.run = async (client, interaction, page = 0) => {
     const response = await replyInteraction(interaction, {
         embeds: [messageEmbed],
         components: messageComponents,
-        ephemeral: false
+
     });
 
     // Set up collector for button interactions

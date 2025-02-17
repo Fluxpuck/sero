@@ -84,7 +84,7 @@ module.exports.run = async (client, interaction, leaderboard = []) => {
     const response = await replyInteraction(interaction, {
         embeds: [messageEmbed],
         components: messageComponents ? [messageComponents] : [],
-        ephemeral: false
+
     });
 
     // Collect the button selection

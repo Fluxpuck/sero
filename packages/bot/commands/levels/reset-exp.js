@@ -45,7 +45,7 @@ module.exports.run = async (client, interaction) => {
         } else {
             return replyInteraction(interaction, {
                 content: `<@${targetUser.id}>'s experience has been reset!`,
-                ephemeral: false
+
             });
         }
     } else {
@@ -61,7 +61,7 @@ module.exports.run = async (client, interaction) => {
         const response = await replyInteraction(interaction, {
             content: "Are you sure you want to reset all experience for all users?\nThis action will also remove any roles associated with current ranks.\n*This action cannot be undone.*",
             components: [messageComponents],
-            ephemeral: false
+
         });
 
         // Collect the button selection
@@ -111,7 +111,7 @@ module.exports.run = async (client, interaction) => {
                     return updateInteraction(i, {
                         content: `Your server's experience has been reset!`,
                         components: [],
-                        ephemeral: false
+
                     });
                 }
 

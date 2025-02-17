@@ -90,7 +90,7 @@ module.exports.run = async (client, interaction) => {
         }
         return replyInteraction(interaction, {
             content: content,
-            ephemeral: false
+
         }, 8_000)
     }
 }

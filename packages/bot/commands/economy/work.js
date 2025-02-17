@@ -75,7 +75,7 @@ module.exports.run = async (client, interaction) => {
         const response = await replyInteraction(interaction, {
             embeds: [messageEmbed],
             components: [messageComponents],
-            ephemeral: false
+
         });
 
         // Collect the button selection
@@ -188,7 +188,7 @@ module.exports.run = async (client, interaction) => {
             } else { // reply with the embed
                 return replyInteraction(interaction, {
                     embeds: [embed],
-                    ephemeral: false
+
                 });
             }
 

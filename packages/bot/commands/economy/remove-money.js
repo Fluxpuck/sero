@@ -71,7 +71,7 @@ module.exports.run = async (client, interaction) => {
 
             await replyInteraction(interaction, {
                 conten: `**${transactionAmount.toLocaleString()}** was removed from <@${targetUser.id}>!`,
-                ephemeral: false
+
             });
 
             break;
@@ -98,7 +98,7 @@ module.exports.run = async (client, interaction) => {
 
             await replyInteraction(interaction, {
                 content: `**${transactionAmount.toLocaleString()}** cash was taken from <@${targetUser.id}>!`,
-                ephemeral: false
+
             });
 
     }

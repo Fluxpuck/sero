@@ -103,7 +103,7 @@ module.exports.run = async (client, interaction) => {
     const returnMessageEmbed = await replyInteraction(interaction, {
         embeds: [messageEmbed],
         components: [messageButtons],
-        ephemeral: false
+
     });
 
 
