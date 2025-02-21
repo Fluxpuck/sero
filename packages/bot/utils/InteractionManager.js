@@ -5,7 +5,9 @@ async function deferInteraction(interaction, ephemeral = false) {
 
     try {
         if (interaction.deferred) return true;
-        const defered = ephemeral ? await interaction.deferReply({ flags: MessageFlags.Ephemeral }) : await interaction.deferReply();
+        const defered = ephemeral
+            ? await interaction.deferReply({ flags: MessageFlags.Ephemeral })
+            : await interaction.deferReply();
         return defered;
     } catch (error) {
         if (process.env.NODE_ENV === 'development') {
