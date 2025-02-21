@@ -7,15 +7,18 @@ module.exports = async (client, interaction) => {
 
     // Check if the guild from the interaction is active
     const isActive = await getGuildActiveStatus(interaction.guild.id);
+
     if (!isActive) {
-        return interaction.reply({
-            content: `Your guild is not yet active!`,
-            flags: MessageFlags.Ephemeral
-        });
+        if (interaction.isRepliable()) {
+            await interaction.reply({
+                content: `This guild is not active. Please contact an administrator to activate it.`,
+                flags: MessageFlags.Ephemeral
+            });
+        }
+        return;
     }
 
     try {
-
         // Check if the interaction is a button
         if (interaction.isButton()) {
             client.emit(eventEnum.BUTTON_INTERACTION, interaction);
