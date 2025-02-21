@@ -1,9 +1,11 @@
+const { MessageFlags } = require('discord.js');
+
 async function deferInteraction(interaction, ephemeral = false) {
     if (!interaction) return false;
 
     try {
         if (interaction.deferred) return true;
-        const defered = await interaction.deferReply({ ephemeral });
+        const defered = ephemeral ? await interaction.deferReply({ flags: MessageFlags.Ephemeral }) : await interaction.deferReply();
         return defered;
     } catch (error) {
         if (process.env.NODE_ENV === 'development') {
