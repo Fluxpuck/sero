@@ -7,6 +7,7 @@ const CACHE_CONFIG = {
     PREFIXES: {
         GUILD_ACTIVE: 'guild:active:',
         GUILD_SETTINGS: 'guild:settings:',
+        GUILD_BALANCE: 'guild:balance:',
     }
 };
 
