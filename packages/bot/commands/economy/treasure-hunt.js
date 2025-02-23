@@ -64,6 +64,11 @@ module.exports.run = async (client, interaction) => {
             content: "Damnnnnn! Seems like you are already too broke to lose any more money. Better luck next time!",
             flags: MessageFlags.Ephemeral
         });
+    } else {
+        // Only if the reward is positive
+        // Add experience points to the user's career
+        // No amount is passed, so the default amount is used (100)
+        postRequest(`/guilds/${interaction.guild.id}/economy/exp/gain/${interaction.user.id}`);
     }
 
     if (walletTransaction?.status === 400) {

@@ -5,6 +5,8 @@ const { getTimeUntil } = require("../../lib/helpers/TimeDateHelpers/timeHelper")
 const { getReward } = require("../../lib/helpers/EconomyHelpers/economyHelper");
 const { deferInteraction, followUpInteraction, replyInteraction } = require("../../utils/InteractionManager");
 
+const BASE_REWARD_EXPERIENCE = 1000;
+
 module.exports.props = {
     commandName: "work-reward",
     description: "Get a reward for completing a work-week.",
@@ -74,6 +76,9 @@ module.exports.run = async (client, interaction) => {
             reward: rewardAmount,
         }
     });
+
+    // Add experience points to the user's career
+    postRequest(`/guilds/${interaction.guild.id}/economy/exp/gain/${interaction.user.id}`, { amount: BASE_REWARD_EXPERIENCE });
 
     // Give the user the target amount of money
     const bankDeposit = await postRequest(`guilds/${interaction.guild.id}/economy/bank/${interaction.user.id}`, { amount: rewardAmount });

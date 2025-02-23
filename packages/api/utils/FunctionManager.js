@@ -27,28 +27,31 @@ module.exports = {
         else return false
     },
 
-    /** 
-     * Calculate a random XP value for a member between 15 and 25
-     * And multiply with the personal and server modifier
-     * @param {*} personalModifier 
-     * @param {*} serverModifier 
-     * @returns 
+    /**
+     * Calculate a random XP value between 15 and 25, adjusted by modifiers
+     * @param {number} personalModifier - Personal XP multiplier (default: 1)
+     * @param {number} serverModifier - Server XP multiplier (default: 1)
+     * @returns {number} - Calculated XP value
      */
-    calculateXP(personalModifier = 1, serverModifier = 1) {
-        let baseXP = 15;
-        let maxXP = 25;
+    calculateLevelXP(personalModifier = 1, serverModifier = 1) {
+        const baseXP = 15;
+        const maxXP = 25;
 
-        //generate a random number between 0 and 1
-        let randNum = Math.random();
-        let randomizedXP;
+        // 50% chance to get random XP between base and max, otherwise get base XP
+        const xp = Math.random() < 0.50 ?
+            Math.floor(Math.random() * (maxXP - baseXP + 1) + baseXP) :
+            baseXP;
 
-        if (randNum <= 0.5) {
-            //the member gets a randomized XP value between baseXP and maxXP
-            randomizedXP = Math.floor(Math.random() * (maxXP - baseXP + 1) + baseXP) * personalModifier * serverModifier;
-        } else {
-            //the member gets the base XP value
-            randomizedXP = baseXP * personalModifier * serverModifier;
-        }
+        return xp * personalModifier * serverModifier;
+    },
+
+    /**
+     * Calculate the XP by randomizing an additional 2,5% to the amount
+     * @returns {number} -
+     */
+    calculateCareerXP(amount = 100) {
+        const modifier = Math.random() < 0.50 ? 1 : (1 + (Math.random() * 0.025));
+        const randomizedXP = Math.floor(amount * modifier);
 
         return randomizedXP;
     },

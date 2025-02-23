@@ -7,6 +7,8 @@ const { getTimeUntil } = require("../../lib/helpers/TimeDateHelpers/timeHelper")
 const { getUserCareerJobOptions } = require("../../lib/resolvers/userJobResolver");
 const { deferInteraction, replyInteraction, updateInteraction, followUpInteraction } = require("../../utils/InteractionManager");
 
+const BASE_WORK_EXPERIENCE = 250;
+
 module.exports.props = {
     commandName: "work",
     description: "Work to earn money!",
@@ -177,6 +179,9 @@ module.exports.run = async (client, interaction) => {
                     income: income,
                 }
             });
+
+            // Add experience points to the user's career
+            postRequest(`/guilds/${interaction.guild.id}/economy/exp/gain/${interaction.user.id}`, { amount: BASE_WORK_EXPERIENCE });
 
             // Deposit the income in the user's bank account
             const bankDeposit = await postRequest(`guilds/${interaction.guild.id}/economy/bank/${interaction.user.id}`, { amount: income });

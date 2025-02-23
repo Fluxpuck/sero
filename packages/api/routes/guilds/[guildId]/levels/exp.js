@@ -6,7 +6,7 @@ const { Guild, User, UserLevels } = require("../../../../database/models");
 const { findAllRecords, findOneRecord, createOrUpdateRecord } = require("../../../../utils/RequestManager");
 const { CreateError, RequestError } = require("../../../../utils/ClassManager");
 
-const { calculateXP } = require("../../../../utils/FunctionManager");
+const { calculateLevelXP } = require("../../../../utils/FunctionManager");
 
 /**
  * POST api/guilds/:guildId/levels/exp/:userId
@@ -96,7 +96,7 @@ router.post("/gain/:userId", async (req, res, next) => {
         const { modifier: personalModifier = 1 } = await User.findOne(options);
 
         // Calculate the experience to add
-        const experience_gain = calculateXP(serverModifier, personalModifier);
+        const experience_gain = calculateLevelXP(serverModifier, personalModifier);
 
         // Update the user's experience by adding experience
         userLevel.experience += experience_gain;
@@ -118,6 +118,5 @@ router.post("/gain/:userId", async (req, res, next) => {
         next(error);
     }
 });
-
 
 module.exports = router;

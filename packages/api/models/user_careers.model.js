@@ -64,5 +64,27 @@ module.exports = sequelize => {
         createdAt: true
     });
 
+
+    UserCareers.beforeSave(async (userCareer, options) => {
+        if (userCareer.changed('experience')) {
+
+            let currentLevel = userCareer.level;
+            let currentXP = userCareer.experience;
+
+            while (true) {
+                const requiredXP = 1000 + (currentLevel * 100);
+                if (currentXP >= requiredXP) {
+                    currentLevel++;
+                    currentXP -= requiredXP;
+                } else {
+                    break;
+                }
+            }
+
+            userCareer.level = currentLevel;
+            userCareer.experience = currentXP;
+        }
+    });
+
     return UserCareers;
 }

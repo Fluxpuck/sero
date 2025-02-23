@@ -103,32 +103,44 @@ module.exports = sequelize => {
 
 
     const updateLevels = async (userLevel) => {
-
         const { Levels } = require('../database/models');
-        const levels = await Levels.findAll({
-            order: [['experience', 'ASC']],
-        });
 
-        // Find the previous level
-        const previousLevel = levels
-            .filter(level => level.experience <= userLevel.experience)
-            .pop() || { level: 1, experience: 0 };
+        // Get level data in one query with conditions
+        const [previousLevel, nextLevel] = await Promise.all([
+            Levels.findOne({
+                where: {
+                    experience: {
+                        [Op.lte]: userLevel.experience
+                    }
+                },
+                order: [['experience', 'DESC']],
+            }),
+            Levels.findOne({
+                where: {
+                    experience: {
+                        [Op.gt]: userLevel.experience
+                    }
+                },
+                order: [['experience', 'ASC']],
+            })
+        ]);
 
-        // Find the next level
-        const nextLevel = levels
-            .find(level => level.experience > userLevel.experience) || { experience: Infinity };
+        // Use default values if no levels found
+        const currentLevel = previousLevel || { level: 1, experience: 0 };
+        const futureLevel = nextLevel || { experience: 4_950_000 };
 
         return {
-            level: previousLevel.level,
-            currentLevelExp: previousLevel.experience,
-            nextLevelExp: nextLevel.experience,
-            remainingExp: nextLevel.experience - userLevel.experience,
+            level: currentLevel.level,
+            currentLevelExp: currentLevel.experience,
+            nextLevelExp: futureLevel.experience,
+            remainingExp: futureLevel.experience - userLevel.experience,
         };
     };
 
     const updateRank = async (userLevel) => {
-
         const { LevelRanks } = require('../database/models');
+
+        // Get all level ranks
         const levelRanks = await LevelRanks.findAll({
             where: {
                 guildId: userLevel.guildId
@@ -148,36 +160,34 @@ module.exports = sequelize => {
     };
 
     UserLevels.beforeSave(async (userLevel) => {
+        if (!userLevel.changed('experience')) return;
 
-        // Check if the user has reached a new level
-        const newLevel = await updateLevels(userLevel);
+        // Update level and rank in parallel
+        const [newLevel, newRank] = await Promise.all([
+            updateLevels(userLevel),
+            updateRank(userLevel)
+        ]);
 
         const hasLevelChanged = userLevel.level !== newLevel.level;
-        const hasExperienceChanged = (
+        const hasExperienceChanged =
             userLevel.currentLevelExp !== newLevel.currentLevelExp ||
             userLevel.nextLevelExp !== newLevel.nextLevelExp ||
-            userLevel.remainingExp !== newLevel.remainingExp
-        );
+            userLevel.remainingExp !== newLevel.remainingExp;
 
         if (hasExperienceChanged) {
             userLevel.set(newLevel);
         }
 
-        // Update rank information if level has changed
         if (hasLevelChanged) {
-            const newRank = await updateRank(userLevel);
             userLevel.rank = newRank.rank;
-
-            // Publish the user's new rank to the Redis channel
-            publishMessage(REDIS_CHANNELS.RANK,
-                {
-                    guildId: userLevel.guildId,
-                    userId: userLevel.userId,
-                    userRankRewards: newRank.ranks,
-                    allRankRewards: newRank.rewards,
-                }
-            );
         }
+
+        publishMessage(REDIS_CHANNELS.RANK, {
+            guildId: userLevel.guildId,
+            userId: userLevel.userId,
+            userRankRewards: newRank.ranks,
+            allRankRewards: newRank.rewards,
+        });
     });
 
     return UserLevels;
