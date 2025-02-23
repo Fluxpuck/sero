@@ -18,7 +18,7 @@ const BIRTHDAY_MESSAGES_AGE = [
     "Happy birthday, {NAME}, you cool {AGE}-year-old! 🎉",
     "{AGE} cheers, {NAME}! Have fun! 🎁",
     "Awesome {AGE}th, {NAME}! Enjoy! 🍰",
-    "Happy {AGE}th, {NAME}! Have {AGE} times the fun! 😊",
+    "Happy Birthday, {NAME}! Have {AGE} times the fun! 😊",
     "{NAME}, {AGE} is just the start! Happy birthday! 🎉",
     "{NAME}, {AGE} wishes come true! Happy birthday! 🎈",
     "Happy birthday, {NAME}! {AGE} looks great on you! 🎁"
