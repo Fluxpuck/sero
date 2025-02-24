@@ -6,8 +6,7 @@ const { getGuildActiveStatus } = require('../utils/cache/guild.cache');
 module.exports = async (client, interaction) => {
 
     // Check if the guild from the interaction is active
-    const isActive = await getGuildActiveStatus(interaction.guild.id);
-
+    const isActive = await getGuildActiveStatus(interaction?.guild?.id);
     if (!isActive) {
         if (interaction.isRepliable()) {
             await interaction.reply({
