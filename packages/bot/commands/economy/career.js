@@ -48,13 +48,13 @@ module.exports.run = async (client, interaction) => {
     }
 
     // Set the data from the requests
-    const { level, updatedAt } = userCareer.data;
+    const { level, createdAt } = userCareer.data;
     const { name, emoji, description } = userCareer.data.job;
 
     const totalIncome = careerIncome.data.total || 0;
     const currentStreak = careerStreak.data.streak || 0;
 
-    const startCareerDate = new Date(updatedAt);
+    const startCareerDate = new Date(createdAt);
 
     // Create an embed to display the user's career
     const messageEmbed = createCustomEmbed({
