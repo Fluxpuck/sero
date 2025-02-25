@@ -100,8 +100,6 @@ router.get("/:userId", async (req, res, next) => {
             bank_balance: userData.user_banks?.[0]?.balance || 0
         };
 
-        console.log(responseData);
-
         res.status(200).json(responseData);
     } catch (error) {
         next(error);
