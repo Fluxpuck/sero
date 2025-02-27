@@ -1,6 +1,6 @@
 const { sequelize } = require('../database/sequelize');
 
-const DEFAULT_TIMEOUT_MS = 25_000;
+const DEFAULT_TIMEOUT_MS = 10_000;
 
 // Timeout function for requests
 const withTimeout = (promise, ms = DEFAULT_TIMEOUT_MS) => {
@@ -26,6 +26,30 @@ const withTransaction = async (callback) => {
 };
 
 /**
+ * Throw a detailed error
+ * @param {*} error 
+ * @param {*} method 
+ * @param {*} model 
+ * @param {*} options 
+ */
+const detailedError = (error, method, model, options) => {
+    const enhancedError = new Error(`
+        Error Details:
+        Message: ${error.message}
+        Error-Code: ${error.code}
+        Error-Type: ${error.name}
+        Stack: ${error.stack}
+        Method: ${method}
+        Model: ${model}
+        Options: ${options}
+        Timestamp: ${new Date().toISOString()}
+    `);
+
+    console.log(enhancedError);
+    throw enhancedError;
+};
+
+/**
  * Find all records in a model
  * @param {*} model 
  * @param {*} options 
@@ -37,8 +61,7 @@ const findAllRecords = async (model, options, timeout = DEFAULT_TIMEOUT_MS) => {
         const result = await withTimeout(model.findAll(options), timeout);
         return result;
     } catch (error) {
-        console.error('Error executing findAll:', error);
-        throw error;
+        detailedError(error, `findAllRecords`, model.name, options);
     }
 };
 
@@ -54,8 +77,7 @@ const findOneRecord = async (model, options, timeout = DEFAULT_TIMEOUT_MS) => {
         const result = await withTimeout(model.findOne(options), timeout);
         return result;
     } catch (error) {
-        console.error('Error executing findOne:', error);
-        throw error;
+        detailedError(error, `findOneRecord`, model.name, options);
     }
 };
 
@@ -72,8 +94,7 @@ const createOrUpdateRecord = async (model, data, transaction, timeout = DEFAULT_
         const result = await withTimeout(model.upsert(data, { transaction }), timeout);
         return result;
     } catch (error) {
-        console.error('Error executing upsert:', error);
-        throw error;
+        detailedError(error, `createOrUpdateRecord`, model.name, options);
     }
 };
 
@@ -90,8 +111,7 @@ const createUniqueRecord = async (model, data, transaction, timeout = DEFAULT_TI
         const result = await withTimeout(model.create(data, { transaction }), timeout);
         return result;
     } catch (error) {
-        console.error('Error executing create:', error);
-        throw error;
+        detailedError(error, `createUniqueRecord`, model.name, options);
     }
 };
 
