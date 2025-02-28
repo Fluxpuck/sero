@@ -1,5 +1,5 @@
 const eventEnum = require('../config/eventEnum')
-const { postRequest, getRequest } = require('../database/connection')
+const { postRequest } = require('../database/connection')
 const { getGuildActiveStatus } = require('../utils/cache/guild.cache')
 
 module.exports = async (client, message) => {
@@ -20,7 +20,7 @@ module.exports = async (client, message) => {
         const result = await postRequest(`/guilds/${message.guildId}/users`,
             { userId: message.author.id, userName: message.author.username });
 
-        if (result.status === 200) {
+        if (result?.status === 200) {
             const userData = result.data.user ?? false;
 
             if (process.env.NODE_ENV === "development") {
@@ -38,20 +38,13 @@ module.exports = async (client, message) => {
     // Create a cooldown key based on the userId, guildId and event Enum
     const user_level_key = `${message.author.id}_${message.guildId}_${eventEnum.GUILD_MEMBER_LEVEL}`;
 
-    /**
-    * This code will execute per 60 seconds
-    * Add experience to the user's level
-    */
+    // Check if the user is on a cooldown
     if (client.cooldowns.has(user_level_key) === false) {
         // Update the User's experience
-        const result = await postRequest(`/guilds/${message.guildId}/levels/exp/gain/${message.author.id}`);
-        const { previous, current } = result?.data || { previous: null, current: null };
-
-        // Trigger guildMemberLevel event
-        client.emit(eventEnum.GUILD_MEMBER_LEVEL, message, previous, current);
+        postRequest(`/guilds/${message.guildId}/levels/exp/gain/${message.author.id}`);
 
         // Add the user to the cooldowns Collection
-        client.cooldowns.set(user_level_key, message, 1 * 60); // Minutes * Seconds
+        client.cooldowns.set(user_level_key, message, 60); // 60 seconds
     }
 
     // Store message to the database
