@@ -153,6 +153,7 @@ module.exports = sequelize => {
         const newLevel = await updateLevels(userLevel);
 
         const hasLevelChanged = userLevel.level !== newLevel.level;
+        const hasLevelIncreased = userLevel.level < newLevel.level;
         const hasExperienceChanged = (
             userLevel.currentLevelExp !== newLevel.currentLevelExp ||
             userLevel.nextLevelExp !== newLevel.nextLevelExp ||
@@ -169,12 +170,13 @@ module.exports = sequelize => {
             userLevel.rank = newRank.rank;
 
             // Publish the user's new rank to the Redis channel
-            publishMessage(REDIS_CHANNELS.RANK,
+            publishMessage(REDIS_CHANNELS.LEVEL,
                 {
                     guildId: userLevel.guildId,
                     userId: userLevel.userId,
                     userRankRewards: newRank.ranks,
                     allRankRewards: newRank.rewards,
+                    level: hasLevelIncreased ? userLevel.level : 0,
                 }
             );
         }

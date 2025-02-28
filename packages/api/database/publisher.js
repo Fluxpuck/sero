@@ -8,7 +8,7 @@ let retryCount = 0;
 // Define Redis channels
 const REDIS_CHANNELS = {
     HEARTBEAT: 'heartbeat',
-    RANK: 'guildMemberRank',
+    LEVEL: 'guildMemberLevel',
     ROLE: 'guildMemberRole',
     DROP: 'guildRewardDrops',
     BIRTHDAY: 'guildMemberBirthday',
