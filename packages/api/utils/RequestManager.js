@@ -26,30 +26,6 @@ const withTransaction = async (callback) => {
 };
 
 /**
- * Throw a detailed error
- * @param {*} error 
- * @param {*} method 
- * @param {*} model 
- * @param {*} options 
- */
-const detailedError = (error, method, model, options) => {
-    const enhancedError = new Error(`
-        Error Details:
-        Message: ${error.message}
-        Error-Code: ${error.code}
-        Error-Type: ${error.name}
-        Stack: ${error.stack}
-        Method: ${method}
-        Model: ${model}
-        Options: ${options}
-        Timestamp: ${new Date().toISOString()}
-    `);
-
-    console.log(enhancedError);
-    throw enhancedError;
-};
-
-/**
  * Find all records in a model
  * @param {*} model 
  * @param {*} options 
@@ -61,7 +37,7 @@ const findAllRecords = async (model, options, timeout = DEFAULT_TIMEOUT_MS) => {
         const result = await withTimeout(model.findAll(options), timeout);
         return result;
     } catch (error) {
-        detailedError(error, `findAllRecords`, model.name, options);
+        console.error(error, `findAllRecords`, model.name, options);
     }
 };
 
@@ -77,7 +53,7 @@ const findOneRecord = async (model, options, timeout = DEFAULT_TIMEOUT_MS) => {
         const result = await withTimeout(model.findOne(options), timeout);
         return result;
     } catch (error) {
-        detailedError(error, `findOneRecord`, model.name, options);
+        console.error(error, `findOneRecord`, model.name, options);
     }
 };
 
@@ -94,7 +70,7 @@ const createOrUpdateRecord = async (model, data, transaction, timeout = DEFAULT_
         const result = await withTimeout(model.upsert(data, { transaction }), timeout);
         return result;
     } catch (error) {
-        detailedError(error, `createOrUpdateRecord`, model.name, options);
+        console.error(error, `createOrUpdateRecord`, model.name, data);
     }
 };
 
@@ -111,7 +87,7 @@ const createUniqueRecord = async (model, data, transaction, timeout = DEFAULT_TI
         const result = await withTimeout(model.create(data, { transaction }), timeout);
         return result;
     } catch (error) {
-        detailedError(error, `createUniqueRecord`, model.name, options);
+        console.error(error, `createUniqueRecord`, model.name, data);
     }
 };
 
