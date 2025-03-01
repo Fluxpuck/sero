@@ -5,7 +5,7 @@ const { deferInteraction, replyInteraction } = require("../../utils/InteractionM
 module.exports.props = {
     commandName: "balance",
     description: "Get the balance of a user.",
-    usage: "/reset [user]",
+    usage: "/balance [user]",
     interaction: {
         type: 1,
         options: [
