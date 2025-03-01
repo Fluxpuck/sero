@@ -169,7 +169,7 @@ module.exports = sequelize => {
             const newRank = await updateRank(userLevel);
             userLevel.rank = newRank.rank;
 
-            // Publish the user's new rank to the Redis channel
+            // Publish Level & Rank update for User to the Redis channel
             publishMessage(REDIS_CHANNELS.LEVEL,
                 {
                     guildId: userLevel.guildId,

@@ -42,8 +42,6 @@ module.exports = async (client, payload = []) => {
         }
     }
 
-
-
     // Ranks that are unattained by the member
     const unattainedRankRewards = payload.allRankRewards.filter(rank =>
         !payload.userRankRewards.some(userRank => userRank.level === rank.level)
@@ -72,6 +70,4 @@ module.exports = async (client, payload = []) => {
             });
         }
     }
-
-
 }
