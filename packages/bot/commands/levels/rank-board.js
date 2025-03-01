@@ -47,7 +47,7 @@ module.exports.run = async (client, interaction, leaderboard = []) => {
 
         // Construct the leaderboard fields
         const leaderboardTitle = `${ranking} \`${user.userName}\``
-        const leaderboardValue = `*Level ${level.level} / ${level.experience} EXP*`
+        const leaderboardValue = `*Level ${level.level} / ${level.experience.toLocaleString()} EXP*`
         return {
             name: leaderboardTitle,
             value: leaderboardValue,

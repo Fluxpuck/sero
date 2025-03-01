@@ -43,7 +43,7 @@ const updateLeaderboardValues = (leaderboardData, balanceType) => {
     const leaderboardValues = sortedData.map((user, index) => {
         const rankings = ["🥇", "🥈", "🥉"];
         const ranking = rankings[index] || `${index + 1}.`;
-        const balance = balanceType === "wallet" ? user.wallet_balance : user.bank_balance;
+        const balance = balanceType === "wallet" ? user.wallet_balance.toLocaleString() : user.bank_balance.toLocaleString();
         const icon = balanceType === "wallet" ? "🪙" : "🏦";
         return `**${ranking}** \`${user.userName}\` - ${icon} ${balance}`;
     });
