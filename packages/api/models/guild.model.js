@@ -1,6 +1,5 @@
 const { Model, DataTypes, Sequelize } = require("sequelize");
 const cron = require('node-cron');
-const { DISCORD_SNOWFLAKE } = require('../config/config');
 
 class Guild extends Model {
     static associate(models) {
@@ -18,17 +17,13 @@ class Guild extends Model {
 
 module.exports = sequelize => {
     Guild.init({
-        id: {
-            type: DataTypes.INTEGER,
-            primaryKey: true,
-            autoIncrement: true,
-        },
         guildId: {
             type: DataTypes.BIGINT,
+            primaryKey: true,
             allowNull: false,
             unique: true,
             validate: {
-                is: DISCORD_SNOWFLAKE
+                is: /^\d{17,20}$/ // Discord Snowflake
             }
         },
         guildName: {
@@ -74,14 +69,9 @@ module.exports = sequelize => {
             timestamps: true,
             createdAt: true,
             updatedAt: true,
-            indexes: [
-                {
-                    fields: ['guildId'],
-                    unique: true,
-                }
-            ],
             hooks: {
                 beforeUpdate: (guild, options) => {
+                    // Calculate expireAt based on duration and updatedAt
                     const expireAt = new Date(guild.updatedAt);
                     expireAt.setHours(expireAt.getHours() + guild.duration);
                     guild.expireAt = expireAt;

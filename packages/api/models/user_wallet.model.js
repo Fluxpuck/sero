@@ -1,5 +1,4 @@
 const { Model, DataTypes } = require('sequelize');
-const { DISCORD_SNOWFLAKE } = require('../config/config');
 
 class UserWallet extends Model {
     static MINIMUM_BALANCE = 0;
@@ -13,23 +12,20 @@ class UserWallet extends Model {
 
 module.exports = sequelize => {
     UserWallet.init({
-        id: {
-            type: DataTypes.INTEGER,
-            primaryKey: true,
-            autoIncrement: true,
-        },
         userId: {
             type: DataTypes.BIGINT,
+            primaryKey: true,
             allowNull: false,
             validate: {
-                is: DISCORD_SNOWFLAKE
+                is: /^\d{17,20}$/ //Discord Snowflake
             }
         },
         guildId: {
             type: DataTypes.BIGINT,
+            primaryKey: true,
             allowNull: false,
             validate: {
-                is: DISCORD_SNOWFLAKE
+                is: /^\d{17,20}$/ //Discord Snowflake
             }
         },
         balance: {
@@ -52,13 +48,7 @@ module.exports = sequelize => {
         modelName: 'user_wallet',
         timestamps: true,
         updatedAt: true,
-        createdAt: true,
-        indexes: [
-            {
-                fields: ['userId', 'guildId'],
-                unique: true,
-            }
-        ]
+        createdAt: true
     });
 
     return UserWallet;

@@ -2,7 +2,6 @@ const { Model, DataTypes } = require('sequelize');
 const { publishMessage, REDIS_CHANNELS } = require('../database/publisher');
 const cron = require('node-cron');
 const { generateUniqueToken } = require('../utils/FunctionManager');
-const { DISCORD_SNOWFLAKE } = require('../config/config');
 
 class GuildSettings extends Model {
     static associate(models) {
@@ -12,27 +11,24 @@ class GuildSettings extends Model {
 
 module.exports = sequelize => {
     GuildSettings.init({
-        id: {
-            type: DataTypes.INTEGER,
-            primaryKey: true,
-            autoIncrement: true,
-        },
         guildId: {
             type: DataTypes.BIGINT,
+            primaryKey: true,
             allowNull: false,
             validate: {
-                is: DISCORD_SNOWFLAKE
+                is: /^\d{17,20}$/ //Discord Snowflake
             }
         },
         type: {
             type: DataTypes.STRING,
+            primaryKey: true,
             allowNull: false,
         },
         targetId: {
             type: DataTypes.BIGINT,
             allowNull: true,
             validate: {
-                is: DISCORD_SNOWFLAKE
+                is: /^\d{17,20}$/ //Discord Snowflake
             }
         },
         exclude: {
@@ -45,12 +41,6 @@ module.exports = sequelize => {
         timestamps: true,
         createdAt: true,
         updatedAt: true,
-        indexes: [
-            {
-                unique: true,
-                fields: ['guildId', 'type']
-            }
-        ]
     });
 
     // Send a reward drop every 30 minutes

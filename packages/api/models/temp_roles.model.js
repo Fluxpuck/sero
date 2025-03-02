@@ -1,7 +1,6 @@
 const { Sequelize, Model, DataTypes } = require('sequelize');
 const { publishMessage, REDIS_CHANNELS } = require('../database/publisher');
 const cron = require('node-cron');
-const { DISCORD_SNOWFLAKE } = require('../config/config');
 
 class TempRoles extends Model {
     static associate(models) {
@@ -12,30 +11,25 @@ class TempRoles extends Model {
 
 module.exports = sequelize => {
     TempRoles.init({
-        id: {
-            type: DataTypes.INTEGER,
-            primaryKey: true,
-            autoIncrement: true,
-        },
         userId: {
             type: DataTypes.BIGINT,
             allowNull: false,
             validate: {
-                is: DISCORD_SNOWFLAKE
+                is: /^\d{17,20}$/ //Discord Snowflake
             }
         },
         guildId: {
             type: DataTypes.BIGINT,
             allowNull: false,
             validate: {
-                is: DISCORD_SNOWFLAKE
+                is: /^\d{17,20}$/ //Discord Snowflake
             }
         },
         roleId: {
             type: DataTypes.BIGINT,
             allowNull: false,
             validate: {
-                is: DISCORD_SNOWFLAKE
+                is: /^\d{17,20}$/ //Discord Snowflake
             }
         },
         duration: {
@@ -62,14 +56,9 @@ module.exports = sequelize => {
         modelName: 'temp_roles',
         timestamps: true,
         createdAt: true,
-        indexes: [
-            {
-                fields: ['userId', 'guildId'],
-                unique: true,
-            }
-        ],
         hooks: {
             beforeCreate: (record, options) => {
+                // Calculate expireAt based on duration and createdAt
                 const expireAt = new Date(record.createdAt);
                 expireAt.setHours(expireAt.getHours() + record.duration);
                 record.expireAt = expireAt;

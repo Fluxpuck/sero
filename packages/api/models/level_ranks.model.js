@@ -1,5 +1,4 @@
 const { Model, DataTypes } = require('sequelize');
-const { DISCORD_SNOWFLAKE } = require('../config/config');
 
 class LevelRanks extends Model {
     static associate(models) {
@@ -10,27 +9,24 @@ class LevelRanks extends Model {
 
 module.exports = sequelize => {
     LevelRanks.init({
-        id: {
-            type: DataTypes.INTEGER,
-            primaryKey: true,
-            autoIncrement: true,
-        },
         guildId: {
             type: DataTypes.BIGINT,
+            primaryKey: true,
             allowNull: false,
             validate: {
-                is: DISCORD_SNOWFLAKE // Discord Snowflake
+                is: /^\d{17,20}$/ // Discord Snowflake
             }
         },
         level: {
             type: DataTypes.INTEGER,
+            primaryKey: true,
             allowNull: false,
         },
         roleId: {
             type: DataTypes.BIGINT,
             allowNull: true,
             validate: {
-                is: DISCORD_SNOWFLAKE // Discord Snowflake
+                is: /^\d{17,20}$/ // Discord Snowflake
             }
         },
     }, {
@@ -38,13 +34,7 @@ module.exports = sequelize => {
         modelName: 'level_ranks',
         timestamps: true,
         updatedAt: true,
-        createdAt: true,
-        indexes: [
-            {
-                fields: ['guildId', 'level'],
-                unique: true,
-            }
-        ]
+        createdAt: true
     });
 
     return LevelRanks;

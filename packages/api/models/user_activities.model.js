@@ -1,5 +1,4 @@
 const { Model, DataTypes } = require('sequelize');
-const { DISCORD_SNOWFLAKE } = require('../config/config');
 
 class UserActivities extends Model {
     static associate(models) {
@@ -19,14 +18,14 @@ module.exports = sequelize => {
             type: DataTypes.BIGINT,
             allowNull: false,
             validate: {
-                is: DISCORD_SNOWFLAKE
+                is: /^\d{17,20}$/ //Discord Snowflake
             }
         },
         userId: {
             type: DataTypes.BIGINT,
             allowNull: false,
             validate: {
-                is: DISCORD_SNOWFLAKE
+                is: /^\d{17,20}$/ //Discord Snowflake
             }
         },
         type: {
@@ -42,11 +41,6 @@ module.exports = sequelize => {
         modelName: 'user_activities',
         timestamps: true,
         createdAt: true,
-        indexes: [
-            {
-                fields: ['guildId', 'userId'],
-            }
-        ]
     });
 
     return UserActivities;

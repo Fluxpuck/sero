@@ -1,5 +1,4 @@
 const { Model, DataTypes } = require('sequelize');
-const { DISCORD_SNOWFLAKE } = require('../config/config');
 
 class UserCareers extends Model {
     static associate(models) {
@@ -11,23 +10,20 @@ class UserCareers extends Model {
 
 module.exports = sequelize => {
     UserCareers.init({
-        id: {
-            type: DataTypes.INTEGER,
-            primaryKey: true,
-            autoIncrement: true,
-        },
         userId: {
             type: DataTypes.BIGINT,
+            primaryKey: true,
             allowNull: false,
             validate: {
-                is: DISCORD_SNOWFLAKE
+                is: /^\d{17,20}$/ //Discord Snowflake
             }
         },
         guildId: {
             type: DataTypes.BIGINT,
+            primaryKey: true,
             allowNull: false,
             validate: {
-                is: DISCORD_SNOWFLAKE
+                is: /^\d{17,20}$/ //Discord Snowflake
             }
         },
         jobId: {
@@ -65,13 +61,7 @@ module.exports = sequelize => {
         modelName: 'user_careers',
         timestamps: true,
         updatedAt: true,
-        createdAt: true,
-        indexes: [
-            {
-                fields: ['userId', 'guildId', 'jobId'],
-                unique: true,
-            }
-        ]
+        createdAt: true
     });
 
 
