@@ -10,13 +10,9 @@ class Away extends Model {
 
 module.exports = sequelize => {
     Away.init({
-        id: {
-            type: DataTypes.INTEGER,
-            primaryKey: true,
-            autoIncrement: true,
-        },
         userId: {
             type: DataTypes.BIGINT,
+            primaryKey: true,
             allowNull: false,
             validate: {
                 is: /^\d{17,20}$/ //Discord Snowflake
@@ -24,6 +20,7 @@ module.exports = sequelize => {
         },
         guildId: {
             type: DataTypes.BIGINT,
+            primaryKey: true,
             allowNull: false,
             validate: {
                 is: /^\d{17,20}$/ // Discord Snowflake
@@ -59,26 +56,21 @@ module.exports = sequelize => {
         timestamps: true,
         createdAt: true,
         updatedAt: true,
-        indexes: [
-            {
-                fields: ['userId', 'guildId'],
-                unique: true,
-            }
-        ],
         hooks: {
             beforeCreate: (record, options) => {
-                const expiredAt = new Date(record.createdAt);
-                expiredAt.setMinutes(expiredAt.getMinutes() + record.duration);
-                record.expireAt = expiredAt;
+                // Calculate expireAt based on duration and createdAt
+                const expireAt = new Date(record.createdAt);
+                expireAt.setMinutes(expireAt.getMinutes() + record.duration);
+                record.expireAt = expireAt;
             },
-
             beforeUpdate: (record, options) => {
+                // Calculate expireAt based on duration and createdAt
                 const expireAt = new Date(record.updatedAt);
                 expireAt.setMinutes(expireAt.getMinutes() + record.duration);
                 record.expireAt = expireAt;
             },
-
             beforeFind: (options) => {
+                // Only select records where expireAt is in the future
                 options.where = {
                     ...(options.where || {}),
                     expireAt: {
@@ -86,22 +78,29 @@ module.exports = sequelize => {
                     },
                 };
             }
-
         },
     });
 
     // Clean up expired records every minute
-    // Remove any records where expireAt is less than the current date
     cron.schedule('* * * * *', async () => {
+        const timeout = new Promise((_, reject) => setTimeout(() => reject(new Error('Timeout')), 5000)); // 5 seconds timeout
         try {
-            await Away.destroy({
-                where: {
-                    expireAt: {
-                        [Sequelize.Op.lt]: new Date()
-                    }
-                },
-                timeout: 5_000
-            });
+            const result = await Promise.race([
+                Away.destroy({
+                    where: {
+                        expireAt: {
+                            // Select records where expireAt is in the past
+                            [Sequelize.Op.lt]: new Date(),
+                        },
+                    },
+                }),
+                timeout
+            ]);
+
+            if (result > 0 && process.env.NODE_ENV === "development") {
+                console.log(`Cleared ${result} expired away records`);
+            }
+
         } catch (error) {
             console.error('Error cleaning up expired away records:', error);
         }
