@@ -1,4 +1,5 @@
 const { Model, DataTypes } = require('sequelize');
+const { DISCORD_SNOWFLAKE } = require('../config/config');
 
 class Messages extends Model {
     static associate(models) {
@@ -15,28 +16,28 @@ module.exports = sequelize => {
             allowNull: false,
             unique: true,
             validate: {
-                is: /^\d{17,20}$/ //Discord Snowflake
+                is: DISCORD_SNOWFLAKE
             }
         },
         channelId: {
             type: DataTypes.BIGINT,
             allowNull: false,
             validate: {
-                is: /^\d{17,20}$/ //Discord Snowflake
+                is: DISCORD_SNOWFLAKE
             }
         },
         userId: {
             type: DataTypes.BIGINT,
             allowNull: false,
             validate: {
-                is: /^\d{17,20}$/ //Discord Snowflake
+                is: DISCORD_SNOWFLAKE
             }
         },
         guildId: {
             type: DataTypes.BIGINT,
             allowNull: false,
             validate: {
-                is: /^\d{17,20}$/ //Discord Snowflake
+                is: DISCORD_SNOWFLAKE
             }
         },
     }, {

@@ -1,5 +1,6 @@
 const { Sequelize, Model, DataTypes } = require('sequelize');
 const cron = require('node-cron');
+const { DISCORD_SNOWFLAKE } = require('../config/config');
 
 class Away extends Model {
     static associate(models) {
@@ -19,14 +20,14 @@ module.exports = sequelize => {
             type: DataTypes.BIGINT,
             allowNull: false,
             validate: {
-                is: /^\d{17,20}$/ //Discord Snowflake
+                is: DISCORD_SNOWFLAKE
             }
         },
         guildId: {
             type: DataTypes.BIGINT,
             allowNull: false,
             validate: {
-                is: /^\d{17,20}$/ // Discord Snowflake
+                is: DISCORD_SNOWFLAKE // Discord Snowflake
             }
         },
         duration: {
@@ -109,3 +110,6 @@ module.exports = sequelize => {
 
     return Away;
 }
+
+
+// TODO: Test the new changes & apply to all other models

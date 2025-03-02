@@ -1,5 +1,6 @@
 const { Model, DataTypes, Op } = require('sequelize');
 const { publishMessage, REDIS_CHANNELS } = require('../database/publisher');
+const { DISCORD_SNOWFLAKE } = require('../config/config');
 
 class UserLevels extends Model {
     static associate(models) {
@@ -10,20 +11,23 @@ class UserLevels extends Model {
 
 module.exports = sequelize => {
     UserLevels.init({
+        id: {
+            type: DataTypes.INTEGER,
+            primaryKey: true,
+            autoIncrement: true,
+        },
         userId: {
             type: DataTypes.BIGINT,
-            primaryKey: true,
             allowNull: false,
             validate: {
-                is: /^\d{17,20}$/ //Discord Snowflake
+                is: DISCORD_SNOWFLAKE
             }
         },
         guildId: {
             type: DataTypes.BIGINT,
-            primaryKey: true,
             allowNull: false,
             validate: {
-                is: /^\d{17,20}$/ //Discord Snowflake
+                is: DISCORD_SNOWFLAKE
             }
         },
         experience: {
@@ -87,18 +91,19 @@ module.exports = sequelize => {
                     msg: 'Modifyer cannot be greater than 5'
                 },
             }
-        },
-        reward_claimed: {
-            type: DataTypes.BOOLEAN,
-            allowNull: false,
-            defaultValue: false
         }
     }, {
         sequelize,
         modelName: 'user_levels',
         timestamps: true,
         updatedAt: true,
-        createdAt: true
+        createdAt: true,
+        indexes: [
+            {
+                fields: ['userId', 'guildId'],
+                unique: true,
+            }
+        ]
     });
 
 

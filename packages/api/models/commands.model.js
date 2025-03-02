@@ -1,4 +1,5 @@
 const { Model, DataTypes } = require('sequelize');
+const { DISCORD_SNOWFLAKE } = require('../config/config');
 
 class Commands extends Model {
     static associate(models) {
@@ -7,17 +8,21 @@ class Commands extends Model {
 
 module.exports = sequelize => {
     Commands.init({
+        id: {
+            type: DataTypes.INTEGER,
+            primaryKey: true,
+            autoIncrement: true,
+        },
         commandId: {
             type: DataTypes.BIGINT,
             unique: true,
             allowNull: true,
             validate: {
-                is: /^\d{17,20}$/ //Discord Snowflake
+                is: DISCORD_SNOWFLAKE
             }
         },
         commandName: {
             type: DataTypes.STRING,
-            primaryKey: true,
             unique: true,
             allowNull: false,
         },
@@ -58,6 +63,16 @@ module.exports = sequelize => {
             timestamps: true,
             createdAt: true,
             updatedAt: true,
+            indexes: [
+                {
+                    fields: ['commandId'],
+                    unique: true,
+                },
+                {
+                    fields: ['commandName'],
+                    unique: true,
+                }
+            ],
         }, {
     });
 

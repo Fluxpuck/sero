@@ -1,4 +1,5 @@
 const { Model, DataTypes } = require('sequelize');
+const { DISCORD_SNOWFLAKE } = require('../config/config');
 
 class Logs extends Model {
     static associate(models) {
@@ -16,14 +17,14 @@ module.exports = sequelize => {
             primaryKey: true,
             unique: true,
             validate: {
-                is: /^\d{17,20}$/ //Discord Snowflake
+                is: DISCORD_SNOWFLAKE
             }
         },
         guildId: {
             type: DataTypes.BIGINT,
             allowNull: false,
             validate: {
-                is: /^\d{17,20}$/ //Discord Snowflake
+                is: DISCORD_SNOWFLAKE
             }
         },
         auditAction: {
@@ -38,7 +39,7 @@ module.exports = sequelize => {
             type: DataTypes.BIGINT,
             allowNull: true,
             validate: {
-                is: /^\d{17,20}$/ //Discord Snowflake
+                is: DISCORD_SNOWFLAKE
             }
         },
         reason: {
@@ -49,7 +50,7 @@ module.exports = sequelize => {
             type: DataTypes.BIGINT,
             allowNull: false,
             validate: {
-                is: /^\d{17,20}$/ //Discord Snowflake
+                is: DISCORD_SNOWFLAKE
             }
         },
         duration: {
@@ -67,6 +68,11 @@ module.exports = sequelize => {
         createdAt: true,
         updatedAt: true,
         paranoid: true,
+        indexes: [
+            {
+                fields: ['guildId', 'userId']
+            }
+        ],
         hooks: {
             // Set the reason to "No reason provided" if no reason is provided
             beforeSave: (log, options) => {
