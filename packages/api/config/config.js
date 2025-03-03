@@ -1,1 +1,3 @@
-export const DISCORD_SNOWFLAKE = /^\d{17,20}$/ 
+module.exports = {
+    DISCORD_SNOWFLAKE: /^\d{17,20}$/
+}
