@@ -72,13 +72,17 @@ module.exports.run = async (client, interaction) => {
             },
             {
                 name: `Salary`,
-                value: `\`$ ${salary.toLocaleString()}\``,
+                value: `\`$${salary.toLocaleString()}\``,
                 inline: true
             },
             {
                 name: `Pay Raise`,
-                value: `\`${payRaise}%\``,
+                value: `\`${payRaise} %\``,
                 inline: true
+            },
+            { // Add a blank field
+                name: "\t",
+                value: "\t"
             },
             {
                 name: `Total Income`,
@@ -94,10 +98,6 @@ module.exports.run = async (client, interaction) => {
                 name: `Work Streak`,
                 value: `\`${currentStreak.toLocaleString()} day${currentStreak === 1 ? "" : "s"}\``,
                 inline: true
-            },
-            { // Add a blank field
-                name: "\t",
-                value: "\t"
             },
         ]
     })
