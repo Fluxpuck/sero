@@ -67,7 +67,7 @@ module.exports.run = async (client, interaction) => {
         fields: [
             {
                 name: `${emoji} ${name.toString()}`,
-                value: `${description}\n-# Since <t:${unixTimestamp(startCareerDate)}:d> (<t:${unixTimestamp(startCareerDate)}:R>)\n-# Last worked on <t:${unixTimestamp(lastTimeWorked)}:d> (<t:${unixTimestamp(lastTimeWorked)}:R>)`,
+                value: `${description}\n-# First day on <t:${unixTimestamp(startCareerDate)}:d> (<t:${unixTimestamp(startCareerDate)}:R>)\n-# Last worked on <t:${unixTimestamp(lastTimeWorked)}:d> (<t:${unixTimestamp(lastTimeWorked)}:R>)`,
                 inline: true
             },
             { // Add a blank field
