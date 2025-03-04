@@ -57,23 +57,14 @@ module.exports.run = async (client, interaction) => {
     const startCareerDate = new Date(createdAt);
     const lastTimeWorked = new Date(updatedAt);
 
-    const jobDescription =
-        `${description} \n
-        -# Since <t:${unixTimestamp(startCareerDate)}:d> (<t:${unixTimestamp(startCareerDate)}:R>) \n
-        -# Last worked on <t:${unixTimestamp(lastTimeWorked)}:d> (<t:${unixTimestamp(lastTimeWorked)}:R>) \n`
-
     // Create an embed to display the user's career
     const messageEmbed = createCustomEmbed({
         thumbnail: targetUser.displayAvatarURL({ dynamic: false }),
         fields: [
             {
                 name: `${emoji} ${name.toString()}`,
-                value: jobDescription,
+                value: `${description}\n-# Since <t:${unixTimestamp(startCareerDate)}:d> (<t:${unixTimestamp(startCareerDate)}:R>)\n-# Last worked on <t:${unixTimestamp(lastTimeWorked)}:d> (<t:${unixTimestamp(lastTimeWorked)}:R>)`,
                 inline: true
-            },
-            { // Add a blank field
-                name: "\t",
-                value: "\t"
             },
             { // Add a blank field
                 name: "\t",
