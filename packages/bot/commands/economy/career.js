@@ -94,7 +94,11 @@ module.exports.run = async (client, interaction) => {
                 name: `Work Streak`,
                 value: `\`${currentStreak.toLocaleString()} day${currentStreak === 1 ? "" : "s"}\``,
                 inline: true
-            }
+            },
+            { // Add a blank field
+                name: "\t",
+                value: "\t"
+            },
         ]
     })
 
