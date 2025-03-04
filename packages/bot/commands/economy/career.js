@@ -3,6 +3,7 @@ const { createCustomEmbed } = require("../../assets/embed");
 const { getRequest } = require('../../database/connection');
 const { unixTimestamp } = require("../../lib/helpers/TimeDateHelpers/timeHelper");
 const { deferInteraction, followUpInteraction, replyInteraction } = require('../../utils/InteractionManager');
+const { calculateDailyIncome } = require('../../lib/helpers/EconomyHelpers/economyHelper');
 
 module.exports.props = {
     commandName: "career",
@@ -35,9 +36,11 @@ module.exports.run = async (client, interaction) => {
     }
 
     // Get the user's career && career snapshots
-    const userCareer = await getRequest(`/guilds/${interaction.guildId}/economy/career/${targetUser.id}`);
-    const careerIncome = await getRequest(`/guilds/${interaction.guildId}/activities/sum/${targetUser.id}/daily-work?totalType=income`);
-    const careerStreak = await getRequest(`/guilds/${interaction.guildId}/activities/streak/${targetUser.id}/daily-work`);
+    const [userCareer, careerIncome, careerStreak] = await Promise.all([
+        getRequest(`/guilds/${interaction.guildId}/economy/career/${targetUser.id}`),
+        getRequest(`/guilds/${interaction.guildId}/activities/sum/${targetUser.id}/daily-work?totalType=income`),
+        getRequest(`/guilds/${interaction.guildId}/activities/streak/${targetUser.id}/daily-work`)
+    ]);
 
     // If the (required) request was not successful, return an error
     if (userCareer.status !== 200) {
@@ -51,6 +54,7 @@ module.exports.run = async (client, interaction) => {
     const { level, createdAt, updatedAt } = userCareer.data;
     const { name, emoji, description, salary, payRaise } = userCareer.data.job;
 
+    const dailyIncome = calculateDailyIncome(salary, payRaise, level);
     const totalIncome = careerIncome.data.total || 0;
     const currentStreak = careerStreak.data.streak || 0;
 
@@ -71,12 +75,17 @@ module.exports.run = async (client, interaction) => {
                 value: "\t"
             },
             {
-                name: `Salary`,
+                name: `Yearly Salary`,
                 value: `\`$${salary.toLocaleString()}\``,
                 inline: true
             },
             {
-                name: `Pay Raise`,
+                name: `Daily Salary`,
+                value: `\`$${dailyIncome.toLocaleString()}\``,
+                inline: true
+            },
+            {
+                name: `Pay Raise (per level)`,
                 value: `\`${payRaise} %\``,
                 inline: true
             },
