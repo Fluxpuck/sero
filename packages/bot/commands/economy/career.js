@@ -90,10 +90,6 @@ module.exports.run = async (client, interaction) => {
                 value: `\`Level ${level.toLocaleString()}\``,
                 inline: true
             },
-            { // Add a blank field
-                name: "\t",
-                value: "\t"
-            },
             {
                 name: `Work Streak`,
                 value: `\`${currentStreak.toLocaleString()} day${currentStreak === 1 ? "" : "s"}\``,
