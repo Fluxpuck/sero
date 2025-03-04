@@ -48,13 +48,19 @@ module.exports.run = async (client, interaction) => {
     }
 
     // Set the data from the requests
-    const { level, createdAt } = userCareer.data;
-    const { name, emoji, description } = userCareer.data.job;
+    const { level, createdAt, updatedAt } = userCareer.data;
+    const { name, emoji, description, salary, payRaise } = userCareer.data.job;
 
     const totalIncome = careerIncome.data.total || 0;
     const currentStreak = careerStreak.data.streak || 0;
 
     const startCareerDate = new Date(createdAt);
+    const lastTimeWorked = new Date(updatedAt);
+
+    const jobDescription =
+        `${description} \n
+        -# Since <t:${unixTimestamp(startCareerDate)}:d> (<t:${unixTimestamp(startCareerDate)}:R>) \n
+        -# Last worked on <t:${unixTimestamp(lastTimeWorked)}:d> (<t:${unixTimestamp(lastTimeWorked)}:R>) \n`
 
     // Create an embed to display the user's career
     const messageEmbed = createCustomEmbed({
@@ -62,22 +68,40 @@ module.exports.run = async (client, interaction) => {
         fields: [
             {
                 name: `${emoji} ${name.toString()}`,
-                value: `${description}\n-# Since <t:${unixTimestamp(startCareerDate)}:d> (<t:${unixTimestamp(startCareerDate)}:R>)`,
+                value: jobDescription,
                 inline: true
             },
             { // Add a blank field
                 name: "\t",
                 value: "\t"
             },
+            { // Add a blank field
+                name: "\t",
+                value: "\t"
+            },
             {
-                name: `Career Level`,
-                value: `\`Level ${level.toLocaleString()}\``,
+                name: `Salary`,
+                value: `\`$ ${salary.toLocaleString()}\``,
+                inline: true
+            },
+            {
+                name: `Pay Raise`,
+                value: `\`${payRaise}%\``,
                 inline: true
             },
             {
                 name: `Total Income`,
                 value: `\`$${totalIncome.toLocaleString()}\``,
                 inline: true
+            },
+            {
+                name: `Career Level`,
+                value: `\`Level ${level.toLocaleString()}\``,
+                inline: true
+            },
+            { // Add a blank field
+                name: "\t",
+                value: "\t"
             },
             {
                 name: `Work Streak`,
