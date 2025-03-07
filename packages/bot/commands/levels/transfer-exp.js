@@ -1,6 +1,6 @@
 const { MessageFlags } = require('discord.js');
 const { postRequest, getRequest } = require("../../database/connection");
-const { deferInteraction, replyInteraction, updateInteraction, followUpInteraction } = require("../../utils/InteractionManager");
+const { deferInteraction, replyInteraction, followUpInteraction } = require("../../utils/InteractionManager");
 
 module.exports.props = {
     commandName: "transfer-exp",
@@ -101,7 +101,6 @@ module.exports.run = async (client, interaction) => {
 
 
     if (eligibleForTransfer) {
-
         try {
             // Remove exp from the author
             const removeResult = await postRequest(`/guilds/${interaction.guildId}/levels/exp/${interaction.user.id}`, { experience: -transferAmount });
@@ -116,6 +115,7 @@ module.exports.run = async (client, interaction) => {
             }
 
         } catch (error) {
+            console.error(error);
             await followUpInteraction(interaction, {
                 content: "Something went wrong while transferring experience to the user.",
                 flags: MessageFlags.Ephemeral
