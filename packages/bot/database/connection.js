@@ -20,21 +20,25 @@ module.exports = {
             const response = await instance.get(endpoint);
             return response;
         } catch (error) {
-            return new CreateError(408, error?.response?.data.error, false);
+            const { status = 408, data = {} } = error?.response;
+            const errorMessage = data?.error?.data?.message || error?.message || "An error occurred while fetching data";
+            return new CreateError(status, errorMessage, false);
         }
     },
 
     /**
      * POST request to the API
      * @param {string} endpoint - The endpoint to make the request to
-     * @param {object} data - The data to send with the request
+     * @param {object} data - The data to send with the request 
      */
     async postRequest(endpoint, data) {
         try {
             const response = await instance.post(endpoint, data);
             return response;
         } catch (error) {
-            return new CreateError(408, error?.response?.data.error, false);
+            const { status = 408, data = {} } = error?.response;
+            const errorMessage = data?.error?.data?.message || error?.message || "An error occurred while posting data";
+            return new CreateError(status, errorMessage, false);
         }
     },
 
@@ -47,7 +51,9 @@ module.exports = {
             const response = await instance.delete(endpoint);
             return response;
         } catch (error) {
-            return new CreateError(408, error?.response?.data.error, false);
+            const { status = 408, data = {} } = error?.response;
+            const errorMessage = data?.error?.data?.message || error?.message || "An error occurred while deleting data";
+            return new CreateError(status, errorMessage, false);
         }
     },
 
@@ -59,7 +65,9 @@ module.exports = {
             const response = await instance.get('/');
             return response
         } catch (error) {
-            return new CreateError(408, error?.response?.data.error, false);
+            const { status = 408 } = error?.response;
+            const errorMessage = "An error occurred";
+            return new CreateError(status, errorMessage, false);
         }
     }
 

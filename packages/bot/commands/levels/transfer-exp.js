@@ -115,7 +115,6 @@ module.exports.run = async (client, interaction) => {
             }
 
         } catch (error) {
-            console.error(error);
             await followUpInteraction(interaction, {
                 content: "Something went wrong while transferring experience to the user.",
                 flags: MessageFlags.Ephemeral
