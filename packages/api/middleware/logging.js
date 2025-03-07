@@ -9,30 +9,36 @@ const logger = morgan(
     {
         stream: {
             write: async (message) => {
-                // Extract log details from the message
-                const [method, url, status, response, time] = message.trim().split(' ');
+                // Extract log details from the message and handle potential missing values
+                const parts = message.trim().split(' ');
+                const method = parts[0] || '';
+                const url = parts[1] || '';
+                const status = parseInt(parts[2]) || 500;
+                const responseTime = parts[3] || '0';
+                const time = parts[4] || 'ms';
 
                 // Use regex to capture the body part of the log
                 const bodyMatch = message.match(/{\s*.*\s*}/);
-                const body = bodyMatch ? JSON.parse(bodyMatch[0]) : null;
+                const body = bodyMatch ? JSON.parse(bodyMatch[0]) : {};
 
-                try { // Log request details to the database
+                try {
+                    // Log request details to the database
                     await _Requests.create({
                         method,
                         url,
-                        status: parseInt(status),
-                        responseTime: `${response} ${time}`,
+                        status,
+                        responseTime: `${responseTime} ${time}`,
                         body,
                     });
                 } catch (error) {
                     console.error('Error logging request to the database:', error);
-                    console.error('Body:', body);
+                    console.error('Message:', message);
+                    console.error('Parsed values:', { method, url, status, responseTime, body });
                 }
 
                 if (process.env.NODE_ENV === "development") {
                     console.log("\x1b[2m", `[LOG]: ${message}`);
                 }
-
             },
         },
     }
