@@ -1,0 +1,43 @@
+const { getRequest } = require("../../database/connection");
+const { createCustomEmbed } = require("../../assets/embed");
+const { deferInteraction, replyInteraction } = require("../../utils/InteractionManager");
+
+module.exports.props = {
+    commandName: "rob",
+    description: "Steal from a user.",
+    usage: "/rob [user]",
+    interaction: {
+        type: 1,
+        options: [
+            {
+                name: "user",
+                type: 6,
+                description: "Select a user to rob",
+                required: false
+            }
+        ],
+    },
+    defaultMemberPermissions: ['SendMessages'],
+}
+
+module.exports.run = async (client, interaction) => {
+    await deferInteraction(interaction, false);
+
+    // Get User details from the interaction options
+    const targetUser = interaction.options.get("user")?.user || interaction.user;
+
+    // Get the user's bank and wallet rob
+    const result = await getRequest(`/guilds/${interaction.guildId}/economy/rob/${targetUser.id}`);
+    return console.log(result);
+
+
+
+
+
+
+    // Reply with the messageEmbed
+    return replyInteraction(interaction, {
+        embeds: [messageEmbed],
+
+    });
+}
