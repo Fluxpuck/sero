@@ -198,7 +198,7 @@ router.post("/steal/:userId", async (req, res, next) => {
 
             // Get wallets
             const thiefUserWallet = await findOneRecord(UserWallet, { where: { userId }, transaction: t });
-            const targetUserWallet = await findOneRecord(UserWallet, { where: { userId: userId }, transaction: t });
+            const targetUserWallet = await findOneRecord(UserWallet, { where: { userId: targetId }, transaction: t }); // Fix: Changed userId to targetId
 
             if (!thiefUserWallet || !targetUserWallet) {
                 throw new CreateError(404, "Wallet not found for one or both users");
