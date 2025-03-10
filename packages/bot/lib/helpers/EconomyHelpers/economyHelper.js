@@ -39,19 +39,19 @@ module.exports = {
      */
     getReward: (streak) => {
         const rewards = [
-            { days: 5, reward: 100 },
-            { days: 15, reward: 150 },
-            { days: 30, reward: 200 },
-            { days: 50, reward: 250 },
-            { days: 75, reward: 350 },
-            { days: 100, reward: 500 },
-            { days: 130, reward: 650 },
-            { days: 150, reward: 800 },
-            { days: 180, reward: 1000 },
-            { days: 210, reward: 1250 },
-            { days: 250, reward: 1500 },
-            { days: 300, reward: 2000 },
-            { days: 365, reward: 2500 }
+            { days: 5, reward: 1000 },
+            { days: 15, reward: 1500 },
+            { days: 30, reward: 2000 },
+            { days: 50, reward: 2500 },
+            { days: 75, reward: 3500 },
+            { days: 100, reward: 5000 },
+            { days: 130, reward: 6500 },
+            { days: 150, reward: 8000 },
+            { days: 180, reward: 10000 },
+            { days: 210, reward: 12500 },
+            { days: 250, reward: 15000 },
+            { days: 300, reward: 20000 },
+            { days: 365, reward: 25000 }
         ];
 
         for (const tier of rewards) {
