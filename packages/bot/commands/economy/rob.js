@@ -28,33 +28,43 @@ module.exports.run = async (client, interaction) => {
 
     // Prevent self-robbery
     if (targetUser.id === interaction.user.id) {
-        const messageEmbed = createCustomEmbed()
-            .setDescription("You can't rob yourself!")
-            .setColor("#ff0000");
-        return replyInteraction(interaction, { embeds: [messageEmbed] });
+        return replyInteraction(interaction, {
+            embeds: [createCustomEmbed({
+                description: "You can't rob yourself!",
+                color: "#ff0000"
+            })]
+        });
     }
 
     // Calculate success (20% chance)
-    const success = Math.random() < 0.20;
+    const success = true //Math.random() < 0.20;
 
     if (!success) {
-        const messageEmbed = createCustomEmbed()
-            .setDescription(`You tried to rob ${targetUser.username} but failed!`)
-            .setColor("#ff0000");
-        return replyInteraction(interaction, { embeds: [messageEmbed] });
+        return replyInteraction(interaction, {
+            embeds: [createCustomEmbed({
+                description: `You tried to rob ${targetUser.username} but failed!`,
+                color: "#ff0000"
+            })]
+        });
     }
 
     try {
         // Attempt the robbery
-        const result = await getRequest(`/guilds/${interaction.guildId}/economy/steal/${interaction.user.id}`, {
+        const result = await getRequest(`/guilds/${interaction.guildId}/economy/transfer/steal/${targetUser.id}`, {
             targetId: targetUser.id
         });
 
+
+        console.log(result);
+
+
         if (!result.success) {
-            const messageEmbed = createCustomEmbed()
-                .setDescription(result.message || "Robbery failed!")
-                .setColor("#ff0000");
-            return replyInteraction(interaction, { embeds: [messageEmbed] });
+            return replyInteraction(interaction, {
+                embeds: [createCustomEmbed({
+                    description: result.message || "Robbery failed!",
+                    color: "#ff0000"
+                })]
+            });
         }
 
         const messageEmbed = createCustomEmbed()
