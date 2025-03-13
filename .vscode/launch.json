@@ -21,6 +21,14 @@
             "runtimeExecutable": "node"
         },
         {
+            "name": "Sero Agent",
+            "type": "node",
+            "request": "launch",
+            "program": "${workspaceFolder}/packages/agent/index.ts",
+            "cwd": "${workspaceFolder}",
+            "runtimeExecutable": "ts-node"
+        },
+        {
             "name": "Seeder",
             "type": "node",
             "request": "launch",

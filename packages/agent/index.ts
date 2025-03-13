@@ -6,7 +6,7 @@ import { Client, Collection, GatewayIntentBits } from 'discord.js';
 import { Command } from './types/command.types';
 import { Event } from './types/event.types';
 
-dotenv.config();
+dotenv.config({ path: path.join(__dirname, '.', 'config', '.env') });
 
 // Create client instance with necessary intents
 const client = new Client({

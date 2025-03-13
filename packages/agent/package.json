@@ -19,13 +19,14 @@
     "author": "",
     "license": "MIT",
     "dependencies": {
+        "axios": "^1.8.3",
         "discord.js": "^14.x",
         "dotenv": "^16.4.5"
     },
     "devDependencies": {
-        "typescript": "^5.x",
+        "@types/node": "^18.x",
         "ts-node": "^10.x",
-        "@types/node": "^18.x"
+        "typescript": "^5.x"
     },
     "engines": {
         "node": ">=18.20.0"
