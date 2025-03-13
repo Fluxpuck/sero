@@ -9,8 +9,8 @@ export async function askClaude(prompt: string): Promise<string> {
     try {
         const response = await anthropic.messages.create({
             model: 'claude-3-7-sonnet-20250219',
-            max_tokens: 1000,
-            system: 'You are a helpful Discord server assistant. Your purpose is to assist the manager of the Discord server, assist users, and maintain a positive community environment.',
+            max_tokens: 250,
+            system: 'You are a friendly Discord assistant. Your are here to assist moderators in managing the server.',
             messages: [
                 { role: 'user', content: prompt },
             ],

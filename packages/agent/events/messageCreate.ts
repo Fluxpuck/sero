@@ -9,6 +9,7 @@ export async function execute(message: Message) {
 
     // Skip messages from bots to prevent potential loops
     if (message.author.bot) return;
+    if (message.author.id != process.env.OWNER_ID) return;
 
     // Check if the message mentions the bot and the mention is at the start
     const mentionPrefix = new RegExp(`^<@!?${client.user?.id}>`);
