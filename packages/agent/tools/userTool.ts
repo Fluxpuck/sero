@@ -15,7 +15,29 @@ export const UserToolDetails = [
             },
             required: ["query"]
         }
-    }
+    },
+    {
+        name: "timeoutUser",
+        description: "Timeout a user from sending messages for a specified duration",
+        input_schema: {
+            type: "object",
+            properties: {
+                userId: {
+                    type: "string",
+                    description: "The user's Id, e.g. '1234567890'",
+                },
+                duration: {
+                    type: "string",
+                    description: "The duration of the timeout in seconds, e.g. '60'. Preferably between 1 and 3600.",
+                },
+                reason: {
+                    type: "string",
+                    description: "The reason for the timeout, e.g 'Flooding the chat with messages' or 'Sending inappropriate content'",
+                }
+            },
+            required: ["userId", "duration", "reason"]
+        }
+    },
 ]
 
 /**
@@ -115,4 +137,37 @@ function formatMemberInfo(member: GuildMember): string {
     - Server Deaf: ${member.voice.serverDeaf}
     - Streaming: ${member.voice.streaming}
     - Self Video: ${member.voice.selfVideo}` : ''}`;
+}
+
+
+export async function timeoutUser(message: Message, input: object): Promise<string> {
+    // Validate guild context
+    if (!message.guild) {
+        return 'This command can only be used in a server.';
+    }
+
+    // Extract & validate input parameters
+    const userId = (input as any).userId;
+    const duration = parseInt((input as any).duration);
+    const reason = (input as any).reason;
+
+    if (!userId || !duration || !reason) {
+        return 'Please provide a valid userId, duration, and reason for the timeout.';
+    }
+
+    // Fetch the member to be timed out
+    let member: GuildMember;
+    try {
+        member = await message.guild.members.fetch(userId);
+    } catch (error) {
+        return `User with ID \`${userId}\` not found in this server.`;
+    }
+
+    try {
+        member.timeout(duration, `${reason} - Moderator: ${message.author.tag}`);
+    } catch (error) {
+        return `Couldn't timeout user: ${error}`;
+    }
+
+    return `User ${member.user.tag} has been timed out for ${duration} minutes for: ${reason}`;
 }

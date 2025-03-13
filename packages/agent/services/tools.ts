@@ -1,6 +1,6 @@
 import { Message } from 'discord.js';
 import { Tool } from '../types/tool.types';
-import { UserToolDetails, findUser } from '../tools/userTool';
+import { UserToolDetails, findUser, timeoutUser } from '../tools/userTool';
 
 // Interface for tool execution functions
 interface ToolFunction {
@@ -14,6 +14,7 @@ const toolFunctions = new Map<string, ToolFunction>();
 export function initializeTools() {
     // Register user tools
     toolFunctions.set('findUser', findUser);
+    toolFunctions.set('timeoutUser', timeoutUser);
 
     // Register other tools here as they are added
     // toolFunctions.set('otherTool', otherToolFunction);

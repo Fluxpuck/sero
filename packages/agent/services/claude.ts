@@ -2,6 +2,7 @@ import Anthropic from '@anthropic-ai/sdk';
 import { Message } from 'discord.js';
 import { sanitizeResponse } from '../utils';
 import { getAllTools, executeTool } from './tools';
+import { contextManager } from '../context/contextManager';
 
 // Gather the about me and discord guidelines context for the AI assistant
 import { seroAgentDescription, discordGuideline } from '../context/context';
@@ -32,8 +33,10 @@ export async function askClaude(
             .replace('{{userId}}', user.id)
             .replace('{{username}}', user.username);
 
-        // Combine previous messages with new prompt
+        // Get stored context and combine with previous messages
+        const storedContext = contextManager.getContext(message);
         const messages = [
+            ...storedContext,
             ...previousMessages,
             { role: 'user', content: prompt }
         ];
@@ -56,7 +59,29 @@ export async function askClaude(
                         },
                         required: ["query"]
                     }
-                }
+                },
+                {
+                    name: "timeoutUser",
+                    description: "Timeout a user from sending messages for a specified duration",
+                    input_schema: {
+                        type: "object",
+                        properties: {
+                            userId: {
+                                type: "string",
+                                description: "The user's Id, e.g. '1234567890'",
+                            },
+                            duration: {
+                                type: "string",
+                                description: "The duration of the timeout in seconds, e.g. '60'. Preferably between 1 and 3600.",
+                            },
+                            reason: {
+                                type: "string",
+                                description: "The reason for the timeout, e.g 'Flooding the chat with messages' or 'Sending inappropriate content'",
+                            }
+                        },
+                        required: ["userId", "duration", "reason"]
+                    }
+                },
             ],
             messages: messages,
         });
@@ -67,8 +92,12 @@ export async function askClaude(
 
             if (!toolRequest) return "No valid tool request found";
 
-            // Reply with temporary response if Claude provided text
+            // Store Claude's response in context
             if (textContent) {
+                contextManager.addMessage(message, [
+                    { type: "text", text: textContent },
+                    { type: "tool_use", id: toolRequest.id, name: toolRequest.name, input: toolRequest.input }
+                ], 'assistant');
                 await message.reply(sanitizeResponse(textContent));
             }
 
@@ -99,9 +128,10 @@ export async function askClaude(
             // Recursive call with tool result and updated message history
             return await askClaude("", message, updatedMessages);
         } else {
-            // Return final response if no tool use
+            // Store final response in context
             const finalResponse = response.content.find(c => c.type === "text")?.text ?? "";
             if (finalResponse) {
+                contextManager.addMessage(message, [{ type: "text", text: finalResponse }], 'assistant');
                 await message.reply(sanitizeResponse(finalResponse));
             }
             return finalResponse;
