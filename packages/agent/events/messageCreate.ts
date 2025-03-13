@@ -24,24 +24,11 @@ export async function execute(message: Message) {
     if (!query) return;
 
     try {
-        // Create the context objects
-        const guild = {
-            guildId: message.guild?.id ?? 'DM',
-            guildName: message.guild?.name ?? 'Direct Message'
-        };
-
-        const channel = {
-            channelId: message.channel.id,
-            channelName: getChannelName(message.channel)
-        };
-
-        const user = {
+        // Pass the message object to askClaude
+        const response = await askClaude({
             userId: message.author.id,
             username: message.author.username
-        };
-
-        // Call Claude API with the context
-        const response = await askClaude(guild, channel, user, query);
+        }, query, message);
 
         // Handle Discord's message length limits (2000 characters)
         if (response.length <= 2000) {

@@ -1,4 +1,7 @@
 import Anthropic from '@anthropic-ai/sdk';
+import { Message } from 'discord.js';
+import { toolsRegistry, executeToolCall } from '../tools';
+import { getGuildName, getChannelName } from '../utils';
 
 interface User {
     userId: string;
@@ -6,19 +9,14 @@ interface User {
 }
 
 interface Guild {
-    guildId: string;
-    guildName: string | null;
+    id: string;
+    name: string;
 }
-
-interface Channel {
-    channelId: string;
-    channelName: string;
-}
-
 
 // Define an interface for the context
 interface UserContext {
     user: User;
+    guild: Guild;
     conversationHistory: Array<{ role: 'user' | 'assistant', content: string }>;
 }
 
@@ -32,12 +30,49 @@ const anthropic = new Anthropic({
     apiKey: process.env.ANTHROPIC_API_KEY,
 });
 
-export async function askClaude(guild: Guild, channel: Channel, user: User, prompt: string): Promise<string> {
+// Add these constants at the top of the file
+const SYSTEM_PROMPT = `You are Sero Agent, a friendly and knowledgeable Discord assistant powered by Claude AI.
+Your primary role is to help manage and enhance the Discord server experience.
+
+Core traits:
+- You are helpful but maintain appropriate boundaries
+- You communicate in a clear, friendly manner
+- You're knowledgeable about Discord, gaming, and technology
+- You can be witty but always stay professional
+- You prioritize server safety and following Discord guidelines
+
+Available Tools:
+{tools}
+
+Tool Usage Guidelines:
+1. Analyze user requests to determine if any tools would be helpful
+2. Automatically use relevant tools without asking for permission
+3. Use tool results to provide more informed and helpful responses
+4. You can use multiple tools in a single response if needed
+5. Format tool calls as: @tool[toolName]({"param": "value"})
+
+When using tools:
+- For user info: Use getUserInfo when context about a user is needed
+- For message history: Use fetchUserMessages to get context from past conversations
+- For channel search: Use searchChannelHistory to find relevant past discussions
+- For channel info: Use getChannelInfo when channel context is needed
+
+Important: Never pretend to be a human. You should always be clear that you are an AI assistant.
+If you're unsure about something, say so rather than making assumptions.
+
+Current context:
+- Channel: {channelName}
+- Server: {serverName}
+- User: {username}`;
+
+// Update the askClaude function
+export async function askClaude(user: User, prompt: string, message: Message): Promise<string> {
     try {
         // Get or initialize user context
         if (!userContexts.has(user.userId)) {
             userContexts.set(user.userId, {
                 user,
+                guild: { id: message.guild?.id ?? user.userId, name: getGuildName(message.guild) },
                 conversationHistory: []
             });
         }
@@ -52,38 +87,73 @@ export async function askClaude(guild: Guild, channel: Channel, user: User, prom
             userContext.conversationHistory = userContext.conversationHistory.slice(-10);
         }
 
+        // Format tools information in a more structured way
+        const toolsInfo = toolsRegistry.map(tool => {
+            return `${tool.name}: ${tool.description}
+            Parameters: ${JSON.stringify(tool.parameters, null, 2)}`;
+        }).join('\n\n');
+
+        // Prepare system prompt with real-time context
+        const systemPrompt = SYSTEM_PROMPT
+            .replace('{tools}', toolsInfo)
+            .replace('{channelName}', getChannelName(message.channel))
+            .replace('{serverName}', getGuildName(message.guild))
+            .replace('{username}', user.username);
+
         const response = await anthropic.messages.create({
             model: CLAUDE_MODEL,
-            max_tokens: 250,
-            system: `You are Sero, a friendly and knowledgeable Discord assistant powered by Claude AI.
-                    Your primary role is to help manage and enhance the Discord server experience.
-                    Core traits:
-                    - You are helpful but maintain appropriate boundaries
-                    - You communicate in a clear, friendly manner
-                    - You're knowledgeable about Discord, gaming, and technology
-                    - You can be witty but always stay professional
-                    - You prioritize server safety and following Discord guidelines
-                    
-                    Your current channel is ${channel.channelName} in the server ${guild.guildName}. 
-                    You are currently talking to ${user.username}. Use their conversation history for context.
-                    
-                    Important: Never pretend to be a human. You should always be clear that you are an AI assistant.
-                    If you're unsure about something, say so rather than making assumptions.`,
+            max_tokens: 1000, // Increased to allow for tool usage
+            system: systemPrompt,
             messages: userContext.conversationHistory,
         });
 
+        // Process the response and handle tool calls
         const textBlock = response.content.find(block => block.type === 'text');
-
-        if (textBlock && 'text' in textBlock) {
-            // Store assistant's response in context
-            userContext.conversationHistory.push({
-                role: 'assistant',
-                content: textBlock.text
-            });
-            return textBlock.text;
-        } else {
+        if (!textBlock || !('text' in textBlock)) {
             return "No text response received";
         }
+
+        let responseText = textBlock.text;
+        let finalResponse = responseText;
+
+        // Enhanced tool call processing
+        const toolCallRegex = /@tool\[(.*?)\]\((.*?)\)/g;
+        const toolCalls = responseText.match(toolCallRegex);
+
+        if (toolCalls) {
+            for (const toolCall of toolCalls) {
+                const [_, toolName, paramsStr] = /@tool\[(.*?)\]\((.*?)\)/.exec(toolCall) || [];
+                if (toolName) {
+                    try {
+                        const params = JSON.parse(paramsStr);
+                        const toolResult = await executeToolCall(toolName, params, message);
+
+                        // Add tool result to conversation history as an assistant message
+                        userContext.conversationHistory.push({
+                            role: 'assistant',
+                            content: `Tool ${toolName} returned: ${toolResult}`
+                        });
+
+                        // Replace tool call with result in the response
+                        finalResponse = finalResponse.replace(toolCall, toolResult);
+                    } catch (error) {
+                        console.error(`Error executing tool ${toolName}:`, error);
+                        finalResponse = finalResponse.replace(
+                            toolCall,
+                            `[Error executing ${toolName}]`
+                        );
+                    }
+                }
+            }
+        }
+
+        // Store final response in context
+        userContext.conversationHistory.push({
+            role: 'assistant',
+            content: finalResponse
+        });
+
+        return finalResponse;
     } catch (error) {
         console.error('Error calling Claude API:', error);
         throw error;

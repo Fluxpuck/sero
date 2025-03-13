@@ -1,5 +1,5 @@
 // src/utils.ts
-import { Message, ChannelType } from 'discord.js';
+import { Message, ChannelType, Channel, Guild } from 'discord.js';
 
 // Extract the command from a message
 export function processCommand(message: Message, prefix: string): string {
@@ -16,8 +16,13 @@ export function getUserIdFromMention(mention: string): string | null {
     return null;
 }
 
+
+export function getGuildName(guild: Guild | null): string {
+    return guild?.name ?? 'Direct Message';
+}
+
 // Add this helper function at the bottom of the file
-export function getChannelName(channel: any): string {
+export function getChannelName(channel: Channel): string {
     if (channel.type === ChannelType.DM) {
         return 'Direct Message';
     }
