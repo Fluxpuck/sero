@@ -67,6 +67,14 @@ Current context:
 - Server: {serverName}
 - User: {username}`;
 
+// Add this helper function after the imports
+function sanitizeResponse(text: string): string {
+    return text
+        .replace(/@everyone/gi, 'everyone') // Replace everyone mentions
+        .replace(/@here/gi, 'here') // Replace here mentions
+        .replace(/@&\d+/g, ''); // Remove role mentions
+}
+
 // Update the askClaude function
 export async function askClaude(user: User, prompt: string, message: Message): Promise<string> {
     try {
@@ -115,7 +123,7 @@ export async function askClaude(user: User, prompt: string, message: Message): P
             return "No text response received";
         }
 
-        let responseText = textBlock.text;
+        let responseText = sanitizeResponse(textBlock.text);
         let finalResponse = responseText;
 
         // Enhanced tool call processing
@@ -130,14 +138,17 @@ export async function askClaude(user: User, prompt: string, message: Message): P
                         const params = JSON.parse(paramsStr);
                         const toolResult = await executeToolCall(toolName, params, message);
 
-                        // Add tool result to conversation history as an assistant message
+                        // Sanitize tool result as well
+                        const sanitizedResult = sanitizeResponse(toolResult);
+
+                        // Add sanitized tool result to conversation history
                         userContext.conversationHistory.push({
                             role: 'assistant',
-                            content: `Tool ${toolName} returned: ${toolResult}`
+                            content: `Tool ${toolName} returned: ${sanitizedResult}`
                         });
 
-                        // Replace tool call with result in the response
-                        finalResponse = finalResponse.replace(toolCall, toolResult);
+                        // Replace tool call with sanitized result
+                        finalResponse = finalResponse.replace(toolCall, sanitizedResult);
                     } catch (error) {
                         console.error(`Error executing tool ${toolName}:`, error);
                         finalResponse = finalResponse.replace(
@@ -149,7 +160,7 @@ export async function askClaude(user: User, prompt: string, message: Message): P
             }
         }
 
-        // Store final response in context
+        // Store sanitized response in context
         userContext.conversationHistory.push({
             role: 'assistant',
             content: finalResponse
