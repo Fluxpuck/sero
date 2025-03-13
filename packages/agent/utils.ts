@@ -1,41 +1,34 @@
-// src/utils.ts
 import { Message, ChannelType, Channel, Guild } from 'discord.js';
 
-// Extract the command from a message
-export function processCommand(message: Message, prefix: string): string {
-    return message.content.slice(prefix.length).trim();
+// Sanitize the AI response by removing mentions
+export function sanitizeResponse(text: string): string {
+    return text
+        .replace(/@everyone/gi, 'everyone') // Replace everyone mentions
+        .replace(/@here/gi, 'here') // Replace here mentions
+        .replace(/@&\d+/g, ''); // Remove role mentions
 }
 
-// Extract user ID from a mention
-export function getUserIdFromMention(mention: string): string | null {
-    // The format of a mention is <@USER_ID> or <@!USER_ID>
-    const matches = mention.match(/^<@!?(\d+)>$/);
-    if (matches) {
-        return matches[1];
-    }
-    return null;
-}
+// Helper function to split messages that exceed Discord's character limit
+export function splitMessage(text: string, maxLength = 2_000): string[] {
+    const chunks: string[] = [];
+    let currentChunk = '';
 
+    const lines = text.split('\n');
 
-export function getGuildName(guild: Guild | null): string {
-    return guild?.name ?? 'Direct Message';
-}
-
-// Add this helper function at the bottom of the file
-export function getChannelName(channel: Channel): string {
-    if (channel.type === ChannelType.DM) {
-        return 'Direct Message';
+    for (const line of lines) {
+        // If adding this line would exceed the limit, push the current chunk and start a new one
+        if (currentChunk.length + line.length + 1 > maxLength) {
+            chunks.push(currentChunk);
+            currentChunk = line + '\n';
+        } else {
+            currentChunk += line + '\n';
+        }
     }
 
-    if (channel.type === ChannelType.GroupDM) {
-        return 'Group Direct Message';
+    // Don't forget the last chunk
+    if (currentChunk) {
+        chunks.push(currentChunk);
     }
 
-    // For guild channels that have a name property
-    if (channel.name) {
-        return channel.name;
-    }
-
-    // Fallback
-    return 'Unknown Channel';
+    return chunks;
 }

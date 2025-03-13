@@ -1,7 +1,6 @@
-// types/Event.ts
 import { ClientEvents } from 'discord.js';
 
-export interface Event {
+export type Event = {
     name: keyof ClientEvents;
     once: boolean;
     execute: (...args: any[]) => void | Promise<void>;
