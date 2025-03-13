@@ -4,6 +4,7 @@ import { fetchUserMessages } from './user-messages';
 import { searchChannelHistory } from './channel-search';
 import { getUserInfo } from './user-info';
 import { getChannelInfo } from './channel-info';
+import { searchUser } from './search-user';
 
 // Define tool schemas
 export const toolsRegistry = [
@@ -71,6 +72,26 @@ export const toolsRegistry = [
             type: 'object',
             properties: {}
         }
+    },
+    {
+        name: 'searchUser',
+        description: 'Search for users in the server by name or partial name',
+        parameters: {
+            type: 'object',
+            properties: {
+                query: {
+                    type: 'string',
+                    description: 'The name or partial name to search for (minimum 2 characters)'
+                },
+                limit: {
+                    type: 'number',
+                    description: 'Maximum number of results to return (default: 5)',
+                    minimum: 1,
+                    maximum: 10
+                }
+            },
+            required: ['query']
+        }
     }
 ];
 
@@ -79,7 +100,8 @@ const toolImplementations: { [key: string]: Function } = {
     fetchUserMessages,
     searchChannelHistory,
     getUserInfo,
-    getChannelInfo
+    getChannelInfo,
+    searchUser
 };
 
 // Function to execute a tool call
