@@ -19,6 +19,7 @@
     "author": "",
     "license": "MIT",
     "dependencies": {
+        "@anthropic-ai/sdk": "^0.39.0",
         "axios": "^1.8.3",
         "discord.js": "^14.x",
         "dotenv": "^16.4.5"
