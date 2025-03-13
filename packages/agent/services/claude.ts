@@ -2,7 +2,6 @@ import Anthropic from '@anthropic-ai/sdk';
 import { Message } from 'discord.js';
 import { sanitizeResponse } from '../utils';
 import { getAllTools, executeTool } from './tools';
-import { contextManager } from '../context/contextManager';
 
 // Gather the about me and discord guidelines context for the AI assistant
 import { seroAgentDescription, discordGuideline } from '../context/context';
@@ -33,10 +32,8 @@ export async function askClaude(
             .replace('{{userId}}', user.id)
             .replace('{{username}}', user.username);
 
-        // Get stored context and combine with previous messages
-        const storedContext = contextManager.getContext(message);
+        // Combine previous messages with new prompt
         const messages = [
-            ...storedContext,
             ...previousMessages,
             { role: 'user', content: prompt }
         ];
@@ -92,12 +89,8 @@ export async function askClaude(
 
             if (!toolRequest) return "No valid tool request found";
 
-            // Store Claude's response in context
+            // Reply with temporary response if Claude provided text
             if (textContent) {
-                contextManager.addMessage(message, [
-                    { type: "text", text: textContent },
-                    { type: "tool_use", id: toolRequest.id, name: toolRequest.name, input: toolRequest.input }
-                ], 'assistant');
                 await message.reply(sanitizeResponse(textContent));
             }
 
@@ -128,10 +121,9 @@ export async function askClaude(
             // Recursive call with tool result and updated message history
             return await askClaude("", message, updatedMessages);
         } else {
-            // Store final response in context
+            // Return final response if no tool use
             const finalResponse = response.content.find(c => c.type === "text")?.text ?? "";
             if (finalResponse) {
-                contextManager.addMessage(message, [{ type: "text", text: finalResponse }], 'assistant');
                 await message.reply(sanitizeResponse(finalResponse));
             }
             return finalResponse;
