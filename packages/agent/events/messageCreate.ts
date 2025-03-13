@@ -1,5 +1,6 @@
-import { Events, Message, Client } from 'discord.js';
+import { Events, Message, Client, ChannelType } from 'discord.js';
 import { askClaude } from '../services/claude';
+import { getChannelName } from '../utils';
 
 // Type for the execute function
 export const name = Events.MessageCreate;
@@ -23,8 +24,24 @@ export async function execute(message: Message) {
     if (!query) return;
 
     try {
-        // Call Claude API with the query
-        const response = await askClaude(message.author.id, message.author.username, query);
+        // Create the context objects
+        const guild = {
+            guildId: message.guild?.id ?? 'DM',
+            guildName: message.guild?.name ?? 'Direct Message'
+        };
+
+        const channel = {
+            channelId: message.channel.id,
+            channelName: getChannelName(message.channel)
+        };
+
+        const user = {
+            userId: message.author.id,
+            username: message.author.username
+        };
+
+        // Call Claude API with the context
+        const response = await askClaude(guild, channel, user, query);
 
         // Handle Discord's message length limits (2000 characters)
         if (response.length <= 2000) {
