@@ -1,0 +1,33 @@
+{
+    "name": "sero-agent",
+    "version": "1.0.0",
+    "description": "A Discord bot framework using Discord.js and TypeScript",
+    "main": "dist/index.js",
+    "scripts": {
+        "build": "tsc",
+        "start": "node dist/index.js",
+        "dev": "ts-node index.ts",
+        "deploy": "ts-node deploy-commands.ts",
+        "watch": "tsc -w"
+    },
+    "keywords": [
+        "discord",
+        "bot",
+        "typescript",
+        "discord.js"
+    ],
+    "author": "",
+    "license": "MIT",
+    "dependencies": {
+        "discord.js": "^14.x",
+        "dotenv": "^16.4.5"
+    },
+    "devDependencies": {
+        "typescript": "^5.x",
+        "ts-node": "^10.x",
+        "@types/node": "^18.x"
+    },
+    "engines": {
+        "node": ">=18.20.0"
+    }
+}
