@@ -1,33 +1,38 @@
 import { Message, GuildMember, Collection } from 'discord.js';
 
-interface FindUserParams {
-    query: string;
-}
+// Define the tool details
+export const UserToolDetails = [
+    {
+        name: "findUser",
+        description: "Find a guild member based on a userId or username",
+        input_schema: {
+            type: "object",
+            properties: {
+                query: {
+                    type: "string",
+                    description: "The user's name or Id, e.g. '1234567890' or 'username'",
+                }
+            },
+            required: ["query"]
+        }
+    }
+]
 
 /**
- * Find a guild member based on ID, username, or display name
- * @param message - The Discord message that triggered the command
- * @param params - Search parameters containing the query string
- * @returns A GuildMember object if found, or an error message string
+ * Find a guild member based on userId, username, or display name
+ * @param message 
+ * @param params 
+ * @returns 
  */
-function formatMemberInfo(member: GuildMember): string {
-    return `### User Found: ${member.displayName}
-**Username**: ${member.user.username}
-**ID**: \`${member.id}\`
-**Joined Server**: ${member.joinedAt?.toLocaleDateString() ?? 'Unknown'}
-**Account Created**: ${member.user.createdAt.toLocaleDateString()}
-**Roles**: ${member.roles.cache.size - 1} roles // -1 to exclude @everyone
-**Status**: ${member.presence?.status ?? 'offline'}`;
-}
+export async function findUser(message: Message, input: object): Promise<string> {
 
-export async function findUser(message: Message, params: FindUserParams): Promise<string> {
     // Validate guild context
     if (!message.guild) {
         return 'This command can only be used in a server.';
     }
 
-    // Validate query
-    const { query } = params;
+    // Extract & validate query from input
+    const query = (input as any).query;
     if (!query || query.length < 2) {
         return 'Please provide at least 2 characters to search for a user.';
     }
@@ -83,4 +88,31 @@ export async function findUser(message: Message, params: FindUserParams): Promis
         const errorMessage = error instanceof Error ? error.message : String(error);
         return `An error occurred while searching for the user. Please try again later. (${errorMessage})`;
     }
+}
+
+/**
+ * Find a guild member based on ID, username, or display name
+ * @param message - The Discord message that triggered the command
+ * @param params - Search parameters containing the query string
+ * @returns A GuildMember object if found, or an error message string
+ */
+function formatMemberInfo(member: GuildMember): string {
+    return `
+    Member Information:
+    - Display Name: ${member.displayName}
+    - Username: ${member.user.username}
+    - ID: ${member.user.id}
+    - Joined Server: ${member.joinedAt?.toLocaleDateString() ?? 'Unknown'}
+    - Account Created: ${member.user.createdAt.toLocaleDateString()}
+    - Roles: ${member.roles.cache.filter(role => role.name !== '@everyone').map(role => `${role.name} (${role.id})`).join(', ')}
+    ${member.communicationDisabledUntil ? `- Timeout Until: ${member.communicationDisabledUntil.toISOString()}` : ''}
+    ${member.voice?.channelId ? `
+    Voice State:
+    - Channel ID: ${member.voice.channelId}
+    - Self Mute: ${member.voice.selfMute}
+    - Server Mute: ${member.voice.serverMute}
+    - Self Deaf: ${member.voice.selfDeaf}
+    - Server Deaf: ${member.voice.serverDeaf}
+    - Streaming: ${member.voice.streaming}
+    - Self Video: ${member.voice.selfVideo}` : ''}`;
 }

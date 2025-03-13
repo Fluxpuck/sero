@@ -1,6 +1,7 @@
 // events/ready.ts
 import { Events, Client } from 'discord.js';
 import { Event } from '../types/event.types';
+import { initializeTools } from '../services/tools';
 
 const event: Event = {
     name: Events.ClientReady,
@@ -10,9 +11,11 @@ const event: Event = {
         console.log(`🤖 Serving in ${client.guilds.cache.size} guilds`);
         console.log(`⌛ Started at: ${new Date().toLocaleString()}`);
 
-        // Set presence (optional)
+        initializeTools();
+        console.log('🛠️ Tools initialized');
+
         client.user?.setPresence({
-            activities: [{ name: '/help', type: 3 }], // 3 = Watching
+            activities: [{ name: '🤖', type: 4 }],
             status: 'online'
         });
     },

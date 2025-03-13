@@ -21,28 +21,12 @@ export async function execute(message: Message) {
     const query = message.content.replace(mentionPrefix, '').trim();
     if (!query) return;
 
-    console.log(`Received query: ${query}`);
-
     try {
-
-        const response = await askClaude(query, message);
-
-        // Handle Discord's message length limits (2000 characters)
-        // If the response is short enough, send it as a single message
-        // Otherwise, split it into chunks
-        if (response.length < 2_000) {
-            await message.reply(response);
-        } else {
-            const chunks = splitMessage(response);
-            for (const chunk of chunks) {
-                await message.reply(chunk);
-            }
-        }
-
+        // Forward the query to Claude and let it handle the response
+        await askClaude(query, message);
     } catch (error) {
         console.error('Error while processing Claude response:', error);
         await message.reply('Sorry, I encountered an error while processing your request.');
-
     }
 
 }
