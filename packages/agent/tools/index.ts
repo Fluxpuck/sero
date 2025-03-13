@@ -1,122 +1,128 @@
 // src/tools/index.ts - Tools registry and executor
 import { Message } from 'discord.js';
-import { fetchUserMessages } from './user-messages';
-import { searchChannelHistory } from './channel-search';
-import { getUserInfo } from './user-info';
-import { getChannelInfo } from './channel-info';
-import { searchUser } from './search-user';
+import { findUser } from './find-user';
 
 // Define tool schemas
 export const toolsRegistry = [
     {
-        name: 'fetchUserMessages',
-        description: 'Fetch recent messages from a specific user in the current channel',
-        parameters: {
-            type: 'object',
-            properties: {
-                userId: {
-                    type: 'string',
-                    description: 'The Discord user ID to fetch messages from'
-                },
-                limit: {
-                    type: 'number',
-                    description: 'Maximum number of messages to fetch (default: 20)'
-                }
-            },
-            required: ['userId']
-        }
-    },
-    {
-        name: 'searchChannelHistory',
-        description: 'Search for messages in the channel that contain specific keywords',
-        parameters: {
-            type: 'object',
-            properties: {
-                keywords: {
-                    type: 'string',
-                    description: 'Keywords or phrases to search for'
-                },
-                limit: {
-                    type: 'number',
-                    description: 'Maximum number of messages to return (default: 10)'
-                }
-            },
-            required: ['keywords']
-        }
-    },
-    {
-        name: 'getUserInfo',
-        description: 'Get information about a Discord user by their ID or username',
-        parameters: {
-            type: 'object',
-            properties: {
-                userId: {
-                    type: 'string',
-                    description: 'The Discord user ID (snowflake)'
-                },
-                username: {
-                    type: 'string',
-                    description: 'The Discord username'
-                }
-            },
-            oneOf: [
-                { required: ['userId'] },
-                { required: ['username'] }
-            ]
-        }
-    },
-    {
-        name: 'getChannelInfo',
-        description: 'Get information about the current Discord channel',
-        parameters: {
-            type: 'object',
-            properties: {}
-        }
-    },
-    {
-        name: 'searchUser',
-        description: 'Search for users in the server by name or partial name',
+        name: 'findUser',
+        description: 'Find and retrieve information about Discord users',
         parameters: {
             type: 'object',
             properties: {
                 query: {
                     type: 'string',
-                    description: 'The name or partial name to search for (minimum 2 characters)'
-                },
-                limit: {
-                    type: 'number',
-                    description: 'Maximum number of results to return (default: 5)',
-                    minimum: 1,
-                    maximum: 10
+                    description: 'The user ID or username to search for (minimum 2 characters)',
+                    examples: [
+                        '123456789123456789',  // User ID
+                        'john',                // Full username
+                        'jo',                  // Partial match
+                        'John Smith'           // Display name
+                    ]
                 }
             },
             required: ['query']
-        }
+        },
+        useCase: [
+            'Looking up user details by ID or username',
+            'Finding users with partial name matches',
+            'Getting user roles and join dates',
+            'Retrieving user avatar URLs'
+        ],
+        examples: [
+            {
+                description: 'Find user by ID',
+                usage: '@tool[findUser]({"query": "123456789123456789"})',
+                result: '### User Found: JohnDoe\n**Username**: john_doe\n**ID**: `123456789123456789`'
+            },
+            {
+                description: 'Find user by username',
+                usage: '@tool[findUser]({"query": "john"})',
+                result: '### User Found: John Smith\n**Username**: john_smith\n**ID**: `987654321987654321`'
+            },
+            {
+                description: 'Find user by partial name',
+                usage: '@tool[findUser]({"query": "jo"})',
+                result: '### User Found: Joe Developer\n**Username**: joe_dev\n**ID**: `111222333444555666`'
+            }
+        ],
     }
 ];
 
+interface ToolExample {
+    description: string;
+    usage: string;
+    result?: string;
+}
+
+interface ToolContext {
+    name: string;
+    description: string;
+    useCase: string[];
+    examples: ToolExample[];
+    parameters: {
+        type: string;
+        properties: {
+            [key: string]: {
+                type: string;
+                description: string;
+                examples?: string[];
+            };
+        };
+        required: string[];
+    };
+}
+
+// Simple error type
+class ToolError extends Error {
+    constructor(message: string) {
+        super(message);
+        this.name = 'ToolError';
+    }
+}
+
 // Mapping of tool names to their implementation functions
 const toolImplementations: { [key: string]: Function } = {
-    fetchUserMessages,
-    searchChannelHistory,
-    getUserInfo,
-    getChannelInfo,
-    searchUser
+    findUser,
 };
 
-// Function to execute a tool call
+// Simplified execute function
 export async function executeToolCall(
     toolName: string,
-    parameters: any,
+    parameters: unknown,
     message: Message
 ): Promise<string> {
     try {
-        if (toolName in toolImplementations) {
-            return await toolImplementations[toolName](message, parameters);
+        if (!(toolName in toolImplementations)) {
+            return `Tool "${toolName}" not implemented`;
         }
-        return `Tool ${toolName} not implemented`;
+
+        return await toolImplementations[toolName](message, parameters);
     } catch (error) {
-        console.error(`Error executing tool ${toolName}:`, error);
-        return `Error executing tool ${toolName}: ${error}`;
+        return `Error executing tool ${toolName}: ${error instanceof Error ? error.message : String(error)}`;
     }
+}
+
+// Helper function to get context for a specific tool
+export function getToolContext(toolName: string): ToolContext | undefined {
+    return toolsRegistry.find(tool => tool.name === toolName);
+}
+
+// Helper function to format tool information
+export function formatToolInfo(tool: typeof toolsRegistry[0]): string {
+    return `## ${tool.name}
+${tool.description}
+
+**Use Cases:**
+${tool.useCase.map(use => `- ${use}`).join('\n')}
+
+**Parameters:**
+- ${Object.entries(tool.parameters.properties).map(([name, prop]) =>
+        `${name} (${prop.type}): ${prop.description}`
+    ).join('\n- ')}
+
+**Example:**
+${tool.examples[0].description}
+Input: \`${tool.examples[0].usage}\`
+Output: ${tool.examples[0].result}`;
 }

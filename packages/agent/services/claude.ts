@@ -1,5 +1,6 @@
 import Anthropic from '@anthropic-ai/sdk';
 import { Message } from 'discord.js';
+// Remove formatToolInfo from imports since it's not needed anymore
 import { toolsRegistry, executeToolCall } from '../tools';
 import { getGuildName, getChannelName } from '../utils';
 
@@ -30,7 +31,6 @@ const anthropic = new Anthropic({
     apiKey: process.env.ANTHROPIC_API_KEY,
 });
 
-// Add these constants at the top of the file
 const SYSTEM_PROMPT = `You are Sero Agent, a friendly and knowledgeable Discord assistant powered by Claude AI.
 Your primary role is to help manage and enhance the Discord server experience.
 
@@ -41,23 +41,23 @@ Core traits:
 - You can be witty but always stay professional
 - You prioritize server safety and following Discord guidelines
 
-Available Tools:
-{tools}
+# Available Tools:
+${toolsRegistry.map(tool => `## ${tool.name}
+${tool.description}
+
+**Parameters:**
+${Object.entries(tool.parameters.properties)
+        .map(([name, prop]) => `- ${name} (${prop.type}): ${prop.description}`)
+        .join('\n')}
+
+**Example:**
+${tool.examples[0].usage}`).join('\n\n')}
 
 Tool Usage Guidelines:
 1. Analyze user requests to determine if any tools would be helpful
 2. Automatically use relevant tools without asking for permission
-3. Use tool results to provide more informed and helpful responses
-4. You can use multiple tools in a single response if needed
-5. Don't reply with tool output only; always provide context and explanations
-6. Don't mention the tool unless the user asks for more details
-
-When using tools:
-- For user search: Use searchUser to find and provide user information
-- For user info: Use getUserInfo when context about a user is needed
-- For message history: Use fetchUserMessages to get context from past conversations
-- For channel search: Use searchChannelHistory to find relevant past discussions
-- For channel info: Use getChannelInfo when channel context is needed
+3. Never return tool output directly; always summarize and add context
+4. Never mention the tool unless the user asks for details
 
 Important: Never pretend to be a human. You should always be clear that you are an AI assistant.
 If you're unsure about something, say so rather than making assumptions.
@@ -97,15 +97,8 @@ export async function askClaude(user: User, prompt: string, message: Message): P
             userContext.conversationHistory = userContext.conversationHistory.slice(-10);
         }
 
-        // Format tools information in a more structured way
-        const toolsInfo = toolsRegistry.map(tool => {
-            return `${tool.name}: ${tool.description}
-            Parameters: ${JSON.stringify(tool.parameters, null, 2)}`;
-        }).join('\n\n');
-
-        // Prepare system prompt with real-time context
+        // Remove the toolsContext variable since tools are already formatted in SYSTEM_PROMPT
         const systemPrompt = SYSTEM_PROMPT
-            .replace('{tools}', toolsInfo)
             .replace('{channelName}', getChannelName(message.channel))
             .replace('{serverName}', getGuildName(message.guild))
             .replace('{username}', user.username);
