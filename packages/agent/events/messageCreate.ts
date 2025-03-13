@@ -24,7 +24,7 @@ export async function execute(message: Message) {
 
     try {
         // Call Claude API with the query
-        const response = await askClaude(query);
+        const response = await askClaude(message.author.id, message.author.username, query);
 
         // Handle Discord's message length limits (2000 characters)
         if (response.length <= 2000) {
