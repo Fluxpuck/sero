@@ -2,7 +2,7 @@
 import dotenv from 'dotenv';
 import fs from 'fs';
 import path from 'path';
-import { Client, Collection, GatewayIntentBits, Events, REST, Routes } from 'discord.js';
+import { Client, Collection, GatewayIntentBits } from 'discord.js';
 import { Command } from './types/command.types';
 import { Event } from './types/event.types';
 
@@ -73,14 +73,18 @@ const initBot = async (): Promise<void> => {
         loadEvents();
         loadCommands();
 
-        // Login to Discord with token from .env
-        if (!process.env.DISCORD_TOKEN) {
+        // Check for Discord token
+        const token = process.env.DISCORD_TOKEN;
+        if (!token) {
             throw new Error('DISCORD_TOKEN is missing in the environment variables');
         }
 
-        await client.login(process.env.DISCORD_TOKEN);
+        // Login to Discord with token from .env
+        await client.login(token);
+        console.log(`Logged in as ${client.user?.tag || 'unknown'}`);
     } catch (error) {
         console.error('Error initializing bot:', error);
+        process.exit(1);
     }
 };
 

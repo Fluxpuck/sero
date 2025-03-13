@@ -8,6 +8,9 @@ const command: Command = {
         .setDescription('Replies with Pong and latency information!'),
 
     async execute(interaction: ChatInputCommandInteraction) {
+
+        console.log('ping command executed!');
+
         const sent = await interaction.reply({ content: 'Pinging...', fetchReply: true });
         const latency = sent.createdTimestamp - interaction.createdTimestamp;
 
