@@ -127,7 +127,7 @@ export async function askClaude(
                 },
                 {
                     name: "sendChannelMessage",
-                    description: "Send a message to a channel",
+                    description: "Send a message to a channel (preferred method)",
                     input_schema: {
                         type: "object",
                         properties: {
@@ -145,7 +145,7 @@ export async function askClaude(
                 },
                 {
                     name: "sendDMMessage",
-                    description: "Send a direct message to a user",
+                    description: "Send a direct message to a user (only when explicitly requested)",
                     input_schema: {
                         type: "object",
                         properties: {
