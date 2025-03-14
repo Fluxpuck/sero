@@ -1,7 +1,7 @@
 // services/api.ts
 import axios, { AxiosInstance, AxiosRequestConfig, AxiosResponse } from 'axios';
-import dotenv from 'dotenv';
 
+import dotenv from 'dotenv';
 dotenv.config();
 
 const { NODE_ENV, PROD_API_URL, API_MASTER_KEY } = process.env;
@@ -47,9 +47,8 @@ export const ApiService = {
      * @param config - Optional axios config
      * @returns Promise with the response data
      */
-    async get<T>(url: string, config?: AxiosRequestConfig): Promise<T> {
-        const response: AxiosResponse<T> = await instance.get(url, config);
-        return response.data;
+    async get<AxiosResponse>(url: string, config?: AxiosRequestConfig): Promise<AxiosResponse> {
+        return await instance.get(url, config);
     },
 
     /**
@@ -59,9 +58,8 @@ export const ApiService = {
      * @param config - Optional axios config
      * @returns Promise with the response data
      */
-    async post<T>(url: string, data?: any, config?: AxiosRequestConfig): Promise<T> {
-        const response: AxiosResponse<T> = await instance.post(url, data, config);
-        return response.data;
+    async post<AxiosResponse>(url: string, data?: any, config?: AxiosRequestConfig): Promise<AxiosResponse> {
+        return await instance.post(url, data, config);
     },
 
     /**
@@ -71,9 +69,8 @@ export const ApiService = {
      * @param config - Optional axios config
      * @returns Promise with the response data
      */
-    async put<T>(url: string, data?: any, config?: AxiosRequestConfig): Promise<T> {
-        const response: AxiosResponse<T> = await instance.put(url, data, config);
-        return response.data;
+    async put<AxiosResponse>(url: string, data?: any, config?: AxiosRequestConfig): Promise<AxiosResponse> {
+        return await instance.put(url, data, config);
     },
 
     /**
@@ -82,9 +79,8 @@ export const ApiService = {
      * @param config - Optional axios config
      * @returns Promise with the response data
      */
-    async delete<T>(url: string, config?: AxiosRequestConfig): Promise<T> {
-        const response: AxiosResponse<T> = await instance.delete(url, config);
-        return response.data;
+    async delete<AxiosResponse>(url: string, config?: AxiosRequestConfig): Promise<AxiosResponse> {
+        return await instance.delete(url, config);
     }
 };
 
