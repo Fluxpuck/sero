@@ -145,7 +145,7 @@ export async function askClaude(
                 },
                 {
                     name: "sendDMMessage",
-                    description: "Send a direct message to a user (only when explicitly requested)",
+                    description: "Send a direct message to a user (only use when explicitly requested)",
                     input_schema: {
                         type: "object",
                         properties: {
@@ -159,6 +159,42 @@ export async function askClaude(
                             }
                         },
                         required: ["userId", "content"]
+                    }
+                },
+                {
+                    name: "getAuditLogs",
+                    description: "Get activity logs for a user in the server",
+                    input_schema: {
+                        type: "object",
+                        properties: {
+                            userId: {
+                                type: "string",
+                                description: "The user's Id, e.g. '1234567890'",
+                            },
+                            limit: {
+                                type: "number",
+                                description: "The number of audit logs to retrieve",
+                            }
+                        },
+                        required: ["userId"]
+                    }
+                },
+                {
+                    name: "getSeroLogs",
+                    description: "Get moderation logs of a user in the server",
+                    input_schema: {
+                        type: "object",
+                        properties: {
+                            userId: {
+                                type: "string",
+                                description: "The user's Id, e.g. '1234567890'",
+                            },
+                            limit: {
+                                type: "number",
+                                description: "The number of (audit) logs to retrieve",
+                            }
+                        },
+                        required: ["userId"]
                     }
                 }
             ],

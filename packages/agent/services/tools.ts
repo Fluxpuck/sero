@@ -1,7 +1,7 @@
 import { Message } from 'discord.js';
-import { Tool } from '../types/tool.types';
 import { UserToolDetails, findUser, timeoutUser, disconnectUser } from '../tools/userTool';
 import { ChannelToolDetails, findChannel, sendChannelMessage, sendDMMessage } from '../tools/channelTool';
+import { AuditToolDetails, getAuditLogs, getSeroLogs } from '../tools/auditTool';
 
 // Interface for tool execution functions
 interface ToolFunction {
@@ -13,16 +13,16 @@ const toolFunctions = new Map<string, ToolFunction>();
 
 // Initialize tools
 export function initializeTools() {
-    // Register user tools
     toolFunctions.set('findUser', findUser);
     toolFunctions.set('timeoutUser', timeoutUser);
     toolFunctions.set('disconnectUser', disconnectUser);
+
     toolFunctions.set('findChannel', findChannel);
     toolFunctions.set('sendChannelMessage', sendChannelMessage);
     toolFunctions.set('sendDMMessage', sendDMMessage);
 
-    // Register other tools here as they are added
-    // toolFunctions.set('otherTool', otherToolFunction);
+    toolFunctions.set('getAuditLogs', getAuditLogs);
+    toolFunctions.set('getSeroLogs', getSeroLogs);
 }
 
 // Get all tool definitions
@@ -30,7 +30,7 @@ export function getAllTools() {
     return [
         ...UserToolDetails,
         ...ChannelToolDetails,
-        // Add other tool details arrays here as they are added
+        ...AuditToolDetails,
     ];
 }
 
