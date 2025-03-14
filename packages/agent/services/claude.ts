@@ -218,7 +218,7 @@ export async function askClaude(
                             },
                             limit: {
                                 type: "number",
-                                description: "The number of messages to fetch",
+                                description: "The number of messages to fetch, max 1000.",
                             }
                         },
                         required: ["userId"]
@@ -226,7 +226,7 @@ export async function askClaude(
                 },
                 {
                     name: "getUserMessages",
-                    description: "Fetch recent messages from a user",
+                    description: "Fetch recent messages from a user in this channel",
                     input_schema: {
                         type: "object",
                         properties: {
@@ -234,10 +234,10 @@ export async function askClaude(
                                 type: "string",
                                 description: "The user's Id, e.g. '1234567890'",
                             },
-                            limit: {
-                                type: "number",
-                                description: "The number of messages to fetch",
-                            }
+                            channelId: {
+                                type: "string",
+                                description: "The channel's Id, e.g. '1234567890'",
+                            },
                         },
                         required: ["userId"]
                     }
