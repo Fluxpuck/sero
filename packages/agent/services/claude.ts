@@ -162,6 +162,7 @@ export async function askClaude(
                     }
                 }
             ],
+            // tool_choice: { type: "any" },
             messages: conversationHistory,
         });
 

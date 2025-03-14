@@ -5,7 +5,6 @@ export function sanitizeResponse(text: string): string {
     return text
         .replace(/@everyone/gi, 'everyone') // Replace everyone mentions
         .replace(/@here/gi, 'here') // Replace here mentions
-        .replace(/@&\d+/g, ''); // Remove role mentions
 }
 
 // Helper function to split messages that exceed Discord's character limit

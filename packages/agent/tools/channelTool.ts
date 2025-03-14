@@ -1,4 +1,5 @@
 import { Message, GuildMember, GuildChannel, GuildBasedChannel, Collection, ChannelType } from 'discord.js';
+import { sanitizeResponse } from '../utils';
 
 // Define the tool details
 export const ChannelToolDetails = [
@@ -154,7 +155,7 @@ export async function sendChannelMessage(message: Message, input: object): Promi
         }
 
         // Send the message
-        await channel.send(content);
+        await channel.send(sanitizeResponse(content));
         return `Message sent successfully to ${channel.name}.`;
 
     } catch (error) {
@@ -190,11 +191,12 @@ export async function sendDMMessage(message: Message, input: object): Promise<st
             return `User with ID \`${userId}\` not found in this server.`;
         }
 
-        // Send the DM
-        await member.send(content)
-            .catch((error) => {
-                return `Could not send a DM to to ${member.user.tag}, most likely due to their privacy settings.`;
-            });
+        try {
+            // Send the DM to the member
+            await member.send(sanitizeResponse(content))
+        } catch (error) {
+            return `Could not send a DM to to ${member.user.tag}, most likely due to their privacy settings.`;
+        }
 
         return `Message sent successfully to ${member.user.tag}.`;
 
