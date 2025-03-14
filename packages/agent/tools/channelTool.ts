@@ -55,10 +55,31 @@ export const ChannelToolDetails = [
     }
 ]
 
+export async function getAllChannels(message: Message): Promise<string> {
+    // Validate guild context
+    if (!message.guild) {
+        return 'This command can only be used in a server.';
+    }
+
+    try {
+        // Get all channels in the guild
+        const channels = message.guild.channels.cache;
+        const channelList = channels.map((channel: any) => {
+            return `${channel.name} (${channel.id})`;
+        });
+
+        return `Channels in this server: ${channelList.join(', ')}`;
+    } catch (error) {
+        console.error('Error getting channels:', error);
+        const errorMessage = error instanceof Error ? error.message : String(error);
+        return `Failed to get channels: ${errorMessage}`;
+    }
+}
+
 /**
  * Find a guild channel based on ID or name
  * @param message 
- * @param input 
+ * @param input - query
  * @returns 
  */
 export async function findChannel(message: Message, input: object): Promise<string> {
@@ -100,7 +121,7 @@ export async function findChannel(message: Message, input: object): Promise<stri
         }
 
         // Format channel info into a readable string
-        return formatChannelInfo(channel);
+        return JSON.stringify(channel);
 
     } catch (error) {
         console.error('Error finding user:', error);
@@ -110,30 +131,10 @@ export async function findChannel(message: Message, input: object): Promise<stri
 }
 
 /**
- * Find a guild member based on ID, username, or display name
- * @param message - The Discord message that triggered the command
- * @param params - Search parameters containing the query string
- * @returns A GuildMember object if found, or an error message string
- */
-function formatChannelInfo(channel: GuildChannel | GuildBasedChannel): string {
-    return `
-    Channel Information:
-    - Channel Name: ${channel.name}
-    - ID: ${channel.id}
-    - Channel Created: ${channel?.createdAt?.toLocaleDateString() ?? 'Unknown'}
-    - Channel Type: ${ChannelType[channel.type]}
-    - Active Members: ${channel.members instanceof Collection ? channel.members.map(m => m.user.id).join(', ') : 'Not available'}
-    - Parent Channel: ${channel.parent ? channel.parent.name : 'None'}
-    - NSFW: ${channel.isTextBased() && 'nsfw' in channel ? (channel.nsfw ? 'Yes' : 'No') : 'N/A'}
-    - Viewable by: ${channel.viewable ? 'Everyone' : 'Selected roles'}
-    `;
-}
-
-/**
  * Send a message to a channel
  * @param message 
- * @param input 
- * @returns 
+ * @param input - channelId, content
+ * @returns  
  */
 export async function sendChannelMessage(message: Message, input: object): Promise<string> {
     // Validate guild context

@@ -57,7 +57,7 @@ export const UserToolDetails = [
 /**
  * Find a guild member based on userId, username, or display name
  * @param message 
- * @param params 
+ * @param input - query
  * @returns 
  */
 export async function findUser(message: Message, input: object): Promise<string> {
@@ -81,7 +81,7 @@ export async function findUser(message: Message, input: object): Promise<string>
         if (/^\d{17,19}$/.test(query)) {
             try {
                 member = await message.guild.members.fetch(query);
-                return formatMemberInfo(member);
+                return JSON.stringify(member);
             } catch (error) {
                 // Continue to name search if ID lookup fails
                 // No need to log here as this is an expected fallback path
@@ -117,7 +117,7 @@ export async function findUser(message: Message, input: object): Promise<string>
         }
 
         // Format member info into a readable string
-        return formatMemberInfo(member);
+        return JSON.stringify(member);
 
     } catch (error) {
         console.error('Error finding user:', error);
@@ -127,36 +127,9 @@ export async function findUser(message: Message, input: object): Promise<string>
 }
 
 /**
- * Find a guild member based on ID, username, or display name
- * @param message - The Discord message that triggered the command
- * @param params - Search parameters containing the query string
- * @returns A GuildMember object if found, or an error message string
- */
-function formatMemberInfo(member: GuildMember): string {
-    return `
-    Member Information:
-    - Display Name: ${member.displayName}
-    - Username: ${member.user.username}
-    - ID: ${member.user.id}
-    - Joined Server: ${member.joinedAt?.toLocaleDateString() ?? 'Unknown'}
-    - Account Created: ${member.user.createdAt.toLocaleDateString()}
-    - Roles: ${member.roles.cache.filter(role => role.name !== '@everyone').map(role => `${role.name} (${role.id})`).join(', ')}
-    ${member.communicationDisabledUntil && member.communicationDisabledUntil > new Date() ? `- Timeout Until: ${member.communicationDisabledUntil.toISOString()}` : ''}
-    ${member.voice?.channelId ? `
-    Voice State, e.g. the voice channel the member is in:
-    - Channel ID: ${member.voice.channelId}
-    - Self Mute: ${member.voice.selfMute}
-    - Server Mute: ${member.voice.serverMute}
-    - Self Deaf: ${member.voice.selfDeaf}
-    - Server Deaf: ${member.voice.serverDeaf}
-    - Streaming: ${member.voice.streaming}
-    - Self Video: ${member.voice.selfVideo}` : ''}`;
-}
-
-/**
  * Timeout a user from sending messages for a specified duration
  * @param message 
- * @param input 
+ * @param input - userId, duration, reason
  * @returns 
  */
 export async function timeoutUser(message: Message, input: object): Promise<string> {
@@ -199,7 +172,7 @@ export async function timeoutUser(message: Message, input: object): Promise<stri
 /**
  * Disconnect a user from the voice channel
  * @param message 
- * @param input 
+ * @param input - userId
  * @returns 
  */
 export async function disconnectUser(message: Message, input: object): Promise<string> {
