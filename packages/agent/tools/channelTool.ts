@@ -4,6 +4,14 @@ import { sanitizeResponse } from '../utils';
 // Define the tool details
 export const ChannelToolDetails = [
     {
+        name: "getAllChannels",
+        description: "Get all channels in the server",
+        input_schema: {
+            type: "object",
+            properties: {},
+        }
+    },
+    {
         name: "findChannel",
         description: "Find a guild channel based on a channelId or channel-name",
         input_schema: {
@@ -55,6 +63,11 @@ export const ChannelToolDetails = [
     }
 ]
 
+/**
+ * Get all channels in the server
+ * @param message 
+ * @returns 
+ */
 export async function getAllChannels(message: Message): Promise<string> {
     // Validate guild context
     if (!message.guild) {

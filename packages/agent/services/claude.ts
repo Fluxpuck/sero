@@ -49,6 +49,7 @@ export async function askClaude(
         }
 
         const systemPrompt = SYSTEM_PROMPT
+            .replace('{{date}}', new Date().toLocaleDateString())
             .replace('{{guildId}}', guild?.id ?? 'private')
             .replace('{{guildName}}', guild?.name ?? 'private')
             .replace('{{channelId}}', channel.id)
@@ -109,6 +110,14 @@ export async function askClaude(
                             }
                         },
                         required: ["userId"]
+                    }
+                },
+                {
+                    name: "getAllChannels",
+                    description: "Get all channels in the server",
+                    input_schema: {
+                        type: "object",
+                        properties: {},
                     }
                 },
                 {

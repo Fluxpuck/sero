@@ -1,6 +1,6 @@
 import { Message } from 'discord.js';
 import { UserToolDetails, findUser, timeoutUser, disconnectUser } from '../tools/userTool';
-import { ChannelToolDetails, findChannel, sendChannelMessage, sendDMMessage } from '../tools/channelTool';
+import { ChannelToolDetails, getAllChannels, findChannel, sendChannelMessage, sendDMMessage } from '../tools/channelTool';
 import { AuditToolDetails, getAuditLogs, getSeroLogs } from '../tools/auditTool';
 
 // Interface for tool execution functions
@@ -17,6 +17,7 @@ export function initializeTools() {
     toolFunctions.set('timeoutUser', timeoutUser);
     toolFunctions.set('disconnectUser', disconnectUser);
 
+    toolFunctions.set('getAllChannels', getAllChannels);
     toolFunctions.set('findChannel', findChannel);
     toolFunctions.set('sendChannelMessage', sendChannelMessage);
     toolFunctions.set('sendDMMessage', sendDMMessage);
