@@ -7,12 +7,17 @@ import { getAllTools, executeTool } from './tools';
 import { seroAgentDescription, discordGuideline } from '../context/context';
 
 const CLAUDE_MODEL = 'claude-3-7-sonnet-20250219';
-const SYSTEM_PROMPT = `${seroAgentDescription} \n ${discordGuideline}`
+const SYSTEM_PROMPT = `${seroAgentDescription} \n ${discordGuideline}`;
+const MAX_TOKENS = 500;
+const MAX_CONTEXT_MESSAGES = 10;
 
 // Initialize the client with your API key
 const anthropic = new Anthropic({
     apiKey: process.env.ANTHROPIC_API_KEY,
 });
+
+// Message history storage: Map<channelId_userId, messages[]>
+const messageHistory = new Map<string, any[]>();
 
 export async function askClaude(
     prompt: string,
@@ -24,6 +29,25 @@ export async function askClaude(
         const channel = message.channel;
         const user = message.author;
 
+        // Create a unique conversation key based on channel and user
+        const conversationKey = `${channel.id}_${user.id}`;
+
+        // Get existing message history or initialize if none exists
+        let conversationHistory = messageHistory.get(conversationKey) || [];
+
+        // If previousMessages is provided (from a tool call), use that instead
+        if (previousMessages.length > 0) {
+            conversationHistory = previousMessages;
+        } else if (prompt) {
+            // Add the new user message to history
+            conversationHistory.push({ role: 'user', content: prompt });
+        }
+
+        // Ensure we only keep the most recent MAX_CONTEXT_MESSAGES
+        if (conversationHistory.length > MAX_CONTEXT_MESSAGES * 2) { // *2 because each exchange has both user and assistant messages
+            conversationHistory = conversationHistory.slice(-MAX_CONTEXT_MESSAGES * 2);
+        }
+
         const systemPrompt = SYSTEM_PROMPT
             .replace('{{guildId}}', guild?.id ?? 'private')
             .replace('{{guildName}}', guild?.name ?? 'private')
@@ -32,15 +56,9 @@ export async function askClaude(
             .replace('{{userId}}', user.id)
             .replace('{{username}}', user.username);
 
-        // Combine previous messages with new prompt
-        const messages = [
-            ...previousMessages,
-            { role: 'user', content: prompt }
-        ];
-
         const response = await anthropic.messages.create({
             model: CLAUDE_MODEL,
-            max_tokens: 1_024,
+            max_tokens: MAX_TOKENS,
             system: systemPrompt,
             tools: [
                 {
@@ -79,8 +97,54 @@ export async function askClaude(
                         required: ["userId", "duration", "reason"]
                     }
                 },
+                {
+                    name: "disconnectUser",
+                    description: "Disconnect a user from the voice channel",
+                    input_schema: {
+                        type: "object",
+                        properties: {
+                            userId: {
+                                type: "string",
+                                description: "The user's Id, e.g. '1234567890'",
+                            }
+                        },
+                        required: ["userId"]
+                    }
+                },
+                {
+                    name: "findChannel",
+                    description: "Find a guild channel based on a channelId or channel-name",
+                    input_schema: {
+                        type: "object",
+                        properties: {
+                            query: {
+                                type: "string",
+                                description: "The channel name or Id, e.g. '1234567890' or 'name'",
+                            }
+                        },
+                        required: ["query"]
+                    }
+                },
+                {
+                    name: "sendChannelMessage",
+                    description: "Send a message to a channel",
+                    input_schema: {
+                        type: "object",
+                        properties: {
+                            channelId: {
+                                type: "string",
+                                description: "The channel's Id, e.g. '1234567890'",
+                            },
+                            content: {
+                                type: "string",
+                                description: "The message content to send",
+                            }
+                        },
+                        required: ["channelId", "content"]
+                    }
+                },
             ],
-            messages: messages,
+            messages: conversationHistory,
         });
 
         if (response.stop_reason === "tool_use") {
@@ -97,38 +161,50 @@ export async function askClaude(
             // Extract tool details
             const { id, name, input } = toolRequest;
 
+            // Add assistant's response to conversation history
+            conversationHistory.push({
+                role: 'assistant',
+                content: [
+                    ...(textContent ? [{ type: "text", text: textContent }] : []),
+                    { type: "tool_use", id, name, input }
+                ]
+            });
+
             // Execute the tool and get the result
             const toolResult = await executeTool(name, message, input);
 
-            // Add assistant's response and tool result to conversation history
-            const updatedMessages = [
-                ...messages,
-                {
-                    role: 'assistant',
-                    content: [
-                        ...(textContent ? [{ type: "text", text: textContent }] : []),
-                        { type: "tool_use", id, name, input }
-                    ]
-                },
-                {
-                    role: 'user',
-                    content: [
-                        { type: "tool_result", tool_use_id: id, content: toolResult }
-                    ]
-                }
-            ];
+            // Add tool result to conversation history
+            conversationHistory.push({
+                role: 'user',
+                content: [
+                    { type: "tool_result", tool_use_id: id, content: toolResult }
+                ]
+            });
+
+            // Update the stored history
+            messageHistory.set(conversationKey, conversationHistory);
 
             // Recursive call with tool result and updated message history
-            return await askClaude("", message, updatedMessages);
+            return await askClaude("", message, conversationHistory);
         } else {
-            // Return final response if no tool use
+            // Get final response if no tool use
             const finalResponse = response.content.find(c => c.type === "text")?.text ?? "";
+
             if (finalResponse) {
+                // Add assistant's response to conversation history
+                conversationHistory.push({
+                    role: 'assistant',
+                    content: finalResponse
+                });
+
+                // Update the stored history
+                messageHistory.set(conversationKey, conversationHistory);
+
                 await message.reply(sanitizeResponse(finalResponse));
             }
+
             return finalResponse;
         }
-
     } catch (error) {
         console.error('Error calling Claude API:', error);
         throw error;

@@ -38,6 +38,20 @@ export const UserToolDetails = [
             required: ["userId", "duration", "reason"]
         }
     },
+    {
+        name: "disconnectUser",
+        description: "Disconnect a user from the voice channel",
+        input_schema: {
+            type: "object",
+            properties: {
+                userId: {
+                    type: "string",
+                    description: "The user's Id, e.g. '1234567890'",
+                }
+            },
+            required: ["userId"]
+        }
+    },
 ]
 
 /**
@@ -129,7 +143,7 @@ function formatMemberInfo(member: GuildMember): string {
     - Roles: ${member.roles.cache.filter(role => role.name !== '@everyone').map(role => `${role.name} (${role.id})`).join(', ')}
     ${member.communicationDisabledUntil ? `- Timeout Until: ${member.communicationDisabledUntil.toISOString()}` : ''}
     ${member.voice?.channelId ? `
-    Voice State:
+    Voice State, e.g. the voice channel the member is in:
     - Channel ID: ${member.voice.channelId}
     - Self Mute: ${member.voice.selfMute}
     - Server Mute: ${member.voice.serverMute}
@@ -139,7 +153,12 @@ function formatMemberInfo(member: GuildMember): string {
     - Self Video: ${member.voice.selfVideo}` : ''}`;
 }
 
-
+/**
+ * Timeout a user from sending messages for a specified duration
+ * @param message 
+ * @param input 
+ * @returns 
+ */
 export async function timeoutUser(message: Message, input: object): Promise<string> {
     // Validate guild context
     if (!message.guild) {
@@ -164,10 +183,60 @@ export async function timeoutUser(message: Message, input: object): Promise<stri
     }
 
     try {
-        member.timeout(duration, `${reason} - Moderator: ${message.author.tag}`);
+        const durationMs = duration * 1000; // Convert seconds to milliseconds
+        await member.timeout(durationMs, `${reason} - Moderator: ${message.author.tag}`);
     } catch (error) {
-        return `Couldn't timeout user: ${error}`;
+        const errorMessage = error instanceof Error ? error.message : String(error);
+        if (errorMessage.includes('Missing Permissions')) {
+            return 'I do not have permission to timeout this user. Please check my role permissions.';
+        }
+        return `Couldn't timeout user: ${errorMessage}`;
     }
 
-    return `User ${member.user.tag} has been timed out for ${duration} minutes for: ${reason}`;
+    return `User ${member.user.tag} has been timed out for ${duration} seconds for: ${reason}`;
+}
+
+/**
+ * Disconnect a user from the voice channel
+ * @param message 
+ * @param input 
+ * @returns 
+ */
+export async function disconnectUser(message: Message, input: object): Promise<string> {
+    // Validate guild context
+    if (!message.guild) {
+        return 'This command can only be used in a server.';
+    }
+
+    // Extract & validate input parameters
+    const userId = (input as any).userId;
+
+    if (!userId) {
+        return 'Please provide a valid userId for the user to disconnect.';
+    }
+
+    // Fetch the member to be timed out
+    let member: GuildMember;
+    try {
+        member = await message.guild.members.fetch(userId);
+    } catch (error) {
+        return `User with ID \`${userId}\` not found in this server.`;
+    }
+
+    // Disconnect the user from the voice channel
+    if (member?.voice.channel) {
+        try {
+            await member.voice.disconnect();
+        } catch (error) {
+            const errorMessage = error instanceof Error ? error.message : String(error);
+            if (errorMessage.includes('Missing Permissions')) {
+                return 'I do not have permission to disconnect this user. Please check my role permissions.';
+            }
+            return `Couldn't disconnect user: ${errorMessage}`;
+        }
+    } else {
+        return `User ${member.user.tag} is not connected to a voice channel.`;
+    }
+
+    return `User ${member.user.tag} has been disconnected from the voice channel.`;
 }

@@ -1,6 +1,7 @@
 import { Message } from 'discord.js';
 import { Tool } from '../types/tool.types';
-import { UserToolDetails, findUser, timeoutUser } from '../tools/userTool';
+import { UserToolDetails, findUser, timeoutUser, disconnectUser } from '../tools/userTool';
+import { ChannelToolDetails, findChannel, sendChannelMessage } from '../tools/channelTool';
 
 // Interface for tool execution functions
 interface ToolFunction {
@@ -15,6 +16,9 @@ export function initializeTools() {
     // Register user tools
     toolFunctions.set('findUser', findUser);
     toolFunctions.set('timeoutUser', timeoutUser);
+    toolFunctions.set('disconnectUser', disconnectUser);
+    toolFunctions.set('findChannel', findChannel);
+    toolFunctions.set('sendChannelMessage', sendChannelMessage);
 
     // Register other tools here as they are added
     // toolFunctions.set('otherTool', otherToolFunction);
@@ -24,6 +28,7 @@ export function initializeTools() {
 export function getAllTools() {
     return [
         ...UserToolDetails,
+        ...ChannelToolDetails,
         // Add other tool details arrays here as they are added
     ];
 }
