@@ -34,8 +34,32 @@ export const ChannelToolDetails = [
             required: ["channelId", "content"]
         }
     },
+    {
+        name: "sendDMMessage",
+        description: "Send a direct message to a user",
+        input_schema: {
+            type: "object",
+            properties: {
+                userId: {
+                    type: "string",
+                    description: "The user's Id, e.g. '1234567890'",
+                },
+                content: {
+                    type: "string",
+                    description: "The message content to send",
+                }
+            },
+            required: ["userId", "content"]
+        }
+    }
 ]
 
+/**
+ * Find a guild channel based on ID or name
+ * @param message 
+ * @param input 
+ * @returns 
+ */
 export async function findChannel(message: Message, input: object): Promise<string> {
 
     // Validate guild context
@@ -104,13 +128,19 @@ function formatChannelInfo(channel: GuildChannel | GuildBasedChannel): string {
     `;
 }
 
+/**
+ * Send a message to a channel
+ * @param message 
+ * @param input 
+ * @returns 
+ */
 export async function sendChannelMessage(message: Message, input: object): Promise<string> {
-    try {
-        // Validate guild context
-        if (!message.guild) {
-            return 'This command can only be used in a server.';
-        }
+    // Validate guild context
+    if (!message.guild) {
+        return 'This command can only be used in a server.';
+    }
 
+    try {
         // Extract and validate input
         const { channelId, content } = input as { channelId: string; content: string };
         if (!channelId || !content) {
@@ -131,6 +161,47 @@ export async function sendChannelMessage(message: Message, input: object): Promi
         console.error('Error sending message:', error);
         const errorMessage = error instanceof Error ? error.message : String(error);
         return `Failed to send message: ${errorMessage}`;
+    }
+}
+
+/**
+ * Send a direct message to a user
+ * @param message 
+ * @param input 
+ */
+export async function sendDMMessage(message: Message, input: object): Promise<string> {
+    // Validate guild context
+    if (!message.guild) {
+        return 'This command can only be used in a server.';
+    }
+
+    try {
+        // Extract and validate input
+        const { userId, content } = input as { userId: string; content: string };
+        if (!userId || !content) {
+            return 'Both userId and content are required.';
+        }
+
+        // Fetch the member
+        let member: GuildMember;
+        try {
+            member = await message.guild.members.fetch(userId);
+        } catch (error) {
+            return `User with ID \`${userId}\` not found in this server.`;
+        }
+
+        // Send the DM
+        await member.send(content)
+            .catch((error) => {
+                return `Could not send a DM to to ${member.user.tag}, most likely due to their privacy settings.`;
+            });
+
+        return `Message sent successfully to ${member.user.tag}.`;
+
+    } catch (error) {
+        console.error('Error sending DM:', error);
+        const errorMessage = error instanceof Error ? error.message : String(error);
+        return `Failed to send DM: ${errorMessage}`;
     }
 }
 

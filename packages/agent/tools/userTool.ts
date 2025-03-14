@@ -141,7 +141,7 @@ function formatMemberInfo(member: GuildMember): string {
     - Joined Server: ${member.joinedAt?.toLocaleDateString() ?? 'Unknown'}
     - Account Created: ${member.user.createdAt.toLocaleDateString()}
     - Roles: ${member.roles.cache.filter(role => role.name !== '@everyone').map(role => `${role.name} (${role.id})`).join(', ')}
-    ${member.communicationDisabledUntil ? `- Timeout Until: ${member.communicationDisabledUntil.toISOString()}` : ''}
+    ${member.communicationDisabledUntil && member.communicationDisabledUntil > new Date() ? `- Timeout Until: ${member.communicationDisabledUntil.toISOString()}` : ''}
     ${member.voice?.channelId ? `
     Voice State, e.g. the voice channel the member is in:
     - Channel ID: ${member.voice.channelId}

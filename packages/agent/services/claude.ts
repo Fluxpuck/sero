@@ -6,7 +6,7 @@ import { getAllTools, executeTool } from './tools';
 // Gather the about me and discord guidelines context for the AI assistant
 import { seroAgentDescription, discordGuideline } from '../context/context';
 
-const CLAUDE_MODEL = 'claude-3-7-sonnet-20250219';
+const CLAUDE_MODEL = 'claude-3-5-haiku-20241022';
 const SYSTEM_PROMPT = `${seroAgentDescription} \n ${discordGuideline}`;
 const MAX_TOKENS = 500;
 const MAX_CONTEXT_MESSAGES = 10;
@@ -143,6 +143,24 @@ export async function askClaude(
                         required: ["channelId", "content"]
                     }
                 },
+                {
+                    name: "sendDMMessage",
+                    description: "Send a direct message to a user",
+                    input_schema: {
+                        type: "object",
+                        properties: {
+                            userId: {
+                                type: "string",
+                                description: "The user's Id, e.g. '1234567890'",
+                            },
+                            content: {
+                                type: "string",
+                                description: "The message content to send",
+                            }
+                        },
+                        required: ["userId", "content"]
+                    }
+                }
             ],
             messages: conversationHistory,
         });
