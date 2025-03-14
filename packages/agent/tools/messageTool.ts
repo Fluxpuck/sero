@@ -68,11 +68,19 @@ export async function getChannelMessages(message: Message, input: object): Promi
             return 'Channel must be a text channel';
         }
 
-        // Fetch messages
-        const messages = (await channel.messages.fetch({ limit })).toJSON();
+        // Set up timeout promise
+        const timeoutPromise = new Promise(resolve => setTimeout(resolve, 5_000));
+
+        // Fetch messages with timeout
+        const fetchPromise = channel.messages.fetch({ limit: Math.min(limit, 100) });
+
+        const result = await Promise.race([fetchPromise, timeoutPromise]);
+        if (!result) {
+            return 'No messages found in this channel';
+        }
 
         // Format messages info into a readable string
-        return JSON.stringify(messages);
+        return JSON.stringify(result);
 
     } catch (error) {
         console.error('Error fetching channel messages:', error);
@@ -107,22 +115,24 @@ export async function getUserMessages(message: Message, input: object): Promise<
 
         // Fetch messages from all text channels with timeout
         const textChannels = message.guild.channels.cache.filter(channel => channel.isTextBased());
-        const allMessages: Message[] = [];
-        const timeoutPromise = new Promise(resolve => setTimeout(resolve, 5000));
+        const messageCollection: Message[] = [];
+        const timeoutPromise = new Promise(resolve => setTimeout(resolve, 10_000));
 
         const fetchPromise = (async () => {
             for (const channel of textChannels.values()) {
-                const channelMessages = await channel.messages.fetch({ limit: 100 });
-                allMessages.push(...channelMessages.filter(msg => msg.author.id === userId).values());
-                if (allMessages.length >= limit) break;
+                const channelMessages = await channel.messages.fetch({ limit: Math.min(limit, 100) });
+                messageCollection.push(...channelMessages.filter(msg => msg.author.id === userId).values());
+                if (messageCollection.length >= limit) break;
             }
         })();
 
         // Race between fetch and timeout
         await Promise.race([fetchPromise, timeoutPromise]);
+        if (messageCollection.length === 0) {
+            return 'No messages found for this user';
+        }
 
-        // Return what we have so far, limited to the requested amount
-        return JSON.stringify(allMessages.slice(0, limit));
+        return JSON.stringify(messageCollection);
 
     } catch (error) {
         console.error('Error fetching user messages:', error);
