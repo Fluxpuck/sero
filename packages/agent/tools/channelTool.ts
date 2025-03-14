@@ -36,7 +36,7 @@ export const ChannelToolDetails = [
     },
     {
         name: "sendDMMessage",
-        description: "Send a direct message to a user",
+        description: "Send a direct message to a user.",
         input_schema: {
             type: "object",
             properties: {
