@@ -1,4 +1,4 @@
-import { Message } from 'discord.js';
+import { Message, Collection, FetchMessagesOptions } from 'discord.js';
 
 // Define the tool details
 export const MessageToolDetails = [
@@ -72,7 +72,7 @@ export async function getChannelMessages(message: Message, input: object): Promi
         const timeoutPromise = new Promise(resolve => setTimeout(resolve, 5_000));
 
         // Fetch messages with timeout
-        const fetchPromise = channel.messages.fetch({ limit: Math.min(limit, 100) });
+        const fetchPromise = channel.messages.fetch({ limit: Math.min(limit, 1_000) });
 
         const result = await Promise.race([fetchPromise, timeoutPromise]);
         if (!result) {
@@ -102,7 +102,7 @@ export async function getUserMessages(message: Message, input: object): Promise<
 
     try {
         // Extract and validate input
-        const { userId, limit = 100 } = input as { userId: string, limit: number };
+        const { userId, limit = 1_000 } = input as { userId: string, limit: number };
         if (!userId) {
             return 'User ID is required';
         }
@@ -113,29 +113,67 @@ export async function getUserMessages(message: Message, input: object): Promise<
             return 'User not found';
         }
 
-        // Fetch messages from all text channels with timeout
-        const textChannels = message.guild.channels.cache.filter(channel => channel.isTextBased());
-        const messageCollection: Message[] = [];
-        const timeoutPromise = new Promise(resolve => setTimeout(resolve, 10_000));
-
-        const fetchPromise = (async () => {
-            for (const channel of textChannels.values()) {
-                const channelMessages = await channel.messages.fetch({ limit: Math.min(limit, 100) });
-                messageCollection.push(...channelMessages.filter(msg => msg.author.id === userId).values());
-                if (messageCollection.length >= limit) break;
-            }
-        })();
-
-        // Race between fetch and timeout
-        await Promise.race([fetchPromise, timeoutPromise]);
-        if (messageCollection.length === 0) {
+        // Fetch messages using the helper function
+        const messages = await fetchMessages(message, userId, limit);
+        if (messages.length === 0) {
             return 'No messages found for this user';
         }
 
-        return JSON.stringify(messageCollection);
+        return JSON.stringify(messages);
 
     } catch (error) {
         console.error('Error fetching user messages:', error);
         return `Error fetching user messages: ${error instanceof Error ? error.message : String(error)}`;
     }
+}
+
+/**
+ * Internal helper function to fetch messages from a user
+ * @param message 
+ * @param userId 
+ * @param limit 
+ * @param timeoutMs 
+ * @returns 
+ */
+export async function fetchMessages(message: Message, userId: string, limit: number, timeoutMs = 5_000): Promise<Message[]> {
+
+    const messageCollection = new Collection<string, Message>();
+    const startTime = Date.now();
+    let lastMessage: Message | null = null;
+    let keepFetching = true;
+
+    try {
+        while (keepFetching) {
+            if (Date.now() - startTime >= timeoutMs) {
+                break;
+            }
+
+            const options: FetchMessagesOptions = { limit: Math.min(limit, 1_000), ...(lastMessage?.id && { before: lastMessage.id }) };
+
+            const fetchedMessages: Collection<string, Message> = await message.channel.messages.fetch(options);
+            if (fetchedMessages.size === 0) break;
+
+            lastMessage = fetchedMessages.last() ?? null;
+
+            for (const [, fetchedMessage] of fetchedMessages) {
+                if (
+                    !fetchedMessage.pinned &&
+                    fetchedMessage.deletable &&
+                    fetchedMessage.author.id === userId
+                ) {
+                    messageCollection.set(fetchedMessage.id, fetchedMessage);
+                    if (messageCollection.size >= limit) {
+                        keepFetching = false;
+                        break;
+                    }
+                }
+            }
+
+            if (lastMessage && !lastMessage.deletable) break;
+        }
+    } catch (error) {
+        console.error('Error fetching messages:', error);
+    }
+
+    return [...messageCollection.values()];
 }
