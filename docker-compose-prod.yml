@@ -48,6 +48,19 @@ services:
       - redis
       - api
 
+  agent:
+    container_name: sero-agent
+    build:
+      context: ./packages/agent
+    env_file:
+      - ./packages/agent/config/.env
+    environment:
+      NODE_ENV: production
+    restart: unless-stopped
+    depends_on:
+      - redis
+      - api
+
 volumes:
   postgres_data:
   redis-data:
