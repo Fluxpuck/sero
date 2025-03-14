@@ -26,7 +26,7 @@ export function splitMessage(text: string, maxLength = 2_000): string[] {
 
     // Don't forget the last chunk
     if (currentChunk) {
-        chunks.push(currentChunk);
+        chunks.push(sanitizeResponse(currentChunk));
     }
 
     return chunks;

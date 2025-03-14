@@ -205,6 +205,42 @@ export async function askClaude(
                         },
                         required: ["userId"]
                     }
+                },
+                {
+                    name: "getChannelMessages",
+                    description: "Fetch recent messages from a channel",
+                    input_schema: {
+                        type: "object",
+                        properties: {
+                            channelId: {
+                                type: "string",
+                                description: "The channel's Id, e.g. '1234567890'",
+                            },
+                            limit: {
+                                type: "number",
+                                description: "The number of messages to fetch",
+                            }
+                        },
+                        required: ["userId"]
+                    }
+                },
+                {
+                    name: "getUserMessages",
+                    description: "Fetch recent messages from a user",
+                    input_schema: {
+                        type: "object",
+                        properties: {
+                            userId: {
+                                type: "string",
+                                description: "The user's Id, e.g. '1234567890'",
+                            },
+                            limit: {
+                                type: "number",
+                                description: "The number of messages to fetch",
+                            }
+                        },
+                        required: ["userId"]
+                    }
                 }
             ],
             // tool_choice: { type: "any" },

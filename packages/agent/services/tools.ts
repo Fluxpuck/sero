@@ -2,6 +2,7 @@ import { Message } from 'discord.js';
 import { UserToolDetails, findUser, timeoutUser, disconnectUser } from '../tools/userTool';
 import { ChannelToolDetails, getAllChannels, findChannel, sendChannelMessage, sendDMMessage } from '../tools/channelTool';
 import { AuditToolDetails, getAuditLogs, getSeroLogs } from '../tools/auditTool';
+import { getChannelMessages, getUserMessages } from '../tools/messageTool';
 
 // Interface for tool execution functions
 interface ToolFunction {
@@ -24,6 +25,9 @@ export function initializeTools() {
 
     toolFunctions.set('getAuditLogs', getAuditLogs);
     toolFunctions.set('getSeroLogs', getSeroLogs);
+
+    toolFunctions.set('getChannelMessages', getChannelMessages);
+    toolFunctions.set('getUserMessages', getUserMessages);
 }
 
 // Get all tool definitions
