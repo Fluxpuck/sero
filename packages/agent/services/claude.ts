@@ -172,7 +172,7 @@ export async function askClaude(
                 },
                 {
                     name: "getAuditLogs",
-                    description: "Get activity logs for a user in the server",
+                    description: "Get activity logs for a user in the server, e.g. deleted messages, role changes, etc.",
                     input_schema: {
                         type: "object",
                         properties: {
@@ -190,7 +190,25 @@ export async function askClaude(
                 },
                 {
                     name: "getSeroLogs",
-                    description: "Get moderation logs of a user in the server",
+                    description: "Get moderation logs of a user in the server, e.g. warnings, timeouts, bans, etc.",
+                    input_schema: {
+                        type: "object",
+                        properties: {
+                            userId: {
+                                type: "string",
+                                description: "The user's Id, e.g. '1234567890'",
+                            },
+                            limit: {
+                                type: "number",
+                                description: "The number of (audit) logs to retrieve",
+                            }
+                        },
+                        required: ["userId"]
+                    }
+                },
+                {
+                    name: "getSeroActivity",
+                    description: "Get activity logs of a user in the server, e.g. voice activity and username changes",
                     input_schema: {
                         type: "object",
                         properties: {

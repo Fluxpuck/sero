@@ -22,7 +22,7 @@ const fetchUserActivities = async (options, res, next) => {
 };
 
 /**
- * GET api/guilds/:guildId/activities
+ * GET api/guilds/:guildId/activities/user/:userId
  * @description Get all guild activities
  * @param {string} limit - The number of activities to return
  * @param {string} guildId - The id of the guild
@@ -36,8 +36,8 @@ router.get("/:userId", (req, res, next) => {
 });
 
 /**
- * GET api/guilds/:guildId/activities/:userId/:type
- * @description Get all guild activities
+ * GET api/guilds/:guildId/activities/user/:userId/:type
+ * @description Get all guild activities for a user by type
  * @param {string} limit - The number of activities to return
  * @param {string} guildId - The id of the guild
  * @param {string} userId - The id of the user
