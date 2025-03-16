@@ -1,8 +1,6 @@
 import { Message } from 'discord.js';
-import { UserToolDetails, findUser, timeoutUser, disconnectUser } from '../tools/userTool';
-import { ChannelToolDetails, getAllChannels, findChannel, sendChannelMessage, sendDMMessage } from '../tools/channelTool';
-import { AuditToolDetails, getAuditLogs, getSeroLogs, getSeroActivity } from '../tools/auditTool';
-import { getChannelMessages, getUserMessages } from '../tools/messageTool';
+
+import { moderateUser } from '../tools/userModeration';
 
 // Interface for tool execution functions
 interface ToolFunction {
@@ -14,30 +12,8 @@ const toolFunctions = new Map<string, ToolFunction>();
 
 // Initialize tools
 export function initializeTools() {
-    toolFunctions.set('findUser', findUser);
-    toolFunctions.set('timeoutUser', timeoutUser);
-    toolFunctions.set('disconnectUser', disconnectUser);
+    toolFunctions.set('moderateUser', moderateUser);
 
-    toolFunctions.set('getAllChannels', getAllChannels);
-    toolFunctions.set('findChannel', findChannel);
-    toolFunctions.set('sendChannelMessage', sendChannelMessage);
-    toolFunctions.set('sendDMMessage', sendDMMessage);
-
-    toolFunctions.set('getAuditLogs', getAuditLogs);
-    toolFunctions.set('getSeroLogs', getSeroLogs);
-    toolFunctions.set('getSeroActivity', getSeroActivity);
-
-    toolFunctions.set('getChannelMessages', getChannelMessages);
-    toolFunctions.set('getUserMessages', getUserMessages);
-}
-
-// Get all tool definitions
-export function getAllTools() {
-    return [
-        ...UserToolDetails,
-        ...ChannelToolDetails,
-        ...AuditToolDetails,
-    ];
 }
 
 // Execute a tool by name

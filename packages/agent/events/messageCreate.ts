@@ -1,8 +1,6 @@
 import { Message, Events, Client } from 'discord.js';
 import { askClaude } from '../services/claude';
 
-import { splitMessage } from '../utils';
-
 // Type for the execute function
 export const name = Events.MessageCreate;
 

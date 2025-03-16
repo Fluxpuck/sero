@@ -6,6 +6,12 @@ dotenv.config();
 
 const { NODE_ENV, PROD_API_URL, API_MASTER_KEY } = process.env;
 
+export type ApiResponse = {
+    status: number;
+    data: any;
+    message?: string;
+}
+
 // Create and configure axios instance
 const instance: AxiosInstance = axios.create({
     baseURL: NODE_ENV === 'production' ? PROD_API_URL : "http://localhost:3336/api/",

@@ -1,13 +1,13 @@
 import Anthropic from '@anthropic-ai/sdk';
 import { Message } from 'discord.js';
 import { sanitizeResponse } from '../utils';
-import { getAllTools, executeTool } from './tools';
+import { executeTool } from './tools';
 
 // Gather the about me and discord guidelines context for the AI assistant
-import { seroAgentDescription, discordGuideline } from '../context/context';
+import { seroAgentDescription, discordContext, toolsContext } from '../context/context';
 
 const CLAUDE_MODEL = 'claude-3-5-haiku-20241022';
-const SYSTEM_PROMPT = `${seroAgentDescription} \n ${discordGuideline}`;
+const SYSTEM_PROMPT = `${seroAgentDescription} \n ${discordContext} \n ${toolsContext}`;
 const MAX_TOKENS = 500;
 const MAX_CONTEXT_MESSAGES = 10;
 
@@ -50,7 +50,6 @@ export async function askClaude(
 
         const systemPrompt = SYSTEM_PROMPT
             .replace('{{date}}', new Date().toLocaleDateString())
-            .replace('{{guildId}}', guild?.id ?? 'private')
             .replace('{{guildName}}', guild?.name ?? 'private')
             .replace('{{channelId}}', channel.id)
             .replace('{{channelName}}', 'name' in channel && channel.name ? channel.name : 'Direct Message')
@@ -63,201 +62,33 @@ export async function askClaude(
             system: systemPrompt,
             tools: [
                 {
-                    name: "findUser",
-                    description: "Find a guild member based on a userId or username",
+                    name: "moderateUser",
+                    description: "Find and optionally moderate a Discord user with various actions",
                     input_schema: {
                         type: "object",
                         properties: {
                             query: {
                                 type: "string",
-                                description: "The user's name or Id, e.g. '1234567890' or 'username'",
-                            }
-                        },
-                        required: ["query"]
-                    }
-                },
-                {
-                    name: "timeoutUser",
-                    description: "Timeout a user from sending messages for a specified duration",
-                    input_schema: {
-                        type: "object",
-                        properties: {
-                            userId: {
-                                type: "string",
-                                description: "The user's Id, e.g. '1234567890'",
+                                description: "The username or user ID to find"
+                            },
+                            actions: {
+                                type: "array",
+                                items: {
+                                    type: "string",
+                                    enum: ["timeout", "disconnect", "kick", "ban"]
+                                },
+                                description: "Array of moderation actions to perform. If empty, only user information is returned."
                             },
                             duration: {
-                                type: "string",
-                                description: "The duration of the timeout in seconds, e.g. '60'. Preferably between 1 and 3600.",
+                                type: "number",
+                                description: "Duration in minutes for timeout (ignored for other actions)"
                             },
                             reason: {
                                 type: "string",
-                                description: "The reason for the timeout, e.g 'Flooding the chat with messages' or 'Sending inappropriate content'",
-                            }
-                        },
-                        required: ["userId", "duration", "reason"]
-                    }
-                },
-                {
-                    name: "disconnectUser",
-                    description: "Disconnect a user from the voice channel",
-                    input_schema: {
-                        type: "object",
-                        properties: {
-                            userId: {
-                                type: "string",
-                                description: "The user's Id, e.g. '1234567890'",
-                            }
-                        },
-                        required: ["userId"]
-                    }
-                },
-                {
-                    name: "getAllChannels",
-                    description: "Get all channels in the server",
-                    input_schema: {
-                        type: "object",
-                        properties: {},
-                    }
-                },
-                {
-                    name: "findChannel",
-                    description: "Find a guild channel based on a channelId or channel-name",
-                    input_schema: {
-                        type: "object",
-                        properties: {
-                            query: {
-                                type: "string",
-                                description: "The channel name or Id, e.g. '1234567890' or 'name'",
+                                description: "Reason for the moderation actions"
                             }
                         },
                         required: ["query"]
-                    }
-                },
-                {
-                    name: "sendChannelMessage",
-                    description: "Send a message to a channel (preferred method)",
-                    input_schema: {
-                        type: "object",
-                        properties: {
-                            channelId: {
-                                type: "string",
-                                description: "The channel's Id, e.g. '1234567890'",
-                            },
-                            content: {
-                                type: "string",
-                                description: "The message content to send",
-                            }
-                        },
-                        required: ["channelId", "content"]
-                    }
-                },
-                {
-                    name: "sendDMMessage",
-                    description: "Send a direct message to a user (only use when explicitly requested)",
-                    input_schema: {
-                        type: "object",
-                        properties: {
-                            userId: {
-                                type: "string",
-                                description: "The user's Id, e.g. '1234567890'",
-                            },
-                            content: {
-                                type: "string",
-                                description: "The message content to send",
-                            }
-                        },
-                        required: ["userId", "content"]
-                    }
-                },
-                {
-                    name: "getAuditLogs",
-                    description: "Get activity logs for a user in the server, e.g. deleted messages, role changes, etc.",
-                    input_schema: {
-                        type: "object",
-                        properties: {
-                            userId: {
-                                type: "string",
-                                description: "The user's Id, e.g. '1234567890'",
-                            },
-                            limit: {
-                                type: "number",
-                                description: "The number of audit logs to retrieve",
-                            }
-                        },
-                        required: ["userId"]
-                    }
-                },
-                {
-                    name: "getSeroLogs",
-                    description: "Get moderation logs of a user in the server, e.g. warnings, timeouts, bans, etc.",
-                    input_schema: {
-                        type: "object",
-                        properties: {
-                            userId: {
-                                type: "string",
-                                description: "The user's Id, e.g. '1234567890'",
-                            },
-                            limit: {
-                                type: "number",
-                                description: "The number of (audit) logs to retrieve",
-                            }
-                        },
-                        required: ["userId"]
-                    }
-                },
-                {
-                    name: "getSeroActivity",
-                    description: "Get activity logs of a user in the server, e.g. voice activity and username changes",
-                    input_schema: {
-                        type: "object",
-                        properties: {
-                            userId: {
-                                type: "string",
-                                description: "The user's Id, e.g. '1234567890'",
-                            },
-                            limit: {
-                                type: "number",
-                                description: "The number of (audit) logs to retrieve",
-                            }
-                        },
-                        required: ["userId"]
-                    }
-                },
-                {
-                    name: "getChannelMessages",
-                    description: "Fetch recent messages from a channel",
-                    input_schema: {
-                        type: "object",
-                        properties: {
-                            channelId: {
-                                type: "string",
-                                description: "The channel's Id, e.g. '1234567890'",
-                            },
-                            limit: {
-                                type: "number",
-                                description: "The number of messages to fetch, max 1000.",
-                            }
-                        },
-                        required: ["userId"]
-                    }
-                },
-                {
-                    name: "getUserMessages",
-                    description: "Fetch recent messages from a user in this channel",
-                    input_schema: {
-                        type: "object",
-                        properties: {
-                            userId: {
-                                type: "string",
-                                description: "The user's Id, e.g. '1234567890'",
-                            },
-                            channelId: {
-                                type: "string",
-                                description: "The channel's Id, e.g. '1234567890'",
-                            },
-                        },
-                        required: ["userId"]
                     }
                 }
             ],
@@ -320,7 +151,6 @@ export async function askClaude(
 
                 await message.reply(sanitizeResponse(finalResponse));
             }
-
             return finalResponse;
         }
     } catch (error) {

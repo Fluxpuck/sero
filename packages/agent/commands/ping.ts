@@ -14,7 +14,6 @@ const command: Command = {
         await interaction.editReply({
             content: `Pong! 🏓\nBot Latency: ${latency}ms\nAPI Latency: ${Math.round(interaction.client.ws.ping)}ms`,
         });
-
     },
 };
 
