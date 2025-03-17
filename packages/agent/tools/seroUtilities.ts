@@ -31,7 +31,7 @@ export async function SeroUtilities(message: Message, input: SeroActionTool): Pr
                             throw new Error("User not found");
                         }
 
-                        const response = await ApiService.post(`/guilds/${toUser.guild.id}/levels/exp/${toUser.id}`, { params: { experience: input.amount } }) as ApiResponse;
+                        const response = await ApiService.post(`/guilds/${toUser.guild.id}/levels/exp/${toUser.id}`, { experience: input.amount }) as ApiResponse;
                         if (response.status !== 200) {
                             throw new Error(`Failed to give experience points to ${toUser.user.tag}`);
                         } else {
@@ -49,7 +49,7 @@ export async function SeroUtilities(message: Message, input: SeroActionTool): Pr
                             throw new Error("User not found");
                         }
 
-                        const response = await ApiService.post(`/guilds/${fromUser.guild.id}/levels/exp/${fromUser.id}`, { params: { experience: -input.amount } }) as ApiResponse;
+                        const response = await ApiService.post(`/guilds/${fromUser.guild.id}/levels/exp/${fromUser.id}`, { experience: -input.amount }) as ApiResponse;
                         if (response.status !== 200) {
                             throw new Error(`Failed to remove experience points to ${fromUser.user.tag}`);
                         } else {
@@ -63,17 +63,16 @@ export async function SeroUtilities(message: Message, input: SeroActionTool): Pr
                 // Transfer experience points from one user to another
                 case "transfer-exp":
                     if (input.fromUser && input.toUser && input.amount) {
-                        if (!fromUser || !toUser) {
-                            throw new Error("fromUser, toUser or both not found");
+                        if (!fromUser || !toUser || fromUser.id === toUser.id) {
+                            throw new Error("fromUser, toUser or both not found or are the same user");
                         }
 
                         const transferAmount = Math.min(input.amount, 1_000); // Limit transfer amount to 1,000
 
-                        // Remove experience points from the sender
-
+                        // Remove from and add to user
                         const [removeResponse, addResponse] = await Promise.all([
-                            ApiService.post(`/guilds/${fromUser.guild.id}/levels/exp/${fromUser.id}`, { params: { experience: -transferAmount } }),
-                            ApiService.post(`/guilds/${toUser.guild.id}/levels/exp/${toUser.id}`, { params: { experience: +transferAmount } })
+                            ApiService.post(`/guilds/${fromUser.guild.id}/levels/exp/${fromUser.id}`, { experience: -transferAmount }),
+                            ApiService.post(`/guilds/${toUser.guild.id}/levels/exp/${toUser.id}`, { experience: +transferAmount })
                         ]) as [ApiResponse, ApiResponse];
 
                         if (removeResponse.status !== 200 || addResponse.status !== 200) {
@@ -90,14 +89,14 @@ export async function SeroUtilities(message: Message, input: SeroActionTool): Pr
         }));
 
         return `
-            User Information: fromUser: ${JSON.stringify(fromUser.toJSON())}, toUser: ${JSON.stringify(toUser.toJSON())}
+            User Information: ${fromUser ? `fromUser: ${JSON.stringify(fromUser.toJSON())}` : ''}${fromUser && toUser ? ', ' : ''}${toUser ? `toUser: ${JSON.stringify(toUser.toJSON())}` : ''}
             Actions Performed: ${result.join("; ")}
         `;
 
     } catch (error: any) {
         console.error(`Error executing sero utility actions:`, error);
         return `
-            User Information: fromUser: ${JSON.stringify(fromUser.toJSON())}, toUser: ${JSON.stringify(toUser.toJSON())}
+            User Information: ${fromUser ? `fromUser: ${JSON.stringify(fromUser.toJSON())}` : ''}${fromUser && toUser ? ', ' : ''}${toUser ? `toUser: ${JSON.stringify(toUser.toJSON())}` : ''}
             ${result.length > 0 ? `Actions Performed: ${result.join("; ")}` : ""}
             Actions Failed: ${error.message}
         `;

@@ -191,7 +191,7 @@ export async function askClaude(
                             },
                             amount: {
                                 type: "number",
-                                description: "Amount of experience points to give, remove or transfer (ignored for other actions)"
+                                description: "Amount of experience points to give, remove or transfer (ignored for other actions). There is no limit to giving or removing experience points, but transferring is limited to 1000 experience points per day."
                             }
                         },
                         required: ["actions"]
