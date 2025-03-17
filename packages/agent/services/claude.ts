@@ -86,6 +86,10 @@ export async function askClaude(
                             reason: {
                                 type: "string",
                                 description: "Reason for the moderation actions"
+                            },
+                            name: {
+                                type: "string",
+                                description: "New nickname for the user (ignored for other actions)"
                             }
                         },
                         required: ["user"]

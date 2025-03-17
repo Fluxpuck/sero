@@ -2,12 +2,13 @@ import { Message } from "discord.js";
 import { findUser } from "../utils/user-resolver";
 
 type ModerationType =
-    "timeout" | "disconnect" | "ban" | "kick" | "warn" | "purge" | "move";
+    "timeout" | "disconnect" | "ban" | "kick" | "warn" | "change_nickname";
 type UserModerationTool = {
     user: string; // User e.g. '1234567890' or 'username'
     actions: ModerationType[]; // Array of moderation actions to perform
     duration?: number; // timeout duration in minutes
     reason?: string;
+    name?: string; // new nickname
 };
 
 export async function moderateUser(message: Message, input: UserModerationTool): Promise<string> {
@@ -25,10 +26,18 @@ export async function moderateUser(message: Message, input: UserModerationTool):
         await Promise.all(input.actions.map(async (action) => {
             switch (action) {
 
-                case "purge":
-                    // Not yet implemented
+                // Change user nickname
+                case "change_nickname":
+                    if (input.name) {
+                        await user.setNickname(input.name);
+                        result.push(`User ${user.user.tag} has been changed to ${input.name}`);
+                    }
+                    else {
+                        throw new Error("Name required for change_nickname action");
+                    }
                     break;
 
+                // Send a warning to the user through DM
                 case "warn":
                     if (input.reason) {
                         await user.send(`**You've recieved a warning** with the following message:\n${input.reason}`).then(() => {
@@ -41,6 +50,7 @@ export async function moderateUser(message: Message, input: UserModerationTool):
                     }
                     break;
 
+                // Disconnect user from voice channel
                 case "disconnect":
                     if (user.voice?.channel) {
                         await user.voice.disconnect(`${input.reason ?? ""} - by Moderator: ${message.author.tag}`);
@@ -50,6 +60,7 @@ export async function moderateUser(message: Message, input: UserModerationTool):
                     }
                     break;
 
+                // Timeout user from chat
                 case "timeout":
                     if (input.duration && input.reason) {
                         const durationMs = input.duration * 60 * 1000; // Convert seconds to milliseconds
@@ -60,6 +71,7 @@ export async function moderateUser(message: Message, input: UserModerationTool):
                     }
                     break;
 
+                // Kick user from server
                 case "kick":
                     if (input.reason) {
                         await user.kick(`${input.reason} - by Moderator: ${message.author.tag}`);
@@ -69,6 +81,7 @@ export async function moderateUser(message: Message, input: UserModerationTool):
                     }
                     break;
 
+                // Ban user from server
                 case "ban":
                     if (input.reason) {
                         await user.ban({ deleteMessageSeconds: 24 * 60 * 60, reason: `${input.reason} - by Moderator: ${message.author.tag}` });
