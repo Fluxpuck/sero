@@ -116,8 +116,10 @@ export async function askClaude(
                                     description: "The channel ID or name to find"
                                 },
                                 description: "Channel(s) to find information about or to perform actions in. For move action, please provide two channels. If empty, all channels are returned.",
-                                max: 3,
-                                min: 1,
+                            },
+                            message: {
+                                type: "string",
+                                description: "Message to send in channel (ignored for other actions)"
                             },
                             ratelimit: {
                                 type: "number",

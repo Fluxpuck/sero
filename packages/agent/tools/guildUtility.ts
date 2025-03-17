@@ -8,6 +8,7 @@ type GuildUtilizationTool = {
     user: string; // User e.g. '1234567890' or 'username'
     actions: UtilizationType[]; // Array of utilities actions to perform
     channels?: string[]; // Channel e.g. '1234567890' or 'channelname'
+    message?: string; // Message to send in channel
     ratelimit?: number; // Ratelimit in seconds
 };
 
@@ -73,7 +74,17 @@ export async function guildUtility(message: Message, input: GuildUtilizationTool
                     }
                     break;
                 case "sendChannelMessage":
-                // Not yet implemented
+                    if (input.message && channels.length >= 1) {
+                        for (const channel of channels) {
+                            if (channel.isTextBased()) {
+                                await (channel as TextChannel).send(input.message);
+                                result.push(`Message sent to ${channel.name}`);
+                            }
+                        }
+                    } else {
+                        throw new Error("At least one channel required for sendChannelMessage action");
+                    }
+                    break;
             }
         }));
 
