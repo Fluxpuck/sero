@@ -3,7 +3,7 @@ import { findUser } from "../utils/user-resolver";
 import { findChannel } from "../utils/channel-resolver";
 
 type UtilizationType =
-    "slowmode" | "move" | "sendChannelMessage";
+    "slowmode" | "move-one" | "move-all" | "sendChannelMessage";
 type GuildUtilizationTool = {
     user: string; // User e.g. '1234567890' or 'username'
     actions: UtilizationType[]; // Array of utilities actions to perform
@@ -51,8 +51,24 @@ export async function MiscUtilities(message: Message, input: GuildUtilizationToo
                     }
                     break;
 
-                // Move users from one voice channel to another
-                case "move":
+                // Move a single user to a voice channel
+                case "move-one":
+                    if (channels.length === 1) {
+                        if (!channels[0].isVoiceBased()) {
+                            throw new Error("Target channel must be a voice channel");
+                        }
+                        if (!user?.voice?.channel) {
+                            throw new Error("User is not in a voice channel");
+                        }
+                        await user.voice.setChannel(channels[0]);
+                        result.push(`User moved to ${channels[0].name}`);
+                    } else {
+                        throw new Error("One channel required for move-one action");
+                    }
+                    break;
+
+                // Move all users from one voice channel to another
+                case "move-all":
                     if (channels.length === 2) {
                         if (!channels.every(c => c.isVoiceBased())) {
                             throw new Error("Both channels must be voice channels");
@@ -60,10 +76,12 @@ export async function MiscUtilities(message: Message, input: GuildUtilizationToo
                         if (channels[0].members.size === 0) {
                             throw new Error("Source channel has no members to move");
                         }
-                        await user.voice.setChannel(channels[1]);
+                        await Promise.all(
+                            channels[0].members.map(member => member.voice.setChannel(channels[1]))
+                        );
                         result.push(`Users moved from ${channels[0].name} to ${channels[1].name}`);
                     } else {
-                        throw new Error("Two channels required for move action");
+                        throw new Error("Two channels required for move-all action");
                     }
                     break;
 

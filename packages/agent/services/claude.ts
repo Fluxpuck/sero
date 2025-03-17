@@ -109,9 +109,9 @@ export async function askClaude(
                                 type: "array",
                                 items: {
                                     type: "string",
-                                    enum: ["slowmode", "move", "sendChannelMessage"]
+                                    enum: ["slowmode", "move-one", "move-all", "sendChannelMessage"]
                                 },
-                                description: "Array of utilities actions to perform"
+                                description: "Array of utilities actions to perform. For move-all, provide both voice channels"
                             },
                             channels: {
                                 type: "array",
