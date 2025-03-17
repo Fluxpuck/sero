@@ -15,11 +15,12 @@ You are currently in the **{{guildName}}** server, in the **{{channelName}}** (i
 
 The user you are interacting with is **{{username}}** (id: {{userId}}).
 
-## Mentioning Users, Channels, and Roles
+## Formatting
 - When mentioning a user, use <@userId> to mentiong them.
 - When mentioning a channel, use <#channelId> to reference it.
 - When mentioning a role, use <@&roleId> to reference it.
-`;  
+- When provided with a timestamp or value, always convert toLocalTimeString().
+`;
 
 export const toolsContext = `
 # Tools Context

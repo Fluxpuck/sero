@@ -36,19 +36,19 @@ function findUserById(guild: Guild, id: string): Promise<GuildMember | null> {
 
 /**
  * Advanced search function for finding members by username, nickname, or global name
- * Returns multiple potential matches instead of just one
+ * Could return multiple potential matches instead of just one
  */
 async function searchMembers(
     guild: Guild,
     query: string,
-    limit: number = 10
+    limit: number = 3
 ): Promise<Collection<string, GuildMember>> {
     if (!guild || !query) return new Collection<string, GuildMember>();
 
     try {
         return await guild.members.search({ query, limit });
     } catch (error) {
-        console.error(`Error searchMembers: ${error}`);
+        console.error(`Error searchMembers "${query}": ${error}`);
         return new Collection<string, GuildMember>();
     }
 }

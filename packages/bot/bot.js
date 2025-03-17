@@ -26,22 +26,22 @@ subscribeToChannel(client);
 
 // → Login to Discord API
 client.login(process.env.NODE_ENV === "production"
-  ? process.env.PRODUCTION_TOKEN
-  : process.env.DEVELOPMENT_TOKEN).then(async () => {
+    ? process.env.PRODUCTION_TOKEN
+    : process.env.DEVELOPMENT_TOKEN).then(async () => {
 
-    // → Check API connection
-    const { baseRequest } = require('./database/connection');
-    const apiConnection = await baseRequest();
+        // → Check API connection
+        const { baseRequest } = require('./database/connection');
+        const apiConnection = await baseRequest();
 
-    const isRedisConnected = redisClient?.status === 'ready';
-    const isApiConnected = apiConnection?.status === 200;
+        const isRedisConnected = redisClient?.status === 'ready';
+        const isApiConnected = apiConnection?.status === 200;
 
-    client.redis = isRedisConnected;
-    client.postgres = isApiConnected;
+        client.redis = isRedisConnected;
+        client.postgres = isApiConnected;
 
-    // → Displays a welcome message in the console 
-    // to indicate that the bot has successfully started up.
-    console.log("\x1b[33m", `
+        // → Displays a welcome message in the console 
+        // to indicate that the bot has successfully started up.
+        console.log("\x1b[33m", `
       _______ _______ _______   _______ 
      |       |       |    _  \\ |       |
      |  _____|    ___|   | |  ||   _   |
@@ -56,4 +56,4 @@ client.login(process.env.NODE_ENV === "production"
        > ${isRedisConnected ? 'Redis is connected' : 'Redis is not connected!'}
        > ${isApiConnected ? 'Sero-api is connected' : 'Sero-api is not connected!'}
       `);
-  });
+    });

@@ -4,7 +4,7 @@ import { findUser } from "../utils/user-resolver";
 type ModerationType =
     "timeout" | "disconnect" | "ban" | "kick" | "warn" | "purge" | "move" | null;
 type UserModerationTool = {
-    query: string; // User e.g. '1234567890' or 'username'
+    user: string; // User e.g. '1234567890' or 'username'
     actions: ModerationType[]; // Array of moderation actions to perform
     duration?: number; // timeout duration in minutes
     reason?: string;
@@ -13,7 +13,7 @@ type UserModerationTool = {
 export async function moderateUser(message: Message, input: UserModerationTool): Promise<string> {
 
     // Step 1: Find the user
-    const user = await findUser(message.guild!, input.query);
+    const user = await findUser(message.guild!, input.user);
     if (!user) {
         return "User not found";
     }
@@ -26,15 +26,20 @@ export async function moderateUser(message: Message, input: UserModerationTool):
     // Step 2: Perform moderation actions
     const result: any = [];
 
+    console.log("input.actions", input.actions);
+
     try {
         await Promise.all(input.actions.map(async (action) => {
             switch (action) {
+
                 case "purge":
                     // Not yet implemented
                     break;
+
                 case "warn":
                     // Not yet implemented
                     break;
+
                 case "disconnect":
                     if (user.voice?.channel) {
                         await user.voice.disconnect(`${input.reason ?? ""} - by Moderator: ${message.author.tag}`);
@@ -43,6 +48,7 @@ export async function moderateUser(message: Message, input: UserModerationTool):
                         throw new Error(`User ${user.user.tag} is not in a voice channel`);
                     }
                     break;
+
                 case "timeout":
                     if (input.duration && input.reason) {
                         const durationMs = input.duration * 60 * 1000; // Convert seconds to milliseconds
@@ -52,6 +58,7 @@ export async function moderateUser(message: Message, input: UserModerationTool):
                         throw new Error("Duration and reason required for timeout action");
                     }
                     break;
+
                 case "kick":
                     if (input.reason) {
                         await user.kick(`${input.reason} - by Moderator: ${message.author.tag}`);
@@ -60,9 +67,10 @@ export async function moderateUser(message: Message, input: UserModerationTool):
                         throw new Error("Reason required for kick action");
                     }
                     break;
+
                 case "ban":
                     if (input.reason) {
-                        await user.ban({ deleteMessageDays: 1, reason: `${input.reason} - by Moderator: ${message.author.tag}` });
+                        await user.ban({ deleteMessageSeconds: 24 * 60 * 60, reason: `${input.reason} - by Moderator: ${message.author.tag}` });
                         result.push(`User ${user.user.tag} has been kicked for: ${input.reason}`);
                     } else {
                         throw new Error("Reason required for ban action");

@@ -22,9 +22,12 @@
         "@anthropic-ai/sdk": "^0.39.0",
         "axios": "^1.8.3",
         "discord.js": "^14.x",
-        "dotenv": "^16.4.5"
+        "dotenv": "^16.4.5",
+        "lodash": "^4.17.21",
+        "node-cache": "^5.1.2"
     },
     "devDependencies": {
+        "@types/lodash": "^4.17.16",
         "@types/node": "^18.x",
         "ts-node": "^10.x",
         "typescript": "^5.x"

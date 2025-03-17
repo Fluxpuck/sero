@@ -11,9 +11,12 @@ export async function execute(message: Message) {
     if (message.author.bot) return;
     if (message.author.id != process.env.OWNER_ID) return;
 
-    // Check if the message mentions the bot and the mention is at the start
+    // Check if the message either mentions the bot at the start or is a reply to the bot
     const mentionPrefix = new RegExp(`^<@!?${client.user?.id}>`);
-    if (!mentionPrefix.test(message.content)) return;
+    const isMention = mentionPrefix.test(message.content);
+    const isReply = message.reference?.messageId &&
+        (await message.channel.messages.fetch(message.reference.messageId))?.author.id === client.user?.id;
+    if (!isMention && !isReply) return;
 
     // Extract the actual query by removing the mention
     const query = message.content.replace(mentionPrefix, '').trim();

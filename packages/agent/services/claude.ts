@@ -67,7 +67,7 @@ export async function askClaude(
                     input_schema: {
                         type: "object",
                         properties: {
-                            query: {
+                            user: {
                                 type: "string",
                                 description: "The username or user ID to find"
                             },
@@ -88,8 +88,45 @@ export async function askClaude(
                                 description: "Reason for the moderation actions"
                             }
                         },
-                        required: ["query"]
+                        required: ["user"]
                     }
+                },
+                {
+                    name: "guildUtility",
+                    description: "Find a user and optionally perform actions in a channel",
+                    input_schema: {
+                        type: "object",
+                        properties: {
+                            user: {
+                                type: "string",
+                                description: "The username or user ID to find"
+                            },
+                            actions: {
+                                type: "array",
+                                items: {
+                                    type: "string",
+                                    enum: ["slowmode", "move", "sendChannelMessage"]
+                                },
+                                description: "Array of utilities actions to perform. If empty, only user and channel information is returned."
+                            },
+                            channels: {
+                                type: "array",
+                                items: {
+                                    type: "string",
+                                    description: "The channel ID or name to find"
+                                },
+                                description: "Channel(s) to find information about or to perform actions in. For move action, please provide two channels. If empty, all channels are returned.",
+                                max: 3,
+                                min: 1,
+                            },
+                            ratelimit: {
+                                type: "number",
+                                description: "Ratelimit in seconds for slowmode (ignored for other actions)"
+                            }
+                        },
+                        required: ["user", "channels"]
+                    }
+
                 }
             ],
             // tool_choice: { type: "any" },
