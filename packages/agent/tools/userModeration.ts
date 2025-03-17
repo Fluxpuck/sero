@@ -11,7 +11,7 @@ type UserModerationTool = {
     name?: string; // new nickname
 };
 
-export async function moderateUser(message: Message, input: UserModerationTool): Promise<string> {
+export async function ModerateUser(message: Message, input: UserModerationTool): Promise<string> {
 
     // Step 1: Find the user
     const user = await findUser(message.guild!, input.user);

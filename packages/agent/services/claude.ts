@@ -75,7 +75,7 @@ export async function askClaude(
                                 type: "array",
                                 items: {
                                     type: "string",
-                                    enum: ["timeout", "disconnect", "kick", "ban", "warn"]
+                                    enum: ["timeout", "disconnect", "kick", "ban", "warn", "change_nickname"]
                                 },
                                 description: "Array of moderation actions to perform"
                             },
@@ -92,7 +92,7 @@ export async function askClaude(
                                 description: "New nickname for the user (ignored for other actions)"
                             }
                         },
-                        required: ["user"]
+                        required: ["user", "actions"]
                     }
                 },
                 {
@@ -165,6 +165,36 @@ export async function askClaude(
                             }
                         },
                         required: ["user"]
+                    }
+                },
+                {
+                    name: "seroUtilities",
+                    description: "Perform various actions related to Sero, e.g. give-exp, remove-exp, transfer-exp",
+                    input_schema: {
+                        type: "object",
+                        properties: {
+                            fromUser: {
+                                type: "string",
+                                description: "The username or user ID to remove-exp or transfer from"
+                            },
+                            toUser: {
+                                type: "string",
+                                description: "The username or user ID to give-exp or transfer to"
+                            },
+                            actions: {
+                                type: "array",
+                                items: {
+                                    type: "string",
+                                    enum: ["give-exp", "remove-exp", "transfer-exp"]
+                                },
+                                description: "Array of Sero actions to perform"
+                            },
+                            amount: {
+                                type: "number",
+                                description: "Amount of experience points to give, remove or transfer (ignored for other actions)"
+                            }
+                        },
+                        required: ["actions"]
                     }
                 }
             ],

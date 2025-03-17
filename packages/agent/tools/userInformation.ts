@@ -13,7 +13,7 @@ type UserInformationTool = {
     limit?: number; // Limit of logs to fetch
 };
 
-export async function userInformation(message: Message, input: UserInformationTool): Promise<string> {
+export async function UserInformation(message: Message, input: UserInformationTool): Promise<string> {
 
     // Step 1: Find the user
     const user = await findUser(message.guild!, input.user);

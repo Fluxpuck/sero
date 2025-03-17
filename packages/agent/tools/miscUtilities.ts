@@ -12,7 +12,7 @@ type GuildUtilizationTool = {
     ratelimit?: number; // Ratelimit in seconds
 };
 
-export async function miscUtilities(message: Message, input: GuildUtilizationTool): Promise<string> {
+export async function MiscUtilities(message: Message, input: GuildUtilizationTool): Promise<string> {
 
     // Step 1: Find the user
     const user = await findUser(message.guild!, input.user);
