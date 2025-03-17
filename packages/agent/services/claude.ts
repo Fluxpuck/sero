@@ -75,7 +75,7 @@ export async function askClaude(
                                 type: "array",
                                 items: {
                                     type: "string",
-                                    enum: ["timeout", "disconnect", "kick", "ban"]
+                                    enum: ["timeout", "disconnect", "kick", "ban", "warn"]
                                 },
                                 description: "Array of moderation actions to perform"
                             },

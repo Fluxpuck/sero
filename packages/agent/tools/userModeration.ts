@@ -30,7 +30,15 @@ export async function moderateUser(message: Message, input: UserModerationTool):
                     break;
 
                 case "warn":
-                    // Not yet implemented
+                    if (input.reason) {
+                        await user.send(`**You've recieved a warning** with the following message:\n${input.reason}`).then(() => {
+                            result.push(`User ${user.user.tag} has been warned for: ${input.reason}`);
+                        }).catch((error) => {
+                            throw new Error(`Failed to send warning to user: ${error.message}`);
+                        });
+                    } else {
+                        throw new Error("Reason required for warn action");
+                    }
                     break;
 
                 case "disconnect":
