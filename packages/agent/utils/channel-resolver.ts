@@ -1,5 +1,8 @@
 import { Collection, Snowflake, Guild, GuildChannel, ChannelType } from "discord.js";
 
+/**
+ * Get all channels in a guild
+ */
 export async function getAllChannels(guild: Guild): Promise<Collection<string, GuildChannel>> {
     await guild.channels.fetch();
 
@@ -20,6 +23,9 @@ export async function getAllChannels(guild: Guild): Promise<Collection<string, G
     }
 }
 
+/**
+ * Find a channel by its name or ID
+ */
 export async function findChannel(
     guild: Guild,
     query: string,
@@ -39,20 +45,34 @@ export async function findChannel(
     }
 }
 
-
-
 /**
- * Find a channel by its Discord Snowflake ID
+ * Format all channels into a more readable format
  */
+export function formatAllChannel(channels: Collection<string, GuildChannel>): any[] {
+    return channels.map((channel: any) => {
+        return {
+            name: channel.name,
+            id: channel.id,
+            about: channel.topic,
+            parentId: channel.parentId,
+            channelPosition: channel.rawPosition,
+            rateLimitPerUser: channel.rateLimitPerUser,
+            type: ChannelType[channel.type],
+            createdAt: channel.createdAt ?? channel.messages.channel.createdAt,
+            link: channel.url ?? channel.messages.channel.url
+        }
+    });
+}
+
+
+
+// Find a channel by its Discord Snowflake ID
 async function findChannelById(guild: Guild, id: string): Promise<GuildChannel | null> {
     const channel = await guild.channels.fetch(id as Snowflake);
     return channel instanceof GuildChannel ? channel : null;
 }
 
-/**
- * Advanced search function for finding channels by name
- * Could return multiple potential matches instead of just one
- */
+// Advanced search function for finding channels by name or fuzzy matching
 async function searchChannels(
     guild: Guild,
     query: string,
@@ -90,6 +110,7 @@ async function searchChannels(
     }
 }
 
+// Function to calculate the Levenshtein distance between two strings
 function levenshtein(a: string, b: string): number {
     const matrix: number[][] = Array(b.length + 1).fill(null).map(() => Array(a.length + 1).fill(null));
 

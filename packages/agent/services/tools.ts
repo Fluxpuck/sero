@@ -1,7 +1,8 @@
 import { Message } from 'discord.js';
 
 import { moderateUser } from '../tools/userModeration';
-import { guildUtility } from '../tools/guildUtility';
+import { miscUtilities } from '../tools/miscUtilities';
+import { userInformation } from '../tools/userInformation';
 
 // Interface for tool execution functions
 interface ToolFunction {
@@ -14,7 +15,8 @@ const toolFunctions = new Map<string, ToolFunction>();
 // Initialize tools
 export function initializeTools() {
     toolFunctions.set('moderateUser', moderateUser);
-    toolFunctions.set('guildUtility', guildUtility);
+    toolFunctions.set('miscUtilities', miscUtilities);
+    toolFunctions.set('userInformation', userInformation);
 }
 
 // Execute a tool by name

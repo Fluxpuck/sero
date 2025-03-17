@@ -1,9 +1,9 @@
-import { Collection, Message, GuildChannel, TextChannel, ChannelType } from "discord.js";
+import { Message, GuildChannel, TextChannel } from "discord.js";
 import { findUser } from "../utils/user-resolver";
-import { findChannel, getAllChannels } from "../utils/channel-resolver";
+import { findChannel } from "../utils/channel-resolver";
 
 type UtilizationType =
-    "slowmode" | "move" | "sendChannelMessage" | null;
+    "slowmode" | "move" | "sendChannelMessage";
 type GuildUtilizationTool = {
     user: string; // User e.g. '1234567890' or 'username'
     actions: UtilizationType[]; // Array of utilities actions to perform
@@ -12,7 +12,7 @@ type GuildUtilizationTool = {
     ratelimit?: number; // Ratelimit in seconds
 };
 
-export async function guildUtility(message: Message, input: GuildUtilizationTool): Promise<string> {
+export async function miscUtilities(message: Message, input: GuildUtilizationTool): Promise<string> {
 
     // Step 1: Find the user
     const user = await findUser(message.guild!, input.user);
@@ -30,17 +30,6 @@ export async function guildUtility(message: Message, input: GuildUtilizationTool
                 return foundChannel;
             })
         );
-    } else {
-        const allChannels = await getAllChannels(message.guild!);
-        channels = formatAllChannel(allChannels);
-    }
-
-    // If no action specified, return user and channel information
-    if (!input.actions || input.actions.length === 0) {
-        return `
-            User Information: ${JSON.stringify(user.toJSON())}
-            ${input.channels ? `Channel Information: ${channels.join('; ')}` : ""}
-        `;
     }
 
     // Step 3: Perform utility actions
@@ -49,6 +38,8 @@ export async function guildUtility(message: Message, input: GuildUtilizationTool
     try {
         await Promise.all(input.actions.map(async (action) => {
             switch (action) {
+
+                // Add slowmode to a channel
                 case "slowmode":
                     if (input.ratelimit) {
                         if (!channels[0]) throw new Error("Channel not found");
@@ -59,6 +50,8 @@ export async function guildUtility(message: Message, input: GuildUtilizationTool
                         throw new Error("Ratelimit required for slowmode action");
                     }
                     break;
+
+                // Move users from one voice channel to another
                 case "move":
                     if (channels.length === 2) {
                         if (!channels.every(c => c.isVoiceBased())) {
@@ -73,6 +66,8 @@ export async function guildUtility(message: Message, input: GuildUtilizationTool
                         throw new Error("Two channels required for move action");
                     }
                     break;
+
+                // Send a message to target channel(s)
                 case "sendChannelMessage":
                     if (input.message && channels.length >= 1) {
                         for (const channel of channels) {
@@ -105,18 +100,3 @@ export async function guildUtility(message: Message, input: GuildUtilizationTool
     }
 }
 
-function formatAllChannel(channels: Collection<string, GuildChannel>): any[] {
-    return channels.map((channel: any) => {
-        return {
-            name: channel.name,
-            id: channel.id,
-            about: channel.topic,
-            parentId: channel.parentId,
-            channelPosition: channel.rawPosition,
-            rateLimitPerUser: channel.rateLimitPerUser,
-            type: ChannelType[channel.type],
-            createdAt: channel.createdAt ?? channel.messages.channel.createdAt,
-            link: channel.url ?? channel.messages.channel.url
-        }
-    });
-}

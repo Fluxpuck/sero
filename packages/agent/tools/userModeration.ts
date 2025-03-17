@@ -2,7 +2,7 @@ import { Message } from "discord.js";
 import { findUser } from "../utils/user-resolver";
 
 type ModerationType =
-    "timeout" | "disconnect" | "ban" | "kick" | "warn" | "purge" | "move" | null;
+    "timeout" | "disconnect" | "ban" | "kick" | "warn" | "purge" | "move";
 type UserModerationTool = {
     user: string; // User e.g. '1234567890' or 'username'
     actions: ModerationType[]; // Array of moderation actions to perform
@@ -18,15 +18,8 @@ export async function moderateUser(message: Message, input: UserModerationTool):
         return "User not found";
     }
 
-    // If no action specified, return user information
-    if (!input.actions || input.actions.length === 0) {
-        return `User Information: ${JSON.stringify(user.toJSON())}`;
-    }
-
     // Step 2: Perform moderation actions
     const result: any = [];
-
-    console.log("input.actions", input.actions);
 
     try {
         await Promise.all(input.actions.map(async (action) => {

@@ -63,7 +63,7 @@ export async function askClaude(
             tools: [
                 {
                     name: "moderateUser",
-                    description: "Find and optionally moderate a Discord user with various actions",
+                    description: "Find and moderate a Discord user with various actions",
                     input_schema: {
                         type: "object",
                         properties: {
@@ -77,7 +77,7 @@ export async function askClaude(
                                     type: "string",
                                     enum: ["timeout", "disconnect", "kick", "ban"]
                                 },
-                                description: "Array of moderation actions to perform. If empty, only user information is returned."
+                                description: "Array of moderation actions to perform"
                             },
                             duration: {
                                 type: "number",
@@ -92,8 +92,8 @@ export async function askClaude(
                     }
                 },
                 {
-                    name: "guildUtility",
-                    description: "Find a user and optionally perform actions in a channel",
+                    name: "miscUtilities",
+                    description: "Additional utility actions for Discord, e.g. slowmode, move, sendChannelMessage",
                     input_schema: {
                         type: "object",
                         properties: {
@@ -107,7 +107,7 @@ export async function askClaude(
                                     type: "string",
                                     enum: ["slowmode", "move", "sendChannelMessage"]
                                 },
-                                description: "Array of utilities actions to perform. If empty, only user and channel information is returned."
+                                description: "Array of utilities actions to perform"
                             },
                             channels: {
                                 type: "array",
@@ -115,11 +115,11 @@ export async function askClaude(
                                     type: "string",
                                     description: "The channel ID or name to find"
                                 },
-                                description: "Channel(s) to find information about or to perform actions in. For move action, please provide two channels. If empty, all channels are returned.",
+                                description: "Channel(s) to perform actions in. For move action, please provide two channels",
                             },
                             message: {
                                 type: "string",
-                                description: "Message to send in channel (ignored for other actions)"
+                                description: "Message for sendChannelMessage (ignored for other actions)"
                             },
                             ratelimit: {
                                 type: "number",
@@ -128,7 +128,40 @@ export async function askClaude(
                         },
                         required: ["user", "channels"]
                     }
-
+                },
+                {
+                    name: "userInformation",
+                    description: "Get detailed information about a Discord user, optionally including messageCount, auditLogs, seroLogs, seroActivity",
+                    input_schema: {
+                        type: "object",
+                        properties: {
+                            user: {
+                                type: "string",
+                                description: "The username or user ID to find"
+                            },
+                            channels: {
+                                type: "array",
+                                items: {
+                                    type: "string",
+                                    description: "The channel ID or name to find"
+                                },
+                                description: "The channel(s) to find information in (optional)",
+                            },
+                            actions: {
+                                type: "array",
+                                items: {
+                                    type: "string",
+                                    enum: ["messageCount", "auditLogs", "seroLogs", "seroActivity"]
+                                },
+                                description: "Array of actions to perform. If empty, only user information is returned"
+                            },
+                            limit: {
+                                type: "number",
+                                description: "Limit for the number of logs to return for each action, max 10"
+                            }
+                        },
+                        required: ["user"]
+                    }
                 }
             ],
             // tool_choice: { type: "any" },
