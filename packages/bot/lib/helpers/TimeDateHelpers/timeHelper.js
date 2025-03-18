@@ -9,7 +9,8 @@ const {
     differenceInYears,
     addWeeks,
     endOfHour,
-    startOfWeek
+    startOfWeek,
+    nextDay
 } = require('date-fns');
 
 
@@ -144,4 +145,24 @@ module.exports = {
         };
     },
 
+    /**
+     * Get the date of next occuring date and time
+     * @param {*} day - The day of the week (Sunday = 0)
+     * @param {*} time - The time of the day (eg: 13:45)
+     */
+    getNextOccurence(day, time) {
+        const now = new Date();
+        try {
+            const next = nextDay(now, day);
+            const [hours, minutes] = time.split(':');
+            const nextDate = (next.getDay() === now.getDay() && new Date(now.getFullYear(), now.getMonth(), now.getDate(), hours, minutes) > now) ?
+                new Date(now.getFullYear(), now.getMonth(), now.getDate(), hours, minutes) :
+                new Date(next.getFullYear(), next.getMonth(), next.getDate(), hours, minutes);
+            return nextDate;
+        }
+        catch (error) {
+            console.error('Invalid day or time:', error);
+            return null;
+        }
+    },
 };
