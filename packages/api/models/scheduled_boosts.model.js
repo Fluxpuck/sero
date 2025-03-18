@@ -167,7 +167,7 @@ module.exports = sequelize => {
     async function removedBoost(record) {
         const guild = await sequelize.models.guild.findOne({ where: { guildId: record.guildId } });
         const setting = await sequelize.models.guild_settings.findOne({ where: { guildId: record.guildId, type: "scheduled-boost-messages" } });
-        if (guild) {
+        if (guild && record.isBoostActive) {
             publishMessage(REDIS_CHANNELS.BOOST_SCHEDULE, {
                 boostId: record.boostId,
                 guildId: record.guildId,

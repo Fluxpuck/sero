@@ -92,8 +92,7 @@ module.exports.props = {
             }
         ],
     },
-    // defaultMemberPermissions: ['ManageGuild'], // Ommitted for development purposes
-    defaultMemberPermissions: ['SendMessages'],
+    defaultMemberPermissions: ['ManageGuild']
 }
 
 module.exports.autocomplete = async (client, interaction) => {
