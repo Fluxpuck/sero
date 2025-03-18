@@ -67,7 +67,7 @@ module.exports = async (client, payload) => {
                 event.edit(options = {
                     // Source https://discord.js.org/docs/packages/discord.js/14.18.0/GuildScheduledEventManager:Class#edit
                     status: 3 // 3 = completed (should reschedule or end)
-                })
+                }).catch(() => null);
             }
         } catch (err) {
             console.log('Error:', err);

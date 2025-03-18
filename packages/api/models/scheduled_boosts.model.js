@@ -136,9 +136,6 @@ module.exports = sequelize => {
             channelId: setting ? setting.targetId : null,
             status: "start"
         });
-        setTimeout(async () => { // Maybe the timeout is unnecessary :P
-            endBoost(record);
-        }, record.duration * 60 * 60 * 1000); // Convert duration from hours to milliseconds
     }
 
     async function endBoost(record) {
