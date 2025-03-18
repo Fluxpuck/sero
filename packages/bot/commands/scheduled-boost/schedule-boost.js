@@ -146,7 +146,7 @@ module.exports.run = async (client, interaction) => {
             const scheduledBoostsListData = await getRequest(`/guilds/${interaction.guild.id}/boost/scheduled`);
             const scheduledBoostsList = scheduledBoostsListData.status === 200 ? scheduledBoostsListData.data : [];
 
-            // TODO: Chunk the data (because max fields = 25, I think 3 per page will do nicely)
+            // Chunk the data (because max fields = 25, I think 3 per page will do nicely)
             const scheduledBoostsFormatted = scheduledBoostsList.map((boost) => {
                 boostDate = getNextOccurence(boost.day, boost.time);
                 boostUnix = unixTimestamp(boostDate);
@@ -255,7 +255,7 @@ module.exports.run = async (client, interaction) => {
                     flags: MessageFlags.Ephemeral,
                 });
             }
-            // TODO check that event exists for the current guild
+            // Check that event exists for the current guild
             if (eventId) {
                 const guildEvents = await interaction.guild.scheduledEvents.fetch(eventId).catch(() => null);
                 if (!guildEvents) {
