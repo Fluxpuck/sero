@@ -41,7 +41,6 @@ module.exports = sequelize => {
                 max: 120,
             },
         },
-        // TODO: Maybe we turn this into one DATETIME field
         day: {
             type: DataTypes.INTEGER,
             allowNull: false,

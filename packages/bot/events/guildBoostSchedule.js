@@ -27,13 +27,11 @@ module.exports = async (client, payload) => {
                 });
             }
 
-            console.log(guild.scheduledEvents); // GuildScheduledEventManager
-            // Source https://discord.js.org/docs/packages/discord.js/14.18.0/GuildScheduledEventManager:Class#edit
-
             // If eventId is given, attempt to start the event
             if (payload.eventId) {
                 const event = await guild.scheduledEvents.fetch(payload.eventId);
                 event.edit(options = {
+                    // Source https://discord.js.org/docs/packages/discord.js/14.18.0/GuildScheduledEventManager:Class#edit
                     status: 2 // 2 = active
                 })
             }
@@ -67,6 +65,7 @@ module.exports = async (client, payload) => {
             if (payload.eventId) {
                 const event = await guild.scheduledEvents.fetch(payload.eventId);
                 event.edit(options = {
+                    // Source https://discord.js.org/docs/packages/discord.js/14.18.0/GuildScheduledEventManager:Class#edit
                     status: 3 // 3 = completed (should reschedule or end)
                 })
             }

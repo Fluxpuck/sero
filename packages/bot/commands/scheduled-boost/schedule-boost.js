@@ -109,7 +109,6 @@ module.exports.autocomplete = async (client, interaction) => {
         if (!guildEvents) {
             return interaction.respond([]);
         }
-        // TODO some filter for the input
         const guildEventsList = guildEvents.map((event) => {
             return {
                 name: event.name,
@@ -257,6 +256,15 @@ module.exports.run = async (client, interaction) => {
                 });
             }
             // TODO check that event exists for the current guild
+            if (eventId) {
+                const guildEvents = await interaction.guild.scheduledEvents.fetch(eventId).catch(() => null);
+                if (!guildEvents) {
+                    return replyInteraction(interaction, {
+                        content: "The event ID is invalid. Please provide a valid event ID.",
+                        flags: MessageFlags.Ephemeral,
+                    });
+                }
+            }
 
             // API request to add the scheduled boosts
             guildId = interaction.guild.id;
@@ -280,20 +288,8 @@ module.exports.run = async (client, interaction) => {
             // API request to remove the scheduled boost
             const removed = await deleteRequest(`/guilds/${interaction.guild.id}/boost/scheduled/${boostId}`);
             if (removed.status === 200) {
-                let extraInfo = "";
-                if (removed.data.isBoostActive === true) {
-                    // Technically not necessary, boost will expire by itself but still good to have an extra warning
-                    // try {
-                    //     // TODO Remove the boost
-                    //     console.log("Todo remove the active boost")
-                    // } catch(e) {
-                    //     console.error("Error removing the event: ", e)
-
-                    // }
-                    extraInfo = "Note boost is still active, you can check with boost info.";
-                }
                 return replyInteraction(interaction, {
-                    content: "The scheduled boost has been removed." + extraInfo,
+                    content: "The scheduled boost has been removed.",
                     flags: MessageFlags.Ephemeral,
                 });
             } else {
