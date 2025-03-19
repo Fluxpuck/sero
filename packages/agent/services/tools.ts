@@ -1,9 +1,9 @@
 import { Message } from 'discord.js';
 
-import { ModerateUser } from '../tools/userModeration';
-import { MiscUtilities } from '../tools/miscUtilities';
-import { UserInformation } from '../tools/userInformation';
-import { SeroUtilities } from '../tools/seroUtilities';
+import { ModerateUser } from '../tools/userModeration.old';
+import { MiscUtilities } from '../tools/miscUtilities.old';
+import { UserInformation } from '../tools/userInformation.old';
+import { SeroUtilities } from '../tools/seroUtilities.old';
 
 // Interface for tool execution functions
 interface ToolFunction {
