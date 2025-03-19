@@ -8,7 +8,7 @@ import { seroAgentDescription, discordContext, toolsContext } from '../context/c
 
 const CLAUDE_MODEL = 'claude-3-5-haiku-20241022';
 const SYSTEM_PROMPT = `${seroAgentDescription} \n ${discordContext} \n ${toolsContext}`;
-const MAX_TOKENS = 500;
+const MAX_TOKENS = 1024;
 const MAX_CONTEXT_MESSAGES = 10;
 
 // Initialize the client with your API key
