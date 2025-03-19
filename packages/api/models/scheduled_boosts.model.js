@@ -130,12 +130,11 @@ module.exports = sequelize => {
                 channelId: setting ? setting.targetId : null,
                 status: "end"
             });
-            if (!record.repeat) { // If it's a one-time boost or we're nuking it
+            record.isBoostActive = false;
+            record.endAt = null;
+            await record.save();
+            if (!record.repeat) { // If it's a one-time boost
                 await record.destroy();
-            } else {
-                record.isBoostActive = false;
-                record.endAt = null;
-                await record.save();
             }
         } else {
             await record.destroy(); // Lost record, just delete
@@ -168,6 +167,24 @@ module.exports = sequelize => {
         const currentDay = now.getDay();
         const currentTime = now.toTimeString().slice(0, 5); // Format as HH:MM
 
+        // Process any ended boosts
+        const expiredBoosts = await ScheduledBoosts.findAll({
+            where: {
+                endAt: {
+                    [Sequelize.Op.lte]: new Date(),
+                },
+                isBoostActive: true,
+            },
+        });
+        try {
+            for (const record of expiredBoosts) {
+                endBoost(record);
+            }
+        } catch (error) {
+            console.error(error);
+        }
+
+        // Process any to be started events (this one after ending on purpose)
         const dueBoosts = await ScheduledBoosts.findAll({
             where: {
                 day: currentDay,
@@ -179,23 +196,6 @@ module.exports = sequelize => {
         try {
             for (const record of dueBoosts) {
                 startBoost(record);
-            }
-        } catch (error) {
-            console.error(error);
-        }
-
-        // Backup delete any ended boosts
-        const expiredBoosts = await ScheduledBoosts.findAll({
-            where: {
-                endAt: {
-                    [Sequelize.Op.lt]: new Date(),
-                },
-                isBoostActive: true,
-            },
-        });
-        try {
-            for (const record of expiredBoosts) {
-                endBoost(record);
             }
         } catch (error) {
             console.error(error);
