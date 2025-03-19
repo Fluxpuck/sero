@@ -145,17 +145,28 @@ module.exports.run = async (client, interaction) => {
             const scheduledBoostsListData = await getRequest(`/guilds/${interaction.guild.id}/boost/scheduled`);
             const scheduledBoostsList = scheduledBoostsListData.status === 200 ? scheduledBoostsListData.data : [];
 
+            // Add eventName to the boost objects
+            for (const boost of scheduledBoostsList) {
+                if (boost.eventId) {
+                    const guildEvent = await interaction.guild.scheduledEvents.fetch(boost.eventId).catch(() => null);
+                    boost.eventName = guildEvent ? guildEvent.name : "Unknown Event";
+                } else {
+                    boost.eventName = "No Event";
+                }
+            }
+            
             // Chunk the data (because max fields = 25, I think 3 per page will do nicely)
             const scheduledBoostsFormatted = scheduledBoostsList.map((boost) => {
+                const eventName = boost.eventName
                 boostDate = getNextOccurence(boost.day, boost.time);
                 boostUnix = unixTimestamp(boostDate);
                 const daysOfWeek = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"]; // TODO: Move this to timeHelper?
                 return {
                     name: `Boost: \`${boost.id}\``,
-                    value: `Modifier - \`${boost.modifier}x\`\nDuration - \`${boost.duration} ${boost.duration > 1 ? "hours" : "hour"}\`\nDay - \`${daysOfWeek[boost.day]}\` which is ${boost.isBoostActive ? `\`today!\`` : `on <t:${boostUnix}:D>`}\nTime - \`${boost.time} (UTC)\` which is ${boost.isBoostActive ? `\`now!\`` : `<t:${boostUnix}:R>`}\nRepeat - \`${boost.repeat ? "Yes" : "No"}\`\nBoost status - \`${boost.isBoostActive ? "Active" : "Not active"}\``,
+                    value: `Modifier - \`${boost.modifier}x\`\nDuration - \`${boost.duration} ${boost.duration > 1 ? "hours" : "hour"}\`\nDay - \`${daysOfWeek[boost.day]}\` which is ${boost.isBoostActive ? `\`today!\`` : `on <t:${boostUnix}:D>`}\nTime - \`${boost.time} (UTC)\` which is ${boost.isBoostActive ? `\`now!\`` : `<t:${boostUnix}:R>`}\nRepeat - \`${boost.repeat ? "Yes" : "No"}\`\nBoost status - \`${boost.isBoostActive ? "Active" : "Not active"}\`\nEvent - \`${eventName}\``,
                     inline: false,
                 }
-            })
+            });
 
             const scheduledBoostsChunks = chunk(scheduledBoostsFormatted, 3);
             let page = 0, maxpages = scheduledBoostsChunks.length - 1;
@@ -187,54 +198,57 @@ module.exports.run = async (client, interaction) => {
 
             const scheduledBoostsListMessage = await replyInteraction(interaction, {
                 embeds: [scheduledBoostsListEmbed],
-                components: [scheduledBoostsListButtons],
+                components: scheduledBoostsChunks.length > 1 ? [scheduledBoostsListButtons] : null,
                 flags: MessageFlags.Ephemeral,
             });
 
-            // Collect the button selection
-            const options = { componentType: ComponentType.Button, idle: 300_000, time: 3_600_000 }
-            const scheduledBoostsListCollector = scheduledBoostsListMessage.createMessageComponentCollector({
-                options
-            });
+            if (scheduledBoostsChunks.length > 1) {
 
-            scheduledBoostsListCollector.on("collect", async (button) => {
-                const selectedButton = button.customId;
-                if (selectedButton === "previous_pg" || selectedButton === "next_pg") {
-                    // Update the page number based on the button pressed
-                    if (selectedButton == 'previous_pg') (page <= 0) ? 0 : page--
-                    if (selectedButton == 'next_pg') (page >= maxpages) ? maxpages : page++
+                // Collect the button selection
+                const options = { componentType: ComponentType.Button, idle: 300_000, time: 3_600_000 }
+                const scheduledBoostsListCollector = scheduledBoostsListMessage.createMessageComponentCollector({
+                    options
+                });
 
-                    // Update the button status, based on the page number
-                    const previousIndex = scheduledBoostsListButtons.components.findIndex(button => button.data.custom_id === "previous_pg");
-                    const nextIndex = scheduledBoostsListButtons.components.findIndex(button => button.data.custom_id === "next_pg");
-                    switch (page) {
-                        case 0:
-                            scheduledBoostsListButtons.components[nextIndex].data.disabled = false;
-                            scheduledBoostsListButtons.components[previousIndex].data.disabled = true;
-                            break;
-                        case maxpages:
-                            scheduledBoostsListButtons.components[nextIndex].data.disabled = true;
-                            scheduledBoostsListButtons.components[previousIndex].data.disabled = false;
-                            break;
-                        default:
-                            scheduledBoostsListButtons.components[nextIndex].data.disabled = false;
-                            scheduledBoostsListButtons.components[previousIndex].data.disabled = false;
+                scheduledBoostsListCollector.on("collect", async (button) => {
+                    const selectedButton = button.customId;
+                    if (selectedButton === "previous_pg" || selectedButton === "next_pg") {
+                        // Update the page number based on the button pressed
+                        if (selectedButton == 'previous_pg') (page <= 0) ? 0 : page--
+                        if (selectedButton == 'next_pg') (page >= maxpages) ? maxpages : page++
+
+                        // Update the button status, based on the page number
+                        const previousIndex = scheduledBoostsListButtons.components.findIndex(button => button.data.custom_id === "previous_pg");
+                        const nextIndex = scheduledBoostsListButtons.components.findIndex(button => button.data.custom_id === "next_pg");
+                        switch (page) {
+                            case 0:
+                                scheduledBoostsListButtons.components[nextIndex].data.disabled = false;
+                                scheduledBoostsListButtons.components[previousIndex].data.disabled = true;
+                                break;
+                            case maxpages:
+                                scheduledBoostsListButtons.components[nextIndex].data.disabled = true;
+                                scheduledBoostsListButtons.components[previousIndex].data.disabled = false;
+                                break;
+                            default:
+                                scheduledBoostsListButtons.components[nextIndex].data.disabled = false;
+                                scheduledBoostsListButtons.components[previousIndex].data.disabled = false;
+                        }
+
+                        // Update embed Footer && Fields
+                        scheduledBoostsListEmbed.setFooter({ text: `All times are in UTC as that is what the bots locale is.\nPage ${page + 1} of ${maxpages + 1}` });
+                        scheduledBoostsListEmbed.data.fields = []; // Empty current fields
+                        scheduledBoostsListEmbed.addFields(
+                            ...scheduledBoostsChunks[page]
+                        );
+
+                        // Update the interaction
+                        await updateInteraction(button, {
+                            embeds: [scheduledBoostsListEmbed],
+                            components: [scheduledBoostsListButtons]
+                        })
                     }
-
-                    // Update embed Footer && Fields
-                    scheduledBoostsListEmbed.setFooter({ text: `All times are in UTC as that is what the bots locale is.\nPage ${page + 1} of ${maxpages + 1}` });
-                    scheduledBoostsListEmbed.data.fields = []; // Empty current fields
-                    scheduledBoostsListEmbed.addFields(
-                        ...scheduledBoostsChunks[page]
-                    );
-
-                    // Update the interaction
-                    await updateInteraction(button, {
-                        embeds: [scheduledBoostsListEmbed],
-                        components: [scheduledBoostsListButtons]
-                    })
-                }
-            });
+                });
+            }
             break;
         case "add":
             // Get the parameters from the interaction
