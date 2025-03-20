@@ -1,18 +1,19 @@
-type Properties = {
-    [key: string]: {
-        type: string;
-        description: string;
-    }
+type ToolParameters = {
+    type: "object";
+    properties: Record<string, ToolProperties>;
+    required: string[];
 }
 
-type InputSchema = {
+type ToolProperties = {
     type: string;
-    properties: Properties;
-    required?: string[];
+    description: string;
+    enum?: string[];
+    items?: ToolProperties;
+    properties?: Record<string, ToolProperties>;
 }
 
-export type Tool = {
+export type ClaudeTool = {
     name: string;
     description: string;
-    input_schema: InputSchema;
+    parameters: ToolParameters;
 }
