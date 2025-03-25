@@ -50,7 +50,7 @@ export async function DiscordModerationTool(message: Message, input: ModerationT
     const user = await findUser(message.guild, input.user);
     if (!user) return `Could not find user "${input.user}"`;
 
-    const reason = `${input.reason} - by Moderator: ${message.author.tag}`;
+    const reason = `${input.reason} - Moderator: ${message.author.tag}`;
     const warning = `# You've received a warning!\n⚠️ ${reason}\n\n-# ${message.guild.name}`;
 
     const actionPromises = input.actions.map(async (action) => {
