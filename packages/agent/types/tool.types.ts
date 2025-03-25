@@ -8,12 +8,13 @@ type ToolProperties = {
     type: string;
     description: string;
     enum?: string[];
-    items?: ToolProperties;
+    items?: ToolProperties | ToolParameters;
     properties?: Record<string, ToolProperties>;
+    required?: string[];
 }
 
 export type ClaudeTool = {
     name: string;
     description: string;
-    parameters: ToolParameters;
+    input_schema: ToolParameters;
 }
