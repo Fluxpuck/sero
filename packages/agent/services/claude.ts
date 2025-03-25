@@ -1,23 +1,26 @@
 import Anthropic from '@anthropic-ai/sdk';
 import { Message } from 'discord.js';
 import { sanitizeResponse } from '../utils';
-import { executeTool } from './tools';
+import { executeTool } from '../services/tools';
 
 // Gather the about me and discord guidelines context for the AI assistant
 import { seroAgentDescription, discordContext, toolsContext } from '../context/context';
 
+// Gather the Tool Contexts
+import { DiscordModerationToolContext } from '../tools/discord_moderation_actions.tool';
+import { DiscordGuildToolContext } from '../tools/discord_guild_actions.tool';
+
+// Gather the conversation history
+import { createConversationKey, getConversationHistory, updateConversationHistory } from '../services/history';
+
 const CLAUDE_MODEL = 'claude-3-5-haiku-20241022';
 const SYSTEM_PROMPT = `${seroAgentDescription} \n ${discordContext} \n ${toolsContext}`;
 const MAX_TOKENS = 1024;
-const MAX_CONTEXT_MESSAGES = 10;
 
 // Initialize the client with your API key
 const anthropic = new Anthropic({
     apiKey: process.env.ANTHROPIC_API_KEY,
 });
-
-// Message history storage: Map<channelId_userId, messages[]>
-const messageHistory = new Map<string, any[]>();
 
 export async function askClaude(
     prompt: string,
@@ -26,23 +29,14 @@ export async function askClaude(
 ): Promise<string | undefined> {
     try {
 
-        // Create a unique conversation key based on channel and user
-        const conversationKey = `${message.channel.id}_${message.author.id}`;
+        const conversationKey = createConversationKey(message.channel.id, message.author.id);
+        let conversationHistory = getConversationHistory(conversationKey) || [];
 
-        // Get existing message history or initialize if none exists
-        let conversationHistory = messageHistory.get(conversationKey) || [];
-
-        // If previousMessages is provided (from a tool call), use that instead
         if (previousMessages.length > 0) {
             conversationHistory = previousMessages;
         } else if (prompt) {
-            // Add the new user message to history
+            // Add user's prompt to conversation history
             conversationHistory.push({ role: 'user', content: prompt });
-        }
-
-        // Ensure we only keep the most recent MAX_CONTEXT_MESSAGES
-        if (conversationHistory.length > MAX_CONTEXT_MESSAGES * 2) { // *2 because each exchange has both user and assistant messages
-            conversationHistory = conversationHistory.slice(-MAX_CONTEXT_MESSAGES * 2);
         }
 
         const systemPrompt = SYSTEM_PROMPT
@@ -58,9 +52,8 @@ export async function askClaude(
             max_tokens: MAX_TOKENS,
             system: systemPrompt,
             tools: [
-
-                //import tool-context   
-
+                ...DiscordModerationToolContext,
+                ...DiscordGuildToolContext
             ],
             // tool_choice: { type: "any" },
             messages: conversationHistory,
@@ -101,7 +94,7 @@ export async function askClaude(
             });
 
             // Update the stored history
-            messageHistory.set(conversationKey, conversationHistory);
+            updateConversationHistory(conversationKey, conversationHistory);
 
             // Recursive call with tool result and updated message history
             return await askClaude("", message, conversationHistory);
@@ -117,7 +110,7 @@ export async function askClaude(
                 });
 
                 // Update the stored history
-                messageHistory.set(conversationKey, conversationHistory);
+                updateConversationHistory(conversationKey, conversationHistory);
 
                 await message.reply(sanitizeResponse(finalResponse));
             }
