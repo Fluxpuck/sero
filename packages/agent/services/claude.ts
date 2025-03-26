@@ -8,7 +8,7 @@ import { seroAgentDescription, discordContext, toolsContext } from '../context/c
 
 // Gather the Tool Contexts
 import { DiscordModerationToolContext } from '../tools/discord_moderation_actions.tool';
-import { DiscordGuildToolContext } from '../tools/discord_guild_actions.tool';
+import { DiscordUserToolContext } from '../tools/discord_user_actions';
 
 // Gather the conversation history
 import { createConversationKey, getConversationHistory, updateConversationHistory } from '../services/history';
@@ -29,16 +29,6 @@ export async function askClaude(
 ): Promise<string | undefined> {
     try {
 
-        const conversationKey = createConversationKey(message.channel.id, message.author.id);
-        let conversationHistory = getConversationHistory(conversationKey) || [];
-
-        if (previousMessages.length > 0) {
-            conversationHistory = previousMessages;
-        } else if (prompt) {
-            // Add user's prompt to conversation history
-            conversationHistory.push({ role: 'user', content: prompt });
-        }
-
         const systemPrompt = SYSTEM_PROMPT
             .replace('{{date}}', new Date().toLocaleDateString())
             .replace('{{guildName}}', message.guild?.name ?? 'private')
@@ -47,13 +37,24 @@ export async function askClaude(
             .replace('{{userId}}', message.author.id)
             .replace('{{username}}', message.author.username);
 
+        // Get the conversation history
+        const conversationKey = createConversationKey(message.channel.id, message.author.id);
+        let conversationHistory = getConversationHistory(conversationKey) || [];
+
+        if (previousMessages.length > 0) {
+            conversationHistory = previousMessages;
+        } else if (prompt) {
+            conversationHistory.push({ role: 'user', content: prompt });
+        }
+
+        // Call the Claude API
         const response = await anthropic.messages.create({
             model: CLAUDE_MODEL,
             max_tokens: MAX_TOKENS,
             system: systemPrompt,
             tools: [
                 ...DiscordModerationToolContext,
-                ...DiscordGuildToolContext
+                ...DiscordUserToolContext,
             ],
             // tool_choice: { type: "any" },
             messages: conversationHistory,
@@ -98,6 +99,7 @@ export async function askClaude(
 
             // Recursive call with tool result and updated message history
             return await askClaude("", message, conversationHistory);
+
         } else {
             // Get final response if no tool use
             const finalResponse = response.content.find(c => c.type === "text")?.text ?? "";

@@ -1,7 +1,7 @@
 import { Message } from 'discord.js';
 
 import { DiscordModerationTool } from '../tools/discord_moderation_actions.tool';
-import { DiscordGuildTool } from '../tools/discord_guild_actions.tool';
+import { DiscordUserTool } from '../tools/discord_user_actions';
 
 // Interface for tool execution functions
 interface ToolFunction {
@@ -14,7 +14,7 @@ const toolFunctions = new Map<string, ToolFunction>();
 // Initialize tools
 export function initializeTools() {
     toolFunctions.set('discord_moderation_actions', DiscordModerationTool);
-    // toolFunctions.set('discord_guild_actions', DiscordGuildTool);
+    toolFunctions.set('discord_user_actions', DiscordUserTool);
 }
 
 // Execute a tool by name

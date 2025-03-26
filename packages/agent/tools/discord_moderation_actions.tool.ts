@@ -79,6 +79,7 @@ export async function DiscordModerationTool(message: Message, input: ModerationT
                     return `Warned ${user.user.tag}`;
             }
         } catch (error) {
+            console.error(error);
             return `Failed to ${action} ${user.user.tag}: ${error}`;
         }
     });
