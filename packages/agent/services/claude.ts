@@ -8,7 +8,8 @@ import { seroAgentDescription, discordContext, toolsContext } from '../context/c
 
 // Gather the Tool Contexts
 import { DiscordModerationToolContext } from '../tools/discord_moderation_actions.tool';
-import { DiscordUserToolContext } from '../tools/discord_user_actions';
+import { DiscordUserToolContext } from '../tools/discord_user_actions.tool';
+import { SeroUtilityToolContext } from '../tools/sero_utility_actions.tool';
 
 // Gather the conversation history
 import { createConversationKey, getConversationHistory, updateConversationHistory } from '../services/history';
@@ -55,6 +56,7 @@ export async function askClaude(
             tools: [
                 ...DiscordModerationToolContext,
                 ...DiscordUserToolContext,
+                ...SeroUtilityToolContext,
             ],
             // tool_choice: { type: "any" },
             messages: conversationHistory,
