@@ -28,7 +28,7 @@ instance.interceptors.request.use(
         return config;
     },
     (error) => {
-        console.error('API Request Error:', error);
+        if (process.env.NODE_ENV === 'development') console.error('API Request Error:', error);
         return Promise.reject(error);
     }
 );
@@ -40,7 +40,7 @@ instance.interceptors.response.use(
         return response;
     },
     (error) => {
-        console.error('API Response Error:', error?.response?.data || error.message);
+        if (process.env.NODE_ENV === 'development') console.error('API Response Error:', error?.response?.data || error.message);
         return Promise.reject(error);
     }
 );
