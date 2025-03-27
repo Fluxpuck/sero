@@ -78,7 +78,7 @@ export async function SeroUtilityTool(message: Message, input: SeroUtilityToolIn
                     break;
 
                 case "set-boost":
-                    const seroBoostResponse = await ApiService.post(`/guilds/boost`, { guildId: user.guild.id, modifier: input.amount }) as ApiResponse;
+                    const seroBoostResponse = await ApiService.post(`/guilds/boost`, { guildId: user.guild.id, modifier: input.amount, duration: input.time }) as ApiResponse;
 
                     if (seroBoostResponse.status === 200 || seroBoostResponse.status === 201) {
                         return `Set the server boost to **${input.amount}X** for **${input.time} hour${input.time === 1 ? "" : "s"}**.`;
