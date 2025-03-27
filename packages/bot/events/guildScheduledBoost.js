@@ -5,7 +5,7 @@ const { getRequest } = require("../database/connection");
 module.exports = async (client, payload) => {
     if (!payload.hasOwnProperty('status')) return; // Make sure it has a status first
     if (payload.status == 'start') {
-        const requiredAttributes = ['guildId', 'modifier', 'duration', 'repeat', 'channelId'];
+        const requiredAttributes = ['guildId', 'boostName', 'modifier', 'duration', 'repeat', 'channelId'];
         for (const attribute of requiredAttributes) {
             if (!payload.hasOwnProperty(attribute)) return;
         }
@@ -16,8 +16,8 @@ module.exports = async (client, payload) => {
             const channel = await guild.channels.fetch(payload.channelId);
             if (channel) {
                 const messageEmbed = createCustomEmbed({
-                    title: `🚀 Boost Schedule 🚀`,
-                    description: `Boosting at ${payload.modifier}x for ${payload.duration} ${payload.duration > 1 ? `hours` : `hour`}, enjoy!`,
+                    title: `🚀 Scheduled Boost 🚀`,
+                    description: `Started the scheduled boost "${payload.boostName}"\nBoosting at ${payload.modifier}x for ${payload.duration} ${payload.duration > 1 ? `hours` : `hour`}, enjoy!`,
                     footer: payload.repeat ? 'This boost will repeat weekly' : null,
                     color: ClientEmbedColors.GREEN,
                 });
@@ -40,7 +40,7 @@ module.exports = async (client, payload) => {
         };
 
     } else if (payload.status == 'end') {
-        const requiredAttributes = ['guildId', 'channelId'];
+        const requiredAttributes = ['guildId', 'boostName', 'channelId'];
         for (const attribute of requiredAttributes) {
             if (!payload.hasOwnProperty(attribute)) return;
         }
@@ -51,8 +51,8 @@ module.exports = async (client, payload) => {
             const channel = await guild.channels.fetch(payload.channelId);
             if (channel) {
                 const messageEmbed = createCustomEmbed({
-                    title: `🚀 Boost Schedule 🚀`,
-                    description: `Boosting has ended, hope you enjoyed!`,
+                    title: `🚀 Scheduled Boost 🚀`,
+                    description: `Scheduled boost "${payload.boostName}" has ended, hope you enjoyed!`,
                     color: ClientEmbedColors.RED,
                 });
 

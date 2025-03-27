@@ -30,6 +30,7 @@ router.get("/", async (req, res) => {
  * POST api/guilds/:guildId/boost/scheduled
  * @description Create a scheduled boost for the guild
  * @param {string} guildId - The id of the guild
+ * @param {string} boostName - The name of the boost (name is a reserved word)
  * @param {string} modifier - The boost modifier
  * @param {string} duration - The boost duration
  * @param {string} day - The day of the week to boost (0-6, Sunday-Saturday)
@@ -39,8 +40,8 @@ router.get("/", async (req, res) => {
  */
 router.post("/", async (req, res) => {
     const { guildId } = req.params;
-    const { modifier, duration, day, time, repeat, eventId } = req.body;
-    const options = { guildId, modifier, duration, day, time, repeat, eventId };
+    const { boostName, modifier, duration, day, time, repeat, eventId } = req.body;
+    const options = { guildId, boostName, modifier, duration, day, time, repeat, eventId };
 
     try {
         const scheduledBoost = await createOrUpdateRecord(ScheduledBoosts, options);

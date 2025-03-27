@@ -24,6 +24,12 @@ module.exports.props = {
                 type: 1,
                 options: [
                     {
+                        name: "name",
+                        type: 3,
+                        description: "The name of the scheduled boost",
+                        required: true
+                    },
+                    {
                         name: "modifier",
                         type: 10,
                         description: "The amount to multiply the experience by",
@@ -100,7 +106,7 @@ module.exports.autocomplete = async (client, interaction) => {
     const autocomplete = interaction.options.getSubcommand();
     // Get the focused options value
     const focused = interaction.options.getFocused();
-    // For some reason, (true) is needed to get the name of the focused option
+    // (true) is needed to get the name of the focused option
     const focusedName = interaction.options.getFocused(true).name;
 
     if (autocomplete === "add" && focusedName === "event") {
@@ -127,7 +133,7 @@ module.exports.autocomplete = async (client, interaction) => {
         // TODO (maybe not usefull) some filter for the input
         const scheduledBoostsListFormatted = scheduledBoostsList.map((boost) => {
             return {
-                name: boost.id,
+                name: boost.boostName,
                 value: boost.id,
             }
         })
@@ -142,7 +148,16 @@ module.exports.run = async (client, interaction) => {
             // Also add reference time for the user to remind themselves what 01:00 UTC is in their timezone
             await deferInteraction(interaction, ephemeral = true);
             // Request from the API to get all scheduled boosts, if any
-            const scheduledBoostsListData = await getRequest(`/guilds/${interaction.guild.id}/boost/scheduled`);
+            let scheduledBoostsListData;
+            try {
+                scheduledBoostsListData = await getRequest(`/guilds/${interaction.guild.id}/boost/scheduled`);
+            } catch (error) {
+                console.error("Error while fetching scheduled boosts:", error);
+                return replyInteraction(interaction, {
+                    content: "An unexpected error occurred while fetching the scheduled boosts. Please try again later.",
+                    flags: MessageFlags.Ephemeral,
+                });
+            }
             const scheduledBoostsList = scheduledBoostsListData.status === 200 ? scheduledBoostsListData.data : [];
 
             // Add eventName to the boost objects
@@ -162,7 +177,7 @@ module.exports.run = async (client, interaction) => {
                 boostUnix = unixTimestamp(boostDate);
                 const daysOfWeek = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"]; // TODO: Move this to timeHelper?
                 return {
-                    name: `Boost: \`${boost.id}\``,
+                    name: `Boost: \`${boost.boostName}\``,
                     value: `Modifier - \`${boost.modifier}x\`\nDuration - \`${boost.duration} ${boost.duration > 1 ? "hours" : "hour"}\`\nDay - \`${daysOfWeek[boost.day]}\` which is ${boost.isBoostActive ? `\`today!\`` : `on <t:${boostUnix}:D>`}\nTime - \`${boost.time} (UTC)\` which is ${boost.isBoostActive ? `\`now!\`` : `<t:${boostUnix}:R>`}\nRepeat - \`${boost.repeat ? "Yes" : "No"}\`\nBoost status - \`${boost.isBoostActive ? "Active" : "Not active"}\`\nEvent - \`${eventName}\``,
                     inline: false,
                 }
@@ -252,6 +267,7 @@ module.exports.run = async (client, interaction) => {
             break;
         case "add":
             // Get the parameters from the interaction
+            const boostName = interaction.options.getString("name");
             const modifier = interaction.options.getNumber("modifier");
             const duration = interaction.options.getNumber("duration");
             const day = interaction.options.getNumber("day");
@@ -281,17 +297,25 @@ module.exports.run = async (client, interaction) => {
 
             // API request to add the scheduled boosts
             guildId = interaction.guild.id;
-            const created = await postRequest(`/guilds/${interaction.guild.id}/boost/scheduled`, {
-                guildId, modifier, duration, day, time, repeat, eventId,
-            });
-            if (created.status === 200) {
-                return replyInteraction(interaction, {
-                    content: "The scheduled boost has been added.",
-                    flags: MessageFlags.Ephemeral,
+            try {
+                const created = await postRequest(`/guilds/${interaction.guild.id}/boost/scheduled`, {
+                    guildId, boostName, modifier, duration, day, time, repeat, eventId,
                 });
-            } else {
+                if (created.status === 200) {
+                    return replyInteraction(interaction, {
+                        content: "The scheduled boost has been added.",
+                        flags: MessageFlags.Ephemeral,
+                    });
+                } else {
+                    return replyInteraction(interaction, {
+                        content: "An error occurred while adding the scheduled boost. Boost not scheduled.",
+                        flags: MessageFlags.Ephemeral,
+                    });
+                }
+            } catch (error) {
+                console.error("Error while adding the scheduled boost:", error);
                 return replyInteraction(interaction, {
-                    content: "An error occurred while adding the scheduled boost. Boost not scheduled.",
+                    content: "An unexpected error occurred while adding the scheduled boost. Please try again later.",
                     flags: MessageFlags.Ephemeral,
                 });
             }
@@ -299,19 +323,26 @@ module.exports.run = async (client, interaction) => {
             // Get the parameters from the interaction
             const boostId = interaction.options.getNumber("boost");
             // API request to remove the scheduled boost
-            const removed = await deleteRequest(`/guilds/${interaction.guild.id}/boost/scheduled/${boostId}`);
-            if (removed.status === 200) {
+            try {
+                const removed = await deleteRequest(`/guilds/${interaction.guild.id}/boost/scheduled/${boostId}`);
+                if (removed.status === 200) {
+                    return replyInteraction(interaction, {
+                        content: "The scheduled boost has been removed.",
+                        flags: MessageFlags.Ephemeral,
+                    });
+                } else {
+                    return replyInteraction(interaction, {
+                        content: "An error occurred while removing the scheduled boost. Boost not removed.\nAre you sure you gave a correct ID?",
+                        flags: MessageFlags.Ephemeral,
+                    });
+                }
+            } catch (error) {
+                console.error("Error while removing the scheduled boost:", error);
                 return replyInteraction(interaction, {
-                    content: "The scheduled boost has been removed.",
-                    flags: MessageFlags.Ephemeral,
-                });
-            } else {
-                return replyInteraction(interaction, {
-                    content: "An error occurred while removing the scheduled boost. Boost not removed.\nAre you sure you gave a correct ID?",
+                    content: "An unexpected error occurred while removing the scheduled boost. Please try again later.",
                     flags: MessageFlags.Ephemeral,
                 });
             }
-            // Backup to remove the active boost if the event is in progress
             break;
         default:
             return replyInteraction(interaction, {
