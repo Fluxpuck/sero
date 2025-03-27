@@ -148,7 +148,7 @@ export async function DiscordUserTool(message: Message, input: UserToolInput): P
                         : `No Sero activities found for user ${user.user.tag}`;
 
                 case "sero-logs":
-                    const seroLogsResponse = await ApiService.get(`/guilds/${user.guild.id}/logs/${user.id}?limit=${input.amount ?? 10}`) as ApiResponse;
+                    const seroLogsResponse = await ApiService.get(`/guilds/${user.guild.id}/logs/${user.id}?limit=${input.amount ?? 20}`) as ApiResponse;
 
                     if (seroLogsResponse.status === 200 || seroLogsResponse.status === 201) {
                         return `Sero Logs: ${seroLogsResponse.data.join(", ")}`;

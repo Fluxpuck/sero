@@ -90,11 +90,13 @@ export async function SeroUtilityTool(message: Message, input: SeroUtilityToolIn
                     const getSeroBoostResponse = await ApiService.get(`/guilds/${user.guild.id}`) as ApiResponse;
 
                     if (getSeroBoostResponse.status === 200) {
-                        const { modifier, duration, expireAt } = getSeroBoostResponse.data;
+                        const { modifier, duration = 0, expireAt } = getSeroBoostResponse.data;
                         const timeLeft = new Intl.RelativeTimeFormat('en', { style: 'narrow' })
                             .format(Math.ceil((new Date(expireAt).getTime() - Date.now()) / (1000 * 60 * 60)), 'hours');
 
-                        return `Currently boosting the server **${modifier}X** for **${duration} hour${duration === 1 ? "" : "s"}**.\n-# There is ${timeLeft} left.`
+                        return duration === 0
+                            ? `Currently boosting the server **${modifier}X**.\n-# There is ${timeLeft} left.`
+                            : `Currently boosting the server **${modifier}X** for **${duration} hour${duration === 1 ? "" : "s"}**.\n-# There is ${timeLeft} left.`
                     }
 
                     break;
