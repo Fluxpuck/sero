@@ -37,7 +37,7 @@ export const DiscordUserToolContext = [
                     items: {
                         type: "string",
                         enum: ["sero-activity", "sero-logs", "auditlogs", "voice-activity"],
-                        description: "Action type to perform"
+                        description: "Action type to perform: sero-activity (Get Sero activities), sero-logs (Get Sero logs), auditlogs (Get audit logs), voice-activity (Get voice activity)"
                     },
                     description: "List of actions to gather information about the user"
                 },

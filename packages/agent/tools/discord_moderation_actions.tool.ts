@@ -28,7 +28,7 @@ export const DiscordModerationToolContext = [
                         description: "Type of moderation action to perform",
                         enum: ["timeout", "disconnect", "kick", "ban", "warn"]
                     },
-                    description: "Array of optional moderation actions to perform on the user"
+                    description: "Array of optional moderation actions to perform on the user: Timeout (mute), Disconnect (from voice), Kick, Ban, Warn"
                 },
                 timeout_duration: {
                     type: "number",

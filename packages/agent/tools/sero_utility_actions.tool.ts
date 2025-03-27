@@ -33,7 +33,7 @@ export const SeroUtilityToolContext = [
                         description: "Type of sero action to perform",
                         enum: ["away", "get-boost", "set-boost", "give-exp", "remove-exp", "give-money", "remove-money"]
                     },
-                    description: "Array of sero actions to perform"
+                    description: "Array of sero actions to perform: Away (set user as away), Get Boost (get the current server boost), Set Boost (set the server boost), Give Exp (give experience points), Remove Exp (remove experience points), Give Money (give money), Remove Money (remove money)"
                 },
                 amount: {
                     type: "number",
