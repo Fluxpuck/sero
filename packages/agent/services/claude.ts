@@ -1,23 +1,27 @@
 import Anthropic from '@anthropic-ai/sdk';
 import { Message } from 'discord.js';
 import { sanitizeResponse } from '../utils';
-import { executeTool } from './tools';
+import { executeTool } from '../services/tools';
 
 // Gather the about me and discord guidelines context for the AI assistant
 import { seroAgentDescription, discordContext, toolsContext } from '../context/context';
 
+// Gather the Tool Contexts
+import { DiscordModerationToolContext } from '../tools/discord_moderation_actions.tool';
+import { DiscordUserToolContext } from '../tools/discord_user_actions.tool';
+import { SeroUtilityToolContext } from '../tools/sero_utility_actions.tool';
+
+// Gather the conversation history
+import { createConversationKey, getConversationHistory, updateConversationHistory } from '../services/history';
+
 const CLAUDE_MODEL = 'claude-3-5-haiku-20241022';
 const SYSTEM_PROMPT = `${seroAgentDescription} \n ${discordContext} \n ${toolsContext}`;
-const MAX_TOKENS = 500;
-const MAX_CONTEXT_MESSAGES = 10;
+const MAX_TOKENS = 1024;
 
 // Initialize the client with your API key
 const anthropic = new Anthropic({
     apiKey: process.env.ANTHROPIC_API_KEY,
 });
-
-// Message history storage: Map<channelId_userId, messages[]>
-const messageHistory = new Map<string, any[]>();
 
 export async function askClaude(
     prompt: string,
@@ -25,178 +29,34 @@ export async function askClaude(
     previousMessages: any[] = []
 ): Promise<string | undefined> {
     try {
-        const guild = message.guild;
-        const channel = message.channel;
-        const user = message.author;
-
-        // Create a unique conversation key based on channel and user
-        const conversationKey = `${channel.id}_${user.id}`;
-
-        // Get existing message history or initialize if none exists
-        let conversationHistory = messageHistory.get(conversationKey) || [];
-
-        // If previousMessages is provided (from a tool call), use that instead
-        if (previousMessages.length > 0) {
-            conversationHistory = previousMessages;
-        } else if (prompt) {
-            // Add the new user message to history
-            conversationHistory.push({ role: 'user', content: prompt });
-        }
-
-        // Ensure we only keep the most recent MAX_CONTEXT_MESSAGES
-        if (conversationHistory.length > MAX_CONTEXT_MESSAGES * 2) { // *2 because each exchange has both user and assistant messages
-            conversationHistory = conversationHistory.slice(-MAX_CONTEXT_MESSAGES * 2);
-        }
 
         const systemPrompt = SYSTEM_PROMPT
             .replace('{{date}}', new Date().toLocaleDateString())
-            .replace('{{guildName}}', guild?.name ?? 'private')
-            .replace('{{channelId}}', channel.id)
-            .replace('{{channelName}}', 'name' in channel && channel.name ? channel.name : 'Direct Message')
-            .replace('{{userId}}', user.id)
-            .replace('{{username}}', user.username);
+            .replace('{{guildName}}', message.guild?.name ?? 'private')
+            .replace('{{channelId}}', message.channel.id)
+            .replace('{{channelName}}', 'name' in message.channel && message.channel.name ? message.channel.name : 'Direct Message')
+            .replace('{{userId}}', message.author.id)
+            .replace('{{username}}', message.author.username);
 
+        // Get the conversation history
+        const conversationKey = createConversationKey(message.channel.id, message.author.id);
+        let conversationHistory = getConversationHistory(conversationKey) || [];
+
+        if (previousMessages.length > 0) {
+            conversationHistory = previousMessages;
+        } else if (prompt) {
+            conversationHistory.push({ role: 'user', content: prompt });
+        }
+
+        // Call the Claude API
         const response = await anthropic.messages.create({
             model: CLAUDE_MODEL,
             max_tokens: MAX_TOKENS,
             system: systemPrompt,
             tools: [
-                {
-                    name: "moderateUser",
-                    description: "Find and moderate a Discord user with various actions",
-                    input_schema: {
-                        type: "object",
-                        properties: {
-                            user: {
-                                type: "string",
-                                description: "The username or user ID to find"
-                            },
-                            actions: {
-                                type: "array",
-                                items: {
-                                    type: "string",
-                                    enum: ["timeout", "disconnect", "kick", "ban", "warn", "change_nickname"]
-                                },
-                                description: "Array of moderation actions to perform"
-                            },
-                            duration: {
-                                type: "number",
-                                description: "Duration in minutes for timeout (ignored for other actions)"
-                            },
-                            reason: {
-                                type: "string",
-                                description: "Reason for the moderation actions"
-                            },
-                            name: {
-                                type: "string",
-                                description: "New nickname for the user (ignored for other actions)"
-                            }
-                        },
-                        required: ["user", "actions"]
-                    }
-                },
-                {
-                    name: "miscUtilities",
-                    description: "Additional utility actions for Discord, e.g. slowmode, move, sendChannelMessage",
-                    input_schema: {
-                        type: "object",
-                        properties: {
-                            user: {
-                                type: "string",
-                                description: "The username or user ID to find"
-                            },
-                            actions: {
-                                type: "array",
-                                items: {
-                                    type: "string",
-                                    enum: ["slowmode", "move-one", "move-all", "sendChannelMessage"]
-                                },
-                                description: "Array of utilities actions to perform. For move-all, provide both voice channels"
-                            },
-                            channels: {
-                                type: "array",
-                                items: {
-                                    type: "string",
-                                    description: "The channel ID or name to find"
-                                },
-                                description: "Channel(s) to perform actions in. For move action, please provide two channels",
-                            },
-                            message: {
-                                type: "string",
-                                description: "Message for sendChannelMessage (ignored for other actions)"
-                            },
-                            ratelimit: {
-                                type: "number",
-                                description: "Ratelimit in seconds for slowmode (ignored for other actions)"
-                            }
-                        },
-                        required: ["user", "channels"]
-                    }
-                },
-                {
-                    name: "userInformation",
-                    description: "Get detailed information about a Discord user, optionally including messageCount, auditLogs, seroLogs, seroActivity",
-                    input_schema: {
-                        type: "object",
-                        properties: {
-                            user: {
-                                type: "string",
-                                description: "The username or user ID to find"
-                            },
-                            channels: {
-                                type: "array",
-                                items: {
-                                    type: "string",
-                                    description: "The channel ID or name to find"
-                                },
-                                description: "The channel(s) to find information in (optional)",
-                            },
-                            actions: {
-                                type: "array",
-                                items: {
-                                    type: "string",
-                                    enum: ["messageCount", "auditLogs", "seroLogs", "seroActivity"]
-                                },
-                                description: "Array of actions to perform. If empty, only user information is returned"
-                            },
-                            limit: {
-                                type: "number",
-                                description: "Limit for the number of logs to return for each action, max 10"
-                            }
-                        },
-                        required: ["user"]
-                    }
-                },
-                {
-                    name: "seroUtilities",
-                    description: "Perform various actions related to Sero, e.g. give-exp, remove-exp, transfer-exp",
-                    input_schema: {
-                        type: "object",
-                        properties: {
-                            fromUser: {
-                                type: "string",
-                                description: "The username or user ID to remove-exp or transfer from"
-                            },
-                            toUser: {
-                                type: "string",
-                                description: "The username or user ID to give-exp or transfer to"
-                            },
-                            actions: {
-                                type: "array",
-                                items: {
-                                    type: "string",
-                                    enum: ["give-exp", "remove-exp", "transfer-exp"]
-                                },
-                                description: "Array of Sero actions to perform"
-                            },
-                            amount: {
-                                type: "number",
-                                description: "Amount of experience points to give, remove or transfer (ignored for other actions). There is no limit to giving or removing experience points, but transferring is limited to 1000 experience points per day."
-                            }
-                        },
-                        required: ["actions"]
-                    }
-                }
+                ...DiscordModerationToolContext,
+                ...DiscordUserToolContext,
+                ...SeroUtilityToolContext,
             ],
             // tool_choice: { type: "any" },
             messages: conversationHistory,
@@ -237,10 +97,11 @@ export async function askClaude(
             });
 
             // Update the stored history
-            messageHistory.set(conversationKey, conversationHistory);
+            updateConversationHistory(conversationKey, conversationHistory);
 
             // Recursive call with tool result and updated message history
             return await askClaude("", message, conversationHistory);
+
         } else {
             // Get final response if no tool use
             const finalResponse = response.content.find(c => c.type === "text")?.text ?? "";
@@ -253,7 +114,7 @@ export async function askClaude(
                 });
 
                 // Update the stored history
-                messageHistory.set(conversationKey, conversationHistory);
+                updateConversationHistory(conversationKey, conversationHistory);
 
                 await message.reply(sanitizeResponse(finalResponse));
             }

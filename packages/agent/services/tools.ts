@@ -1,9 +1,8 @@
 import { Message } from 'discord.js';
 
-import { ModerateUser } from '../tools/userModeration';
-import { MiscUtilities } from '../tools/miscUtilities';
-import { UserInformation } from '../tools/userInformation';
-import { SeroUtilities } from '../tools/seroUtilities';
+import { DiscordModerationTool } from '../tools/discord_moderation_actions.tool';
+import { DiscordUserTool } from '../tools/discord_user_actions.tool';
+import { SeroUtilityTool } from '../tools/sero_utility_actions.tool';
 
 // Interface for tool execution functions
 interface ToolFunction {
@@ -15,10 +14,9 @@ const toolFunctions = new Map<string, ToolFunction>();
 
 // Initialize tools
 export function initializeTools() {
-    toolFunctions.set('moderateUser', ModerateUser);
-    toolFunctions.set('miscUtilities', MiscUtilities);
-    toolFunctions.set('userInformation', UserInformation);
-    toolFunctions.set('seroUtilities', SeroUtilities);
+    toolFunctions.set('discord_moderation_actions', DiscordModerationTool);
+    toolFunctions.set('discord_user_actions', DiscordUserTool);
+    toolFunctions.set('sero_utility_actions', SeroUtilityTool);
 }
 
 // Execute a tool by name
