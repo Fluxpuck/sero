@@ -20,26 +20,26 @@ type UserToolInput = {
 export const DiscordUserToolContext = [
     {
         name: "discord_user_actions",
-        description: "",
+        description: "Tool for fetching various Discord user activities and logs",
         input_schema: {
             type: "object",
             properties: {
                 user: {
                     type: "string",
-                    description: "The username or user ID to find"
+                    description: "The username, user ID, or @mention to find"
                 },
                 channel: {
                     type: "string",
-                    description: "The channel name or channel ID to find (optional)"
+                    description: "The channel name, ID, or #mention to filter results (optional)"
                 },
                 actions: {
                     type: "array",
                     items: {
                         type: "string",
-                        description: "Type of user action to perform",
-                        enum: ["sero-activity", "sero-logs", "auditlogs", "voice-activity", "message-count"]
+                        enum: ["sero-activity", "sero-logs", "auditlogs", "voice-activity"],
+                        description: "Action type to perform"
                     },
-                    description: "Array of optional user actions to perform to get more information about the user"
+                    description: "List of actions to gather information about the user"
                 },
 
                 amount: {
@@ -75,6 +75,27 @@ export const DiscordUserToolContext = [
 ] as ClaudeTool[];
 
 export async function DiscordUserTool(message: Message, input: UserToolInput): Promise<string> {
+    if (!input.actions?.length) {
+        return "At least one action must be specified";
+    }
+
+    if (input.amount && (input.amount < 1 || input.amount > 100)) {
+        return "Amount must be between 1 and 100";
+    }
+
+    if (input.timeRange) {
+        const before = new Date(input.timeRange.before);
+        const after = new Date(input.timeRange.after);
+
+        if (isNaN(before.getTime()) || isNaN(after.getTime())) {
+            return "Invalid date format in timeRange";
+        }
+
+        if (before < after) {
+            return "Before date must be later than after date";
+        }
+    }
+
     if (!message.guild) return "This command can only be used in a guild.";
 
     const user = await findUser(message.guild, input.user);
@@ -113,18 +134,18 @@ export async function DiscordUserTool(message: Message, input: UserToolInput): P
                         : `No audit logs found for user ${user.user.tag}`;
 
                 case "sero-activity":
-                    const seroActivtyResponse = await ApiService.get(`/guilds/${user.guild.id}/activities/user/${user.id}?limit=${input.amount ?? 20}`) as ApiResponse;
+                    let activities: any[] = [];
+                    const seroActivityResponse = await ApiService.get(`/guilds/${user.guild.id}/activities/user/${user.id}?limit=${input.amount ?? 20}`) as ApiResponse;
 
-                    if (seroActivtyResponse.status === 200 || seroActivtyResponse.status === 201) {
-                        const activities = seroActivtyResponse.data.filter((activity: any) =>
+                    if (seroActivityResponse.status === 200 || seroActivityResponse.status === 201) {
+                        activities = seroActivityResponse.data.filter((activity: any) =>
                             ["claim-exp-reward", "treasure-hunt", "daily-work", "transfer-exp"].includes(activity.type)
                         );
-                        return `Sero Activity: ${activities.join(", ")}`;
-
-                    } else if (seroActivtyResponse.status === 404) {
-                        return `Sero Activity: No activity found for user ${user.user.tag}`;
                     }
-                    break;
+
+                    return activities.length > 0
+                        ? `Sero Activity: ${activities.join(", ")}`
+                        : `No Sero activities found for user ${user.user.tag}`;
 
                 case "sero-logs":
                     const seroLogsResponse = await ApiService.get(`/guilds/${user.guild.id}/logs/${user.id}?limit=${input.amount ?? 10}`) as ApiResponse;
@@ -143,27 +164,20 @@ export async function DiscordUserTool(message: Message, input: UserToolInput): P
                     const voiceSessionResponse = await ApiService.get(`/guilds/${user.guild.id}/activities/user/${user.id}/voice-session?limit=${input.amount ?? 10}`) as ApiResponse;
 
                     if (voiceSessionResponse.status === 200 || voiceSessionResponse.status === 201) {
-                        const filteredSessions = voiceSessionResponse.data.filter((session: any) =>
-                            !channel || session.channelId === channel.id
-                        ).map((session: any) => ({
-                            ...session,
-                            durationInMinutes: Math.round(session.duration / 60)
-                        }));
+                        const filteredSessions = voiceSessionResponse.data
+                            .filter((session: any) => !channel || session.channelId === channel.id)
+                            .map((session: any) => ({
+                                ...session,
+                                durationInMinutes: Math.round(session.duration / 60)
+                            }));
 
-                        return `Voice-sessions: ${filteredSessions.join(", ")}`;
-                    }
-
-                    if (voiceSessionResponse.status === 404) {
-                        return `No voice sessions found for ${user.user.tag}`;
+                        return filteredSessions.length > 0
+                            ? `Voice-sessions: ${JSON.stringify(filteredSessions)}`
+                            : `No voice sessions found in specified channel for ${user.user.tag}`;
                     }
 
                     break;
 
-                case "message-count":
-                    return `Currently in development`;
-
-                default:
-                    break;
             }
         } catch (error) {
             return `No ${action} found for ${user.user.tag}`;

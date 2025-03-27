@@ -4,7 +4,7 @@ import { findUser } from "../utils/user-resolver";
 
 import ApiService, { ApiResponse } from "../services/api";
 
-type SeroUtilityActionType = "away" | "boost" | "give-exp" | "remove-exp" | "give-money" | "remove-money";
+type SeroUtilityActionType = "away" | "get-boost" | "set-boost" | "give-exp" | "remove-exp" | "give-money" | "remove-money";
 type SeroUtilityToolInput = {
     user: string;
     channel: string;
@@ -12,6 +12,7 @@ type SeroUtilityToolInput = {
     amount?: number;
     time?: number;
     message?: string;
+    economy_type?: "bank" | "wallet";
 };
 
 export const SeroUtilityToolContext = [
@@ -30,13 +31,13 @@ export const SeroUtilityToolContext = [
                     items: {
                         type: "string",
                         description: "Type of sero action to perform",
-                        enum: ["away", "boost", "give-exp", "remove-exp", "give-money", "remove-money"]
+                        enum: ["away", "get-boost", "set-boost", "give-exp", "remove-exp", "give-money", "remove-money"]
                     },
                     description: "Array of sero actions to perform"
                 },
                 amount: {
                     type: "number",
-                    description: "Amount of time, exp or money depending on the action (optional)"
+                    description: "Amount experience points, money or the modifier of boost depending on the action (optional). The modifier for boost must be a number between 1 and 5."
                 },
                 time: {
                     type: "number",
@@ -46,6 +47,11 @@ export const SeroUtilityToolContext = [
                     type: "string",
                     description: "Away message (optional)"
                 },
+                economy_type: {
+                    type: "string",
+                    enum: ["bank", "wallet"],
+                    description: "Economy type to give or remove money from (optional)"
+                }
             },
             required: ["user", "actions"]
         }
@@ -63,22 +69,73 @@ export async function SeroUtilityTool(message: Message, input: SeroUtilityToolIn
             switch (action) {
 
                 case "away":
-                    return `Away action not implemented`;
+                    const seroAwayResponse = await ApiService.post(`/guilds/${user.guild.id}/away`, { userId: user.id, duration: input.time, message: input.message }) as ApiResponse;
 
-                case "boost":
-                    return `Boost action not implemented`;
+                    if (seroAwayResponse.status === 200 || seroAwayResponse.status === 201) {
+                        return `Set ${user.user.tag} as away for ${input.time} minutes`;
+                    }
+
+                    break;
+
+                case "set-boost":
+                    const seroBoostResponse = await ApiService.post(`/guilds/boost`, { guildId: user.guild.id, modifier: input.amount }) as ApiResponse;
+
+                    if (seroBoostResponse.status === 200 || seroBoostResponse.status === 201) {
+                        return `Set the server boost to **${input.amount}X** for **${input.time} hour${input.time === 1 ? "" : "s"}**.`;
+                    }
+
+                    break;
+
+                case "get-boost":
+                    const getSeroBoostResponse = await ApiService.get(`/guilds/${user.guild.id}`) as ApiResponse;
+
+                    if (getSeroBoostResponse.status === 200) {
+                        const { modifier, duration, expireAt } = getSeroBoostResponse.data;
+                        const timeLeft = new Intl.RelativeTimeFormat('en', { style: 'narrow' })
+                            .format(Math.ceil((new Date(expireAt).getTime() - Date.now()) / (1000 * 60 * 60)), 'hours');
+
+                        return `Currently boosting the server **${modifier}X** for **${duration} hour${duration === 1 ? "" : "s"}**.\n-# There is ${timeLeft} left.`
+                    }
+
+                    break;
 
                 case "give-exp":
-                    return `Give exp action not implemented`;
+                    const seroGiveExpResponse = await ApiService.post(`/guilds/${user.guild.id}/levels/exp/${user.id}`, { experience: input.amount }) as ApiResponse;
+
+                    if (seroGiveExpResponse.status === 200 || seroGiveExpResponse.status === 201) {
+                        return `Gave ${input.amount} experience points to ${user.user.tag}`;
+                    }
+
+                    break;
 
                 case "remove-exp":
-                    return `Remove exp action not implemented`;
+                    const removeExpAmount = input.amount || 0;
+                    const seroRemoveExpResponse = await ApiService.post(`/guilds/${user.guild.id}/levels/exp/${user.id}`, { experience: -removeExpAmount }) as ApiResponse;
+
+                    if (seroRemoveExpResponse.status === 200 || seroRemoveExpResponse.status === 201) {
+                        return `Removed ${removeExpAmount} experience points from ${user.user.tag}`;
+                    }
+
+                    break;
 
                 case "give-money":
-                    return `Give money action not implemented`;
+                    const seroGiveMoneyResponse = await ApiService.post(`/guilds/${user.guild.id}/economy/${input.economy_type}/${user.id}`, { experience: input.amount }) as ApiResponse;
+
+                    if (seroGiveMoneyResponse.status === 200 || seroGiveMoneyResponse.status === 201) {
+                        return `Gave ${input.amount} experience points to ${user.user.tag}'s ${input.economy_type}`;
+                    }
+
+                    break;
 
                 case "remove-money":
-                    return `Remove money action not implemented`;
+                    const removeMoneyAmount = input.amount || 0;
+                    const seroRemoveMoneyResponse = await ApiService.post(`/guilds/${user.guild.id}/economy/${input.economy_type}/${user.id}`, { experience: -removeMoneyAmount }) as ApiResponse;
+
+                    if (seroRemoveMoneyResponse.status === 200 || seroRemoveMoneyResponse.status === 201) {
+                        return `Removed ${removeMoneyAmount} experience points from ${user.user.tag}'s ${input.economy_type}`;
+                    }
+
+                    break;
 
             }
         } catch (error) {
