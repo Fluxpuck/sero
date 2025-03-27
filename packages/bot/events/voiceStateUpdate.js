@@ -33,7 +33,7 @@ async function handleVoiceSessionEnd(session) {
     // Get channel from request and send message
     const { targetId, exclude } = vcLogChannelResponse.data;
     const logChannel = await guild.channels.fetch(targetId);
-    if (logChannel && !exclude.includes(channel.id)) {
+    if (logChannel && !exclude?.includes(channel.id)) {
 
         const content = `<t:${unixTimestamp()}> - **${member.user.tag}** was in <#${channel.id}> for \`${durationFormatted}\``;
         const footer = `-# <@${member.id}> | ${member.id}`;
