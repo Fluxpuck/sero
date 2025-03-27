@@ -4,6 +4,7 @@ const { kebabCase } = require('lodash');
 const { getGuildActiveStatus } = require('../utils/cache/guild.cache');
 
 module.exports = async (client, interaction) => {
+    if (!interaction.guild) return;
 
     // Check if the guild from the interaction is active
     const isActive = await getGuildActiveStatus(interaction.guildId);

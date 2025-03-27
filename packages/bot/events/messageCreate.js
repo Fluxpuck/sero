@@ -3,7 +3,8 @@ const { postRequest } = require('../database/connection')
 const { getGuildActiveStatus } = require('../utils/cache/guild.cache')
 
 module.exports = async (client, message) => {
-
+    if (!interaction.guild) return;
+    
     // Check if the guild from the interaction is active
     const isActive = await getGuildActiveStatus(message.guild.id);
     if (!isActive) return;
