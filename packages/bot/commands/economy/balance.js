@@ -28,7 +28,7 @@ module.exports.run = async (client, interaction) => {
 
     // Get the user's bank and wallet balance
     const userBalance = await getRequest(`/guilds/${interaction.guildId}/economy/balance/${targetUser.id}`);
-    const { bank_balance = 0, wallet_balance = 0 } = userBalance?.data;
+    const { bank_balance = 0, wallet_balance = 0 } = userBalance?.data || {};
 
     // Create an embed to display the user's balance
     const messageEmbed = createCustomEmbed({

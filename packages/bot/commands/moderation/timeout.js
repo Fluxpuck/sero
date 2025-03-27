@@ -1,7 +1,7 @@
 const { MessageFlags } = require('discord.js');
 const { MUTE_PREREASONS } = require("../../assets/reason-messages");
 const { formatExpression } = require("../../lib/helpers/StringHelpers/stringHelper");
-const { deferInteraction, replyInteraction } = require('../../utils/InteractionManager');
+const { deferInteraction, replyInteraction, followUpInteraction } = require('../../utils/InteractionManager');
 
 module.exports.props = {
     commandName: "timeout",
