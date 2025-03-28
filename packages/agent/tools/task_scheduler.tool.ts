@@ -204,16 +204,6 @@ export class TaskSchedulerTool extends ClaudeToolType {
 - Channel: ${targetChannel?.name ?? 'DM'}`;
     }
 
-    static listTasks(): string {
-        if (TaskSchedulerTool.scheduledTasks.size === 0) {
-            return "No tasks currently scheduled.";
-        }
-
-        return Array.from(TaskSchedulerTool.scheduledTasks.keys())
-            .map(taskId => `Task ID: ${taskId}`)
-            .join('\n');
-    }
-
     static cancelTask(taskId: string): boolean {
         const task = TaskSchedulerTool.scheduledTasks.get(taskId);
         if (task) {
