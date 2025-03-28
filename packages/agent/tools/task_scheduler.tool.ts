@@ -94,7 +94,7 @@ export class TaskSchedulerTool extends ClaudeToolType {
         }
 
         const dateTime = parseISO(input.datetime);
-        const scheduledTime = subMinutes(dateTime, 60); // Fix timezone issue
+        const scheduledTime = process.env.NODE_ENV === "development" ? subMinutes(dateTime, 60) : dateTime;
 
         if (isNaN(scheduledTime.getTime())) {
             throw new Error("Invalid datetime format. Use ISO 8601 format (e.g., 2024-03-27T15:00:00Z)");
@@ -168,7 +168,7 @@ export class TaskSchedulerTool extends ClaudeToolType {
         }
 
         const dateTime = parseISO(input.datetime);
-        const scheduledTime = subMinutes(dateTime, 60); // Fix timezone issue
+        const scheduledTime = process.env.NODE_ENV === "development" ? subMinutes(dateTime, 60) : dateTime;
         const delay = scheduledTime.getTime() - Date.now();
         const taskId = `${Date.now()}-${user.id}`;
 
