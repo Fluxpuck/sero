@@ -148,6 +148,7 @@ export class SeroUtilityActionsTool extends ClaudeToolType {
                 ? `Currently boosting the server **${modifier}X**.\n-# There is ${timeLeft} left.`
                 : `Currently boosting the server **${modifier}X** for **${duration} hour${duration === 1 ? "" : "s"}**.\n-# There is ${timeLeft} left.`;
         }
+        console.error("Failed to get boost status:", response);
         throw new Error("Failed to get boost status");
     }
 
@@ -161,6 +162,8 @@ export class SeroUtilityActionsTool extends ClaudeToolType {
         if (response.status === 200 || response.status === 201) {
             return `Set the server boost to **${input.amount}X** for **${input.time} hour${input.time === 1 ? "" : "s"}**.`;
         }
+
+        console.error("Failed to set boost:", response);
         throw new Error("Failed to set boost");
     }
 
@@ -172,6 +175,8 @@ export class SeroUtilityActionsTool extends ClaudeToolType {
         if (response.status === 200 || response.status === 201) {
             return `Gave ${input.amount} experience points to ${user.user.tag}`;
         }
+
+        console.error("Failed to give experience points:", response);
         throw new Error("Failed to give experience points");
     }
 
@@ -184,6 +189,8 @@ export class SeroUtilityActionsTool extends ClaudeToolType {
         if (response.status === 200 || response.status === 201) {
             return `Removed ${removeAmount} experience points from ${user.user.tag}`;
         }
+
+        console.error("Failed to remove experience points:", response);
         throw new Error("Failed to remove experience points");
     }
 
@@ -197,6 +204,8 @@ export class SeroUtilityActionsTool extends ClaudeToolType {
         if (response.status === 200 || response.status === 201) {
             return `Gave ${input.amount} money to ${user.user.tag}'s ${input.economy_type}`;
         }
+
+        console.error("Failed to give money:", response);
         throw new Error("Failed to give money");
     }
 
@@ -211,6 +220,8 @@ export class SeroUtilityActionsTool extends ClaudeToolType {
         if (response.status === 200 || response.status === 201) {
             return `Removed ${removeAmount} money from ${user.user.tag}'s ${input.economy_type}`;
         }
+
+        console.error("Failed to remove money:", response);
         throw new Error("Failed to remove money");
     }
 }

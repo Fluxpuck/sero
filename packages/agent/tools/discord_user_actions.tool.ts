@@ -165,6 +165,10 @@ export class DiscordUserActionsTool extends ClaudeToolType {
             createdAt: entry.createdAt.toISOString()
         }));
 
+        if (formattedLogs.length <= 0) {
+            console.error(`No AuditLogs found for user ${user.user.tag}`, auditLogs.entries);
+        }
+
         return formattedLogs.length > 0
             ? `Audit Logs: ${formattedLogs.join(", ")}`
             : `No audit logs found for user ${user.user.tag}`;
@@ -180,6 +184,10 @@ export class DiscordUserActionsTool extends ClaudeToolType {
             );
         }
 
+        if (activities.length <= 0) {
+            console.error(`No Sero activities found for user ${user.user.tag}`, seroActivityResponse);
+        }
+
         return activities.length > 0
             ? `Sero Activity: ${activities.join(", ")}`
             : `No Sero activities found for user ${user.user.tag}`;
@@ -191,6 +199,8 @@ export class DiscordUserActionsTool extends ClaudeToolType {
         if (seroLogsResponse.status === 200 || seroLogsResponse.status === 201) {
             return `Sero Logs: ${seroLogsResponse.data.join(", ")}`;
         }
+
+        console.error(`No Sero logs found for user ${user.user.tag}`, seroLogsResponse);
 
         return `No Sero logs found for user ${user.user.tag}`;
     }
@@ -207,6 +217,10 @@ export class DiscordUserActionsTool extends ClaudeToolType {
                     ...session,
                     durationInMinutes: Math.round(session.duration / 60)
                 }));
+        }
+
+        if (filteredSessions.length <= 0) {
+            console.error(`No voice sessions found for user ${user.user.tag}`, voiceSessionResponse);
         }
 
         return filteredSessions.length > 0
