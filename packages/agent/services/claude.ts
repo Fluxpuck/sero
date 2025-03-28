@@ -9,7 +9,7 @@ import { seroAgentDescription, discordContext, toolsContext } from '../context/c
 // Gather the Tool Contexts
 import { DiscordSendMessageToolContext } from '../tools/discord_send_message.tool';
 import { DiscordModerationToolContext } from '../tools/discord_moderation_actions.tool';
-import { DiscordUserActionsToolContext } from '../tools/discord_user_actions.tool';
+import { DiscordUserLogsToolContext } from '../tools/discord_user_logs.tool';
 import { SeroUtilityToolContext } from '../tools/sero_utility_actions.tool';
 import { TaskSchedulerToolContext } from '../tools/task_scheduler.tool';
 
@@ -61,7 +61,7 @@ export async function askClaude(
             tools: [
                 ...DiscordSendMessageToolContext,
                 ...DiscordModerationToolContext,
-                ...DiscordUserActionsToolContext,
+                ...DiscordUserLogsToolContext,
                 ...SeroUtilityToolContext,
                 ...TaskSchedulerToolContext,
             ],

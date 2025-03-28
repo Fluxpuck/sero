@@ -17,10 +17,10 @@ type UserToolInput = {
     message_content?: string;
 };
 
-export class DiscordUserActionsTool extends ClaudeToolType {
+export class DiscordUserLogsTool extends ClaudeToolType {
     static getToolContext() {
         return {
-            name: "discord_user_actions",
+            name: "discord_user_logs",
             description: "Tool for fetching various Discord user activities and logs",
             input_schema: {
                 type: "object" as const,
@@ -70,7 +70,7 @@ export class DiscordUserActionsTool extends ClaudeToolType {
         private readonly client: Client,
         private readonly message: Message,
     ) {
-        super(DiscordUserActionsTool.getToolContext());
+        super(DiscordUserLogsTool.getToolContext());
     }
 
     private validateInput(input: UserToolInput): void {
@@ -229,6 +229,6 @@ export class DiscordUserActionsTool extends ClaudeToolType {
     }
 }
 
-export const DiscordUserActionsToolContext = [
-    DiscordUserActionsTool.getToolContext()
+export const DiscordUserLogsToolContext = [
+    DiscordUserLogsTool.getToolContext()
 ] as ClaudeTool[];

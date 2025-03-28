@@ -3,7 +3,7 @@ import { ClaudeToolType } from '../types/tool.types';
 
 import { DiscordSendMessageTool } from '../tools/discord_send_message.tool';
 import { DiscordModerationTool } from '../tools/discord_moderation_actions.tool';
-import { DiscordUserActionsTool } from '../tools/discord_user_actions.tool';
+import { DiscordUserLogsTool } from '../tools/discord_user_logs.tool';
 import { SeroUtilityActionsTool } from '../tools/sero_utility_actions.tool';
 import { TaskSchedulerTool } from '../tools/task_scheduler.tool';
 
@@ -16,7 +16,7 @@ const toolInstances = new Map<string, ClaudeToolType>();
 export function initializeTools(message: Message, client: Client) {
     toolInstances.set('discord_send_message', new DiscordSendMessageTool(client, message));
     toolInstances.set('discord_moderation_actions', new DiscordModerationTool(client, message));
-    toolInstances.set('discord_user_actions', new DiscordUserActionsTool(client, message));
+    toolInstances.set('discord_user_logs', new DiscordUserLogsTool(client, message));
     toolInstances.set('sero_utility_actions', new SeroUtilityActionsTool(client, message));
     toolInstances.set('task_scheduler', new TaskSchedulerTool(client, message));
 }
