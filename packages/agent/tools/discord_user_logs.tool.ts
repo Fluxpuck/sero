@@ -165,67 +165,52 @@ export class DiscordUserLogsTool extends ClaudeToolType {
             createdAt: entry.createdAt.toISOString()
         }));
 
-        if (formattedLogs.length <= 0) {
-            console.error(`No AuditLogs found for user ${user.user.tag}`, auditLogs.entries);
-        }
+        if (formattedLogs.length >= 1) {
+            return `Audit Logs: ${JSON.stringify(formattedLogs)}`;
 
-        return formattedLogs.length > 0
-            ? `Audit Logs: ${formattedLogs.join(", ")}`
-            : `No audit logs found for user ${user.user.tag}`;
+        } else {
+            console.error(`No AuditLogs found for user ${user.user.tag}`, auditLogs.entries);
+            return `No audit logs found for user ${user.user.tag}`;
+        }
     }
 
     private async handleSeroActivity(user: GuildMember, input: UserToolInput): Promise<string> {
-        let activities: any[] = [];
         const seroActivityResponse = await ApiService.get(`/guilds/${user.guild.id}/activities/user/${user.id}?limit=${input.amount ?? 20}`) as ApiResponse;
 
         if (seroActivityResponse.status === 200 || seroActivityResponse.status === 201) {
-            activities = seroActivityResponse.data.filter((activity: any) =>
+            const activities = seroActivityResponse.data.filter((activity: any) =>
                 ["claim-exp-reward", "treasure-hunt", "daily-work", "transfer-exp"].includes(activity.type)
             );
+
+            return `Sero Activity: ${JSON.stringify(activities)}`;
         }
 
-        if (activities.length <= 0) {
-            console.error(`No Sero activities found for user ${user.user.tag}`, seroActivityResponse);
-        }
+        console.error(`No Sero activities found for user ${user.user.tag}`, seroActivityResponse.status, seroActivityResponse.data);
 
-        return activities.length > 0
-            ? `Sero Activity: ${activities.join(", ")}`
-            : `No Sero activities found for user ${user.user.tag}`;
+        return `No Sero activities found for user ${user.user.tag}`;
     }
 
     private async handleSeroLogs(user: GuildMember, input: UserToolInput): Promise<string> {
         const seroLogsResponse = await ApiService.get(`/guilds/${user.guild.id}/logs/${user.id}?limit=${input.amount ?? 20}`) as ApiResponse;
 
         if (seroLogsResponse.status === 200 || seroLogsResponse.status === 201) {
-            return `Sero Logs: ${seroLogsResponse.data.join(", ")}`;
+            return `Sero Logs: ${JSON.stringify(seroLogsResponse.data)}`;
         }
 
-        console.error(`No Sero logs found for user ${user.user.tag}`, seroLogsResponse);
+        console.error(`No Sero logs found for user ${user.user.tag}`, seroLogsResponse.status, seroLogsResponse.data);
 
         return `No Sero logs found for user ${user.user.tag}`;
     }
 
     private async handleVoiceActivity(user: GuildMember, channel: any, input: UserToolInput): Promise<string> {
-        let filteredSessions: any[] = [];
-
-        const voiceSessionResponse = await ApiService.get(`/guilds/${user.guild.id}/activities/user/${user.id}/voice-session?limit=${input.amount ?? 10}`) as ApiResponse;
-
+        const voiceSessionResponse = await ApiService.get(`/guilds/${user.guild.id}/activities/user/${user.id}/voice-session?limit=${input.amount ?? 20}`) as ApiResponse;
         if (voiceSessionResponse.status === 200 || voiceSessionResponse.status === 201) {
-            filteredSessions = voiceSessionResponse.data
-                .filter((session: any) => !channel || session.channelId === channel.id)
-                .map((session: any) => ({
-                    ...session,
-                    durationInMinutes: Math.round(session.duration / 60)
-                }));
+            return `Voice Activity: ${JSON.stringify(voiceSessionResponse.data)}`;
         }
 
-        if (filteredSessions.length <= 0) {
-            console.error(`No voice sessions found for user ${user.user.tag}`, voiceSessionResponse);
-        }
+        console.error(`No voice sessions found for user ${user.user.tag}`, voiceSessionResponse.status, voiceSessionResponse.data);
 
-        return filteredSessions.length > 0
-            ? `Voice-sessions: ${JSON.stringify(filteredSessions)}`
-            : `No voice sessions found in specified channel for ${user.user.tag}`;
+        return `No voice sessions found in specified channel for ${user.user.tag}`;
     }
 }
 
