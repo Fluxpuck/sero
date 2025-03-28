@@ -6,6 +6,7 @@ type SendMessageInput = {
     targetId: string;
     content: string;
     isDM?: boolean;
+    sendGif?: boolean;
 }
 
 export class DiscordSendMessageTool extends ClaudeToolType {
@@ -29,6 +30,11 @@ export class DiscordSendMessageTool extends ClaudeToolType {
                         description: "Whether to send as a direct message to a user",
                         default: false,
                     },
+                    sendGif: {
+                        type: "boolean",
+                        description: "Whether to send a GIF instead of a text message",
+                        default: false,
+                    }
                 },
                 required: ["targetId", "content"],
             },
@@ -42,14 +48,32 @@ export class DiscordSendMessageTool extends ClaudeToolType {
         super(DiscordSendMessageTool.getToolContext());
     }
 
-    async execute({ targetId, content, isDM = false }: SendMessageInput): Promise<string> {
+    async execute({ targetId, content, isDM = false, sendGif = false }: SendMessageInput): Promise<string> {
         try {
+            if (sendGif) {
+                const tenorKey = process.env.TENOR_KEY;
+                if (!tenorKey) {
+                    throw new Error("TENOR_KEY environment variable is not set");
+                }
+
+                const searchResponse = await fetch(
+                    `https://tenor.googleapis.com/v2/search?q=${encodeURIComponent(content)}&key=${tenorKey}&limit=20&contentfilter=medium`
+                );
+                const data = await searchResponse.json();
+
+                if (!data.results?.length) {
+                    throw new Error("No GIFs found for the given query");
+                }
+
+                const randomGif = data.results[Math.floor(Math.random() * data.results.length)];
+                content = randomGif.media_formats.gif.url;
+            }
+
             if (isDM) {
                 if (!this.message.guild) {
                     throw new Error("Cannot search for users outside of a guild context");
                 }
 
-                // Use findUser for flexible user lookup
                 const member = await findUser(this.message.guild, targetId, {
                     fuzzyThreshold: 0.3,
                     searchType: 'all'
