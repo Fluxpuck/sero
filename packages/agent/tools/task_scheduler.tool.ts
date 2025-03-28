@@ -1,9 +1,8 @@
-import { Message, TextChannel, Client } from "discord.js";
+import { Message, GuildMember, TextChannel, Client } from "discord.js";
 import { ClaudeTool, ClaudeToolType } from "../types/tool.types";
 import cron from "node-cron";
 import { findUser } from "../utils/user-resolver";
 import { findChannel } from "../utils/channel-resolver";
-import { askClaude } from "../services/claude";
 import {
     parseISO,
     isFuture,
@@ -27,7 +26,8 @@ type TaskSchedulerInput = {
     schedule_type: ScheduleType;
     datetime: string;
     user: string;
-    channel: string;
+    channel?: string;
+    isDM: boolean;
 }
 
 export class TaskSchedulerTool extends ClaudeToolType {
@@ -70,6 +70,11 @@ export class TaskSchedulerTool extends ClaudeToolType {
                         type: "string",
                         description: "The channel name, ID, or #mention to filter results (optional)"
                     },
+                    isDM: {
+                        type: "boolean",
+                        description: "Indicate if the task is a direct message",
+                        default: false
+                    }
                 },
                 required: ["task", "task_type", "schedule_type", "datetime", "user"]
             }
@@ -118,6 +123,25 @@ export class TaskSchedulerTool extends ClaudeToolType {
         }
     }
 
+    private async executeTask(channel: TextChannel, user: GuildMember, input: TaskSchedulerInput) {
+        const message = `Reminder: ${input.task} ${input.task_context ?? ''}`;
+
+        if (input.isDM) {
+            try {
+                await user.send(message);
+            } catch (error) {
+                // If DM fails, fall back to channel mention
+                await channel.send(`${user}, I couldn't send you a DM. ${message}`);
+            }
+        } else {
+            if (input.task_type === "reminder") {
+                await channel.send(`${user}, ${message}`);
+            } else if (input.task_type === "command") {
+                await channel.send(`${user}, Executing scheduled command: ${input.task}`);
+            }
+        }
+    }
+
     async execute(input: TaskSchedulerInput): Promise<string> {
         this.validateInput(input);
 
@@ -130,9 +154,17 @@ export class TaskSchedulerTool extends ClaudeToolType {
             throw new Error(`Could not find user "${input.user}"`);
         }
 
-        const channel = (await findChannel(this.message.guild, input.channel) ?? this.message.channel) as TextChannel;
-        if (!channel.isTextBased()) {
-            throw new Error("The specified channel must be a text channel.");
+        // Only get channel if not DM
+        let targetChannel: TextChannel | null = null;
+        if (!input.isDM) {
+            targetChannel = input.channel
+                ? (await findChannel(this.message.guild, input.channel) ?? this.message.channel) as TextChannel
+                : this.message.channel as TextChannel;
+            if (!targetChannel.isTextBased()) {
+                throw new Error("The specified channel must be a text channel.");
+            }
+        } else {
+            targetChannel = this.message.channel as TextChannel; // Fallback channel if DM fails
         }
 
         const dateTime = parseISO(input.datetime);
@@ -140,12 +172,10 @@ export class TaskSchedulerTool extends ClaudeToolType {
         const delay = scheduledTime.getTime() - Date.now();
         const taskId = `${Date.now()}-${user.id}`;
 
-        const task_message = `${input.task} ${input.task_context ?? ''}`;
-
         // Handle short-term scheduling (less than 1 hour)
         if (input.schedule_type === "once" && delay <= 3600000) {
             const timeoutId = setTimeout(async () => {
-                await askClaude(task_message, this.message);
+                await this.executeTask(targetChannel, user, input);
                 TaskSchedulerTool.scheduledTasks.delete(taskId);
             }, delay);
 
@@ -156,7 +186,7 @@ export class TaskSchedulerTool extends ClaudeToolType {
             // Handle long-term scheduling with cron
             const cronExpression = this.getCronExpression(scheduledTime, input.schedule_type);
             const scheduledTask = cron.schedule(cronExpression, async () => {
-                await askClaude(task_message, this.message);
+                await this.executeTask(targetChannel, user, input);
                 if (input.schedule_type === "once") {
                     TaskSchedulerTool.cancelTask(taskId);
                 }
@@ -171,7 +201,7 @@ export class TaskSchedulerTool extends ClaudeToolType {
 - Schedule: ${input.schedule_type}
 - Time: ${format(scheduledTime, 'PPpp')}
 - Target: ${user.user.username}
-- Channel: ${channel.name}`;
+- Channel: ${targetChannel?.name ?? 'DM'}`;
     }
 
     static listTasks(): string {
