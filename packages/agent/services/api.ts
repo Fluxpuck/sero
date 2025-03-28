@@ -36,10 +36,13 @@ instance.interceptors.request.use(
 // Response interceptor for API calls
 instance.interceptors.response.use(
     (response) => {
-        // You can track response data/status here
         return response;
     },
     (error) => {
+        if (error.response?.status === 404) {
+            return error.response;
+        }
+
         if (process.env.NODE_ENV === 'development') console.error('API Response Error:', error?.response?.data || error.message);
         return Promise.reject(error);
     }

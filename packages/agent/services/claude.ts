@@ -1,15 +1,17 @@
 import Anthropic from '@anthropic-ai/sdk';
 import { Message } from 'discord.js';
 import { sanitizeResponse } from '../utils';
-import { executeTool } from '../services/tools';
+import { executeTool, initializeTools } from '../services/tools';
 
 // Gather the about me and discord guidelines context for the AI assistant
 import { seroAgentDescription, discordContext, toolsContext } from '../context/context';
 
 // Gather the Tool Contexts
+import { DiscordSendMessageToolContext } from '../tools/discord_send_message.tool';
 import { DiscordModerationToolContext } from '../tools/discord_moderation_actions.tool';
-import { DiscordUserToolContext } from '../tools/discord_user_actions.tool';
+import { DiscordUserActionsToolContext } from '../tools/discord_user_actions.tool';
 import { SeroUtilityToolContext } from '../tools/sero_utility_actions.tool';
+import { TaskSchedulerToolContext } from '../tools/task_scheduler.tool';
 
 // Gather the conversation history
 import { createConversationKey, getConversationHistory, updateConversationHistory } from '../services/history';
@@ -29,9 +31,12 @@ export async function askClaude(
     previousMessages: any[] = []
 ): Promise<string | undefined> {
     try {
+        // Initialize tools with message context
+        initializeTools(message, message.client);
 
         const systemPrompt = SYSTEM_PROMPT
             .replace('{{date}}', new Date().toLocaleDateString())
+            .replace('{{time}}', new Date().toLocaleTimeString())
             .replace('{{guildName}}', message.guild?.name ?? 'private')
             .replace('{{channelId}}', message.channel.id)
             .replace('{{channelName}}', 'name' in message.channel && message.channel.name ? message.channel.name : 'Direct Message')
@@ -54,11 +59,12 @@ export async function askClaude(
             max_tokens: MAX_TOKENS,
             system: systemPrompt,
             tools: [
+                ...DiscordSendMessageToolContext,
                 ...DiscordModerationToolContext,
-                ...DiscordUserToolContext,
+                ...DiscordUserActionsToolContext,
                 ...SeroUtilityToolContext,
+                ...TaskSchedulerToolContext,
             ],
-            // tool_choice: { type: "any" },
             messages: conversationHistory,
         });
 
@@ -86,7 +92,7 @@ export async function askClaude(
             });
 
             // Execute the tool and get the result
-            const toolResult = await executeTool(name, message, input);
+            const toolResult = await executeTool(name, input);
 
             // Add tool result to conversation history
             conversationHistory.push({

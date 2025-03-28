@@ -1,189 +1,220 @@
-import { Message, User, AuditLogEvent } from "discord.js";
-import { ClaudeTool } from "../types/tool.types";
+import { Client, Message, User, GuildMember, GuildChannel, AuditLogEvent, GuildAuditLogsEntry } from "discord.js";
+import { ClaudeTool, ClaudeToolType } from "../types/tool.types";
 import { findUser } from "../utils/user-resolver";
 import { findChannel } from "../utils/channel-resolver";
-
 import ApiService, { ApiResponse } from "../services/api";
 
-type UserActionType = "sero-activity" | "sero-logs" | "auditlogs" | "voice-activity" | "message-count";
+type UserActionType = "sero-activity" | "sero-logs" | "auditlogs" | "voice-activity" | "user-info";
 type UserToolInput = {
     user: string;
-    channel: string;
+    channel?: string;
     actions: UserActionType[];
     amount?: number;
     timeRange?: {
         before: string;
         after: string;
     };
+    message_content?: string;
 };
 
-export const DiscordUserToolContext = [
-    {
-        name: "discord_user_actions",
-        description: "Tool for fetching various Discord user activities and logs",
-        input_schema: {
-            type: "object",
-            properties: {
-                user: {
-                    type: "string",
-                    description: "The username, user ID, or @mention to find"
-                },
-                channel: {
-                    type: "string",
-                    description: "The channel name, ID, or #mention to filter results (optional)"
-                },
-                actions: {
-                    type: "array",
-                    items: {
+export class DiscordUserActionsTool extends ClaudeToolType {
+    static getToolContext() {
+        return {
+            name: "discord_user_actions",
+            description: "Tool for fetching various Discord user activities and logs",
+            input_schema: {
+                type: "object" as const,
+                properties: {
+                    user: {
                         type: "string",
-                        enum: ["sero-activity", "sero-logs", "auditlogs", "voice-activity"],
-                        description: "Action type to perform: sero-activity (Get Sero activities), sero-logs (Get Sero logs), auditlogs (Get audit logs), voice-activity (Get voice activity)"
+                        description: "The username, user ID, or @mention to find"
                     },
-                    description: "List of actions to gather information about the user"
-                },
-
-                amount: {
-                    type: "number",
-                    description: "Amount of data to retrieve (optional)"
-                },
-
-                timeRange: {
-                    type: "object",
-                    properties: {
-                        before: {
+                    channel: {
+                        type: "string",
+                        description: "The channel name, ID, or #mention to filter results (optional)"
+                    },
+                    actions: {
+                        type: "array",
+                        items: {
                             type: "string",
-                            description: "End time for the data range"
+                            enum: ["sero-activity", "sero-logs", "auditlogs", "voice-activity", "user-info"],
+                            description: "Action type to perform: sero-activity (Get Sero activities), sero-logs (Get Sero logs), auditlogs (Get audit logs), voice-activity (Get voice activity), user-info (Details about the user)"
                         },
-                        after: {
-                            type: "string",
-                            description: "Start time for the data range"
-                        }
+                        description: "List of actions to gather information about the user"
                     },
-                    description: "Time range for the data to retrieve (optional)"
+                    amount: {
+                        type: "number",
+                        description: "Amount of data to retrieve (optional)"
+                    },
+                    timeRange: {
+                        type: "object",
+                        properties: {
+                            before: {
+                                type: "string",
+                                description: "End time for the data range"
+                            },
+                            after: {
+                                type: "string",
+                                description: "Start time for the data range"
+                            }
+                        },
+                        description: "Time range for the data to retrieve (optional)"
+                    }
                 },
-
-                auditlogType: {
-                    type: "string",
-                    description: "The type of audit log to retrieve (optional)",
-                    enum: [],
-                },
-
-            },
-            required: ["user", "actions"]
-        }
-    },
-] as ClaudeTool[];
-
-export async function DiscordUserTool(message: Message, input: UserToolInput): Promise<string> {
-    if (!input.actions?.length) {
-        return "At least one action must be specified";
+                required: ["user", "actions"]
+            }
+        };
     }
 
-    if (input.amount && (input.amount < 1 || input.amount > 100)) {
-        return "Amount must be between 1 and 100";
+    constructor(
+        private readonly client: Client,
+        private readonly message: Message,
+    ) {
+        super(DiscordUserActionsTool.getToolContext());
     }
 
-    if (input.timeRange) {
-        const before = new Date(input.timeRange.before);
-        const after = new Date(input.timeRange.after);
-
-        if (isNaN(before.getTime()) || isNaN(after.getTime())) {
-            return "Invalid date format in timeRange";
+    private validateInput(input: UserToolInput): void {
+        if (!input.actions?.length) {
+            throw new Error("At least one action must be specified");
         }
 
-        if (before < after) {
-            return "Before date must be later than after date";
+        if (input.amount && (input.amount < 1 || input.amount > 100)) {
+            throw new Error("Amount must be between 1 and 100");
+        }
+
+        if (input.timeRange) {
+            const before = new Date(input.timeRange.before);
+            const after = new Date(input.timeRange.after);
+
+            if (isNaN(before.getTime()) || isNaN(after.getTime())) {
+                throw new Error("Invalid date format in timeRange");
+            }
+
+            if (before < after) {
+                throw new Error("Before date must be later than after date");
+            }
         }
     }
 
-    if (!message.guild) return "This command can only be used in a guild.";
+    async execute(input: UserToolInput): Promise<string> {
+        this.validateInput(input);
 
-    const user = await findUser(message.guild, input.user);
-    if (!user) return `Could not find user "${input.user}"`;
+        if (!this.message.guild) {
+            throw new Error("This command can only be used in a guild.");
+        }
 
-    const channel = await findChannel(message.guild, input.channel);
+        const user = await findUser(this.message.guild, input.user)
+        if (!user) {
+            throw new Error(`Could not find user "${input.user}"`);
+        }
 
-    const actionPromises = input.actions.map(async (action) => {
+        const channel = input.channel ? await findChannel(this.message.guild, input.channel) : this.message.channel;
+        if (!channel) {
+            throw new Error(`Could not find a channel "${input.channel}"`);
+        }
+
+        const actionPromises = input.actions.map(action => this.handleAction(action, user, channel, input));
+        const results = await Promise.all(actionPromises);
+        return results.join("\n");
+    }
+
+    private async handleAction(action: UserActionType, user: GuildMember, channel: any, input: UserToolInput): Promise<string> {
         try {
             switch (action) {
+                case "user-info":
+                    return JSON.stringify(user.toJSON());
 
                 case "auditlogs":
-                    const auditLogOptions: any = {
-                        user: user,
-                        limit: input.amount ?? 20
-                    };
-
-                    if (input.timeRange) {
-                        if (input.timeRange.before) auditLogOptions.before = new Date(input.timeRange.before);
-                        if (input.timeRange.after) auditLogOptions.after = new Date(input.timeRange.after);
-                    }
-
-                    const auditLogs = await user.guild.fetchAuditLogs(auditLogOptions);
-
-                    // Format audit logs into readable format
-                    const formattedLogs = auditLogs.entries.map(entry => ({
-                        action: AuditLogEvent[entry.action],
-                        executor: entry.executor?.tag,
-                        target: entry.target instanceof User ? entry.target.tag : entry.targetId,
-                        reason: entry.reason || 'No reason provided',
-                        createdAt: entry.createdAt.toISOString()
-                    }));
-
-                    return formattedLogs.length > 0
-                        ? `Audit Logs: ${formattedLogs.join(", ")}`
-                        : `No audit logs found for user ${user.user.tag}`;
+                    return await this.handleAuditLogs(user, input);
 
                 case "sero-activity":
-                    let activities: any[] = [];
-                    const seroActivityResponse = await ApiService.get(`/guilds/${user.guild.id}/activities/user/${user.id}?limit=${input.amount ?? 20}`) as ApiResponse;
-
-                    if (seroActivityResponse.status === 200 || seroActivityResponse.status === 201) {
-                        activities = seroActivityResponse.data.filter((activity: any) =>
-                            ["claim-exp-reward", "treasure-hunt", "daily-work", "transfer-exp"].includes(activity.type)
-                        );
-                    }
-
-                    return activities.length > 0
-                        ? `Sero Activity: ${activities.join(", ")}`
-                        : `No Sero activities found for user ${user.user.tag}`;
+                    return await this.handleSeroActivity(user, input);
 
                 case "sero-logs":
-                    const seroLogsResponse = await ApiService.get(`/guilds/${user.guild.id}/logs/${user.id}?limit=${input.amount ?? 20}`) as ApiResponse;
-
-                    if (seroLogsResponse.status === 200 || seroLogsResponse.status === 201) {
-                        return `Sero Logs: ${seroLogsResponse.data.join(", ")}`;
-                    }
-
-                    if (seroLogsResponse.status === 404) {
-                        return `No Sero logs found for user ${user.user.tag}`;
-                    }
-
-                    break;
+                    return await this.handleSeroLogs(user, input);
 
                 case "voice-activity":
-                    const voiceSessionResponse = await ApiService.get(`/guilds/${user.guild.id}/activities/user/${user.id}/voice-session?limit=${input.amount ?? 10}`) as ApiResponse;
+                    return await this.handleVoiceActivity(user, channel, input);
 
-                    if (voiceSessionResponse.status === 200 || voiceSessionResponse.status === 201) {
-                        const filteredSessions = voiceSessionResponse.data
-                            .filter((session: any) => !channel || session.channelId === channel.id)
-                            .map((session: any) => ({
-                                ...session,
-                                durationInMinutes: Math.round(session.duration / 60)
-                            }));
-
-                        return filteredSessions.length > 0
-                            ? `Voice-sessions: ${JSON.stringify(filteredSessions)}`
-                            : `No voice sessions found in specified channel for ${user.user.tag}`;
-                    }
-
-                    break;
-
+                default:
+                    return `Unknown action: ${action}`;
             }
         } catch (error) {
-            return `No ${action} found for ${user.user.tag}`;
+            console.error(`Failed to execute ${action} for ${user.user.tag}:`, error);
+            return `Failed to execute ${action} for ${user.user.tag}: ${error instanceof Error ? error.message : 'Unknown error'}`;
         }
-    });
+    }
 
-    const results = await Promise.all(actionPromises);
-    return results.join("\n");
-};
+    private async handleAuditLogs(user: GuildMember, input: UserToolInput): Promise<string> {
+        const auditLogOptions: any = {
+            user: user,
+            limit: input.amount ?? 20
+        };
+
+        if (input.timeRange) {
+            if (input.timeRange.before) auditLogOptions.before = new Date(input.timeRange.before);
+            if (input.timeRange.after) auditLogOptions.after = new Date(input.timeRange.after);
+        }
+
+        const auditLogs = await user.guild.fetchAuditLogs(auditLogOptions);
+        const formattedLogs = auditLogs.entries.map((entry: GuildAuditLogsEntry) => ({
+            action: AuditLogEvent[entry.action],
+            executor: entry.executor?.tag,
+            target: entry.target instanceof User ? entry.target.tag : entry.targetId,
+            reason: entry.reason || 'No reason provided',
+            createdAt: entry.createdAt.toISOString()
+        }));
+
+        return formattedLogs.length > 0
+            ? `Audit Logs: ${formattedLogs.join(", ")}`
+            : `No audit logs found for user ${user.user.tag}`;
+    }
+
+    private async handleSeroActivity(user: GuildMember, input: UserToolInput): Promise<string> {
+        let activities: any[] = [];
+        const seroActivityResponse = await ApiService.get(`/guilds/${user.guild.id}/activities/user/${user.id}?limit=${input.amount ?? 20}`) as ApiResponse;
+
+        if (seroActivityResponse.status === 200 || seroActivityResponse.status === 201) {
+            activities = seroActivityResponse.data.filter((activity: any) =>
+                ["claim-exp-reward", "treasure-hunt", "daily-work", "transfer-exp"].includes(activity.type)
+            );
+        }
+
+        return activities.length > 0
+            ? `Sero Activity: ${activities.join(", ")}`
+            : `No Sero activities found for user ${user.user.tag}`;
+    }
+
+    private async handleSeroLogs(user: GuildMember, input: UserToolInput): Promise<string> {
+        const seroLogsResponse = await ApiService.get(`/guilds/${user.guild.id}/logs/${user.id}?limit=${input.amount ?? 20}`) as ApiResponse;
+
+        if (seroLogsResponse.status === 200 || seroLogsResponse.status === 201) {
+            return `Sero Logs: ${seroLogsResponse.data.join(", ")}`;
+        }
+
+        return `No Sero logs found for user ${user.user.tag}`;
+    }
+
+    private async handleVoiceActivity(user: GuildMember, channel: any, input: UserToolInput): Promise<string> {
+        let filteredSessions: any[] = [];
+
+        const voiceSessionResponse = await ApiService.get(`/guilds/${user.guild.id}/activities/user/${user.id}/voice-session?limit=${input.amount ?? 10}`) as ApiResponse;
+
+        if (voiceSessionResponse.status === 200 || voiceSessionResponse.status === 201) {
+            filteredSessions = voiceSessionResponse.data
+                .filter((session: any) => !channel || session.channelId === channel.id)
+                .map((session: any) => ({
+                    ...session,
+                    durationInMinutes: Math.round(session.duration / 60)
+                }));
+        }
+
+        return filteredSessions.length > 0
+            ? `Voice-sessions: ${JSON.stringify(filteredSessions)}`
+            : `No voice sessions found in specified channel for ${user.user.tag}`;
+    }
+}
+
+export const DiscordUserActionsToolContext = [
+    DiscordUserActionsTool.getToolContext()
+] as ClaudeTool[];
