@@ -13,7 +13,11 @@ export async function execute(message: Message) {
         // Check if user is owner or has the specific role
         const accessRoles = process.env.ACCESS_ROLE_ID?.split(',') || [];
         const hasRole = accessRoles.some(roleId => message.member?.roles.cache.has(roleId));
-        if (message.author.id !== process.env.OWNER_ID || !hasRole) return;
+        const isOwner = message.author.id === process.env.OWNER_ID;
+
+        // Only allow specific users to interact with the bot
+        // Based on owner and role permissions
+        if (!isOwner && !hasRole) return;
 
         // Check if message mentions the bot at the start or is a reply to the bot
         const mentionPrefix = new RegExp(`^<@!?${client.user?.id}>`);
