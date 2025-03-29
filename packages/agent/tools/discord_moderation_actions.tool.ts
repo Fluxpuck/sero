@@ -1,6 +1,6 @@
 import { Client, Message } from "discord.js";
 import { ClaudeTool, ClaudeToolType } from "../types/tool.types";
-import { findUser } from "../utils/user-resolver";
+import { UserResolver } from "../utils/user-resolver";
 
 type ModerationActionType = "timeout" | "disconnect" | "kick" | "ban" | "warn";
 type ModerationToolInput = {
@@ -61,12 +61,12 @@ export class DiscordModerationTool extends ClaudeToolType {
             return `This user does not have permission to moderate members.`;
         }
 
-        const user = await findUser(this.message.guild, targetUser);
+        const user = await UserResolver.resolve(this.message.guild, targetUser);
         if (!user) {
-            return `Could not find user "${targetUser}"`;
+            return `Could not find user "${targetUser}."`;
         }
         if (!user.moderatable) {
-            return `This user is not moderatable.`;
+            return `This user "${user.user.tag}" is not moderatable.`;
         }
 
         const fullReason = `${reason} - Moderator: ${this.message.author.tag}`;
@@ -84,7 +84,11 @@ export class DiscordModerationTool extends ClaudeToolType {
 
                     case "disconnect":
                         if (user.voice.channel) {
-                            await user.voice.disconnect(fullReason);
+                            await user.voice.disconnect(fullReason).catch((error) => {
+                                console.error(`Failed to disconnect ${user.user.tag}: ${error}`);
+                                return `Failed to disconnect ${user.user.tag}: ${error}`;
+                            });
+
                             return `Disconnected ${user.user.tag} from voice`;
                         }
                         return `${user.user.tag} is not in a voice channel`;

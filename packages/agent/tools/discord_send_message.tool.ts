@@ -1,6 +1,7 @@
 import { Client, Message, TextChannel } from "discord.js";
 import { ClaudeTool, ClaudeToolType } from "../types/tool.types";
-import { findUser } from "../utils/user-resolver";
+import { UserResolver } from "../utils/user-resolver";
+import { ChannelResolver } from "../utils/channel-resolver";
 
 type SendMessageInput = {
     targetId: string;
@@ -49,6 +50,10 @@ export class DiscordSendMessageTool extends ClaudeToolType {
     }
 
     async execute({ targetId, content, isDM = false, sendGif = false }: SendMessageInput): Promise<string> {
+        if (!this.message.guild) {
+            return `This command can only be used in a guild.`;
+        }
+
         try {
             if (sendGif) {
                 const tenorKey = process.env.TENOR_KEY;
@@ -74,7 +79,7 @@ export class DiscordSendMessageTool extends ClaudeToolType {
                     throw new Error("Cannot search for users outside of a guild context");
                 }
 
-                const member = await findUser(this.message.guild, targetId, {
+                const member = await UserResolver.resolve(this.message.guild, targetId, {
                     fuzzyThreshold: 0.3,
                     searchType: 'all'
                 });
@@ -86,7 +91,7 @@ export class DiscordSendMessageTool extends ClaudeToolType {
                 await member.send(content);
                 return `Message sent successfully to user ${member.user.tag}`;
             } else {
-                const channel = await this.client.channels.fetch(targetId);
+                const channel = await ChannelResolver.resolve(this.message.guild, targetId) || this.message.channel;
                 if (!(channel instanceof TextChannel)) {
                     throw new Error("Target channel is not a text channel");
                 }

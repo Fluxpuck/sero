@@ -1,6 +1,6 @@
 import { Client, Message } from "discord.js";
 import { ClaudeTool, ClaudeToolType } from "../types/tool.types";
-import { findUser } from "../utils/user-resolver";
+import { UserResolver } from "../utils/user-resolver";
 import ApiService, { ApiResponse } from "../services/api";
 
 type SeroUtilityActionType = "away" | "get-boost" | "set-boost" | "give-exp" | "remove-exp" | "give-money" | "remove-money";
@@ -87,7 +87,7 @@ export class SeroUtilityActionsTool extends ClaudeToolType {
             return `You do not have permission to use these actions.`;
         }
 
-        const user = await findUser(this.message.guild, input.user);
+        const user = await UserResolver.resolve(this.message.guild, input.user);
         if (!user) {
             return `Could not find user "${input.user}"`;
         }

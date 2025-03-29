@@ -1,10 +1,5 @@
-import {
-    Collection,
-    Snowflake,
-    Guild,
-    GuildMember,
-    User
-} from 'discord.js';
+import { Snowflake, Collection, Guild, GuildMember } from 'discord.js';
+import { levenshteinDistance } from "../utils";
 
 interface UserSearchOptions {
     /** Maximum number of results to return */
@@ -17,218 +12,164 @@ interface UserSearchOptions {
     caseSensitive?: boolean;
 }
 
-/**
- * Find a user with advanced search capabilities
- */
-export async function findUser(
-    guild: Guild,
-    query: string,
-    options: UserSearchOptions = {}
-): Promise<GuildMember | null> {
-    const {
-        limit = 1,
-        fuzzyThreshold = 0.4,
-        searchType = 'all',
-        caseSensitive = false
-    } = options;
+export class UserResolver {
+    /**
+     * Attempts to resolve a user from various input types with fuzzy matching
+     */
+    static async resolve(
+        guild: Guild,
+        input: string,
+        options: Partial<UserSearchOptions> = {}
+    ): Promise<GuildMember | null> {
+        const {
+            fuzzyThreshold = 0.4,
+            searchType = 'all',
+            caseSensitive = false
+        } = options;
 
-    if (!guild || !query) return null;
+        if (!guild || !input) return null;
 
-    try {
-        // Direct ID lookup
-        if (/^\d{17,19}$/.test(query)) {
-            return await findUserById(guild, query);
-        }
-
-        // Prepare search query
-        const searchTerm = caseSensitive ? query : query.toLowerCase();
-
-        // Perform advanced search
-        const results = await advancedMemberSearch(
-            guild,
-            searchTerm,
-            { limit, fuzzyThreshold, searchType, caseSensitive }
-        );
-
-        return results.first() ?? null;
-    } catch (error) {
-        console.error(`User search error: ${error instanceof Error ? error.message : error}`);
-        return null;
-    }
-}
-
-/**
- * Find multiple users matching search criteria
- */
-export async function findUsers(
-    guild: Guild,
-    query: string,
-    options: UserSearchOptions = {}
-): Promise<Collection<string, GuildMember>> {
-    const {
-        limit = 5,
-        fuzzyThreshold = 0.4,
-        searchType = 'all',
-        caseSensitive = false
-    } = options;
-
-    if (!guild || !query) return new Collection();
-
-    try {
-        // Perform advanced search
-        return await advancedMemberSearch(
-            guild,
-            caseSensitive ? query : query.toLowerCase(),
-            { limit, fuzzyThreshold, searchType, caseSensitive }
-        );
-    } catch (error) {
-        console.error(`Users search error: ${error instanceof Error ? error.message : error}`);
-        return new Collection();
-    }
-}
-
-/**
- * Find a user by their Discord Snowflake ID with improved error handling
- */
-async function findUserById(guild: Guild, id: string): Promise<GuildMember | null> {
-    try {
-        return await guild.members.fetch(id as Snowflake);
-    } catch {
-        return null;
-    }
-}
-
-/**
- * Advanced member search with fuzzy matching and multiple search types
- */
-async function advancedMemberSearch(
-    guild: Guild,
-    query: string,
-    options: Required<UserSearchOptions>
-): Promise<Collection<string, GuildMember>> {
-    if (!guild || !query) return new Collection();
-
-    try {
-        // First, try Discord's native search
-        const nativeResults = await guild.members.search({
-            query,
-            limit: options.limit
-        });
-
-        if (nativeResults.size > 0) {
-            return nativeResults;
-        }
-
-        // Fallback to manual filtering if native search fails
-        const members = await guild.members.fetch();
-
-        const filtered = members.filter(member => {
-            // Determine which fields to search based on options
-            const searchFields: Array<string | undefined> = [];
-            switch (options.searchType) {
-                case 'username':
-                    searchFields.push(
-                        options.caseSensitive ? member.user.username : member.user.username.toLowerCase()
-                    );
-                    break;
-                case 'displayName':
-                    searchFields.push(
-                        options.caseSensitive ? member.displayName : member.displayName.toLowerCase()
-                    );
-                    break;
-                case 'nickname':
-                    searchFields.push(
-                        member.nickname
-                            ? (options.caseSensitive ? member.nickname : member.nickname.toLowerCase())
-                            : undefined
-                    );
-                    break;
-                default: // 'all'
-                    searchFields.push(
-                        options.caseSensitive ? member.user.username : member.user.username.toLowerCase(),
-                        member.displayName ?
-                            (options.caseSensitive ? member.displayName : member.displayName.toLowerCase())
-                            : undefined,
-                        member.nickname ?
-                            (options.caseSensitive ? member.nickname : member.nickname.toLowerCase())
-                            : undefined
-                    );
+        try {
+            // Try mention format (<@123456789>)
+            const mentionMatch = input.match(/^<@!?(\d+)>$/);
+            if (mentionMatch) {
+                return await this.findUserById(guild, mentionMatch[1]);
             }
 
-            // Fuzzy matching
-            return searchFields.some(field => {
-                if (!field) return false;
+            // Direct ID lookup
+            if (/^\d{17,19}$/.test(input)) {
+                return await this.findUserById(guild, input);
+            }
 
-                // Exact match
-                if (field === query) return true;
+            // Perform advanced search
+            return (await this.searchUsers(guild, input, {
+                limit: 1,
+                fuzzyThreshold,
+                searchType,
+                caseSensitive
+            })).first() ?? null;
 
-                // Includes match
-                if (field.includes(query)) return true;
+        } catch (error) {
+            console.error(`User resolve error: ${error instanceof Error ? error.message : error}`);
+            return null;
+        }
+    }
 
-                // Levenshtein distance matching
-                const distance = levenshteinDistance(field, query);
-                const maxLength = Math.max(field.length, query.length);
-                const normalizedDistance = distance / maxLength;
+    /**
+     * Search for multiple users matching the criteria
+     */
+    static async searchUsers(
+        guild: Guild,
+        query: string,
+        options: UserSearchOptions = {}
+    ): Promise<Collection<string, GuildMember>> {
+        const {
+            limit = 5,
+            fuzzyThreshold = 0.4,
+            searchType = 'all',
+            caseSensitive = false
+        } = options;
 
-                return normalizedDistance <= options.fuzzyThreshold;
+        if (!guild || !query) return new Collection();
+
+        try {
+            // First, try Discord's native search
+            const nativeResults = await guild.members.search({
+                query,
+                limit
             });
-        });
 
-        // Return limited results
-        return new Collection(
-            Array.from(filtered.entries()).slice(0, options.limit)
-        );
-    } catch (error) {
-        console.error(`Advanced member search error: ${error}`);
-        return new Collection();
-    }
-}
-
-/**
- * Optimized Levenshtein distance calculation
- */
-function levenshteinDistance(a: string, b: string): number {
-    const matrix: number[][] = Array(b.length + 1)
-        .fill(0)
-        .map(() => Array(a.length + 1).fill(0));
-
-    for (let i = 0; i <= a.length; i++) matrix[0][i] = i;
-    for (let j = 0; j <= b.length; j++) matrix[j][0] = j;
-
-    for (let j = 1; j <= b.length; j++) {
-        for (let i = 1; i <= a.length; i++) {
-            if (a[i - 1] === b[j - 1]) {
-                matrix[j][i] = matrix[j - 1][i - 1];
-            } else {
-                matrix[j][i] = Math.min(
-                    matrix[j][i - 1] + 1,  // Insertion
-                    matrix[j - 1][i] + 1,  // Deletion
-                    matrix[j - 1][i - 1] + 1  // Substitution
-                );
+            if (nativeResults.size > 0) {
+                return nativeResults;
             }
+
+            // Fallback to manual filtering with fuzzy matching
+            const members = await guild.members.fetch();
+            const searchTerm = caseSensitive ? query : query.toLowerCase();
+
+            const filtered = members.filter(member => {
+                const fields = this.getSearchFields(member, searchType, caseSensitive);
+
+                // Check each field using levenshtein distance
+                return fields.some(field => {
+                    // Exact match
+                    if (field === searchTerm) return true;
+
+                    // Fuzzy matching with normalized distance
+                    const distance = levenshteinDistance(field, searchTerm);
+                    const maxLength = Math.max(field.length, searchTerm.length);
+                    const normalizedDistance = distance / maxLength;
+
+                    return normalizedDistance <= fuzzyThreshold;
+                });
+            });
+
+            return new Collection(Array.from(filtered.entries()).slice(0, limit));
+        } catch (error) {
+            console.error(`Users search error: ${error instanceof Error ? error.message : error}`);
+            return new Collection();
         }
     }
 
-    return matrix[b.length][a.length];
-}
+    /**
+     * Find a user by their Discord Snowflake ID
+     */
+    private static async findUserById(guild: Guild, id: string): Promise<GuildMember | null> {
+        try {
+            return await guild.members.fetch(id as Snowflake);
+        } catch {
+            return null;
+        }
+    }
 
-/**
- * Format user information for display or logging
- */
-export function formatUser(member: GuildMember): {
-    id: string;
-    username: string;
-    displayName: string;
-    nickname?: string;
-    joinedAt?: Date;
-    avatarURL?: string;
-} {
-    return {
-        id: member.id,
-        username: member.user.username,
-        displayName: member.displayName,
-        nickname: member.nickname ?? undefined,
-        joinedAt: member.joinedAt ?? undefined,
-        avatarURL: member.avatarURL() ?? undefined
-    };
+    /**
+     * Get searchable fields based on search type
+     */
+    private static getSearchFields(
+        member: GuildMember,
+        searchType: UserSearchOptions['searchType'],
+        caseSensitive: boolean
+    ): string[] {
+        const fields: string[] = [];
+        const transform = (str: string) => caseSensitive ? str : str.toLowerCase();
+
+        switch (searchType) {
+            case 'username':
+                fields.push(transform(member.user.username));
+                break;
+            case 'displayName':
+                fields.push(transform(member.displayName));
+                break;
+            case 'nickname':
+                if (member.nickname) fields.push(transform(member.nickname));
+                break;
+            default: // 'all'
+                fields.push(transform(member.user.username));
+                fields.push(transform(member.displayName));
+                if (member.nickname) fields.push(transform(member.nickname));
+        }
+
+        return fields;
+    }
+
+    /**
+     * Format user information for display or logging
+     */
+    static formatUser(member: GuildMember): {
+        id: string;
+        username: string;
+        displayName: string;
+        nickname?: string;
+        joinedAt?: Date;
+        avatarURL?: string;
+    } {
+        return {
+            id: member.id,
+            username: member.user.username,
+            displayName: member.displayName,
+            nickname: member.nickname ?? undefined,
+            joinedAt: member.joinedAt ?? undefined,
+            avatarURL: member.avatarURL() ?? undefined
+        };
+    }
 }

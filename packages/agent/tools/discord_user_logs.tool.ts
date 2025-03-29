@@ -1,7 +1,7 @@
 import { Client, Message, User, GuildMember, GuildChannel, AuditLogEvent, GuildAuditLogsEntry } from "discord.js";
 import { ClaudeTool, ClaudeToolType } from "../types/tool.types";
-import { findUser } from "../utils/user-resolver";
-import { findChannel } from "../utils/channel-resolver";
+import { UserResolver } from "../utils/user-resolver";
+import { ChannelResolver } from "../utils/channel-resolver";
 import ApiService, { ApiResponse } from "../services/api";
 
 type UserActionType = "sero-activity" | "sero-logs" | "auditlogs" | "voice-activity" | "user-info";
@@ -73,32 +73,7 @@ export class DiscordUserLogsTool extends ClaudeToolType {
         super(DiscordUserLogsTool.getToolContext());
     }
 
-    private validateInput(input: UserToolInput): void {
-        if (!input.actions?.length) {
-            throw new Error("At least one action must be specified");
-        }
-
-        if (input.amount && (input.amount < 1 || input.amount > 100)) {
-            throw new Error("Amount must be between 1 and 100");
-        }
-
-        if (input.timeRange) {
-            const before = new Date(input.timeRange.before);
-            const after = new Date(input.timeRange.after);
-
-            if (isNaN(before.getTime()) || isNaN(after.getTime())) {
-                throw new Error("Invalid date format in timeRange");
-            }
-
-            if (before < after) {
-                throw new Error("Before date must be later than after date");
-            }
-        }
-    }
-
     async execute(input: UserToolInput): Promise<string> {
-        this.validateInput(input);
-
         if (!this.message.guild) {
             return `This command can only be used in a guild.`;
         }
@@ -107,7 +82,7 @@ export class DiscordUserLogsTool extends ClaudeToolType {
             return `You do not have permission to moderate members.`;
         }
 
-        const user = await findUser(this.message.guild, input.user)
+        const user = await UserResolver.resolve(this.message.guild, input.user)
         if (!user) {
             return `Could not find user "${input.user}"`;
         }
@@ -115,7 +90,7 @@ export class DiscordUserLogsTool extends ClaudeToolType {
             return `This user is not moderatable.`;
         }
 
-        const channel = input.channel ? await findChannel(this.message.guild, input.channel) : this.message.channel;
+        const channel = input.channel ? await ChannelResolver.resolve(this.message.guild, input.channel) : this.message.channel;
         if (!channel) {
             return `Could not find channel "${input.channel}"`;
         }

@@ -1,8 +1,8 @@
 import { Message, GuildMember, TextChannel, Client } from "discord.js";
 import { ClaudeTool, ClaudeToolType } from "../types/tool.types";
 import cron from "node-cron";
-import { findUser } from "../utils/user-resolver";
-import { findChannel } from "../utils/channel-resolver";
+import { UserResolver } from "../utils/user-resolver";
+import { ChannelResolver } from "../utils/channel-resolver";
 import {
     parseISO,
     isFuture,
@@ -149,7 +149,7 @@ export class TaskSchedulerTool extends ClaudeToolType {
             return `This command can only be used in a guild.`;
         }
 
-        const user = await findUser(this.message.guild, input.user);
+        const user = await UserResolver.resolve(this.message.guild, input.user);
         if (!user) {
             return `Could not find user "${input.user}"`;
         }
@@ -158,7 +158,7 @@ export class TaskSchedulerTool extends ClaudeToolType {
         let targetChannel: TextChannel | null = null;
         if (!input.isDM) {
             targetChannel = input.channel
-                ? (await findChannel(this.message.guild, input.channel) ?? this.message.channel) as TextChannel
+                ? (await ChannelResolver.resolve(this.message.guild, input.channel) ?? this.message.channel) as TextChannel
                 : this.message.channel as TextChannel;
             if (!targetChannel.isTextBased()) {
                 throw new Error("The specified channel must be a text channel.");
