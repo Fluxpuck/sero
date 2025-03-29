@@ -86,9 +86,6 @@ export class DiscordUserLogsTool extends ClaudeToolType {
         if (!user) {
             return `Error: Could not find user "${input.user}"`;
         }
-        if (!user.moderatable) {
-            return `Error: This user is not moderatable.`;
-        }
 
         const channel = input.channel ? await ChannelResolver.resolve(this.message.guild, input.channel) : this.message.channel;
         if (!channel) {
