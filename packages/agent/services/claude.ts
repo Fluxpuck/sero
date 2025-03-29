@@ -123,6 +123,9 @@ export async function askClaude(
                 return await askClaude("", message, updatedHistory);
 
             } catch (error) {
+                // Delete conversation history on error
+                deleteConverstationHistory(conversationKey);
+
                 console.error('Error executing tool:', error);
                 throw error;
             }
