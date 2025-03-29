@@ -61,9 +61,11 @@ export class DiscordSendMessageTool extends ClaudeToolType {
                     throw new Error("TENOR_KEY environment variable is not set");
                 }
 
-                const searchResponse = await fetch(
-                    `https://tenor.googleapis.com/v2/search?q=${encodeURIComponent(content)}&key=${tenorKey}&limit=20&contentfilter=medium`
-                );
+                const endpoint = content.toLowerCase() === 'random' 
+                    ? `https://tenor.googleapis.com/v2/featured?key=${tenorKey}&limit=20&contentfilter=medium`
+                    : `https://tenor.googleapis.com/v2/search?q=${encodeURIComponent(content)}&key=${tenorKey}&limit=20&contentfilter=medium`;
+                
+                const searchResponse = await fetch(endpoint);
 
                 const data = await searchResponse.json();
                 if (!data.results?.length) {
