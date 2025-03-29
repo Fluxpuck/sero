@@ -81,37 +81,43 @@ export async function askClaude(
                 await message.reply(sanitizeResponse(textContent));
             }
 
-            // Extract tool details
-            const { id, name, input } = toolRequest;
+            try {
+                // Extract tool details
+                const { id, name, input } = toolRequest;
 
-            // Add assistant's message with both text and tool use
-            conversationHistory.push({
-                role: 'assistant',
-                content: [
-                    ...(textContent ? [{ type: "text", text: textContent }] : []),
-                    { type: "tool_use", id, name, input }
-                ]
-            });
+                // Execute the tool and get the result first
+                const toolResult = await executeTool(name, input);
 
-            // Execute the tool and get the result
-            const toolResult = await executeTool(name, input);
+                // Only update history if tool execution was successful
+                const updatedHistory = [
+                    ...conversationHistory,
+                    {
+                        role: 'assistant',
+                        content: [
+                            ...(textContent ? [{ type: "text", text: textContent }] : []),
+                            { type: "tool_use", id, name, input }
+                        ]
+                    },
+                    {
+                        role: 'user',
+                        content: [{
+                            type: "tool_result",
+                            tool_use_id: id, // Changed from tool_call_id to tool_use_id
+                            content: toolResult
+                        }]
+                    }
+                ];
 
-            // Add tool result to conversation history
-            conversationHistory.push({
-                role: 'user',
-                content: [{
-                    type: "tool_result",
-                    tool_call_id: id,
-                    content: toolResult
-                }]
-            });
+                // Update the stored history only after successful execution
+                updateConversationHistory(conversationKey, updatedHistory);
 
-            // Update the stored history
-            updateConversationHistory(conversationKey, conversationHistory);
+                // Recursive call with tool result and updated message history
+                return await askClaude("", message, updatedHistory);
 
-            // Recursive call with tool result and updated message history
-            return await askClaude("", message, conversationHistory);
-
+            } catch (error) {
+                console.error('Error executing tool:', error);
+                throw error;
+            }
         } else {
             // Get final response if no tool use
             const finalResponse = response.content.find(c => c.type === "text")?.text ?? "";
