@@ -56,11 +56,16 @@ export class DiscordSendMessageTool extends ClaudeToolType {
 
         try {
             if (sendGif) {
-                const searchTenorResponse = await fetch(
-                    `https://tenor.googleapis.com/v2/search?q=${encodeURIComponent(content)}&key=${process.env.TENOR_KEY}&limit=20&contentfilter=medium`
-                );
-                const data = await searchTenorResponse.json();
+                const tenorKey = process.env.TENOR_KEY;
+                if (!tenorKey) {
+                    throw new Error("TENOR_KEY environment variable is not set");
+                }
 
+                const searchResponse = await fetch(
+                    `https://tenor.googleapis.com/v2/search?q=${encodeURIComponent(content)}&key=${tenorKey}&limit=20&contentfilter=medium`
+                );
+
+                const data = await searchResponse.json();
                 if (!data.results?.length) {
                     return `Error: No GIFs found for the given query`;
                 }
