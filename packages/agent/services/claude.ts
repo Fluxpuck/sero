@@ -15,7 +15,12 @@ import { SeroUtilityToolContext } from '../tools/sero_utility_actions.tool';
 import { TaskSchedulerToolContext } from '../tools/task_scheduler.tool';
 
 // Gather the conversation history
-import { createConversationKey, getConversationHistory, updateConversationHistory } from '../services/history';
+import {
+    createConversationKey,
+    getConversationHistory,
+    updateConversationHistory,
+    deleteConverstationHistory
+} from '../services/history';
 
 const CLAUDE_MODEL = 'claude-3-5-haiku-20241022';
 const SYSTEM_PROMPT = `${seroAgentDescription} \n ${discordContext} \n ${toolsContext}`;
@@ -31,6 +36,10 @@ export async function askClaude(
     message: Message,
     previousMessages: any[] = []
 ): Promise<string | undefined> {
+
+    // Create a unique key for the conversation based on channel and user ID
+    const conversationKey = createConversationKey(message.channel.id, message.author.id);
+
     try {
         // Initialize tools with message context
         initializeTools(message, message.client);
@@ -45,7 +54,6 @@ export async function askClaude(
             .replace('{{username}}', message.author.username);
 
         // Get the conversation history
-        const conversationKey = createConversationKey(message.channel.id, message.author.id);
         let conversationHistory = getConversationHistory(conversationKey) || [];
 
         if (previousMessages.length > 0) {
@@ -102,7 +110,7 @@ export async function askClaude(
                         role: 'user',
                         content: [{
                             type: "tool_result",
-                            tool_use_id: id, // Changed from tool_call_id to tool_use_id
+                            tool_use_id: id,
                             content: toolResult
                         }]
                     }
@@ -137,6 +145,9 @@ export async function askClaude(
             return finalResponse;
         }
     } catch (error) {
+        // Delete conversation history on error
+        deleteConverstationHistory(conversationKey);
+
         console.error('Error calling Claude API:', error);
         throw error;
     }
