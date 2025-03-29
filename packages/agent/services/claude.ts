@@ -85,10 +85,13 @@ export async function askClaude(
             // Add assistant's response to conversation history
             conversationHistory.push({
                 role: 'assistant',
-                content: [
-                    ...(textContent ? [{ type: "text", text: textContent }] : []),
-                    { type: "tool_use", id, name, input }
-                ]
+                content: textContent || ""
+            });
+
+            // Add the tool request as a separate message
+            conversationHistory.push({
+                role: 'assistant',
+                content: [{ type: "tool_use", id, name, input }]
             });
 
             // Execute the tool and get the result
@@ -97,9 +100,7 @@ export async function askClaude(
             // Add tool result to conversation history
             conversationHistory.push({
                 role: 'user',
-                content: [
-                    { type: "tool_result", tool_use_id: id, content: toolResult }
-                ]
+                content: [{ type: "tool_result", tool_use_id: id, content: toolResult }]
             });
 
             // Update the stored history

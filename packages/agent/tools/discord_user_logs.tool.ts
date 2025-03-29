@@ -186,7 +186,6 @@ export class DiscordUserLogsTool extends ClaudeToolType {
         }
 
         console.error(`No Sero activities found for user ${user.user.tag}`, seroActivityResponse.status, seroActivityResponse.data);
-
         return `No Sero activities found for user ${user.user.tag}`;
     }
 
@@ -198,7 +197,6 @@ export class DiscordUserLogsTool extends ClaudeToolType {
         }
 
         console.error(`No Sero logs found for user ${user.user.tag}`, seroLogsResponse.status, seroLogsResponse.data);
-
         return `No Sero logs found for user ${user.user.tag}`;
     }
 
@@ -209,7 +207,6 @@ export class DiscordUserLogsTool extends ClaudeToolType {
         }
 
         console.error(`No voice sessions found for user ${user.user.tag}`, voiceSessionResponse.status, voiceSessionResponse.data);
-
         return `No voice sessions found in specified channel for ${user.user.tag}`;
     }
 }

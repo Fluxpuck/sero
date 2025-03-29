@@ -164,7 +164,7 @@ export class TaskSchedulerTool extends ClaudeToolType {
                 throw new Error("The specified channel must be a text channel.");
             }
         } else {
-            targetChannel = this.message.channel as TextChannel; // Fallback channel if DM fails
+            targetChannel = this.message.channel as TextChannel; 
         }
 
         const dateTime = parseISO(input.datetime);
