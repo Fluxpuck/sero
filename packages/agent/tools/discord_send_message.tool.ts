@@ -1,4 +1,4 @@
-import { Client, Message, TextChannel } from "discord.js";
+import { Client, Message, TextChannel, DMChannel, ThreadChannel } from "discord.js";
 import { ClaudeTool, ClaudeToolType } from "../types/tool.types";
 import { UserResolver } from "../utils/user-resolver";
 import { ChannelResolver } from "../utils/channel-resolver";
@@ -87,17 +87,19 @@ export class DiscordSendMessageTool extends ClaudeToolType {
                 await member.send(content).catch((error) => {
                     return `Failed to send DM to user "${member.user.tag}". Their DMs are most likely disabled.`
                 });
+
                 return `Message sent successfully to user ${member.user.tag}`;
 
             } else {
                 const channel = await ChannelResolver.resolve(this.message.guild, targetId) || this.message.channel;
-                if (!(channel instanceof TextChannel)) {
+                if (!(channel instanceof TextChannel || channel instanceof ThreadChannel)) {
                     return `Error: The target channel "${targetId}" is not a text channel.`;
                 }
                 await channel.send(content);
-                return `Message sent successfully to channel #${channel.name}`;
 
+                return `Message sent successfully to channel ${channel.name}`;
             }
+
         } catch (error) {
             throw new Error(`Failed to send message: ${error instanceof Error ? error.message : 'Unknown error'}`);
         }
