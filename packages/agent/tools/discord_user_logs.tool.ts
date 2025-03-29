@@ -100,21 +100,24 @@ export class DiscordUserLogsTool extends ClaudeToolType {
         this.validateInput(input);
 
         if (!this.message.guild) {
-            throw new Error("This command can only be used in a guild.");
+            return `This command can only be used in a guild.`;
         }
 
         if (!this.message.member?.permissions.has('ModerateMembers')) {
-            throw new Error('You do not have permission to moderate members.');
+            return `You do not have permission to moderate members.`;
         }
 
         const user = await findUser(this.message.guild, input.user)
         if (!user) {
-            throw new Error(`Could not find user "${input.user}"`);
+            return `Could not find user "${input.user}"`;
+        }
+        if (!user.moderatable) {
+            return `This user is not moderatable.`;
         }
 
         const channel = input.channel ? await findChannel(this.message.guild, input.channel) : this.message.channel;
         if (!channel) {
-            throw new Error(`Could not find a channel "${input.channel}"`);
+            return `Could not find channel "${input.channel}"`;
         }
 
         const actionPromises = input.actions.map(action => this.handleAction(action, user, channel, input));
@@ -171,7 +174,6 @@ export class DiscordUserLogsTool extends ClaudeToolType {
 
         if (formattedLogs.length >= 1) {
             return `Audit Logs: ${JSON.stringify(formattedLogs)}`;
-
         } else {
             console.error(`No AuditLogs found for user ${user.user.tag}`, auditLogs.entries);
             return `No audit logs found for user ${user.user.tag}`;

@@ -65,10 +65,6 @@ export class SeroUtilityActionsTool extends ClaudeToolType {
     }
 
     private validateInput(input: SeroUtilityToolInput): void {
-        if (!input.actions?.length) {
-            throw new Error("At least one action must be specified");
-        }
-
         if (input.amount && ["set-boost"].includes(input.actions[0])) {
             if (input.amount < 1 || input.amount > 5) {
                 throw new Error("Boost modifier must be between 1 and 5");
@@ -84,16 +80,16 @@ export class SeroUtilityActionsTool extends ClaudeToolType {
         this.validateInput(input);
 
         if (!this.message.guild) {
-            throw new Error("This command can only be used in a guild.");
+            return `This command can only be used in a guild.`;
         }
 
         if (!this.message.member?.permissions.has('ManageGuild')) {
-            throw new Error('You do not have permission to moderate members.');
+            return `You do not have permission to use these actions.`;
         }
 
         const user = await findUser(this.message.guild, input.user);
         if (!user) {
-            throw new Error(`Could not find user "${input.user}"`);
+            return `Could not find user "${input.user}"`;
         }
 
         const actionPromises = input.actions.map(action => this.handleAction(action, user, input));
@@ -105,19 +101,29 @@ export class SeroUtilityActionsTool extends ClaudeToolType {
         try {
             switch (action) {
                 case "away":
+                    if (!user.moderatable) {
+                        return `This user is not moderatable.`;
+                    }
                     return await this.handleAway(user, input);
+
                 case "get-boost":
                     return await this.handleGetBoost(user);
+
                 case "set-boost":
                     return await this.handleSetBoost(user, input);
+
                 case "give-exp":
                     return await this.handleGiveExp(user, input);
+
                 case "remove-exp":
                     return await this.handleRemoveExp(user, input);
+
                 case "give-money":
                     return await this.handleGiveMoney(user, input);
+
                 case "remove-money":
                     return await this.handleRemoveMoney(user, input);
+
                 default:
                     return `Unknown action: ${action}`;
             }

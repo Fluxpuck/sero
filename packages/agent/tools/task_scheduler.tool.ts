@@ -146,12 +146,12 @@ export class TaskSchedulerTool extends ClaudeToolType {
         this.validateInput(input);
 
         if (!this.message.guild) {
-            throw new Error("This command can only be used in a guild.");
+            return `This command can only be used in a guild.`;
         }
 
         const user = await findUser(this.message.guild, input.user);
         if (!user) {
-            throw new Error(`Could not find user "${input.user}"`);
+            return `Could not find user "${input.user}"`;
         }
 
         // Only get channel if not DM
@@ -164,7 +164,7 @@ export class TaskSchedulerTool extends ClaudeToolType {
                 throw new Error("The specified channel must be a text channel.");
             }
         } else {
-            targetChannel = this.message.channel as TextChannel; 
+            targetChannel = this.message.channel as TextChannel;
         }
 
         const dateTime = parseISO(input.datetime);

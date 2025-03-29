@@ -54,16 +54,19 @@ export class DiscordModerationTool extends ClaudeToolType {
 
     async execute({ user: targetUser, actions, timeout_duration, reason }: ModerationToolInput): Promise<string> {
         if (!this.message.guild) {
-            throw new Error("This command can only be used in a guild.");
+            return `This command can only be used in a guild.`;
         }
 
         if (!this.message.member?.permissions.has('ModerateMembers')) {
-            throw new Error('You do not have permission to moderate members.');
+            return `This user does not have permission to moderate members.`;
         }
 
         const user = await findUser(this.message.guild, targetUser);
         if (!user) {
-            throw new Error(`Could not find user "${targetUser}"`);
+            return `Could not find user "${targetUser}"`;
+        }
+        if (!user.moderatable) {
+            return `This user is not moderatable.`;
         }
 
         const fullReason = `${reason} - Moderator: ${this.message.author.tag}`;
@@ -87,16 +90,21 @@ export class DiscordModerationTool extends ClaudeToolType {
                         return `${user.user.tag} is not in a voice channel`;
 
                     case "kick":
-                        if (!this.message.member?.permissions.has('KickMembers') && !user.kickable) {
-                            throw new Error('You do not have permission to kick members.');
-
+                        if (!this.message.member?.permissions.has('KickMembers')) {
+                            return `This user does not have permission to kick members.`;
+                        }
+                        if (!user.kickable) {
+                            return `This user is not kickable.`;
                         }
                         await user.kick(fullReason);
                         return `Kicked ${user.user.tag}`;
 
                     case "ban":
-                        if (!this.message.member?.permissions.has('BanMembers') && !user.bannable) {
-                            throw new Error('You do not have permission to ban members.');
+                        if (!this.message.member?.permissions.has('BanMembers')) {
+                            return `This user does not have permission to ban members.`;
+                        }
+                        if (!user.bannable) {
+                            return `This user is not bannable.`;
                         }
                         await user.ban({ deleteMessageSeconds: 24 * 60 * 60, reason: fullReason });
                         return `Banned ${user.user.tag}`;
@@ -104,6 +112,7 @@ export class DiscordModerationTool extends ClaudeToolType {
                     case "warn":
                         await user.send(warning);
                         return `Warned ${user.user.tag}`;
+
                     default:
                         return `Unknown action: ${action}`;
                 }
