@@ -51,23 +51,18 @@ export class DiscordSendMessageTool extends ClaudeToolType {
 
     async execute({ targetId, content, isDM = false, sendGif = false }: SendMessageInput): Promise<string> {
         if (!this.message.guild) {
-            return `This command can only be used in a guild.`;
+            return `Error: This command can only be used in a guild.`;
         }
 
         try {
             if (sendGif) {
-                const tenorKey = process.env.TENOR_KEY;
-                if (!tenorKey) {
-                    throw new Error("TENOR_KEY environment variable is not set");
-                }
-
-                const searchResponse = await fetch(
-                    `https://tenor.googleapis.com/v2/search?q=${encodeURIComponent(content)}&key=${tenorKey}&limit=20&contentfilter=medium`
+                const searchTenorResponse = await fetch(
+                    `https://tenor.googleapis.com/v2/search?q=${encodeURIComponent(content)}&key=${process.env.TENOR_KEY}&limit=20&contentfilter=medium`
                 );
-                const data = await searchResponse.json();
+                const data = await searchTenorResponse.json();
 
                 if (!data.results?.length) {
-                    throw new Error("No GIFs found for the given query");
+                    return `Error: No GIFs found for the given query`;
                 }
 
                 const randomGif = data.results[Math.floor(Math.random() * data.results.length)];
@@ -76,27 +71,27 @@ export class DiscordSendMessageTool extends ClaudeToolType {
 
             if (isDM) {
                 if (!this.message.guild) {
-                    throw new Error("Cannot search for users outside of a guild context");
+                    return `Error: Cannot search for users outside of a guild context.`;
                 }
 
-                const member = await UserResolver.resolve(this.message.guild, targetId, {
-                    fuzzyThreshold: 0.3,
-                    searchType: 'all'
-                });
-
+                const member = await UserResolver.resolve(this.message.guild, targetId);
                 if (!member) {
-                    throw new Error(`Could not find user matching "${targetId}"`);
+                    return `Error: Could not find user "${targetId}."`;
                 }
 
-                await member.send(content);
+                await member.send(content).catch((error) => {
+                    return `Failed to send DM to user "${member.user.tag}". Their DMs are most likely disabled.`
+                });
                 return `Message sent successfully to user ${member.user.tag}`;
+
             } else {
                 const channel = await ChannelResolver.resolve(this.message.guild, targetId) || this.message.channel;
                 if (!(channel instanceof TextChannel)) {
-                    throw new Error("Target channel is not a text channel");
+                    return `Error: The target channel "${targetId}" is not a text channel.`;
                 }
                 await channel.send(content);
                 return `Message sent successfully to channel #${channel.name}`;
+
             }
         } catch (error) {
             throw new Error(`Failed to send message: ${error instanceof Error ? error.message : 'Unknown error'}`);

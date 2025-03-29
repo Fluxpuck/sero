@@ -77,7 +77,7 @@ export class DiscordGuildInfoTool extends ClaudeToolType {
 
     async execute(input: GuildInfoInput): Promise<string> {
         if (!this.message.guild) {
-            return `This command can only be used in a guild.`;
+            return `Error: This command can only be used in a guild.`;
         }
 
         try {
@@ -132,10 +132,14 @@ export class DiscordGuildInfoTool extends ClaudeToolType {
                     if (!member) return `User "${input.user}" not found`;
 
                     if (input.action === "add-role") {
-                        await member.roles.add(role);
+                        await member.roles.add(role).catch(error => {
+                            return `Failed to add role ${role.name} to ${member.user.tag}: ${error}`;
+                        });
                         return `Added role ${role.name} to ${member.user.tag}`;
                     } else {
-                        await member.roles.remove(role);
+                        await member.roles.remove(role).catch(error => {
+                            return `Failed to remove role ${role.name} from ${member.user.tag}: ${error}`;
+                        });
                         return `Removed role ${role.name} from ${member.user.tag}`;
                     }
                 }

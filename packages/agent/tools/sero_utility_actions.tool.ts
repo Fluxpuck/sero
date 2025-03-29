@@ -80,16 +80,16 @@ export class SeroUtilityActionsTool extends ClaudeToolType {
         this.validateInput(input);
 
         if (!this.message.guild) {
-            return `This command can only be used in a guild.`;
+            return `Error: This command can only be used in a guild.`;
         }
 
         if (!this.message.member?.permissions.has('ManageGuild')) {
-            return `You do not have permission to use these actions.`;
+            return `Error: You do not have permission to use these actions.`;
         }
 
         const user = await UserResolver.resolve(this.message.guild, input.user);
         if (!user) {
-            return `Could not find user "${input.user}"`;
+            return `Error: Could not find user "${input.user}"`;
         }
 
         const actionPromises = input.actions.map(action => this.handleAction(action, user, input));
@@ -102,7 +102,7 @@ export class SeroUtilityActionsTool extends ClaudeToolType {
             switch (action) {
                 case "away":
                     if (!user.moderatable) {
-                        return `This user is not moderatable.`;
+                        return `Error: This user is not moderatable.`;
                     }
                     return await this.handleAway(user, input);
 
@@ -158,6 +158,7 @@ export class SeroUtilityActionsTool extends ClaudeToolType {
                 ? `Currently boosting the server **${modifier}X**.\n-# There is ${timeLeft} left.`
                 : `Currently boosting the server **${modifier}X** for **${duration} hour${duration === 1 ? "" : "s"}**.\n-# There is ${timeLeft} left.`;
         }
+
         console.error("Failed to get boost status:", response);
         throw new Error("Failed to get boost status");
     }

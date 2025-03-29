@@ -54,19 +54,19 @@ export class DiscordModerationTool extends ClaudeToolType {
 
     async execute({ user: targetUser, actions, timeout_duration, reason }: ModerationToolInput): Promise<string> {
         if (!this.message.guild) {
-            return `This command can only be used in a guild.`;
+            return `Error: This command can only be used in a guild.`;
         }
 
         if (!this.message.member?.permissions.has('ModerateMembers')) {
-            return `This user does not have permission to moderate members.`;
+            return `Error: This user does not have permission to moderate members.`;
         }
 
         const user = await UserResolver.resolve(this.message.guild, targetUser);
         if (!user) {
-            return `Could not find user "${targetUser}."`;
+            return `Error: Could not find user "${targetUser}."`;
         }
         if (!user.moderatable) {
-            return `This user "${user.user.tag}" is not moderatable.`;
+            return `Error: Unable to moderate user "${user.user.tag}". Reason: User has higher permissions or role hierarchy prevents moderation.`;
         }
 
         const fullReason = `${reason} - Moderator: ${this.message.author.tag}`;
@@ -77,7 +77,9 @@ export class DiscordModerationTool extends ClaudeToolType {
                 switch (action) {
                     case "timeout":
                         if (timeout_duration) {
-                            await user.timeout(timeout_duration * 60 * 1000, fullReason);
+                            await user.timeout(timeout_duration * 60 * 1000, fullReason).catch((error) => {
+                                return `Error: Failed to timeout user "${user.user.tag}". Reason: ${error}`;
+                            });
                             return `Timed out ${user.user.tag} for ${timeout_duration} minutes`;
                         }
                         return "Timeout duration not specified";
@@ -85,10 +87,8 @@ export class DiscordModerationTool extends ClaudeToolType {
                     case "disconnect":
                         if (user.voice.channel) {
                             await user.voice.disconnect(fullReason).catch((error) => {
-                                console.error(`Failed to disconnect ${user.user.tag}: ${error}`);
-                                return `Failed to disconnect ${user.user.tag}: ${error}`;
+                                return `Error: Failed to disconnect user "${user.user.tag}". Reason: ${error}`;
                             });
-
                             return `Disconnected ${user.user.tag} from voice`;
                         }
                         return `${user.user.tag} is not in a voice channel`;
@@ -100,7 +100,9 @@ export class DiscordModerationTool extends ClaudeToolType {
                         if (!user.kickable) {
                             return `This user is not kickable.`;
                         }
-                        await user.kick(fullReason);
+                        await user.kick(fullReason).catch((error) => {
+                            return `Error: Failed to kick user "${user.user.tag}". Reason: ${error}`;
+                        });
                         return `Kicked ${user.user.tag}`;
 
                     case "ban":
@@ -110,11 +112,15 @@ export class DiscordModerationTool extends ClaudeToolType {
                         if (!user.bannable) {
                             return `This user is not bannable.`;
                         }
-                        await user.ban({ deleteMessageSeconds: 24 * 60 * 60, reason: fullReason });
+                        await user.ban({ deleteMessageSeconds: 24 * 60 * 60, reason: fullReason }).catch((error) => {
+                            return `Error: Failed to ban user "${user.user.tag}". Reason: ${error}`;
+                        });
                         return `Banned ${user.user.tag}`;
 
                     case "warn":
-                        await user.send(warning);
+                        await user.send(warning).catch((error) => {
+                            return `Error: Failed to send warning to user "${user.user.tag}". Their DMs are most likely disabled.`;
+                        });
                         return `Warned ${user.user.tag}`;
 
                     default:

@@ -75,24 +75,24 @@ export class DiscordUserLogsTool extends ClaudeToolType {
 
     async execute(input: UserToolInput): Promise<string> {
         if (!this.message.guild) {
-            return `This command can only be used in a guild.`;
+            return `Error: This command can only be used in a guild.`;
         }
 
         if (!this.message.member?.permissions.has('ModerateMembers')) {
-            return `You do not have permission to moderate members.`;
+            return `Error: You do not have permission to moderate members.`;
         }
 
         const user = await UserResolver.resolve(this.message.guild, input.user)
         if (!user) {
-            return `Could not find user "${input.user}"`;
+            return `Error: Could not find user "${input.user}"`;
         }
         if (!user.moderatable) {
-            return `This user is not moderatable.`;
+            return `Error: This user is not moderatable.`;
         }
 
         const channel = input.channel ? await ChannelResolver.resolve(this.message.guild, input.channel) : this.message.channel;
         if (!channel) {
-            return `Could not find channel "${input.channel}"`;
+            return `Error: Could not find channel "${input.channel}"`;
         }
 
         const actionPromises = input.actions.map(action => this.handleAction(action, user, channel, input));

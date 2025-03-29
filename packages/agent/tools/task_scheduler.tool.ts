@@ -146,12 +146,12 @@ export class TaskSchedulerTool extends ClaudeToolType {
         this.validateInput(input);
 
         if (!this.message.guild) {
-            return `This command can only be used in a guild.`;
+            return `Error: This command can only be used in a guild.`;
         }
 
         const user = await UserResolver.resolve(this.message.guild, input.user);
         if (!user) {
-            return `Could not find user "${input.user}"`;
+            return `Error: Could not find user "${input.user}"`;
         }
 
         // Only get channel if not DM
