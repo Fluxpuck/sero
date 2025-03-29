@@ -103,6 +103,10 @@ export class DiscordUserLogsTool extends ClaudeToolType {
             throw new Error("This command can only be used in a guild.");
         }
 
+        if (!this.message.member?.permissions.has('ModerateMembers')) {
+            throw new Error('You do not have permission to moderate members.');
+        }
+
         const user = await findUser(this.message.guild, input.user)
         if (!user) {
             throw new Error(`Could not find user "${input.user}"`);

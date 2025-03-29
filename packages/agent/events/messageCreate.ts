@@ -9,7 +9,11 @@ export async function execute(message: Message) {
     try {
         // Skip messages from bots to prevent potential loops
         if (message.author.bot) return;
-        if (message.author.id != process.env.OWNER_ID) return;
+
+        // Check if user is owner or has the specific role
+        const accessRoles = process.env.ACCESS_ROLE_ID?.split(',') || [];
+        const hasRole = accessRoles.some(roleId => message.member?.roles.cache.has(roleId));
+        if (message.author.id !== process.env.OWNER_ID || !hasRole) return;
 
         // Check if message mentions the bot at the start or is a reply to the bot
         const mentionPrefix = new RegExp(`^<@!?${client.user?.id}>`);

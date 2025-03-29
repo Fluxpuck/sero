@@ -57,6 +57,10 @@ export class DiscordModerationTool extends ClaudeToolType {
             throw new Error("This command can only be used in a guild.");
         }
 
+        if (!this.message.member?.permissions.has('ModerateMembers')) {
+            throw new Error('You do not have permission to moderate members.');
+        }
+
         const user = await findUser(this.message.guild, targetUser);
         if (!user) {
             throw new Error(`Could not find user "${targetUser}"`);
@@ -74,18 +78,29 @@ export class DiscordModerationTool extends ClaudeToolType {
                             return `Timed out ${user.user.tag} for ${timeout_duration} minutes`;
                         }
                         return "Timeout duration not specified";
+
                     case "disconnect":
                         if (user.voice.channel) {
                             await user.voice.disconnect(fullReason);
                             return `Disconnected ${user.user.tag} from voice`;
                         }
                         return `${user.user.tag} is not in a voice channel`;
+
                     case "kick":
+                        if (!this.message.member?.permissions.has('KickMembers') && !user.kickable) {
+                            throw new Error('You do not have permission to kick members.');
+
+                        }
                         await user.kick(fullReason);
                         return `Kicked ${user.user.tag}`;
+
                     case "ban":
+                        if (!this.message.member?.permissions.has('BanMembers') && !user.bannable) {
+                            throw new Error('You do not have permission to ban members.');
+                        }
                         await user.ban({ deleteMessageSeconds: 24 * 60 * 60, reason: fullReason });
                         return `Banned ${user.user.tag}`;
+
                     case "warn":
                         await user.send(warning);
                         return `Warned ${user.user.tag}`;
