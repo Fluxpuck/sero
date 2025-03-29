@@ -31,4 +31,5 @@ export const toolsContext = `
 - Never mention the tool name in the response.
 - Avoid sending follow-up messages, unless necessary.
 - IMPORTANT! Do NOT execute the task before the scheduled date and time when utilizing task_scheduler!.
+- Always convert time or duration to a human-readable format (e.g., "5 minutes" or "1hr and 15 minutes").
 `;
