@@ -64,21 +64,7 @@ export class SeroUtilityActionsTool extends ClaudeToolType {
         super(SeroUtilityActionsTool.getToolContext());
     }
 
-    private validateInput(input: SeroUtilityToolInput): void {
-        if (input.amount && ["set-boost"].includes(input.actions[0])) {
-            if (input.amount < 1 || input.amount > 5) {
-                throw new Error("Boost modifier must be between 1 and 5");
-            }
-        }
-
-        if (input.economy_type && !["bank", "wallet"].includes(input.economy_type)) {
-            throw new Error("Economy type must be either 'bank' or 'wallet'");
-        }
-    }
-
     async execute(input: SeroUtilityToolInput): Promise<string> {
-        this.validateInput(input);
-
         if (!this.message.guild) {
             return `Error: This command can only be used in a guild.`;
         }
