@@ -143,6 +143,8 @@ export class SeroUtilityActionsTool extends ClaudeToolType {
         if (response.status === 200 || response.status === 201) {
             return `Set ${user.user.tag} as away for ${input.time} minutes`;
         }
+
+        console.error("Failed to set away status:", response);
         throw new Error("Failed to set away status");
     }
 
