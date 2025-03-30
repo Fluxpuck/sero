@@ -19,6 +19,7 @@ const models = {
     Messages: require('../models/messages.model')(sequelize),
     Logs: require('../models/logs.model')(sequelize),
     TempRoles: require('../models/temp_roles.model')(sequelize),
+    ScheduledTasks: require('../models/scheduled_tasks.model')(sequelize),
     _Requests: require('../models/_requests.model')(sequelize),
 }
 

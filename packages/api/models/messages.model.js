@@ -43,7 +43,8 @@ module.exports = sequelize => {
         sequelize,
         modelName: 'messages',
         timestamps: true,
-        createdAt: true
+        createdAt: true,
+        paranoid: true,
     });
 
 
