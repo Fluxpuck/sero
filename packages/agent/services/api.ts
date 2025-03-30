@@ -21,33 +21,6 @@ const instance: AxiosInstance = axios.create({
     }
 });
 
-// Request interceptor for API calls
-instance.interceptors.request.use(
-    (config) => {
-        // You can add logging or modify requests here
-        return config;
-    },
-    (error) => {
-        if (process.env.NODE_ENV === 'development') console.error('API Request Error:', error);
-        return Promise.reject(error);
-    }
-);
-
-// Response interceptor for API calls
-instance.interceptors.response.use(
-    (response) => {
-        return response;
-    },
-    (error) => {
-        if (error.response?.status === 404) {
-            return error.response;
-        }
-
-        if (process.env.NODE_ENV === 'development') console.error('API Response Error:', error?.response?.data || error.message);
-        return Promise.reject(error);
-    }
-);
-
 // Helper methods for API calls
 export const ApiService = {
     /**
