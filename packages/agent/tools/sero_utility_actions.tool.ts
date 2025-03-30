@@ -101,9 +101,6 @@ export class SeroUtilityActionsTool extends ClaudeToolType {
         try {
             switch (action) {
                 case "away":
-                    if (!user.moderatable) {
-                        return `Error: This user is not moderatable.`;
-                    }
                     return await this.handleAway(user, input);
 
                 case "get-boost":
