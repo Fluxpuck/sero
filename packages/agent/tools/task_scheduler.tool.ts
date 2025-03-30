@@ -1,37 +1,26 @@
-import { Message, GuildMember, TextChannel, Client } from "discord.js";
+import { Message, TextChannel, ThreadChannel, Client } from "discord.js";
 import { ClaudeTool, ClaudeToolType } from "../types/tool.types";
-import cron from "node-cron";
-import { UserResolver } from "../utils/user-resolver";
 import { ChannelResolver } from "../utils/channel-resolver";
-import {
-    parseISO,
-    isFuture,
-    format,
-    getMinutes,
-    getHours,
-    getDate,
-    getMonth,
-    getDay,
-    isToday,
-    subMinutes
-} from 'date-fns';
 
-type TaskType = "command" | "reminder";
-type ScheduleType = "once" | "daily" | "weekly" | "monthly";
+import * as cron from 'node-cron';
+import { v4 as uuidv4 } from 'uuid';
 
 type TaskSchedulerInput = {
-    task: string;
-    task_context?: string;
-    task_type: TaskType;
-    schedule_type: ScheduleType;
-    datetime: string;
-    user: string;
-    channel?: string;
-    isDM: boolean;
+    schedule: string; // Cron expression (e.g., "*/5 * * * *" for every 5 minutes)
+    tool: string; // Name of the tool to execute
+    toolInput: Record<string, any>; // Input parameters for the tool
+    maxExecutions?: number; // Maximum number of times to execute (optional)
+    channelId?: string; // Channel to send responses to (optional)
+    startDate?: string; // When to start the task (optional)
+    endDate?: string; // When to end the task (optional)
 }
 
 export class TaskSchedulerTool extends ClaudeToolType {
-    private static scheduledTasks: Map<string, cron.ScheduledTask | { stop: () => void }> = new Map();
+    private static scheduledTasks: Map<string, {
+        task: cron.ScheduledTask,
+        executionCount: number,
+        maxExecutions?: number
+    }> = new Map();
 
     static getToolContext() {
         return {
@@ -40,43 +29,36 @@ export class TaskSchedulerTool extends ClaudeToolType {
             input_schema: {
                 type: "object" as const,
                 properties: {
-                    task: {
+                    schedule: {
                         type: "string",
-                        description: "The task or command to be scheduled or message to be reminded"
+                        description: "Cron expression for scheduling (e.g., '*/5 * * * *' for every 5 minutes)"
                     },
-                    task_context: {
+                    tool: {
                         type: "string",
-                        description: "Further details about the task or command, e.g. 100 exp points"
+                        description: "Name of the tool to execute"
                     },
-                    task_type: {
+                    toolInput: {
+                        type: "object",
+                        description: "Input parameters for the tool"
+                    },
+                    maxExecutions: {
+                        type: "number",
+                        description: "Maximum number of times to execute the task (optional)"
+                    },
+                    channelId: {
                         type: "string",
-                        enum: ["command", "reminder"],
-                        description: "Type of task (command execution or reminder message)"
+                        description: "Channel ID to send responses to (optional)"
                     },
-                    schedule_type: {
+                    startDate: {
                         type: "string",
-                        enum: ["once", "daily", "weekly", "monthly"],
-                        description: "Type of schedule recurrence"
+                        description: "ISO date string when to start the task (optional)"
                     },
-                    datetime: {
+                    endDate: {
                         type: "string",
-                        description: "Date and time for the task (ISO 8601 format, e.g., '2024-03-27T15:00:00Z')"
-                    },
-                    user: {
-                        type: "string",
-                        description: "The username, user ID, or @mention to find"
-                    },
-                    channel: {
-                        type: "string",
-                        description: "The channel name, ID, or #mention to filter results (optional)"
-                    },
-                    isDM: {
-                        type: "boolean",
-                        description: "Indicate if the task is a direct message",
-                        default: false
+                        description: "ISO date string when to end the task (optional)"
                     }
                 },
-                required: ["task", "task_type", "schedule_type", "datetime", "user"]
+                required: ["schedule", "tool", "toolInput"]
             }
         };
     }
@@ -84,130 +66,129 @@ export class TaskSchedulerTool extends ClaudeToolType {
     constructor(
         private readonly client: Client,
         private readonly message: Message,
+        private readonly tools: Map<string, ClaudeToolType>
     ) {
         super(TaskSchedulerTool.getToolContext());
     }
 
-    private validateInput(input: TaskSchedulerInput): void {
-        if (!input.task || !input.task_type || !input.schedule_type || !input.datetime || !input.user) {
-            throw new Error("Missing required parameters for task scheduling");
-        }
-
-        const dateTime = parseISO(input.datetime);
-        const scheduledTime = process.env.NODE_ENV === "development" ? subMinutes(dateTime, 60) : dateTime;
-
-        if (isNaN(scheduledTime.getTime())) {
-            throw new Error("Invalid datetime format. Use ISO 8601 format (e.g., 2024-03-27T15:00:00Z)");
-        }
-
-        if (!isFuture(scheduledTime)) {
-            throw new Error("Scheduled time must be in the future");
-        }
-    }
-
-    private getCronExpression(scheduledTime: Date, scheduleType: ScheduleType): string {
-        switch (scheduleType) {
-            case "once":
-                if (isToday(scheduledTime)) {
-                    return `${getMinutes(scheduledTime)} ${getHours(scheduledTime)} * * *`;
-                }
-                return `${getMinutes(scheduledTime)} ${getHours(scheduledTime)} ${getDate(scheduledTime)} ${getMonth(scheduledTime) + 1} *`;
-            case "daily":
-                return `${getMinutes(scheduledTime)} ${getHours(scheduledTime)} * * *`;
-            case "weekly":
-                return `${getMinutes(scheduledTime)} ${getHours(scheduledTime)} * * ${getDay(scheduledTime)}`;
-            case "monthly":
-                return `${getMinutes(scheduledTime)} ${getHours(scheduledTime)} ${getDate(scheduledTime)} * *`;
-            default:
-                throw new Error("Invalid schedule type");
-        }
-    }
-
-    private async executeTask(channel: TextChannel, user: GuildMember, input: TaskSchedulerInput) {
-        const message = `Reminder: ${input.task} ${input.task_context ?? ''}`;
-
-        if (input.isDM) {
-            try {
-                await user.send(message);
-            } catch (error) {
-                // If DM fails, fall back to channel mention
-                await channel.send(`${user}, I couldn't send you a DM. ${message}`);
-            }
-        } else {
-            if (input.task_type === "reminder") {
-                await channel.send(`${user}, ${message}`);
-            } else if (input.task_type === "command") {
-                await channel.send(`${user}, Executing scheduled command: ${input.task}`);
-            }
-        }
-    }
-
     async execute(input: TaskSchedulerInput): Promise<string> {
-        this.validateInput(input);
-
         if (!this.message.guild) {
             return `Error: This command can only be used in a guild.`;
         }
 
-        const user = await UserResolver.resolve(this.message.guild, input.user);
-        if (!user) {
-            return `Error: Could not find user "${input.user}"`;
-        }
-
-        // Only get channel if not DM
-        let targetChannel: TextChannel | null = null;
-        if (!input.isDM) {
-            targetChannel = input.channel
-                ? (await ChannelResolver.resolve(this.message.guild, input.channel) ?? this.message.channel) as TextChannel
-                : this.message.channel as TextChannel;
-            if (!targetChannel.isTextBased()) {
-                throw new Error("The specified channel must be a text channel.");
+        try {
+            if (!cron.validate(input.schedule)) {
+                throw new Error("Invalid cron schedule expression");
             }
-        } else {
-            targetChannel = this.message.channel as TextChannel;
-        }
 
-        const dateTime = parseISO(input.datetime);
-        const scheduledTime = process.env.NODE_ENV === "development" ? subMinutes(dateTime, 60) : dateTime;
-        const delay = scheduledTime.getTime() - Date.now();
-        const taskId = `${Date.now()}-${user.id}`;
+            // Validate dates if provided
+            if (input.startDate && !this.isValidDate(input.startDate)) {
+                throw new Error("Invalid start date format. Please use ISO date string.");
+            }
+            if (input.endDate && !this.isValidDate(input.endDate)) {
+                throw new Error("Invalid end date format. Please use ISO date string.");
+            }
 
-        // Handle short-term scheduling (less than 1 hour)
-        if (input.schedule_type === "once" && delay <= 3600000) {
-            const timeoutId = setTimeout(async () => {
-                await this.executeTask(targetChannel, user, input);
-                TaskSchedulerTool.scheduledTasks.delete(taskId);
-            }, delay);
-
-            TaskSchedulerTool.scheduledTasks.set(taskId, {
-                stop: () => clearTimeout(timeoutId)
-            } as any);
-        } else {
-            // Handle long-term scheduling with cron
-            const cronExpression = this.getCronExpression(scheduledTime, input.schedule_type);
-            const scheduledTask = cron.schedule(cronExpression, async () => {
-                await this.executeTask(targetChannel, user, input);
-                if (input.schedule_type === "once") {
-                    TaskSchedulerTool.cancelTask(taskId);
+            // Validate date order
+            if (input.startDate && input.endDate) {
+                const startDate = new Date(input.startDate);
+                const endDate = new Date(input.endDate);
+                if (endDate <= startDate) {
+                    throw new Error("End date must be after start date");
                 }
+            }
+
+            const tool = this.tools.get(input.tool);
+            if (!tool) {
+                throw new Error(`Tool ${input.tool} not found`);
+            }
+
+            const taskId = uuidv4(); // Generate a unique task ID
+
+            const channel = input.channelId
+                ? await ChannelResolver.resolve(this.message.guild, input.channelId)
+                : this.message.channel;
+            if (!(channel instanceof TextChannel) && !(channel instanceof ThreadChannel)) {
+                throw new Error("Channel must be a TextChannel or ThreadChannel");
+            }
+
+            const task = cron.schedule(input.schedule, async () => {
+                const taskInfo = TaskSchedulerTool.scheduledTasks.get(taskId);
+                if (!taskInfo) return;
+
+                // Check if max executions reached
+                if (taskInfo.maxExecutions && taskInfo.executionCount >= taskInfo.maxExecutions) {
+                    task.stop();
+                    TaskSchedulerTool.scheduledTasks.delete(taskId);
+                    if (channel instanceof TextChannel || channel instanceof ThreadChannel) {
+                        channel.send(`Task ${taskId} completed ${taskInfo.maxExecutions} executions and has been stopped.`);
+                    }
+                    return;
+                }
+
+                try {
+                    const result = await tool.execute(input.toolInput);
+                    channel.send(`Task ${taskId} execution result: ${result}`);
+                    taskInfo.executionCount++;
+                } catch (error) {
+                    channel.send(`Error executing task ${taskId}: ${error}`);
+                }
+            }, {
+                scheduled: false,
+                timezone: "UTC"
             });
 
-            TaskSchedulerTool.scheduledTasks.set(taskId, scheduledTask);
-        }
+            // Set start date
+            if (input.startDate) {
+                const startDate = new Date(input.startDate);
+                const delay = startDate.getTime() - Date.now();
+                if (delay > 0) {
+                    setTimeout(() => task.start(), delay);
+                } else {
+                    task.start();
+                }
+            } else {
+                task.start();
+            }
 
-        return `Task scheduled successfully:
-- ID: ${taskId}
-- Type: ${input.task_type}
-- Schedule: ${input.schedule_type}
-- Time: ${format(scheduledTime, 'PPpp')}
-- Target: ${user.user.username}
-- Channel: ${targetChannel?.name ?? 'DM'}`;
+            // Set end date
+            if (input.endDate) {
+                const endDate = new Date(input.endDate);
+                const delay = endDate.getTime() - Date.now();
+                if (delay > 0) {
+                    setTimeout(() => {
+                        task.stop();
+                        TaskSchedulerTool.scheduledTasks.delete(taskId);
+                        if (channel instanceof TextChannel || channel instanceof ThreadChannel) {
+                            channel.send(`Task ${taskId} reached end date and has been stopped.`);
+                        }
+                    }, delay);
+                } else {
+                    throw new Error("End date must be in the future");
+                }
+            }
+
+            TaskSchedulerTool.scheduledTasks.set(taskId, {
+                task,
+                executionCount: 0,
+                maxExecutions: input.maxExecutions
+            });
+
+            return `Task scheduled successfully. Task ID: ${taskId}`;
+        } catch (error) {
+            throw new Error(`Failed to schedule task: ${error instanceof Error ? error.message : String(error)}`);
+        }
     }
 
-    static cancelTask(taskId: string): boolean {
-        const task = TaskSchedulerTool.scheduledTasks.get(taskId);
-        if (task) {
-            task.stop();
+    private isValidDate(dateString: string): boolean {
+        const date = new Date(dateString);
+        return date instanceof Date && !isNaN(date.getTime());
+    }
+
+    static stopTask(taskId: string): boolean {
+        const taskInfo = TaskSchedulerTool.scheduledTasks.get(taskId);
+        if (taskInfo) {
+            taskInfo.task.stop();
             TaskSchedulerTool.scheduledTasks.delete(taskId);
             return true;
         }
