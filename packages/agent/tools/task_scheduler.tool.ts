@@ -1,13 +1,18 @@
-import { Message, TextChannel, ThreadChannel, Client } from "discord.js";
+import { Message, TextChannel, ThreadChannel, Client, GuildMember } from "discord.js";
+import { ApiService, ApiResponse } from "../services/api";
 import { ClaudeTool, ClaudeToolType } from "../types/tool.types";
 import { ChannelResolver } from "../utils/channel-resolver";
 import * as cron from 'node-cron';
+import { UserResolver } from "../utils/user-resolver";
 
 type TaskSchedulerInput = {
     schedule?: string; // Cron expression (e.g., "*/5 * * * *" for every 5 minutes)
     tool?: string;
     toolInput?: Record<string, any>;
     maxExecutions?: number;
+    executionCount?: number;
+    guildId?: string;
+    userId?: string;
     channelId?: string;
     startDate?: string;
     endDate?: string;
@@ -15,14 +20,19 @@ type TaskSchedulerInput = {
     taskId?: string;
 }
 
+type StoredTaskInfo = {
+    task: cron.ScheduledTask;
+    executionCount: number;
+    maxExecutions?: number;
+    channel: TextChannel | ThreadChannel;
+    taskOwnerId?: string;
+    toolName: string;
+    toolInput: Record<string, any>;
+    schedule: string;  // Store original schedule string
+}
+
 export class TaskSchedulerTool extends ClaudeToolType {
-    private static scheduledTasks: Map<string, {
-        task: cron.ScheduledTask,
-        executionCount: number,
-        maxExecutions?: number,
-        channel: TextChannel | ThreadChannel,
-        taskOwnerId?: string
-    }> = new Map();
+    private static scheduledTasks: Map<string, StoredTaskInfo> = new Map();
 
     static getToolContext() {
         return {
@@ -74,12 +84,78 @@ export class TaskSchedulerTool extends ClaudeToolType {
         };
     }
 
+    private static initializedGuilds = new Set<string>();
+
     constructor(
         private readonly client: Client,
         private readonly message: Message,
         private readonly tools: Map<string, ClaudeToolType>
     ) {
         super(TaskSchedulerTool.getToolContext());
+        const guildId = this.message.guild?.id;
+        if (guildId && !TaskSchedulerTool.initializedGuilds.has(guildId)) {
+            TaskSchedulerTool.initializedGuilds.add(guildId);
+            this.initializeTool();
+        }
+    }
+
+    async initializeTool() {
+        const guildId = this.message.guild?.id;
+        if (!guildId) {
+            console.error('Cannot initialize tasks: No guild context available');
+            return;
+        }
+
+        console.log(`Initializing tasks for guild: ${guildId}`);
+
+        const existingTasksForGuild = Array.from(TaskSchedulerTool.scheduledTasks.entries())
+            .filter(([_, taskInfo]) => taskInfo.channel.guild.id === guildId);
+
+        const response = await ApiService.get(`/guilds/${guildId}/tasks`) as ApiResponse;
+        if (response.status === 200) {
+
+            const tasks = response.data as TaskSchedulerInput[];
+
+            // First, delete tasks that exist locally but not in API response
+            for (const [existingTaskId] of existingTasksForGuild) {
+                if (!tasks.find(task => task.taskId === existingTaskId)) {
+                    TaskSchedulerTool.scheduledTasks.delete(existingTaskId);
+                }
+            }
+
+            // Then update or add tasks from API
+            for (const taskData of tasks) {
+                if (!taskData.taskId) continue;
+
+                const existingTask = TaskSchedulerTool.scheduledTasks.get(taskData.taskId);
+                if (existingTask) {
+                    // Update existing task's execution count
+                    existingTask.executionCount = taskData.executionCount || 0;
+                } else if (taskData.schedule && taskData.tool && taskData.toolInput) {
+                    // Create new task only if all required fields are present
+                    const tool = this.tools.get(taskData.tool);
+                    if (tool && cron.validate(taskData.schedule)) {
+                        const channel = taskData.channelId
+                            ? await ChannelResolver.resolve(this.message.guild!, taskData.channelId)
+                            : this.message.channel;
+
+                        if (channel instanceof TextChannel || channel instanceof ThreadChannel) {
+                            const task = this.scheduleTask(taskData, tool, taskData.taskId);
+                            await TaskSchedulerTool.saveTask(taskData.taskId, guildId, {
+                                task,
+                                executionCount: taskData.executionCount || 0,
+                                maxExecutions: taskData.maxExecutions,
+                                channel,
+                                taskOwnerId: taskData.userId,
+                                toolName: taskData.tool,
+                                toolInput: taskData.toolInput,
+                                schedule: taskData.schedule
+                            });
+                        }
+                    }
+                }
+            }
+        }
     }
 
     async execute(input: TaskSchedulerInput): Promise<string> {
@@ -95,16 +171,21 @@ export class TaskSchedulerTool extends ClaudeToolType {
 
                 const tasks = Array.from(TaskSchedulerTool.scheduledTasks.entries())
                     .filter(([_, taskInfo]) => taskInfo.taskOwnerId === this.message.author.id)
-                    .map(([taskId, taskInfo]) => `Task ID: ${taskId}, Channel: ${taskInfo.channel.name}`)
-                    .join("\n");
-                return tasks.length > 0 ? tasks : "You have no scheduled tasks.";
+                    .map(([taskId, taskInfo]) => ({
+                        taskId,
+                        task: taskInfo ?? null
+                    }));
+
+                return tasks.length > 0
+                    ? `Scheduled tasks: ${tasks.map(task => `Task ID: ${task.taskId}, Tool: ${task.task.toolName}, Schedule: ${task.task.schedule}`).join("\n")}`
+                    : "No scheduled tasks found.";
             }
 
             if (input.operation === "cancel") {
                 if (!input.taskId) {
                     throw new Error("Task ID is required for cancel operation");
                 }
-                const success = TaskSchedulerTool.stopTask(input.taskId);
+                const success = await TaskSchedulerTool.stopTask(input.taskId);
                 return success
                     ? `Task ${input.taskId} canceled successfully.`
                     : `Task ${input.taskId} not found.`;
@@ -113,27 +194,6 @@ export class TaskSchedulerTool extends ClaudeToolType {
             if (input.operation === "schedule") {
                 if (!input.schedule || !input.tool || !input.toolInput) {
                     throw new Error("Schedule, tool, and toolInput are required for schedule operation");
-                }
-
-                if (!cron.validate(input.schedule)) {
-                    throw new Error("Invalid cron schedule expression");
-                }
-
-                // Validate dates if provided
-                if (input.startDate && !this.isValidDate(input.startDate)) {
-                    throw new Error("Invalid start date format. Please use ISO date string.");
-                }
-                if (input.endDate && !this.isValidDate(input.endDate)) {
-                    throw new Error("Invalid end date format. Please use ISO date string.");
-                }
-
-                // Validate date order
-                if (input.startDate && input.endDate) {
-                    const startDate = new Date(input.startDate);
-                    const endDate = new Date(input.endDate);
-                    if (endDate <= startDate) {
-                        throw new Error("End date must be after start date");
-                    }
                 }
 
                 const tool = this.tools.get(input.tool);
@@ -150,64 +210,17 @@ export class TaskSchedulerTool extends ClaudeToolType {
                     throw new Error("Channel must be a TextChannel or ThreadChannel");
                 }
 
-                const task = cron.schedule(input.schedule, async () => {
-                    const taskInfo = TaskSchedulerTool.scheduledTasks.get(taskId);
-                    if (!taskInfo) return;
+                const task = this.scheduleTask(input, tool, taskId);
 
-                    // Check if max executions reached
-                    if (taskInfo.maxExecutions && taskInfo.executionCount >= taskInfo.maxExecutions) {
-                        task.stop();
-                        TaskSchedulerTool.scheduledTasks.delete(taskId);
-                        taskInfo.channel.send(`Task ${taskId} completed ${taskInfo.maxExecutions} executions and has been stopped.`);
-                        return;
-                    }
-
-                    try {
-                        const result = await tool.execute(input.toolInput);
-                        taskInfo.channel.send(`Task ${taskId} execution result: ${result}`);
-                        taskInfo.executionCount++;
-                    } catch (error) {
-                        taskInfo.channel.send(`Error executing task ${taskId}: ${error instanceof Error ? error.message : String(error)}`);
-                    }
-                }, {
-                    scheduled: false,
-                    timezone: "UTC"
-                });
-
-                // Set start date
-                if (input.startDate) {
-                    const startDate = new Date(input.startDate);
-                    const delay = startDate.getTime() - Date.now();
-                    if (delay > 0) {
-                        setTimeout(() => task.start(), delay);
-                    } else {
-                        task.start();
-                    }
-                } else {
-                    task.start();
-                }
-
-                // Set end date
-                if (input.endDate) {
-                    const endDate = new Date(input.endDate);
-                    const delay = endDate.getTime() - Date.now();
-                    if (delay > 0) {
-                        setTimeout(() => {
-                            task.stop();
-                            TaskSchedulerTool.scheduledTasks.delete(taskId);
-                            channel.send(`Task ${taskId} reached end date and has been stopped.`);
-                        }, delay);
-                    } else {
-                        throw new Error("End date must be in the future");
-                    }
-                }
-
-                TaskSchedulerTool.scheduledTasks.set(taskId, {
+                await TaskSchedulerTool.saveTask(taskId, this.message.guild!.id, {
                     task,
                     executionCount: 0,
                     maxExecutions: input.maxExecutions,
                     channel,
-                    taskOwnerId: this.message.author.id
+                    taskOwnerId: this.message.author.id,
+                    toolName: input.tool,
+                    toolInput: input.toolInput,
+                    schedule: input.schedule
                 });
 
                 return `Task scheduled successfully. Task ID: ${taskId}`;
@@ -224,13 +237,220 @@ export class TaskSchedulerTool extends ClaudeToolType {
         return date instanceof Date && !isNaN(date.getTime());
     }
 
-    static stopTask(taskId: string): boolean {
+    private scheduleTask(input: TaskSchedulerInput, tool: ClaudeToolType, taskId: string): cron.ScheduledTask {
+        if (!input.schedule || !input.tool || !input.toolInput) {
+            throw new Error("Schedule, tool, and toolInput are required for schedule operation");
+        }
+
+        try {
+            // Validate cron expression with detailed error message
+            if (!cron.validate(input.schedule)) {
+                throw new Error(`Invalid cron schedule expression: "${input.schedule}". Format should be: "* * * * *" (minute hour day-of-month month day-of-week)`);
+            }
+
+            // Add execution tracking to prevent duplicate executions
+            const executionTracker = new Set<string>();
+
+            const task = cron.schedule(input.schedule, async () => {
+                const taskInfo = TaskSchedulerTool.scheduledTasks.get(taskId);
+                if (!taskInfo) {
+                    task.stop();
+                    return;
+                }
+
+                // Create a unique execution ID based on time (to nearest second)
+                // This prevents multiple executions within the same second
+                const executionTime = Math.floor(Date.now() / 1000);
+                const executionId = `${taskId}-${executionTime}`;
+
+                // Skip if this task has already executed in this second
+                if (executionTracker.has(executionId)) {
+                    console.log(`Skipping duplicate execution of task ${taskId} at ${executionTime}`);
+                    return;
+                }
+
+                // Mark this execution
+                executionTracker.add(executionId);
+
+                // Clean up execution tracker (keep only last 5 minutes of execution records)
+                const FIVE_MINUTES_IN_SECONDS = 300;
+                setTimeout(() => {
+                    executionTracker.delete(executionId);
+                }, FIVE_MINUTES_IN_SECONDS * 1000);
+
+                try {
+                    // Execute the tool
+                    await tool.execute(taskInfo.toolInput);
+
+                    // Update local count only after successful execution
+                    const updatedTaskInfo = TaskSchedulerTool.scheduledTasks.get(taskId);
+                    if (updatedTaskInfo) {
+                        updatedTaskInfo.executionCount++;
+
+                        // Check if max executions reached after increment
+                        if (updatedTaskInfo.maxExecutions &&
+                            updatedTaskInfo.executionCount >= updatedTaskInfo.maxExecutions) {
+                            TaskSchedulerTool.stopTask(taskId);
+                            return;
+                        } else {
+                            await ApiService.post(`/guilds/${taskInfo.channel.guild.id}/tasks/increment/${taskId}`);
+                        }
+                    }
+                } catch (error) {
+                    console.error(`Error executing task ${taskId}:`, error);
+                }
+            }, {
+                scheduled: true,
+                timezone: "UTC"
+            });
+
+            // Add validation before returning
+            if (!task || typeof task.start !== 'function') {
+                throw new Error('Failed to create cron task');
+            }
+
+            this.handleTaskScheduling(task, input);
+            return task;
+        } catch (error) {
+            const errorMessage = error instanceof Error ? error.message : String(error);
+            throw new Error(`Failed to schedule task: ${errorMessage}`);
+        }
+    }
+
+    private handleTaskScheduling(task: cron.ScheduledTask, input: TaskSchedulerInput): void {
+        // Validate dates if provided
+        if (input.startDate && !this.isValidDate(input.startDate)) {
+            throw new Error("Invalid start date format. Please use ISO date string.");
+        }
+        if (input.endDate && !this.isValidDate(input.endDate)) {
+            throw new Error("Invalid end date format. Please use ISO date string.");
+        }
+
+        const now = Date.now();
+        const MAX_TIMEOUT = 2147483647; // Maximum 32-bit signed integer
+
+        if (input.startDate) {
+            const startDate = new Date(input.startDate);
+            let delay = startDate.getTime() - now;
+
+            if (delay > 0) {
+                task.stop();
+                if (delay > MAX_TIMEOUT) {
+                    // For large delays, use recursive setTimeout
+                    const scheduleStart = () => {
+                        if (delay <= MAX_TIMEOUT) {
+                            setTimeout(() => task.start(), delay);
+                        } else {
+                            setTimeout(() => {
+                                delay -= MAX_TIMEOUT;
+                                scheduleStart();
+                            }, MAX_TIMEOUT);
+                        }
+                    };
+                    scheduleStart();
+                } else {
+                    setTimeout(() => task.start(), delay);
+                }
+            }
+        }
+
+        if (input.endDate) {
+            const endDate = new Date(input.endDate);
+            let delay = endDate.getTime() - now;
+
+            if (delay <= 0) {
+                throw new Error("End date must be in the future");
+            }
+
+            if (delay > MAX_TIMEOUT) {
+                // For large delays, use recursive setTimeout
+                const scheduleEnd = () => {
+                    if (delay <= MAX_TIMEOUT) {
+                        setTimeout(() => {
+                            TaskSchedulerTool.stopTask(input.taskId ?? '');
+                        }, delay);
+                    } else {
+                        setTimeout(() => {
+                            delay -= MAX_TIMEOUT;
+                            scheduleEnd();
+                        }, MAX_TIMEOUT);
+                    }
+                };
+                scheduleEnd();
+            } else {
+                setTimeout(() => {
+                    TaskSchedulerTool.stopTask(input.taskId ?? '');
+                }, delay);
+            }
+        }
+    }
+
+    static async saveTask(
+        taskId: string,
+        guildId: string,
+        taskInfo: StoredTaskInfo
+    ) {
+        TaskSchedulerTool.scheduledTasks.set(taskId, taskInfo);
+
+        const response = await ApiService.post(`/guilds/${guildId}/tasks`, {
+            taskId,
+            guildId: guildId,
+            userId: taskInfo.taskOwnerId,
+            channelId: taskInfo.channel.id,
+            schedule: taskInfo.schedule,  // Use the original schedule string
+            tool: taskInfo.toolName,
+            toolInput: taskInfo.toolInput,
+            maxExecutions: taskInfo.maxExecutions,
+            executionCount: taskInfo.executionCount,
+            status: 'active'
+        }) as ApiResponse;
+
+        if (response.status !== 200 && response.status !== 201) {
+            throw new Error(`Failed to save task: ${response.data}`);
+        }
+
+        return response.data;
+    }
+
+    static startTask(taskId: string): boolean {
         const taskInfo = TaskSchedulerTool.scheduledTasks.get(taskId);
         if (taskInfo) {
-            taskInfo.task.stop();
-            TaskSchedulerTool.scheduledTasks.delete(taskId);
-            taskInfo.channel.send(`Task ${taskId} has been cancelled.`);
-            return true;
+            try {
+                // Start the cron task
+                taskInfo.task.start();
+
+                return true;
+            } catch (error) {
+                console.error(`Error starting task ${taskId}: ${error instanceof Error ? error.message : String(error)}`);
+                return false;
+            }
+        }
+        return false;
+    }
+
+    static async stopTask(taskId: string): Promise<boolean> {
+        if (!taskId) return false;
+
+        const taskInfo = TaskSchedulerTool.scheduledTasks.get(taskId);
+        if (taskInfo) {
+            try {
+                // Stop the cron task
+                taskInfo.task.stop();
+
+                // Delete from memory
+                TaskSchedulerTool.scheduledTasks.delete(taskId);
+
+                // Delete from API
+                const response = await ApiService.delete(`/guilds/${taskInfo.channel.guild.id}/tasks/${taskId}`) as ApiResponse;
+                if (response.status !== 200) {
+                    console.error(`Failed to delete task ${taskId} from API: ${response.data}`);
+                }
+
+                return true;
+            } catch (error) {
+                console.error(`Error stopping task ${taskId}: ${error instanceof Error ? error.message : String(error)}`);
+                return false;
+            }
         }
         return false;
     }
