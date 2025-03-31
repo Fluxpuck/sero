@@ -33,4 +33,5 @@ export const toolsContext = `
 - IMPORTANT! Do NOT execute the task before the scheduled date and time when utilizing task_scheduler!.
 - Always convert time or duration to a human-readable format (e.g., "5 minutes" or "1hr and 15 minutes").
 - Disconnecting a user does not require a reason, but if one is provided, it should be included in the response.
+- Only utilize discord_fetch_messages.tool if the user explicitly requests it!
 `;

@@ -3,6 +3,7 @@ import { ClaudeToolType } from '../types/tool.types';
 
 import { DiscordSendMessageTool } from '../tools/discord_send_message.tool';
 import { DiscordGuildInfoTool } from '../tools/discord_guild_info.tool';
+import { DiscordFetchMessagesTool } from '../tools/discord_fetch_messages.tool';
 import { DiscordModerationTool } from '../tools/discord_moderation_actions.tool';
 import { DiscordUserLogsTool } from '../tools/discord_user_logs.tool';
 import { SeroUtilityActionsTool } from '../tools/sero_utility_actions.tool';
@@ -17,6 +18,7 @@ const toolInstances = new Map<string, ClaudeToolType>();
 export function initializeTools(message: Message, client: Client) {
     toolInstances.set('discord_send_message', new DiscordSendMessageTool(client, message));
     toolInstances.set('discord_guild_info', new DiscordGuildInfoTool(client, message));
+    toolInstances.set('discord_fetch_messages', new DiscordFetchMessagesTool(client, message));
     toolInstances.set('discord_moderation_actions', new DiscordModerationTool(client, message));
     toolInstances.set('discord_user_logs', new DiscordUserLogsTool(client, message));
     toolInstances.set('sero_utility_actions', new SeroUtilityActionsTool(client, message));
