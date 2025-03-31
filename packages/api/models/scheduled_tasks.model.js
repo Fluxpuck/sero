@@ -52,7 +52,6 @@ module.exports = sequelize => {
         },
         maxExecutions: {
             type: DataTypes.INTEGER,
-            defaultValue: 1,
             allowNull: true
         },
         executionCount: {
@@ -68,7 +67,7 @@ module.exports = sequelize => {
             allowNull: true
         },
         status: {
-            type: DataTypes.ENUM('active', 'completed', 'cancelled'),
+            type: DataTypes.ENUM('active', 'stopped'),
             defaultValue: 'active'
         }
     }, {
@@ -90,6 +89,10 @@ module.exports = sequelize => {
                 }
             }
         ]
+    });
+
+    ScheduledTasks.beforeDestroy(async (instance) => {
+        instance.status = 'stopped';
     });
 
     return ScheduledTasks;
