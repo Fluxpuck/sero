@@ -9,16 +9,13 @@ const REWARD_MESSAGES = [
 ];
 
 const REWARD_GIFS = [
-    "https://media1.tenor.com/m/V0Z6XInA21UAAAAC/teletubbies-dipsy.gif",
-    "https://media1.tenor.com/m/wer_TRGa6kQAAAAC/gifts-spongebob.gif",
-    "https://media1.tenor.com/m/6zFWZXk3RmAAAAAC/surprise-birthday.gif",
-    "https://media.tenor.com/tD4y6qotBCMAAAAi/fat-cat-gift-for-you.gif",
-    "https://media1.tenor.com/m/j_GMiruOTOwAAAAC/spongebob-unicorn.gif",
-    "https://media1.tenor.com/m/Z7v5hwsD2VAAAAAd/what%27s-in-the-box-buttercup.gif",
-    "https://media1.tenor.com/m/dm1dZGrVryAAAAAC/bling-diva.gif",
-    "https://media1.tenor.com/m/tfHUTmqf4foAAAAC/nifty-league-nifty-smashers.gif",
-    "https://media1.tenor.com/m/LMHWuWfylXgAAAAd/mario-super-mario.gif",
-    "https://media1.tenor.com/m/paesy669JUIAAAAC/gift-present.gif",
+    "https://tenor.com/en-GB/view/christmas-birthday-xmas-surprise-gift-gif-3993825760034290342",
+    "https://tenor.com/en-GB/view/presents-gift-gifts-birthday-gift-present-gif-12034017540936536558",
+    "https://tenor.com/en-GB/view/sml-mr-goodman-wheres-my-reward-reward-supermariologan-gif-2782671066024684217",
+    "https://tenor.com/en-GB/view/airdrop-box-opening-cake-surprise-xpertthief-gif-13776983",
+    "https://tenor.com/en-GB/view/joey-joey-tribiani-matthew-perry-friends-joey-joey-friends-gif-21815242",
+    "https://tenor.com/en-GB/view/delibird-pokemon-christmas-gif-10601017",
+    "https://tenor.com/en-GB/view/fc-bayern-fcb-bayern-bayern-munich-bayern-munchen-gif-15729310",
 ];
 
 module.exports = { REWARD_MESSAGES, REWARD_GIFS }
