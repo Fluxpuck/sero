@@ -96,12 +96,12 @@ module.exports = async (client, interaction) => {
                     });
 
                     // Get a random message from the CLAIM_MESSAGES array
-                    const text_idx = Math.floor(Math.random() * REWARD_MESSAGES.length);
-                    const reward_message = CLAIM_MESSAGES[text_idx].replace("{{USER}}", `<@${interaction.member.id}>`).replace("{{AMOUNT}}", targetAmount);
+                    const text_idx = Math.floor(Math.random() * CLAIM_MESSAGES.length);
+                    const claim_reward_message = CLAIM_MESSAGES[text_idx].replace("{{USER}}", `<@${interaction.member.id}>`).replace("{{AMOUNT}}", targetAmount);
 
                     // Return the message to the user
                     return interaction.followUp({
-                        content: `${reward_message}`,
+                        content: `${claim_reward_message}`,
 
                     })
 
