@@ -1,6 +1,7 @@
 const { MessageFlags } = require('discord.js');
 const { getRequest, postRequest } = require("../database/connection");
 const { getGuildActiveStatus } = require('../utils/cache/guild.cache');
+const { CLAIM_MESSAGES } = require("../assets/reward-messages");
 
 module.exports = async (client, interaction) => {
 
@@ -79,7 +80,7 @@ module.exports = async (client, interaction) => {
                 if (result?.status === 200) {
 
                     const additionalData = {
-                        amount: -targetAmount,
+                        amount: targetAmount,
                         token: payload.token,
                     }
 
@@ -94,9 +95,13 @@ module.exports = async (client, interaction) => {
                         additional: additionalData
                     });
 
+                    // Get a random message from the CLAIM_MESSAGES array
+                    const text_idx = Math.floor(Math.random() * REWARD_MESSAGES.length);
+                    const reward_message = CLAIM_MESSAGES[text_idx].replace("{{USER}}", `<@${interaction.member.id}>`).replace("{{AMOUNT}}", targetAmount);
+
                     // Return the message to the user
                     return interaction.followUp({
-                        content: `Bye bye, removed **${targetAmount}** experience from <@${interaction.member.id}>!`,
+                        content: `${reward_message}`,
 
                     })
 
