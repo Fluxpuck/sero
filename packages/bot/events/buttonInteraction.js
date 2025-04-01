@@ -34,7 +34,8 @@ module.exports = async (client, interaction) => {
             // Check if the guild has already claimed the reward
             if (claimed) {
                 return interaction.followUp({
-                    content: `Sorry, you are just too late. This reward has already been claimed by someone else.`,
+                    content: "Congratulations! 🎉 You were too late! Better luck next time.", // 1st April
+                    // content: `Sorry, you are just too late. This reward has already been claimed by someone else.`,
                     flags: MessageFlags.Ephemeral
                 })
             } else {
@@ -43,7 +44,8 @@ module.exports = async (client, interaction) => {
                 // If the user is not in the collection, return a message
                 if (!activeMemberCollection.includes(interaction.member.id)) {
                     return interaction.followUp({
-                        content: `Sorry, you've not been active enough to claim this reward. Try again next time!`,
+                        content: "Congratulations! 🎉 You've not been active enough to claim this reward! Try to be more active next time 🤡", // 1st April
+                        // content: `Sorry, you've not been active enough to claim this reward. Try again next time!`,
                         flags: MessageFlags.Ephemeral
                     })
                 }
@@ -96,7 +98,7 @@ module.exports = async (client, interaction) => {
 
                     // Return the message to the user
                     return interaction.followUp({
-                        content: `Congratulations <@${interaction.member.id}>! You claimed **${targetAmount}** experience!`,
+                        content: `Congratulations <@${interaction.member.id}> 🎉 A total of **${targetAmount}** experience has been removed!`,
 
                     })
 
