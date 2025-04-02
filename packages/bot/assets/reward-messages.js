@@ -13,7 +13,7 @@ const CLAIM_MESSAGES = [
     "{{USER}} has the fastest fingers! They claimed **{{AMOUNT}}** experience.",
     "Faster than the furious! {{USER}} claimed **{{AMOUNT}}** experience.",
     "KACHOW ⚡ {{USER}} just claimed **{{AMOUNT}}** experience.",
-    "**{{AMOUNT}}** of experience has been claimed by {{USER}}.",
+    "Wow, **{{AMOUNT}}** of experience has been claimed by {{USER}}.",
     "A reward drop has been claimed by {{USER}}! They got **{{AMOUNT}}** experience.",
 ];
 
