@@ -9,12 +9,11 @@ const REWARD_MESSAGES = [
 ];
 
 const CLAIM_MESSAGES = [
-    "Congratulations {{USER}} 🎉 You've claimed **{{AMOUNT}}** experience.",
-    "{{USER}} has the fastest fingers! They claimed **{{AMOUNT}}** experience.",
-    "Faster than the furious! {{USER}} claimed **{{AMOUNT}}** experience.",
+    "Congratulations 🎉 {{USER}} claimed **{{AMOUNT}}** experience.",
+    "{{USER}} was faster than anyone else and claimed **{{AMOUNT}}** experience!",
+    "Faster than the furious! {{USER}}. You claimed **{{AMOUNT}}** experience.",
     "KACHOW ⚡ {{USER}} just claimed **{{AMOUNT}}** experience.",
     "Wow, **{{AMOUNT}}** of experience has been claimed by {{USER}}.",
-    "A reward drop has been claimed by {{USER}}! They got **{{AMOUNT}}** experience.",
 ];
 
 module.exports = { REWARD_MESSAGES, CLAIM_MESSAGES };
