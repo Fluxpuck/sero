@@ -88,7 +88,9 @@ export async function askClaude(
 
             // Reply with temporary response if Claude provided text
             if (textContent) {
-                await message.reply(sanitizeResponse(textContent));
+                await message.reply(sanitizeResponse(textContent)).catch((err) => {
+                    console.error('Error sending reply:', err);
+                });
             }
 
             try {
@@ -145,7 +147,9 @@ export async function askClaude(
                 // Update the stored history
                 updateConversationHistory(conversationKey, conversationHistory);
 
-                await message.reply(sanitizeResponse(finalResponse));
+                await message.reply(sanitizeResponse(finalResponse)).catch((err) => {
+                    console.error('Error sending reply:', err);
+                });
             }
             return finalResponse;
         }
