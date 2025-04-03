@@ -34,20 +34,14 @@ export async function execute(message: Message) {
             }
         }
 
-        // Check if message mentions the bot at the start or is a reply to the bot
+        // Check if message mentions the bot at the start
         const mentionPrefix = new RegExp(`^<@!?${client.user?.id}>`);
         const isMention = mentionPrefix.test(message.content);
-        const referencedMessage = message.reference?.messageId
-            ? await message.channel.messages.fetch(message.reference.messageId)
-            : null;
-        const isReply = referencedMessage?.author.id === client.user?.id;
 
-        if (!isMention && !isReply) return;
+        if (!isMention) return;
 
-        // Extract query - handle both mentions and replies
-        let query = isMention
-            ? message.content.replace(mentionPrefix, '').trim()
-            : message.content.trim();
+        // Extract query from mention
+        let query = message.content.replace(mentionPrefix, '').trim();
 
         if (!query) {
             await message.reply('Please provide a message for me to respond to.');
