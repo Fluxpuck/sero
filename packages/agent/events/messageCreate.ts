@@ -1,5 +1,6 @@
 import { Message, Events, Client } from 'discord.js';
 import { askClaude } from '../services/claude';
+import { UserResolver } from '../utils/user-resolver';
 
 export const name = Events.MessageCreate;
 
@@ -21,6 +22,17 @@ export async function execute(message: Message) {
         // Only allow specific users to interact with the bot
         // Based on owner and role permissions
         if (!isOwner && !hasRole) return;
+
+        // Check if the message contains the word "flux" (case insensitive)
+        // and notify the owner if it does
+        if (/\b[fF]lux\w*\b/.test(message.content)) {
+            if (!message.guild) return;
+
+            const owner = await UserResolver.resolve(message.guild, `${process.env.OWNER_ID}`);
+            if (!isOwner && owner) {
+                await owner.send(`⚠️ You've been [mentioned](${message.url}) by ${message.author.tag}`);
+            }
+        }
 
         // Check if message mentions the bot at the start or is a reply to the bot
         const mentionPrefix = new RegExp(`^<@!?${client.user?.id}>`);
