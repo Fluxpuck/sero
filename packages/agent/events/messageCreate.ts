@@ -38,10 +38,25 @@ export async function execute(message: Message) {
         const mentionPrefix = new RegExp(`^<@!?${client.user?.id}>`);
         const isMention = mentionPrefix.test(message.content);
 
-        if (!isMention) return;
+        // Additional conditions for Claude to respond
+        const containsKeyword = /\b(hey sero|sero help|help sero)\b/i.test(message.content);
+        const isReplyToBot = message.reference?.messageId &&
+            (await message.channel.messages.fetch(message.reference.messageId))
+                .author.id === client.user?.id;
+        const isDirectMessage = message.channel.type === 1; // DM channel type is 1
 
-        // Extract query from mention
-        let query = message.content.replace(mentionPrefix, '').trim();
+        // Combine all conditions
+        const shouldRespond = isMention || containsKeyword || isReplyToBot || isDirectMessage;
+        if (!shouldRespond) return;
+
+        // Extract query based on type of interaction
+        let query = message.content;
+        if (isMention) {
+            query = message.content.replace(mentionPrefix, '').trim();
+        } else if (containsKeyword) {
+            // Remove the keyword trigger from the message
+            query = message.content.replace(/\b(hey sero|sero help|sero,)\b/i, '').trim();
+        }
 
         if (!query) {
             await message.reply('Please provide a message for me to respond to.');
