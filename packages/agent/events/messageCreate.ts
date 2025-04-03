@@ -19,10 +19,6 @@ export async function execute(message: Message) {
         const hasRole = accessRoles.some(roleId => message.member?.roles.cache.has(roleId));
         const isOwner = message.author.id === process.env.OWNER_ID;
 
-        // Only allow specific users to interact with the bot
-        // Based on owner and role permissions
-        if (!isOwner && !hasRole) return;
-
         // Check if the message contains the word "flux" (case insensitive)
         // and notify the owner if it does
         if (/\b[fF]lux\w*\b/.test(message.content)) {
@@ -33,6 +29,10 @@ export async function execute(message: Message) {
                 await owner.send(`⚠️ You've been [mentioned](${message.url}) by ${message.author.tag}`);
             }
         }
+
+        // Only allow specific users to interact with the bot
+        // Based on owner and role permissions
+        if (!isOwner && !hasRole) return;
 
         // Check if message mentions the bot at the start
         const mentionPrefix = new RegExp(`^<@!?${client.user?.id}>`);
