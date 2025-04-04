@@ -21,7 +21,7 @@ export async function execute(message: Message) {
 
         // Check if the message contains the word "flux" (case insensitive)
         // and notify the owner if it does
-        if (/\b[fF]lux\w*\b/.test(message.content)) {
+        if (/\b[fF][lL][uU][xX]\w*\b/.test(message.content)) {
             if (!message.guild) return;
 
             const owner = await UserResolver.resolve(message.guild, `${process.env.OWNER_ID}`);
