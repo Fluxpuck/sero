@@ -22,11 +22,15 @@ const client = new Client({
 declare module 'discord.js' {
     export interface Client {
         commands: Collection<string, Command>;
+        ownerId: string;
     }
 }
 
 // Initialize commands collection
 client.commands = new Collection<string, Command>();
+
+// Set the owner ID from environment variables or default to '0'
+client.ownerId = process.env.OWNER_ID || '0';
 
 // Load events
 const loadEvents = (): void => {

@@ -17,14 +17,14 @@ export async function execute(message: Message) {
         // Check if user is owner or has the specific role
         const accessRoles = process.env.ACCESS_ROLE_ID?.split(',') || [];
         const hasRole = accessRoles.some(roleId => message.member?.roles.cache.has(roleId));
-        const isOwner = message.author.id === process.env.OWNER_ID;
+        const isOwner = client.ownerId === message.author.id;
 
         // Check if the message contains the word "flux" (case insensitive)
         // and notify the owner if it does
         if (/\b[fF][lL][uU][xX]\w*\b/.test(message.content)) {
             if (!message.guild) return;
 
-            const owner = await UserResolver.resolve(message.guild, `${process.env.OWNER_ID}`);
+            const owner = await UserResolver.resolve(message.guild, `${client.ownerId}`);
             if (!isOwner && owner) {
                 await owner.send(`⚠️ You've been [mentioned](${message.url}) by ${message.author.tag}`);
             }
