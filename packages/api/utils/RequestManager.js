@@ -1,7 +1,11 @@
 const { sequelize } = require('../database/sequelize');
 const { CreateError } = require('./ClassManager');
+const NodeCache = require('node-cache'); // You'll need to install this package
 
-const DEFAULT_TIMEOUT_MS = 10_000;
+const DEFAULT_TIMEOUT_MS = 30_000;
+
+// Create a cache with 5-minute TTL
+const cache = new NodeCache({ stdTTL: 300 });
 
 // Timeout function for requests
 const withTimeout = (promise, ms = DEFAULT_TIMEOUT_MS) => {
@@ -22,6 +26,12 @@ const withTransaction = async (callback) => {
         return result;
     } catch (error) {
         await t.rollback();
+
+        // If it's a timeout error, provide more specific information
+        if (error.message === 'Request has timed out') {
+            throw new Error('Database request timed out. The database may be overloaded or experiencing performance issues.');
+        }
+
         throw error;
     }
 };
@@ -51,8 +61,23 @@ const findAllRecords = async (model, options, timeout = DEFAULT_TIMEOUT_MS) => {
  * @returns 
  */
 const findOneRecord = async (model, options, timeout = DEFAULT_TIMEOUT_MS) => {
+    // Create a cache key based on model name and options
+    const cacheKey = `${model.name}_${JSON.stringify(options)}`;
+
+    // Check if result exists in cache
+    const cachedResult = cache.get(cacheKey);
+    if (cachedResult) {
+        return cachedResult;
+    }
+
     try {
         const result = await withTimeout(model.findOne(options), timeout);
+
+        // Store result in cache if found
+        if (result) {
+            cache.set(cacheKey, result);
+        }
+
         return result;
     } catch (error) {
         console.error(error, `findOneRecord`, model.name, options);

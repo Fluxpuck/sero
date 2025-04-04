@@ -65,10 +65,10 @@ module.exports = {
             const response = await instance.get('/');
             return response
         } catch (error) {
-            const { status = 408 } = error?.response;
+            const status = error?.response?.status || 408;
             const errorMessage = "An error occurred";
             return new CreateError(status, errorMessage, false);
         }
     }
 
-};
+}; 
