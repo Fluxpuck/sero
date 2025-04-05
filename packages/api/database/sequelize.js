@@ -22,12 +22,6 @@ function createSequelizeInstance() {
                 port: postgres_port,
                 dialect: 'postgres',
                 logging: false,
-                pool: {
-                    max: 10,        // Maximum number of connections
-                    min: 0,         // Minimum number of connections
-                    acquire: 30_000, // Maximum time to get a connection
-                    idle: 10_000     // Maximum idle time for a connection
-                }
             }
         );
         return sequelize;
