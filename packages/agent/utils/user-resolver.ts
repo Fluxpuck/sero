@@ -2,13 +2,9 @@ import { Snowflake, Collection, Guild, GuildMember } from 'discord.js';
 import { levenshteinDistance } from "../utils";
 
 interface UserSearchOptions {
-    /** Maximum number of results to return */
     limit?: number;
-    /** Fuzzy matching threshold (0-1) */
     fuzzyThreshold?: number;
-    /** Search across username, display name, and nickname */
     searchType?: 'all' | 'username' | 'displayName' | 'nickname';
-    /** Case-sensitive search */
     caseSensitive?: boolean;
 }
 
@@ -19,7 +15,7 @@ export class UserResolver {
     static async resolve(
         guild: Guild,
         input: string,
-        options: Partial<UserSearchOptions> = {}
+        options: UserSearchOptions = {}
     ): Promise<GuildMember | null> {
         const {
             fuzzyThreshold = 0.4,

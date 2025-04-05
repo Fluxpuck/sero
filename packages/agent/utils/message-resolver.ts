@@ -1,226 +1,200 @@
-import {
-    Client,
-    Message,
-    TextChannel,
-    DMChannel,
-    ThreadChannel,
-    Collection,
-    Guild,
-    ChannelType
-} from "discord.js";
+import { Message, Collection, Guild, } from "discord.js";
 import { ChannelResolver } from "./channel-resolver";
-import { UserResolver } from "./user-resolver";
+import { MessageFormat } from "../types/message.types";
+
+const MAX_FETCH_MESSAGES = 1_000; // Maximum of messages to fetch
+const MAX_TIMEOUT_MS = 5_000; // Maximum of time to wait for messages to be fetched
 
 type FilterOptions = {
+    inChannel?: string;
     fromUser?: string;
-    type?: "gif" | "url" | "media" | "sticker";
-    time?: {
-        before?: Date | string;
-        after?: Date | string;
-    };
     limit?: number;
+    mode?: "user" | "channel" | "auto";
 }
 
 export class MessageResolver {
-    /**
-     * Fetches messages from a channel with various filter options
-     * @param guild - Guild to fetch messages from
-     * @param options - Options to filter messages
-     * @returns Collection of messages that match the criteria
-     */
+
     static async fetchMessages(
         guild: Guild,
-        options: {
-            fromUser?: string;
-            inChannel?: string;
-            type?: "gif" | "url" | "media" | "sticker";
-            time?: {
-                before?: string;
-                after?: string;
-            };
-            limit?: number;
+        options: FilterOptions = {}
+    ): Promise<MessageFormat[] | null> {
+
+        const { inChannel, fromUser, limit = MAX_FETCH_MESSAGES, mode = "auto" } = options;
+
+        if (limit > MAX_FETCH_MESSAGES) {
+            throw new Error(`Cannot fetch more than ${MAX_FETCH_MESSAGES} messages at once`);
         }
-    ): Promise<Collection<string, Message>> {
-        const { fromUser, inChannel, type, time, limit = 100 } = options;
+
+        // Determine fetch mode
+        let fetchMode = mode;
+        if (fetchMode === 'auto') {
+            if (inChannel) {
+                fetchMode = 'channel';
+            } else if (fromUser) {
+                fetchMode = 'user';
+            }
+        }
 
         try {
-            // Resolve channel
-            let targetChannel: TextChannel | ThreadChannel | DMChannel | null = null;
+            switch (fetchMode) {
 
-            if (inChannel) {
-                const resolvedChannel = await ChannelResolver.resolve(guild, inChannel);
-
-                if (!resolvedChannel ||
-                    ![ChannelType.GuildText, ChannelType.DM, ChannelType.PublicThread,
-                    ChannelType.PrivateThread, ChannelType.GuildAnnouncement].includes(resolvedChannel.type)) {
-                    throw new Error(`Channel ${inChannel} not found or is not a text-based channel`);
-                }
-
-                targetChannel = resolvedChannel as TextChannel | ThreadChannel;
-            } else {
-                throw new Error("A channel must be specified");
-            }
-
-            // Resolve user if provided
-            let targetUser = null;
-            if (fromUser) {
-                targetUser = await UserResolver.resolve(guild, fromUser!);
-                if (!targetUser) {
-                    throw new Error(`User ${fromUser} not found`);
-                }
-            }
-
-            // Create fetch options
-            const fetchOptions: { limit: number; before?: string; after?: string } = {
-                limit: Math.min(limit, 100) // Discord API limit
-            };
-
-            // Add time filters
-            if (time) {
-                if (time.before) {
-                    const beforeDate = typeof time.before === 'string'
-                        ? new Date(time.before)
-                        : time.before;
-
-                    if (!isNaN(beforeDate.getTime())) {
-                        fetchOptions.before = beforeDate.getTime().toString();
+                case 'channel':
+                    if (!inChannel) {
+                        console.error('Channel ID is required for channel mode');
+                        return null;
                     }
-                }
+                    const channelMessages = await this.fetchChannelMessages(guild, inChannel, limit);
+                    return channelMessages?.map(msg => this.formatMessage(msg)) ?? [];
 
-                if (time.after) {
-                    const afterDate = typeof time.after === 'string'
-                        ? new Date(time.after)
-                        : time.after;
-
-                    if (!isNaN(afterDate.getTime())) {
-                        fetchOptions.after = afterDate.getTime().toString();
+                case 'user':
+                    if (!fromUser) {
+                        console.error('User ID is required for user mode');
+                        throw new Error('User ID is required for user mode');
                     }
-                }
+                    const userMessages = await this.fetchUserMessages(guild, fromUser, limit);
+                    return userMessages?.map(msg => this.formatMessage(msg)) ?? [];
+
+                default:
+                    console.error('Invalid fetch mode:', fetchMode);
+                    return null;
+
+            }
+        } catch (error) {
+            console.error('Error in fetchMessages:', error);
+            return null;
+        }
+    }
+
+
+
+    private static async fetchChannelMessages(guild: Guild, channelId: string, limit: number): Promise<Message[] | null> {
+        try {
+            const channel = await ChannelResolver.resolve(guild, channelId);
+            if (!channel || !channel.isTextBased()) {
+                return null;
             }
 
-            // Fetch messages
-            const messages = await targetChannel.messages.fetch(fetchOptions);
+            const startTime = Date.now();
+            const allMessages = [];
+            let lastMessageId = null;
+            let remaining = limit;
 
-            // Apply filters
-            return this.filterMessages(messages, {
-                fromUser: targetUser?.id,
-                type,
-                time: {
-                    before: time?.before ? new Date(time.before) : undefined,
-                    after: time?.after ? new Date(time.after) : undefined
-                },
-                limit
-            });
+            // Loop until we have enough messages or there are no more to fetch
+            while (remaining > 0) {
+
+                // Check for timeout
+                if (Date.now() - startTime >= MAX_TIMEOUT_MS) {
+                    break;
+                }
+
+                // Calculate batch size (max 100 per Discord API limits)
+                const fetchLimit = Math.min(remaining, 100);
+
+                // Fetch the messages + options
+                const options = { limit: fetchLimit, ...(lastMessageId && { before: lastMessageId }) };
+                const messages = await channel.messages.fetch(options) as Collection<string, Message>;
+
+                // If no messages were returned, we're done
+                if (messages.size === 0) break;
+
+                // Add messages to our collection and update counters
+                allMessages.push(...Array.from(messages.values()));
+                remaining -= messages.size;
+
+                // Update lastMessageId for pagination
+                lastMessageId = messages.last()?.id;
+
+                // If we didn't get a full page, no need to fetch more
+                if (messages.size < fetchLimit) break;
+            }
+
+            return allMessages;
 
         } catch (error) {
-            console.error(`Failed to fetch messages: ${error instanceof Error ? error.message : 'Unknown error'}`);
-            return new Collection<string, Message>();
+            console.error('Error in fetchChannelMessages:', error);
+            return null;
         }
     }
 
-    /**
-     * Filter messages based on criteria
-     * @param messages - Collection of messages to filter
-     * @param options - Filter options
-     * @returns Filtered collection of messages
-     */
-    static filterMessages(
-        messages: Collection<string, Message>,
-        options: FilterOptions
-    ): Collection<string, Message> {
-        const { fromUser, type, time, limit } = options;
 
-        let filtered = messages;
+    private static async fetchUserMessages(guild: Guild, userId: string, limit: number): Promise<Message[] | null> {
+        try {
+            const textChannels = await ChannelResolver.resolveAll(guild);
 
-        // Filter by user
-        if (fromUser) {
-            filtered = filtered.filter(msg => msg.author.id === fromUser);
-        }
+            const startTime = Date.now();
+            let userMessages = [];
+            let remaining = limit;
 
-        // Filter by message type
-        if (type) {
-            filtered = filtered.filter(msg => {
-                switch (type) {
-                    case 'gif':
-                        return msg.content.includes('tenor.com/view/') ||
-                            msg.content.includes('media.tenor.com/') ||
-                            (msg.embeds.length > 0 && msg.embeds.some(e =>
-                                e.url && (e.url.endsWith('.gif'))
-                            ));
+            // Iterate through each channel to collect user messages
+            for (const channel of textChannels.values()) {
+                if (remaining <= 0) break;
 
-                    case 'url':
-                        const urlRegex = /(https?:\/\/[^\s]+)/g;
-                        return urlRegex.test(msg.content) ||
-                            (msg.embeds.length > 0 && msg.embeds.some(e => e.url));
+                let lastMessageId = null;
+                let fetchMore = true;
 
-                    case 'media':
-                        return (msg.attachments.size > 0 &&
-                            msg.attachments.some(a =>
-                                a.contentType?.startsWith('image/') ||
-                                a.contentType?.startsWith('video/')
-                            ))
+                while (fetchMore && remaining > 0) {
 
-                    case 'sticker':
-                        return msg.stickers && msg.stickers.size > 0;
+                    if (!channel.isTextBased()) continue; // Continue to the next channel if not text-based
 
-                    default:
-                        return true;
+                    // Check for timeout
+                    if (Date.now() - startTime >= MAX_TIMEOUT_MS) {
+                        break;
+                    }
+
+                    // Fetch the messages + options
+                    const options = { limit: 100, ...(lastMessageId && { before: lastMessageId }) };
+                    const messages = await channel.messages.fetch(options) as Collection<string, Message>;
+
+                    // If no messages were returned, move to next channel
+                    if (messages.size === 0) {
+                        fetchMore = false;
+                        continue;
+                    }
+
+                    // Filter messages by the specified user
+                    const userMsgs = messages.filter(msg => msg.author.id === userId);
+
+                    // Add filtered messages to our collection
+                    userMessages.push(...Array.from(userMsgs.values()));
+                    remaining -= userMsgs.size;
+
+                    // Update lastMessageId for pagination
+                    lastMessageId = messages.last()?.id;
+
+                    // If we didn't get a full page, no need to fetch more
+                    if (messages.size < 100) {
+                        fetchMore = false;
+                    }
+
+                    // Don't exceed rate limits
+                    await new Promise(resolve => setTimeout(resolve, 250));
                 }
-            });
-        }
-
-        // Filter by time
-        if (time) {
-            if (time.before) {
-                filtered = filtered.filter(msg => msg.createdAt < time.before!);
             }
 
-            if (time.after) {
-                filtered = filtered.filter(msg => msg.createdAt > time.after!);
-            }
+            // Limit to exactly the requested number of messages
+            userMessages = userMessages.slice(0, limit);
+
+            return userMessages;
+
+        } catch (error) {
+            console.error('Error in fetchUserMessages:', error);
+            return null;
         }
-
-        // Apply limit
-        if (limit && limit < filtered.size) {
-            const limitedMessages = new Collection<string, Message>();
-            let i = 0;
-
-            for (const [id, message] of filtered) {
-                if (i >= limit) break;
-                limitedMessages.set(id, message);
-                i++;
-            }
-
-            return limitedMessages;
-        }
-
-        return filtered;
     }
+
+
+
+
+
+
+
 
     /**
      * Format a message for display
      * @param message - Message to format
      * @returns Formatted message object
      */
-    static formatMessage(message: Message): {
-        id: string;
-        content: string;
-        author: {
-            id: string;
-            username: string;
-            displayName: string;
-        };
-        attachments: Array<{ name: string; url: string; contentType?: string }>;
-        embeds: Array<any>;
-        timestamp: Date;
-        channelId: string;
-        hasStickers: boolean;
-        reference?: {
-            messageId?: string;
-            channelId?: string;
-            guildId?: string;
-        };
-    } {
+    static formatMessage(message: Message): MessageFormat {
         return {
             id: message.id,
             content: message.content,
