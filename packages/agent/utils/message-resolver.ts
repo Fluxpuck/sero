@@ -21,6 +21,11 @@ export class MessageResolver {
 
         const { inChannel, fromUser, limit = MAX_FETCH_MESSAGES, mode = "auto" } = options;
 
+        if (!inChannel) {
+            console.error('Channel ID is required for channel mode');
+            return null;
+        }
+
         if (limit > MAX_FETCH_MESSAGES) {
             throw new Error(`Cannot fetch more than ${MAX_FETCH_MESSAGES} messages at once`);
         }
@@ -39,11 +44,7 @@ export class MessageResolver {
             switch (fetchMode) {
 
                 case 'channel':
-                    if (!inChannel) {
-                        console.error('Channel ID is required for channel mode');
-                        return null;
-                    }
-                    const channelMessages = await this.fetchChannelMessages(guild, inChannel, limit);
+                    const channelMessages = await this.resolve(guild, inChannel, limit);
                     return channelMessages?.map(msg => this.formatMessage(msg)) ?? [];
 
                 case 'user':
@@ -51,7 +52,9 @@ export class MessageResolver {
                         console.error('User ID is required for user mode');
                         throw new Error('User ID is required for user mode');
                     }
-                    const userMessages = await this.fetchUserMessages(guild, fromUser, limit);
+
+                    const message = await this.resolve(guild, inChannel, limit * 2);
+                    const userMessages = message?.filter(msg => msg.author.id === fromUser);
                     return userMessages?.map(msg => this.formatMessage(msg)) ?? [];
 
                 default:
@@ -65,9 +68,7 @@ export class MessageResolver {
         }
     }
 
-
-
-    private static async fetchChannelMessages(guild: Guild, channelId: string, limit: number): Promise<Message[] | null> {
+    private static async resolve(guild: Guild, channelId: string, limit: number): Promise<Message[] | null> {
         try {
             const channel = await ChannelResolver.resolve(guild, channelId);
             if (!channel || !channel.isTextBased()) {
@@ -116,79 +117,6 @@ export class MessageResolver {
         }
     }
 
-
-    private static async fetchUserMessages(guild: Guild, userId: string, limit: number): Promise<Message[] | null> {
-        try {
-            const textChannels = await ChannelResolver.resolveAll(guild);
-
-            const startTime = Date.now();
-            let userMessages = [];
-            let remaining = limit;
-
-            // Iterate through each channel to collect user messages
-            for (const channel of textChannels.values()) {
-                if (remaining <= 0) break;
-
-                let lastMessageId = null;
-                let fetchMore = true;
-
-                while (fetchMore && remaining > 0) {
-
-                    if (!channel.isTextBased()) continue; // Continue to the next channel if not text-based
-
-                    // Check for timeout
-                    if (Date.now() - startTime >= MAX_TIMEOUT_MS) {
-                        break;
-                    }
-
-                    // Fetch the messages + options
-                    const options = { limit: 100, ...(lastMessageId && { before: lastMessageId }) };
-                    const messages = await channel.messages.fetch(options) as Collection<string, Message>;
-
-                    // If no messages were returned, move to next channel
-                    if (messages.size === 0) {
-                        fetchMore = false;
-                        continue;
-                    }
-
-                    // Filter messages by the specified user
-                    const userMsgs = messages.filter(msg => msg.author.id === userId);
-
-                    // Add filtered messages to our collection
-                    userMessages.push(...Array.from(userMsgs.values()));
-                    remaining -= userMsgs.size;
-
-                    // Update lastMessageId for pagination
-                    lastMessageId = messages.last()?.id;
-
-                    // If we didn't get a full page, no need to fetch more
-                    if (messages.size < 100) {
-                        fetchMore = false;
-                    }
-
-                    // Don't exceed rate limits
-                    await new Promise(resolve => setTimeout(resolve, 250));
-                }
-            }
-
-            // Limit to exactly the requested number of messages
-            userMessages = userMessages.slice(0, limit);
-
-            return userMessages;
-
-        } catch (error) {
-            console.error('Error in fetchUserMessages:', error);
-            return null;
-        }
-    }
-
-
-
-
-
-
-
-
     /**
      * Format a message for display
      * @param message - Message to format
@@ -216,11 +144,6 @@ export class MessageResolver {
             timestamp: message.createdAt,
             channelId: message.channelId,
             hasStickers: message.stickers.size > 0,
-            reference: message.reference ? {
-                messageId: message.reference.messageId,
-                channelId: message.reference.channelId,
-                guildId: message.reference.guildId
-            } : undefined
         };
     }
 }

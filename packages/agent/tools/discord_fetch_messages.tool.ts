@@ -37,7 +37,7 @@ export class DiscordFetchMessagesTool extends ClaudeToolType {
                         description: "The mode of fetching messages. 'user' for user messages, 'channel' for channel messages, and 'auto' for automatic detection.",
                     },
                 },
-                required: [],
+                required: ["inChannel"],
             },
         }
     }
