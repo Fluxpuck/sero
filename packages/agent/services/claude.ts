@@ -220,9 +220,17 @@ export async function askClaudeCommand(
             // Update the stored history
             updateConversationHistory(conversationKey, conversationHistory);
 
-            await interaction.reply(sanitizeResponse(finalResponse)).catch((err) => {
-                console.error('Error sending reply:', err);
-            });
+            // Check if the interaction is deferred and use the appropriate method
+            if (interaction.deferred) {
+                await interaction.editReply({ content: sanitizeResponse(finalResponse) }).catch((err) => {
+                    console.error('Error editing reply:', err);
+                });
+            } else {
+                await interaction.reply({ content: sanitizeResponse(finalResponse), ephemeral: true }).catch((err) => {
+                    console.error('Error sending reply:', err);
+                });
+            }
+
         }
         return finalResponse;
 
@@ -231,6 +239,18 @@ export async function askClaudeCommand(
         deleteConverstationHistory(conversationKey);
 
         console.error('Error calling Claude API:', error);
+
+        // Try to send error message if the interaction hasn't timed out
+        try {
+            if (interaction.deferred) {
+                await interaction.editReply({ content: "Sorry, I encountered an error while processing your request." });
+            } else {
+                await interaction.reply({ content: "Sorry, I encountered an error while processing your request.", ephemeral: true });
+            }
+        } catch (replyError) {
+            console.error('Error sending error response:', replyError);
+        }
+
         throw error;
     }
 
