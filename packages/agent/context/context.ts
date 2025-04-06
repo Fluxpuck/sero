@@ -33,14 +33,16 @@ The current channel is **{{channelName}}** (id: {{channelId}}).
 `;
 
 export const toolsContext = `
-# Further Tools Context
-
-- Provide a clear and concise response to user queries without introductory phrases.
-- Never mention the tool name in the response.
-- Avoid sending follow-up messages, unless necessary.
-- IMPORTANT! Do NOT execute the task before the scheduled date and time when utilizing task_scheduler!.
+# Claude Tool Context'
+- When you do not have the answer to a question, provide a polite response indicating that you don't have the information.
+- If you don't have the tool available, inform the user that you cannot help them with that specific request.
 - Always convert time or duration to a human-readable format (e.g., "5 minutes" or "1hr and 15 minutes").
-- Disconnecting a user does not require a reason, but if one is provided, it should be included in the response.
+- Avoid mentioning the tool name in your responses.
+- Avoid sending follow-up messages unless necessary.
+
+# Specific Tool Context
+- Important! Do NOT execute the task before the scheduled date and time when utilizing task_scheduler!.
+- Disconnecting a user does not require a reason.
 - Only utilize discord_fetch_messages.tool if the user explicitly requests it!
 `;
 
