@@ -5,6 +5,7 @@ import path from 'path';
 import { Client, Collection, GatewayIntentBits } from 'discord.js';
 import { Command } from './types/command.types';
 import { Event } from './types/event.types';
+import NodeCache from 'node-cache';
 
 dotenv.config({ path: path.join(__dirname, '.', 'config', '.env') });
 
@@ -22,12 +23,14 @@ const client = new Client({
 declare module 'discord.js' {
     export interface Client {
         commands: Collection<string, Command>;
+        cooldowns: NodeCache;
         ownerId: string;
     }
 }
 
-// Initialize commands collection
+// Initialize additional client collections
 client.commands = new Collection<string, Command>();
+client.cooldowns = new NodeCache();
 
 // Set the owner ID from environment variables or default to '0'
 client.ownerId = process.env.OWNER_ID || '0';
