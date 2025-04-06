@@ -15,7 +15,11 @@ const command: Command = {
                 .setRequired(true)
         ) as SlashCommandBuilder,
 
+    cooldown: 5,
+
     async execute(interaction: ChatInputCommandInteraction) {
+        await interaction.deferReply({ ephemeral: true });
+
         // Forward the prompt to Claude
         const prompt = interaction.options.getString('prompt', true);
         await askClaudeCommand(prompt, interaction);
