@@ -49,10 +49,11 @@ export async function askClaude(
             .replace('{{date}}', new Date().toLocaleDateString())
             .replace('{{time}}', new Date().toLocaleTimeString())
             .replace('{{guildName}}', message.guild?.name ?? 'private')
-            .replace('{{channelId}}', message.channel.id)
+            .replace('{{guildId}}', message.guild?.id ?? 'private')
+            .replace(`{{username}}`, message.author.username)
+            .replace(`{{userId}}`, message.author.id)
             .replace('{{channelName}}', 'name' in message.channel && message.channel.name ? message.channel.name : 'Direct Message')
-            .replace('{{userId}}', message.author.id)
-            .replace('{{username}}', message.author.username);
+            .replace('{{channelId}}', message.channel.id)
 
         // Get the conversation history
         let conversationHistory = getConversationHistory(conversationKey) || [];

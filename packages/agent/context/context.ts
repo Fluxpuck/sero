@@ -32,7 +32,7 @@ The current channel is **{{channelName}}** (id: {{channelId}}).
 - Avoid using bullets or lists unless it's a list of items or steps.
 `;
 
-export const discordInteractionContext = `
+export const toolsContext = `
 # Further Tools Context
 
 - Provide a clear and concise response to user queries without introductory phrases.
