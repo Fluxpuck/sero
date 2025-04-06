@@ -1,10 +1,13 @@
 import Anthropic from '@anthropic-ai/sdk';
-import { Message } from 'discord.js';
+import { Message, ChatInputCommandInteraction } from 'discord.js';
 import { sanitizeResponse } from '../utils';
 import { executeTool, initializeTools } from '../services/tools';
 
 // Gather the about me and discord guidelines context for the AI assistant
-import { seroAgentDescription, discordContext, toolsContext } from '../context/context';
+import {
+    seroAgentDescription, discordContext, toolsContext,
+    SSundeeRules, SSundeeInformation, SSundeeFAQ
+} from '../context/context';
 
 // Gather the Tool Contexts
 import { DiscordSendMessageToolContext } from '../tools/discord_send_message.tool';
@@ -23,10 +26,6 @@ import {
     deleteConverstationHistory
 } from '../services/history';
 
-const CLAUDE_MODEL = 'claude-3-5-haiku-20241022';
-const SYSTEM_PROMPT = `${seroAgentDescription} \n ${discordContext} \n ${toolsContext}`;
-const MAX_TOKENS = 1024;
-
 // Initialize the client with your API key
 const anthropic = new Anthropic({
     apiKey: process.env.ANTHROPIC_API_KEY,
@@ -35,8 +34,12 @@ const anthropic = new Anthropic({
 export async function askClaude(
     prompt: string,
     message: Message,
-    previousMessages: any[] = []
+    previousMessages: any[] = [],
 ): Promise<string | undefined> {
+
+    const CLAUDE_MODEL = 'claude-3-5-haiku-20241022';
+    const SYSTEM_PROMPT = `${seroAgentDescription} \n ${discordContext} \n ${toolsContext}`;
+    const MAX_TOKENS = 1024;
 
     // Create a unique key for the conversation based on channel and user ID
     const conversationKey = createConversationKey(message.channel.id, message.author.id);
@@ -161,4 +164,74 @@ export async function askClaude(
         console.error('Error calling Claude API:', error);
         throw error;
     }
+}
+
+export async function askClaudeCommand(
+    prompt: string,
+    interaction: ChatInputCommandInteraction,
+    previousMessages: any[] = [],
+): Promise<string | undefined> {
+
+    const CLAUDE_MODEL = 'claude-3-5-haiku-20241022';
+    const SYSTEM_PROMPT = `${seroAgentDescription} \n ${discordContext} \n ${SSundeeRules} \n ${SSundeeInformation} \n ${SSundeeFAQ}`;
+    const MAX_TOKENS = 256;
+
+    // Create a unique key for the conversation based on channel and user ID
+    const conversationKey = createConversationKey(interaction.channelId, interaction.user.id);
+
+    try {
+        const systemPrompt = SYSTEM_PROMPT
+            .replace('{{date}}', new Date().toLocaleDateString())
+            .replace('{{time}}', new Date().toLocaleTimeString())
+            .replace('{{guildName}}', interaction.guild?.name ?? 'private')
+            .replace('{{guildId}}', interaction.guild?.id ?? 'private')
+            .replace(`{{username}}`, interaction.user.username)
+            .replace(`{{userId}}`, interaction.user.id)
+            .replace('{{channelName}}', interaction.channel && 'name' in interaction.channel && interaction.channel.name ? interaction.channel.name : 'Direct Message')
+            .replace('{{channelId}}', interaction.channelId)
+
+        // Get the conversation history
+        let conversationHistory = getConversationHistory(conversationKey) || [];
+
+        if (previousMessages.length > 0) {
+            conversationHistory = previousMessages;
+        } else if (prompt) {
+            conversationHistory.push({ role: 'user', content: prompt });
+        }
+
+        // Call the Claude API
+        const response = await anthropic.messages.create({
+            model: CLAUDE_MODEL,
+            max_tokens: MAX_TOKENS,
+            system: systemPrompt,
+            messages: conversationHistory,
+        });
+
+        // Get final response
+        const finalResponse = response.content.find(c => c.type === "text")?.text ?? "";
+
+        if (finalResponse) {
+            // Add assistant's response to conversation history
+            conversationHistory.push({
+                role: 'assistant',
+                content: finalResponse
+            });
+
+            // Update the stored history
+            updateConversationHistory(conversationKey, conversationHistory);
+
+            await interaction.reply(sanitizeResponse(finalResponse)).catch((err) => {
+                console.error('Error sending reply:', err);
+            });
+        }
+        return finalResponse;
+
+    } catch (error) {
+        // Delete conversation history on error
+        deleteConverstationHistory(conversationKey);
+
+        console.error('Error calling Claude API:', error);
+        throw error;
+    }
+
 }
