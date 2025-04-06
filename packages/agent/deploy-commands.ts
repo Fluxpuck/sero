@@ -5,7 +5,7 @@ import fs from 'fs';
 import path from 'path';
 import { Command } from './types/command.types';
 
-dotenv.config();
+dotenv.config({ path: path.join(__dirname, '.', 'config', '.env') });
 
 const commands: any[] = [];
 const commandsPath: string = path.join(__dirname, 'commands');
