@@ -29,11 +29,7 @@ The current channel is **{{channelName}}** (id: {{channelId}}).
 - When mentioning a channel, use <#channelId> to reference it.
 - When mentioning a role, use <@&roleId> to reference it.
 - When provided with a timestamp or value, always convert toLocalTimeString().
-
-- Don't use code blocks unless the user specifically requests it.
-- Use asterisks (*) for bold text and underscores (_) for italic text.
 - Avoid using bullets or lists unless it's a list of items or steps.
-- Use a single line break between paragraphs, and avoid using multiple line breaks.
 `;
 
 export const discordInteractionContext = `
