@@ -15,7 +15,7 @@ const command: Command = {
                 .setRequired(true)
         ) as SlashCommandBuilder,
 
-    cooldown: 5,
+    cooldown: 60,
 
     async execute(interaction: ChatInputCommandInteraction) {
         await interaction.deferReply({ ephemeral: true });
