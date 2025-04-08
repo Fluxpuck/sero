@@ -5,7 +5,7 @@ import { executeTool, initializeTools } from '../services/tools';
 
 // Gather the about me and discord guidelines context for the AI assistant
 import {
-    seroAgentDescription, discordContext, toolsContext,
+    seroAgentDescription, discordContext, toolsContext, disclosedContext,
     SSundeeRules, SSundeeInformation, SSundeeFAQ
 } from '../context/context';
 
@@ -38,7 +38,14 @@ export async function askClaude(
 ): Promise<string | undefined> {
 
     const CLAUDE_MODEL = 'claude-3-5-haiku-20241022';
-    const SYSTEM_PROMPT = `${seroAgentDescription} \n ${discordContext} \n ${toolsContext}`;
+    const SYSTEM_PROMPT = `
+    ${seroAgentDescription} \n 
+    ${discordContext} \n 
+    ${toolsContext} \n 
+    ${disclosedContext} \n 
+    ${SSundeeRules} \n 
+    ${SSundeeInformation} \n 
+    ${SSundeeFAQ}`;
     const MAX_TOKENS = 1024;
 
     // Create a unique key for the conversation based on channel and user ID
