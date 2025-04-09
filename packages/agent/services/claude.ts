@@ -250,9 +250,13 @@ export async function askClaudeCommand(
         // Try to send error message if the interaction hasn't timed out
         try {
             if (interaction.deferred) {
-                await interaction.editReply({ content: "Sorry, I encountered an error while processing your request." });
+                await interaction.editReply({ content: "Sorry, I encountered an error while processing your request." }).catch((err) => {
+                    console.error('Error editing reply:', err);
+                });
             } else {
-                await interaction.reply({ content: "Sorry, I encountered an error while processing your request.", ephemeral: true });
+                await interaction.reply({ content: "Sorry, I encountered an error while processing your request.", ephemeral: true }).catch((err) => {
+                    console.error('Error sending reply:', err);
+                });
             }
         } catch (replyError) {
             console.error('Error sending error response:', replyError);
