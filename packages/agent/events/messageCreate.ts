@@ -104,19 +104,13 @@ export async function execute(message: Message) {
 
                 // Create contextual query for Claude to evaluate with moderation focus
                 const prompt = `
-I'm Sero, the autonomous moderator of this Discord server. I've detected a potential rule violation:
+I've detected a potential rule violation:
 
 Rule violation category: ${ruleViolation}
 Severity: ${violationSeverity}/10
 
 Recent conversation:
 ${conversationContext}
-
-As the server's moderation bot, I need to enforce the server rules. I should:
-1. Identify which specific rule is being violated
-2. Explain the rule violation clearly and professionally
-3. Remind users of the appropriate behavior
-4. Take moderation action if necessary (for severe violations)
 
 I'll respond now as Sero the moderation bot to address this situation.
 `;
