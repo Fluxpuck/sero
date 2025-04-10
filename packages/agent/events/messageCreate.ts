@@ -1,15 +1,22 @@
-import { Message, Events, Client, Collection, TextChannel } from 'discord.js';
+import { Message, Events, Client } from 'discord.js';
 import { askClaude } from '../services/claude';
 import { UserResolver } from '../utils/user-resolver';
+import NodeCache from 'node-cache';
 
-// Store recent messages per channel for context analysis
-const recentMessages = new Map<string, Message[]>();
+// Replace Maps with NodeCache instances for automatic TTL handling
+const recentMessagesCache = new NodeCache({
+    stdTTL: 600, // 10 minutes in seconds
+    checkperiod: 60, // Check for expired keys every minute
+    useClones: false // Store references for better performance
+});
+
+// Cooldown cache with shorter TTL
+const autoResponseCooldownCache = new NodeCache({
+    stdTTL: 180, // 3 minutes in seconds
+    checkperiod: 30, // Check for expired keys every 30 seconds
+});
+
 const MAX_CONTEXT_MESSAGES = 10;
-const CONTEXT_EXPIRY_MS = 10 * 60 * 1000; // 10 minutes
-
-// Cooldown for auto-responses to prevent excessive intervention
-const autoResponseCooldowns = new Map<string, number>();
-const AUTO_RESPONSE_COOLDOWN_MS = 3 * 60 * 1000; // 3 minutes
 
 export const name = Events.MessageCreate;
 
@@ -74,59 +81,69 @@ export async function execute(message: Message) {
             return;
         }
 
-        // Only proceed with auto-response for authorized users
-        if (!isOwner && !hasRole) return;
-
+        // Process autonomous moderation for all messages
         // Check if we're on cooldown for this channel
         const channelCooldownKey = message.channelId;
-        const now = Date.now();
-        const cooldownExpiry = autoResponseCooldowns.get(channelCooldownKey);
-        if (cooldownExpiry && now < cooldownExpiry) {
-            return; // Still on cooldown
-        }
 
-        // Check if we should auto-respond based on context
-        const shouldAutoRespond = await evaluateContextForAutoResponse(message);
+        // With NodeCache, we just check if the key exists - if not, the cooldown has expired
+        const isOnCooldown = autoResponseCooldownCache.has(channelCooldownKey);
 
-        if (shouldAutoRespond) {
-            // Set cooldown
-            autoResponseCooldowns.set(channelCooldownKey, now + AUTO_RESPONSE_COOLDOWN_MS);
+        // Always check for rule violations, but only proceed with moderation actions
+        // if not on cooldown and user is not exempt from moderation
+        const { shouldModerate, ruleViolation, violationSeverity } = await evaluateContextForModeration(message);
 
-            // Get recent conversation context
-            const contextMessages = getContextForChannel(message.channelId);
-            const conversationContext = compileConversationContext(contextMessages);
+        // For moderators and owners, we still check but don't enforce automatically
+        if (shouldModerate && (!isOwner && !hasRole)) {
+            if (!isOnCooldown) {
+                // Set cooldown (NodeCache handles TTL automatically)
+                autoResponseCooldownCache.set(channelCooldownKey, true);
 
-            // Create contextual query for Claude to evaluate
-            const prompt = `
-I'm monitoring this conversation and I notice it might need my input:
+                // Get recent conversation context
+                const contextMessages = getContextForChannel(message.channelId);
+                const conversationContext = compileConversationContext(contextMessages);
 
+                // Create contextual query for Claude to evaluate with moderation focus
+                const prompt = `
+I'm Sero, the autonomous moderator of this Discord server. I've detected a potential rule violation:
+
+Rule violation category: ${ruleViolation}
+Severity: ${violationSeverity}/10
+
+Recent conversation:
 ${conversationContext}
 
-Should I respond to help this conversation? If I should respond, provide assistance based on the conversation context. If I should not intervene, simply reply with "I don't need to intervene right now."
+As the server's moderation bot, I need to enforce the server rules. I should:
+1. Identify which specific rule is being violated
+2. Explain the rule violation clearly and professionally
+3. Remind users of the appropriate behavior
+4. Take moderation action if necessary (for severe violations)
+
+I'll respond now as Sero the moderation bot to address this situation.
 `;
 
-            // Let Claude decide whether to respond
-            await askClaude(prompt, message);
+                // Let Claude decide how to respond and potentially use moderation tools
+                await askClaude(prompt, message);
+            }
         }
 
     } catch (error) {
         console.error('Error in messageCreate:', error);
-        await message.reply('Sorry, I encountered an error while processing your request. Please try again later.');
+        // Don't send error messages for autonomous functions to avoid confusion
     }
 }
 
 /**
- * Stores a message in the context history for its channel
+ * Stores a message in the context history for its channel using NodeCache
  */
 function storeMessageInContext(message: Message): void {
     if (!message.content?.trim()) return; // Skip empty messages
 
     const channelId = message.channelId;
-    if (!recentMessages.has(channelId)) {
-        recentMessages.set(channelId, []);
-    }
 
-    const channelMessages = recentMessages.get(channelId)!;
+    // Get existing messages or create new array
+    const channelMessages: Message[] = recentMessagesCache.get(channelId) || [];
+
+    // Add new message
     channelMessages.push(message);
 
     // Trim to keep only the most recent messages
@@ -134,26 +151,16 @@ function storeMessageInContext(message: Message): void {
         channelMessages.shift();
     }
 
-    // Clean up old messages periodically
-    setTimeout(() => {
-        if (recentMessages.has(channelId)) {
-            const messages = recentMessages.get(channelId)!;
-            const now = Date.now();
-            const filtered = messages.filter(m => now - m.createdTimestamp < CONTEXT_EXPIRY_MS);
-            if (filtered.length > 0) {
-                recentMessages.set(channelId, filtered);
-            } else {
-                recentMessages.delete(channelId);
-            }
-        }
-    }, CONTEXT_EXPIRY_MS);
+    // Store updated array back in cache
+    // TTL is handled by NodeCache configuration
+    recentMessagesCache.set(channelId, channelMessages);
 }
 
 /**
- * Gets the stored messages for a channel
+ * Gets the stored messages for a channel from NodeCache
  */
 function getContextForChannel(channelId: string): Message[] {
-    return recentMessages.get(channelId) || [];
+    return recentMessagesCache.get(channelId) || [];
 }
 
 /**
@@ -166,50 +173,68 @@ function compileConversationContext(messages: Message[]): string {
 }
 
 /**
- * Analyzes the recent conversation to determine if Sero should automatically respond
+ * Analyzes the recent conversation to determine if Sero should perform moderation actions
+ * Returns both the decision and the detected rule violation information
  */
-async function evaluateContextForAutoResponse(message: Message): Promise<boolean> {
+async function evaluateContextForModeration(message: Message): Promise<{
+    shouldModerate: boolean;
+    ruleViolation: string;
+    violationSeverity: number;
+}> {
     // Get recent messages for context
     const contextMessages = getContextForChannel(message.channelId);
-    if (contextMessages.length < 3) return false; // Need at least 3 messages for context
+    if (contextMessages.length < 2) {
+        return { shouldModerate: false, ruleViolation: '', violationSeverity: 0 };
+    }
 
     // Count unique users to determine if it's an active conversation
     const uniqueUsers = new Set(contextMessages.map(m => m.author.id));
-    const isActiveConversation = uniqueUsers.size >= 2;
-    if (!isActiveConversation) return false;
 
-    // Check for potential rule violation indicators
+    // Rule violation patterns aligned with SSundee's Community Rules
     const ruleViolationPatterns = [
-        // Toxic behavior patterns
-        { pattern: /\b(fuck|shit|damn|bitch|ass|\*\*\*\*|wtf|stfu)\b/i, weight: 2 },
-        { pattern: /\b(idiot|moron|stupid|dumb|retard)\b/i, weight: 2 },
+        // Communication rules
+        { pattern: /\b(fuck|shit|damn|bitch|ass|\*\*\*\*|wtf|stfu|dick|pussy)\b/i, weight: 4, category: "Cursing/Profanity" },
+        { pattern: /(.)\1{5,}/i, weight: 2, category: "Spam" }, // Repeated characters
+        { pattern: /(.).?\1.?\1.?\1.?\1/i, weight: 2, category: "Spam" }, // Spam patterns
+        { pattern: /\b(أ|ب|ت|ث|ج|ح|خ|د|ذ|ر|ز|س|ش|ص|ض|ط|ظ|ع|غ|ف|ق|ك|ل|م|ن|ه|و|ي|а|б|в|г|д|е|ё|ж|з|и|й|к|л|м|н|о|п|р|с|т|у|ф|х|ц|ч|ш|щ|ъ|ы|ь|э|ю|я)\b/i, weight: 3, category: "Non-English Communication" },
 
-        // Harassment/targeting patterns
-        { pattern: /\b(hate|attack|harass|target|bully)\b/i, weight: 2 },
+        // Toxicity & Respect violations
+        { pattern: /\b(idiot|moron|stupid|dumb|retard)\b/i, weight: 3, category: "Toxicity/Disrespect" },
+        { pattern: /\b(hate|attack|harass|target|bully)\b/i, weight: 4, category: "Harassment" },
+        { pattern: /\b(gay|lesbian|bi|trans|queer|lgbt)\b/i, weight: 5, category: "Sexual Orientation Discussion" },
 
-        // Spam patterns
-        { pattern: /(.)\1{4,}/i, weight: 1 }, // Repeated characters
-        { pattern: /(.).?\1.?\1.?\1.?\1/i, weight: 1 }, // Same message pattern
+        // NSFW content violations
+        { pattern: /\b(nsfw|porn|sex|nude|naked|xxx)\b/i, weight: 7, category: "NSFW Content" },
 
-        // NSFW content indicators
-        { pattern: /\b(nsfw|porn|sex|nude|naked|xxx)\b/i, weight: 3 },
+        // Self-promotion violations
+        { pattern: /\b(subscribe|follow me|my channel|join my|discord\.gg|https?:\/\/)\b/i, weight: 4, category: "Self-Promotion" },
 
-        // Political/controversial topics
-        { pattern: /\b(politic|trump|biden|democrat|republican|election|vote)\b/i, weight: 1 },
+        // Drama/Arguments indicators
+        { pattern: /\b(shut up|not true|stop lying|you're wrong)\b/i, weight: 3, category: "Drama/Arguments" },
 
-        // Advertising/self-promotion
-        { pattern: /\b(subscribe|follow me|my channel|join my|discord\.gg|https?:\/\/)\b/i, weight: 2 },
+        // Political content
+        { pattern: /\b(politic|trump|biden|democrat|republican|election|vote)\b/i, weight: 4, category: "Political Content" },
 
-        // Heated argument indicators
-        { pattern: /\b(no you|you're wrong|shut up|not true|stop lying)\b/i, weight: 1 }
+        // Voice channel rules
+        { pattern: /\b(discord voice|voice chat|voice channel|vc|voice call)\b.*\b(earrape|loud|scream|screech)\b/i, weight: 3, category: "Voice Channel Disruption" },
+
+        // Mini-modding detection
+        { pattern: /\b(stop breaking|against the rules|stop spamming|read the rules|break the rules|mod|moderator)\b/i, weight: 3, category: "Mini-Modding" },
+
+        // Mention spam
+        { pattern: /<@!?\d+>.*<@!?\d+>.*<@!?\d+>/i, weight: 4, category: "Mention Spam" },
+
+        // SSundee-specific rules
+        { pattern: /\b(ssundee sucks|hate ssundee|ssundee.*bad)\b/i, weight: 5, category: "Negativity about SSundee" }
     ];
 
     // Calculate violation score based on recent messages
     let violationScore = 0;
-    let potentialViolationType = '';
-    const recentMessages = contextMessages.slice(-6);
+    let primaryViolation = '';
+    let highestWeight = 0;
+    const recentMessages = contextMessages.slice(-5); // Focus on most recent 5 messages
 
-    // Check for message frequency/spam
+    // Check for message frequency/spam by user
     const messagesByUser = new Map<string, { count: number, timestamps: number[] }>();
 
     for (const msg of recentMessages) {
@@ -224,60 +249,55 @@ async function evaluateContextForAutoResponse(message: Message): Promise<boolean
         userData.count++;
         userData.timestamps.push(msg.createdTimestamp);
 
-        // Check for rule violation indicators
+        // Check content against rule violation patterns
         for (const indicator of ruleViolationPatterns) {
             if (indicator.pattern.test(msg.content)) {
                 violationScore += indicator.weight;
 
-                // Set the potential violation type based on the highest scoring pattern
-                if (!potentialViolationType && indicator.weight > 1) {
-                    if (indicator.pattern.source.includes("nsfw|porn")) {
-                        potentialViolationType = 'NSFW content';
-                    } else if (indicator.pattern.source.includes("fuck|shit")) {
-                        potentialViolationType = 'Toxic language';
-                    } else if (indicator.pattern.source.includes("hate|attack")) {
-                        potentialViolationType = 'Harassment';
-                    } else if (indicator.pattern.source.includes("subscribe|follow")) {
-                        potentialViolationType = 'Self-promotion';
-                    }
+                // Track the highest weight violation as primary
+                if (indicator.weight > highestWeight) {
+                    highestWeight = indicator.weight;
+                    primaryViolation = indicator.category;
                 }
             }
         }
     }
 
-    // Check for rapid message spam (more than 5 messages in 10 seconds)
+    // Check for rapid message spam (more than 4 messages in 10 seconds)
     for (const [userId, userData] of messagesByUser.entries()) {
         if (userData.count >= 4) {
             const timespan = Math.max(...userData.timestamps) - Math.min(...userData.timestamps);
-            if (timespan < 10000 && userData.count >= 4) { // 10 seconds
-                violationScore += 4;
-                potentialViolationType = 'Message spam';
+            if (timespan < 10000) { // 10 seconds
+                violationScore += 5;
+                if (5 > highestWeight) {
+                    highestWeight = 5;
+                    primaryViolation = "Message Spam";
+                }
             }
         }
     }
 
-    // Check for repeated identical messages
+    // Check for repeated identical messages (content spam)
     const messageContents = recentMessages.map(m => m.content.toLowerCase());
     const uniqueContents = new Set(messageContents);
     if (messageContents.length >= 3 && uniqueContents.size <= messageContents.length / 2) {
-        violationScore += 3;
-        potentialViolationType = 'Content spam';
+        violationScore += 4;
+        if (4 > highestWeight) {
+            primaryViolation = "Content Spam";
+        }
     }
 
-    // Check for excessive mentions
-    const hasManyMentions = recentMessages.some(msg =>
-        (msg.content.match(/<@!?\d+>/g) || []).length > 3
-    );
-    if (hasManyMentions) {
-        violationScore += 3;
-        potentialViolationType = 'Mention spam';
-    }
+    // Determine if moderation is needed based on score threshold
+    // Higher score = higher chance of moderation
+    const shouldModerate = violationScore >= 5;
 
-    // Update message prompt if there's a potential violation
-    if (violationScore >= 5 && potentialViolationType) {
-        return true;
-    }
+    // Cap violation severity at 10
+    const violationSeverity = Math.min(Math.ceil(violationScore / 2), 10);
 
-    return false;
+    return {
+        shouldModerate,
+        ruleViolation: primaryViolation || "Rule Violation",
+        violationSeverity
+    };
 }
 
