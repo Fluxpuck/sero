@@ -186,6 +186,7 @@ async function evaluateContextForModeration(message: Message): Promise<{
 
     // Rule violation patterns aligned with SSundee's Community Rules
     const ruleViolationPatterns = [
+
         // Communication rules
         { pattern: /\b(fuck|shit|damn|bitch|ass|\*\*\*\*|wtf|stfu|dick|pussy)\b/i, weight: 4, category: "Cursing/Profanity" },
         { pattern: /(.)\1{5,}/i, weight: 2, category: "Spam" }, // Repeated characters
@@ -207,10 +208,7 @@ async function evaluateContextForModeration(message: Message): Promise<{
         { pattern: /\b(shut up|not true|stop lying|you're wrong)\b/i, weight: 3, category: "Drama/Arguments" },
 
         // Political content
-        { pattern: /\b(politic|trump|biden|democrat|republican|election|vote)\b/i, weight: 4, category: "Political Content" },
-
-        // Voice channel rules
-        { pattern: /\b(discord voice|voice chat|voice channel|vc|voice call)\b.*\b(earrape|loud|scream|screech)\b/i, weight: 3, category: "Voice Channel Disruption" },
+        { pattern: /\b(politic|trump|biden|democrat|republican|election|vote)\b/i, weight: 3, category: "Political Content" },
 
         // Mini-modding detection
         { pattern: /\b(stop breaking|against the rules|stop spamming|read the rules|break the rules|mod|moderator)\b/i, weight: 3, category: "Mini-Modding" },
@@ -219,7 +217,7 @@ async function evaluateContextForModeration(message: Message): Promise<{
         { pattern: /<@!?\d+>.*<@!?\d+>.*<@!?\d+>/i, weight: 4, category: "Mention Spam" },
 
         // SSundee-specific rules
-        { pattern: /\b(ssundee sucks|hate ssundee|ssundee.*bad)\b/i, weight: 5, category: "Negativity about SSundee" }
+        { pattern: /\b(ssundee sucks|hate ssundee|ssundee.*bad)\b/i, weight: 6, category: "Negativity about SSundee" }
     ];
 
     // Calculate violation score based on recent messages
@@ -261,12 +259,13 @@ async function evaluateContextForModeration(message: Message): Promise<{
     for (const [userId, userData] of messagesByUser.entries()) {
         if (userData.count >= 4) {
             const timespan = Math.max(...userData.timestamps) - Math.min(...userData.timestamps);
-            if (timespan < 10000) { // 10 seconds
+            if (timespan < 1_000) { // 1 second
                 violationScore += 5;
                 if (5 > highestWeight) {
                     highestWeight = 5;
                     primaryViolation = "Message Spam";
                 }
+
             }
         }
     }
