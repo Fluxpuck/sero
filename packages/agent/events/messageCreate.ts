@@ -8,11 +8,11 @@ export async function execute(message: Message) {
     const client = message.client as Client;
 
     try {
+        // Skip forwarded messages
+        if (!message || !message.content) return;
+
         // Skip messages from bots to prevent potential loops
         if (message.author.bot) return;
-
-        // Skip forwarded messages
-        if (message.webhookId) return;
 
         // Check if user is owner or has the specific role
         const accessRoles = process.env.ACCESS_ROLE_ID?.split(',') || [];
