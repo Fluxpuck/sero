@@ -84,18 +84,20 @@ export class DiscordModerationTool extends ClaudeToolType {
                 switch (action) {
                     case "timeout":
                         if (timeout_duration) {
-                            await user.timeout(timeout_duration * 60 * 1000, fullReason).catch((error) => {
-                                return `Error: Failed to timeout user "${user.user.tag}". Reason: ${error}`;
-                            });
+                            // await user.timeout(timeout_duration * 60 * 1000, fullReason).catch((error) => {
+                            //     return `Error: Failed to timeout user "${user.user.tag}". Reason: ${error}`;
+                            // });
+                            console.log("[TIMEOUT]", `Timed out ${user.user.tag} for ${timeout_duration} minutes`)
                             return `Timed out ${user.user.tag} for ${timeout_duration} minutes`;
                         }
                         return "Timeout duration not specified";
 
                     case "disconnect":
                         if (user.voice.channel) {
-                            await user.voice.disconnect(fullReason).catch((error) => {
-                                return `Error: Failed to disconnect user "${user.user.tag}". Reason: ${error}`;
-                            });
+                            // await user.voice.disconnect(fullReason).catch((error) => {
+                            //     return `Error: Failed to disconnect user "${user.user.tag}". Reason: ${error}`;
+                            // });
+                            console.log("[DISCONNECT]", `Disconnected ${user.user.tag} from voice`)
                             return `Disconnected ${user.user.tag} from voice`;
                         }
                         return `${user.user.tag} is not in a voice channel`;
@@ -107,9 +109,10 @@ export class DiscordModerationTool extends ClaudeToolType {
                         if (!user.kickable) {
                             return `This user is not kickable.`;
                         }
-                        await user.kick(fullReason).catch((error) => {
-                            return `Error: Failed to kick user "${user.user.tag}". Reason: ${error}`;
-                        });
+                        // await user.kick(fullReason).catch((error) => {
+                        //     return `Error: Failed to kick user "${user.user.tag}". Reason: ${error}`;
+                        // });
+                        console.log("[KICK]", `Kicked ${user.user.tag}`)
                         return `Kicked ${user.user.tag}`;
 
                     case "ban":
@@ -119,15 +122,17 @@ export class DiscordModerationTool extends ClaudeToolType {
                         if (!user.bannable) {
                             return `This user is not bannable.`;
                         }
-                        await user.ban({ deleteMessageSeconds: 24 * 60 * 60, reason: fullReason }).catch((error) => {
-                            return `Error: Failed to ban user "${user.user.tag}". Reason: ${error}`;
-                        });
+                        // await user.ban({ deleteMessageSeconds: 24 * 60 * 60, reason: fullReason }).catch((error) => {
+                        //     return `Error: Failed to ban user "${user.user.tag}". Reason: ${error}`;
+                        // });
+                        console.log("[BAN]", `Banned ${user.user.tag}`)
                         return `Banned ${user.user.tag}`;
 
                     case "warn":
-                        await user.send(warning).catch((error) => {
-                            return `Error: Failed to send warning to user "${user.user.tag}". Their DMs are most likely disabled.`;
-                        });
+                        // await user.send(warning).catch((error) => {
+                        //     return `Error: Failed to send warning to user "${user.user.tag}". Their DMs are most likely disabled.`;
+                        // });
+                        console.log("[WARN]", `Warned ${user.user.tag}`)
                         return `Warned ${user.user.tag}`;
 
                     case "nickname":

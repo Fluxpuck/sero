@@ -181,50 +181,59 @@ async function evaluateContextForModeration(message: Message): Promise<{
         return { shouldModerate: false, ruleViolation: '', violationSeverity: 0 };
     }
 
-    // Count unique users to determine if it's an active conversation
-    const uniqueUsers = new Set(contextMessages.map(m => m.author.id));
-
-    // Rule violation patterns aligned with SSundee's Community Rules
-    const ruleViolationPatterns = [
-
-        // Communication rules
-        { pattern: /\b(fuck|shit|damn|bitch|ass|\*\*\*\*|wtf|stfu|dick|pussy)\b/i, weight: 4, category: "Cursing/Profanity" },
-        { pattern: /(.)\1{5,}/i, weight: 2, category: "Spam" }, // Repeated characters
-        { pattern: /(.).?\1.?\1.?\1.?\1/i, weight: 2, category: "Spam" }, // Spam patterns
-        { pattern: /\b(أ|ب|ت|ث|ج|ح|خ|د|ذ|ر|ز|س|ش|ص|ض|ط|ظ|ع|غ|ف|ق|ك|ل|م|ن|ه|و|ي|а|б|в|г|д|е|ё|ж|з|и|й|к|л|м|н|о|п|р|с|т|у|ф|х|ц|ч|ш|щ|ъ|ы|ь|э|ю|я)\b/i, weight: 3, category: "Non-English Communication" },
-
-        // Toxicity & Respect violations
-        { pattern: /\b(idiot|moron|stupid|dumb|retard)\b/i, weight: 3, category: "Toxicity/Disrespect" },
-        { pattern: /\b(hate|attack|harass|target|bully)\b/i, weight: 4, category: "Harassment" },
-        { pattern: /\b(gay|lesbian|bi|trans|queer|lgbt)\b/i, weight: 5, category: "Sexual Orientation Discussion" },
-
-        // NSFW content violations
-        { pattern: /\b(nsfw|porn|sex|nude|naked|xxx)\b/i, weight: 7, category: "NSFW Content" },
-
-        // Self-promotion violations
-        { pattern: /\b(subscribe|follow me|my channel|join my|discord\.gg|https?:\/\/)\b/i, weight: 4, category: "Self-Promotion" },
-
-        // Drama/Arguments indicators
-        { pattern: /\b(shut up|not true|stop lying|you're wrong)\b/i, weight: 3, category: "Drama/Arguments" },
-
-        // Political content
-        { pattern: /\b(politic|trump|biden|democrat|republican|election|vote)\b/i, weight: 3, category: "Political Content" },
-
-        // Mini-modding detection
-        { pattern: /\b(stop breaking|against the rules|stop spamming|read the rules|break the rules|mod|moderator)\b/i, weight: 3, category: "Mini-Modding" },
-
-        // Mention spam
-        { pattern: /<@!?\d+>.*<@!?\d+>.*<@!?\d+>/i, weight: 4, category: "Mention Spam" },
-
-        // SSundee-specific rules
-        { pattern: /\b(ssundee sucks|hate ssundee|ssundee.*bad)\b/i, weight: 6, category: "Negativity about SSundee" }
-    ];
-
     // Calculate violation score based on recent messages
     let violationScore = 0;
     let primaryViolation = '';
     let highestWeight = 0;
     const recentMessages = contextMessages.slice(-5); // Focus on most recent 5 messages
+
+    // Count unique users to determine if it's an active conversation
+    // Count unique users to determine if it's an active conversation
+    const uniqueUsers = new Set(contextMessages.map(m => m.author.id));
+
+    // If there's only one user talking, lower the moderation threshold
+    // This helps catch spam and self-trolling more effectively
+    if (uniqueUsers.size === 1 && contextMessages.length >= 3) {
+        violationScore += 2; // Add penalty for monologuing
+    }
+
+    // If many users are involved, raise the threshold slightly
+    // This accounts for natural conversation flow
+    if (uniqueUsers.size >= 3) {
+        violationScore -= 1; // Reduce penalty for active discussions
+    }
+
+    // Rule violation patterns with improved context awareness
+    const ruleViolationPatterns = [
+        // Communication rules - using word boundaries and excluding common phrases
+        { pattern: /\b(?!holy)(fuck|shit(?!post)|damn|bitch|ass(?!ume|et|ignment)|wtf|stfu|dick(?!ens)|pussy)\b/i, weight: 4, category: "Cursing/Profanity" },
+        { pattern: /(.)\1{7,}/i, weight: 2, category: "Spam" }, // Increased threshold for repeated characters
+        { pattern: /(.).?\1.?\1.?\1.?\1.?\1/i, weight: 2, category: "Spam" }, // More strict spam pattern
+        { pattern: /[\u0600-\u06FF\u0750-\u077F\u0400-\u04FF]{3,}/i, weight: 3, category: "Non-English Communication" }, // Better Unicode ranges
+
+        // Toxicity - context-aware patterns
+        { pattern: /\b(?!are|is|was|were)\s*(idiot|moron|stupid|dumb|retard)\b/i, weight: 3, category: "Toxicity/Disrespect" },
+        { pattern: /\b(hate|harass|bully)\s*(you|them|him|her|everyone)\b/i, weight: 4, category: "Harassment" },
+
+        // NSFW content - stricter patterns
+        { pattern: /\b(porn|nsfw|xxx|nude(?!\.js))\b/i, weight: 7, category: "NSFW Content" },
+
+        // Self-promotion - more specific patterns
+        { pattern: /\b(subscribe to|follow me at|my channel|join my|discord\.gg\/|https?:\/\/)/i, weight: 4, category: "Self-Promotion" },
+
+        // Drama/Arguments - requires multiple indicators
+        { pattern: /\b(shut up|stop lying).*(wrong|stupid|dumb)\b/i, weight: 3, category: "Drama/Arguments" },
+
+        // Mini-modding - requires more specific context
+        { pattern: /\byou(?:'re| are)?\s*(breaking|spamming|violating)\s*(?:the\s*)?rules\b/i, weight: 3, category: "Mini-Modding" },
+
+        // Mention spam - increased threshold
+        { pattern: /<@!?\d+>.*<@!?\d+>.*<@!?\d+>.*<@!?\d+>/i, weight: 4, category: "Mention Spam" },
+
+        // SSundee-specific rules - more specific context
+        { pattern: /\bssundee\s*(is|sucks|bad|worst|hate)\b/i, weight: 6, category: "Negativity about SSundee" }
+    ];
+    
 
     // Check for message frequency/spam by user
     const messagesByUser = new Map<string, { count: number, timestamps: number[] }>();
