@@ -89,7 +89,8 @@ export class TaskSchedulerTool extends ClaudeToolType {
     constructor(
         private readonly client: Client,
         private readonly message: Message,
-        private readonly tools: Map<string, ClaudeToolType>
+        private readonly tools: Map<string, ClaudeToolType>,
+        private readonly apiService: ApiService = new ApiService(),
     ) {
         super(TaskSchedulerTool.getToolContext());
         const guildId = this.message.guild?.id;
@@ -111,7 +112,7 @@ export class TaskSchedulerTool extends ClaudeToolType {
         const existingTasksForGuild = Array.from(TaskSchedulerTool.scheduledTasks.entries())
             .filter(([_, taskInfo]) => taskInfo.channel.guild.id === guildId);
 
-        const response = await ApiService.get(`/guilds/${guildId}/tasks`) as ApiResponse;
+        const response = await this.apiService.get(`/guilds/${guildId}/tasks`) as ApiResponse;
         if (response.status === 200) {
 
             const tasks = response.data as TaskSchedulerInput[];
@@ -293,7 +294,8 @@ export class TaskSchedulerTool extends ClaudeToolType {
                             TaskSchedulerTool.stopTask(taskId);
                             return;
                         } else {
-                            await ApiService.post(`/guilds/${taskInfo.channel.guild.id}/tasks/increment/${taskId}`);
+                            const apiService = new ApiService();
+                            await apiService.post(`/guilds/${taskInfo.channel.guild.id}/tasks/increment/${taskId}`);
                         }
                     }
                 } catch (error) {
@@ -392,7 +394,8 @@ export class TaskSchedulerTool extends ClaudeToolType {
     ) {
         TaskSchedulerTool.scheduledTasks.set(taskId, taskInfo);
 
-        const response = await ApiService.post(`/guilds/${guildId}/tasks`, {
+        const apiService = new ApiService();
+        const response = await apiService.post(`/guilds/${guildId}/tasks`, {
             taskId,
             guildId: guildId,
             userId: taskInfo.taskOwnerId,
@@ -441,7 +444,8 @@ export class TaskSchedulerTool extends ClaudeToolType {
                 TaskSchedulerTool.scheduledTasks.delete(taskId);
 
                 // Delete from API
-                const response = await ApiService.delete(`/guilds/${taskInfo.channel.guild.id}/tasks/${taskId}`) as ApiResponse;
+                const apiService = new ApiService();
+                const response = await apiService.delete(`/guilds/${taskInfo.channel.guild.id}/tasks/${taskId}`) as ApiResponse;
                 if (response.status !== 200) {
                     console.error(`Failed to delete task ${taskId} from API: ${response.data}`);
                 }

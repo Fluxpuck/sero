@@ -2,7 +2,7 @@ import { Client, Message, User, GuildMember, GuildChannel, AuditLogEvent, GuildA
 import { ClaudeTool, ClaudeToolType } from "../types/tool.types";
 import { UserResolver } from "../utils/user-resolver";
 import { ChannelResolver } from "../utils/channel-resolver";
-import ApiService, { ApiResponse } from "../services/api";
+import { ApiService, ApiResponse } from "../services/api";
 
 type UserActionType = "sero-activity" | "sero-logs" | "auditlogs" | "voice-activity" | "user-info";
 type UserToolInput = {
@@ -69,6 +69,7 @@ export class DiscordUserLogsTool extends ClaudeToolType {
     constructor(
         private readonly client: Client,
         private readonly message: Message,
+        private readonly apiService: ApiService = new ApiService(),
     ) {
         super(DiscordUserLogsTool.getToolContext());
     }
@@ -153,7 +154,7 @@ export class DiscordUserLogsTool extends ClaudeToolType {
     }
 
     private async handleSeroActivity(user: GuildMember, input: UserToolInput): Promise<string> {
-        const seroActivityResponse = await ApiService.get(`/guilds/${user.guild.id}/activities/user/${user.id}?limit=${input.amount ?? 20}`) as ApiResponse;
+        const seroActivityResponse = await this.apiService.get(`/guilds/${user.guild.id}/activities/user/${user.id}?limit=${input.amount ?? 20}`) as ApiResponse;
 
         if (seroActivityResponse.status === 200 || seroActivityResponse.status === 201) {
             const activities = seroActivityResponse.data.filter((activity: any) =>
@@ -168,7 +169,7 @@ export class DiscordUserLogsTool extends ClaudeToolType {
     }
 
     private async handleSeroLogs(user: GuildMember, input: UserToolInput): Promise<string> {
-        const seroLogsResponse = await ApiService.get(`/guilds/${user.guild.id}/logs/${user.id}?limit=${input.amount ?? 20}`) as ApiResponse;
+        const seroLogsResponse = await this.apiService.get(`/guilds/${user.guild.id}/logs/${user.id}?limit=${input.amount ?? 20}`) as ApiResponse;
 
         if (seroLogsResponse.status === 200 || seroLogsResponse.status === 201) {
             return `Sero Logs: ${JSON.stringify(seroLogsResponse.data)}`;
@@ -179,7 +180,7 @@ export class DiscordUserLogsTool extends ClaudeToolType {
     }
 
     private async handleVoiceActivity(user: GuildMember, channel: any, input: UserToolInput): Promise<string> {
-        const voiceSessionResponse = await ApiService.get(`/guilds/${user.guild.id}/activities/user/${user.id}/voice-session?limit=${input.amount ?? 20}`) as ApiResponse;
+        const voiceSessionResponse = await this.apiService.get(`/guilds/${user.guild.id}/activities/user/${user.id}/voice-session?limit=${input.amount ?? 20}`) as ApiResponse;
         if (voiceSessionResponse.status === 200 || voiceSessionResponse.status === 201) {
             return `Voice Activity: ${JSON.stringify(voiceSessionResponse.data)}`;
         }
