@@ -2,10 +2,11 @@ import axios, { AxiosInstance, AxiosRequestConfig, AxiosResponse } from 'axios';
 import dotenv from 'dotenv';
 dotenv.config();
 
-export type ApiResponse = {
+export type ApiResponse<T = any> = {
     status: number;
-    data: any;
+    data: T | null;
     message?: string;
+    error?: boolean;
 }
 
 // Utility function to retry API calls with exponential backoff
@@ -57,19 +58,83 @@ export class ApiService {
         });
     }
 
-    async get<T = any>(url: string, config?: AxiosRequestConfig, maxRetries = 3, initialDelay = 1000, backoffFactor = 2): Promise<AxiosResponse<T>> {
-        return retryApiCall(() => this.instance.get<T>(url, config), maxRetries, initialDelay, backoffFactor);
+    async get<T = any>(url: string, config?: AxiosRequestConfig, maxRetries = 3, initialDelay = 1000, backoffFactor = 2): Promise<ApiResponse<T>> {
+        try {
+            const response = await retryApiCall(() => this.instance.get<T>(url, config), maxRetries, initialDelay, backoffFactor);
+            return {
+                status: response.status,
+                data: response.data,
+                message: 'Success'
+            };
+        } catch (error: any) {
+            return this.handleApiError<T>(error);
+        }
     }
 
-    async post<T = any>(url: string, data?: any, config?: AxiosRequestConfig, maxRetries = 3, initialDelay = 1000, backoffFactor = 2): Promise<AxiosResponse<T>> {
-        return retryApiCall(() => this.instance.post<T>(url, data, config), maxRetries, initialDelay, backoffFactor);
+    async post<T = any>(url: string, data?: any, config?: AxiosRequestConfig, maxRetries = 3, initialDelay = 1000, backoffFactor = 2): Promise<ApiResponse<T>> {
+        try {
+            const response = await retryApiCall(() => this.instance.post<T>(url, data, config), maxRetries, initialDelay, backoffFactor);
+            return {
+                status: response.status,
+                data: response.data,
+                message: 'Success'
+            };
+        } catch (error: any) {
+            return this.handleApiError<T>(error);
+        }
     }
 
-    async put<T = any>(url: string, data?: any, config?: AxiosRequestConfig, maxRetries = 3, initialDelay = 1000, backoffFactor = 2): Promise<AxiosResponse<T>> {
-        return retryApiCall(() => this.instance.put<T>(url, data, config), maxRetries, initialDelay, backoffFactor);
+    async put<T = any>(url: string, data?: any, config?: AxiosRequestConfig, maxRetries = 3, initialDelay = 1000, backoffFactor = 2): Promise<ApiResponse<T>> {
+        try {
+            const response = await retryApiCall(() => this.instance.put<T>(url, data, config), maxRetries, initialDelay, backoffFactor);
+            return {
+                status: response.status,
+                data: response.data,
+                message: 'Success'
+            };
+        } catch (error: any) {
+            return this.handleApiError<T>(error);
+        }
     }
 
-    async delete<T = any>(url: string, config?: AxiosRequestConfig, maxRetries = 3, initialDelay = 1000, backoffFactor = 2): Promise<AxiosResponse<T>> {
-        return retryApiCall(() => this.instance.delete<T>(url, config), maxRetries, initialDelay, backoffFactor);
+    async delete<T = any>(url: string, config?: AxiosRequestConfig, maxRetries = 3, initialDelay = 1000, backoffFactor = 2): Promise<ApiResponse<T>> {
+        try {
+            const response = await retryApiCall(() => this.instance.delete<T>(url, config), maxRetries, initialDelay, backoffFactor);
+            return {
+                status: response.status,
+                data: response.data,
+                message: 'Success'
+            };
+        } catch (error: any) {
+            return this.handleApiError<T>(error);
+        }
+    }
+
+    private handleApiError<T>(error: any): ApiResponse<T> {
+        if (error.response) {
+            // Request was made and server responded with error status
+            return {
+                status: error.response.status,
+                data: null,
+                message: error.response.data?.message || error.message,
+                error: true
+            };
+        } else if (error.request) {
+            // Request was made but no response was received
+            return {
+                status: 503,
+                data: null,
+                message: 'No response received from server',
+                error: true
+            };
+        } else {
+            // Something happened in setting up the request
+            return {
+                status: 500,
+                data: null,
+                message: error.message || 'Unknown error occurred',
+                error: true
+            };
+        }
     }
 }
