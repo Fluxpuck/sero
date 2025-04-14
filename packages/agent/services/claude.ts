@@ -1,7 +1,8 @@
 import Anthropic from '@anthropic-ai/sdk';
-import { Message, ChatInputCommandInteraction } from 'discord.js';
+import { Message } from 'discord.js';
 import { sanitizeResponse } from '../utils';
 import { executeTool, initializeTools } from '../services/tools';
+import { retryApiCall } from './api'; 
 
 // Gather the about me and discord guidelines context for the AI assistant
 import {
@@ -26,36 +27,34 @@ import {
     deleteConverstationHistory
 } from '../services/history';
 
-// Initialize the client with your API key
-const anthropic = new Anthropic({
-    apiKey: process.env.ANTHROPIC_API_KEY,
-});
+export class ClaudeService {
+    private anthropic: Anthropic;
+    private readonly CLAUDE_REASONING_MODEL = 'claude-3-5-haiku-20241022';
+    private readonly CLAUDE_EXECUTION_MODEL = 'claude-3-5-haiku-20241022';
+    private readonly MAX_TOKENS_REASONING = 1024;
+    private readonly MAX_TOKENS_EXECUTION = 2048;
 
-export async function askClaude(
-    prompt: string,
-    message: Message,
-    previousMessages: any[] = [],
-): Promise<string | undefined> {
+    constructor() {
+        // Initialize the Anthropic client with API key
+        this.anthropic = new Anthropic({
+            apiKey: process.env.ANTHROPIC_API_KEY,
+        });
+    }
 
-    const CLAUDE_MODEL = 'claude-3-5-haiku-20241022';
-    const SYSTEM_PROMPT = `
-    ${seroAgentDescription} \n 
-    ${discordContext} \n 
-    ${toolsContext} \n 
-    ${disclosedContext} \n 
-    ${SSundeeRules} \n 
-    ${SSundeeInformation} \n 
-    ${SSundeeFAQ}`;
-    const MAX_TOKENS = 1024;
+    /**
+     * Prepare system prompt with context variables replaced
+     */
+    private prepareSystemPrompt(message: Message): string {
+        const SYSTEM_PROMPT = `
+        ${seroAgentDescription} \n 
+        ${discordContext} \n 
+        ${toolsContext} \n 
+        ${disclosedContext} \n 
+        ${SSundeeRules} \n 
+        ${SSundeeInformation} \n 
+        ${SSundeeFAQ}`;
 
-    // Create a unique key for the conversation based on channel and user ID
-    const conversationKey = createConversationKey(message.channel.id, message.author.id);
-
-    try {
-        // Initialize tools with message context
-        initializeTools(message, message.client);
-
-        const systemPrompt = SYSTEM_PROMPT
+        return SYSTEM_PROMPT
             .replace('{{date}}', new Date().toLocaleDateString())
             .replace('{{time}}', new Date().toLocaleTimeString())
             .replace('{{guildName}}', message.guild?.name ?? 'private')
@@ -63,206 +62,182 @@ export async function askClaude(
             .replace(`{{username}}`, message.author.username)
             .replace(`{{userId}}`, message.author.id)
             .replace('{{channelName}}', 'name' in message.channel && message.channel.name ? message.channel.name : 'Direct Message')
-            .replace('{{channelId}}', message.channel.id)
+            .replace('{{channelId}}', message.channel.id);
+    }
 
-        // Get the conversation history
-        let conversationHistory = getConversationHistory(conversationKey) || [];
+    /**
+     * Get the available tools context for API calls
+     */
+    private getTools() {
+        return [
+            ...DiscordSendMessageToolContext,
+            ...DiscordGuildInfoToolContext,
+            ...DiscordFetchMessagesToolContext,
+            ...DiscordModerationToolContext,
+            ...DiscordUserLogsToolContext,
+            ...SeroUtilityToolContext,
+            ...TaskSchedulerToolContext,
+        ];
+    }
 
-        if (previousMessages.length > 0) {
-            conversationHistory = previousMessages;
-        } else if (prompt) {
-            conversationHistory.push({ role: 'user', content: prompt });
-        }
+    /**
+     * Reasoning function - Allows Claude to use tools and engage in multi-turn reasoning
+     */
+    public async reasoning(
+        prompt: string,
+        message: Message,
+        previousMessages: any[] = [],
+    ): Promise<string | undefined> {
+        // Create a unique key for the conversation based on channel and user ID
+        const conversationKey = createConversationKey(message.channel.id, message.author.id);
 
-        // Call the Claude API
-        const response = await anthropic.messages.create({
-            model: CLAUDE_MODEL,
-            max_tokens: MAX_TOKENS,
-            system: systemPrompt,
-            tools: [
-                ...DiscordSendMessageToolContext,
-                ...DiscordGuildInfoToolContext,
-                ...DiscordFetchMessagesToolContext,
-                ...DiscordModerationToolContext,
-                ...DiscordUserLogsToolContext,
-                ...SeroUtilityToolContext,
-                ...TaskSchedulerToolContext,
-            ],
-            messages: conversationHistory,
-        });
+        try {
+            // Initialize tools with message context
+            initializeTools(message, message.client);
+            const systemPrompt = this.prepareSystemPrompt(message);
 
-        if (response.stop_reason === "tool_use") {
-            const textContent = response.content.find((c) => c.type === "text")?.text ?? "";
-            const toolRequest = response.content.find((c) => c.type === "tool_use");
+            // Get the conversation history
+            let conversationHistory = getConversationHistory(conversationKey) || [];
 
-            if (!toolRequest) return "No valid tool request found";
-
-            // Reply with temporary response if Claude provided text
-            if (textContent) {
-                await message.reply(sanitizeResponse(textContent)).catch((err) => {
-                    console.error('Error sending reply:', err);
-                });
+            if (previousMessages.length > 0) {
+                conversationHistory = previousMessages;
+            } else if (prompt) {
+                conversationHistory.push({ role: 'user', content: prompt });
             }
 
-            try {
-                // Extract tool details
-                const { id, name, input } = toolRequest;
+            // Call the Claude API with retry logic
+            const response = await retryApiCall(() =>
+                this.anthropic.messages.create({
+                    model: this.CLAUDE_REASONING_MODEL,
+                    max_tokens: this.MAX_TOKENS_REASONING,
+                    system: systemPrompt,
+                    tools: this.getTools(),
+                    messages: conversationHistory,
+                })
+            );
 
-                // Execute the tool and get the result first
-                const toolResult = await executeTool(name, input);
+            if (response.stop_reason === "tool_use") {
+                const textContent = response.content.find((c) => c.type === "text")?.text ?? "";
+                const toolRequest = response.content.find((c) => c.type === "tool_use");
 
-                // Only update history if tool execution was successful
-                const updatedHistory = [
-                    ...conversationHistory,
-                    {
+                if (!toolRequest) return "No valid tool request found";
+
+                // Reply with temporary response if Claude provided text
+                if (textContent) {
+                    await message.reply(sanitizeResponse(textContent)).catch((err) => {
+                        console.error('Error sending reply:', err);
+                    });
+                }
+
+                try {
+                    // Extract tool details
+                    const { id, name, input } = toolRequest;
+
+                    // Execute the tool and get the result first
+                    const toolResult = await executeTool(name, input);
+
+                    // Only update history if tool execution was successful
+                    const updatedHistory = [
+                        ...conversationHistory,
+                        {
+                            role: 'assistant',
+                            content: [
+                                ...(textContent ? [{ type: "text", text: textContent }] : []),
+                                { type: "tool_use", id, name, input }
+                            ]
+                        },
+                        {
+                            role: 'user',
+                            content: [{
+                                type: "tool_result",
+                                tool_use_id: id,
+                                content: toolResult
+                            }]
+                        }
+                    ];
+
+                    // Update the stored history only after successful execution
+                    updateConversationHistory(conversationKey, updatedHistory);
+
+                    // Recursive call with tool result and updated message history
+                    return await this.reasoning("", message, updatedHistory);
+
+                } catch (error) {
+                    // Delete conversation history on error
+                    deleteConverstationHistory(conversationKey);
+
+                    console.error('Error executing tool:', error);
+                    throw error;
+                }
+            } else {
+                // Get final response if no tool use
+                const finalResponse = response.content.find(c => c.type === "text")?.text ?? "";
+
+                if (finalResponse) {
+                    // Add assistant's response to conversation history
+                    conversationHistory.push({
                         role: 'assistant',
-                        content: [
-                            ...(textContent ? [{ type: "text", text: textContent }] : []),
-                            { type: "tool_use", id, name, input }
-                        ]
-                    },
-                    {
-                        role: 'user',
-                        content: [{
-                            type: "tool_result",
-                            tool_use_id: id,
-                            content: toolResult
-                        }]
-                    }
-                ];
+                        content: finalResponse
+                    });
 
-                // Update the stored history only after successful execution
-                updateConversationHistory(conversationKey, updatedHistory);
+                    // Update the stored history
+                    updateConversationHistory(conversationKey, conversationHistory);
 
-                // Recursive call with tool result and updated message history
-                return await askClaude("", message, updatedHistory);
-
-            } catch (error) {
-                // Delete conversation history on error
-                deleteConverstationHistory(conversationKey);
-
-                console.error('Error executing tool:', error);
-                throw error;
+                    await message.reply(sanitizeResponse(finalResponse)).catch((err) => {
+                        console.error('Error sending reply:', err);
+                    });
+                }
+                return finalResponse;
             }
-        } else {
-            // Get final response if no tool use
+        } catch (error) {
+            // Delete conversation history on error
+            deleteConverstationHistory(conversationKey);
+
+            console.error('Error calling Claude API:', error);
+            throw error;
+        }
+    }
+
+    /**
+     * Execute function - Gets Claude to execute a prompt directly without multi-turn reasoning
+     * Useful for straightforward tasks that don't require tools or complex reasoning
+     */
+    public async execute(
+        prompt: string,
+        message: Message,
+    ): Promise<string | undefined> {
+        try {
+            // Initialize tools with message context
+            initializeTools(message, message.client);
+            const systemPrompt = this.prepareSystemPrompt(message);
+
+            // Simplified prompt without conversation history
+            const messageContent = [{ role: 'user' as const, content: prompt }];
+
+            // Call the Claude API with retry logic
+            const response = await retryApiCall(() =>
+                this.anthropic.messages.create({
+                    model: this.CLAUDE_EXECUTION_MODEL,
+                    max_tokens: this.MAX_TOKENS_EXECUTION,
+                    system: systemPrompt,
+                    messages: messageContent,
+                })
+            );
+
+            // Get the response text
             const finalResponse = response.content.find(c => c.type === "text")?.text ?? "";
 
             if (finalResponse) {
-                // Add assistant's response to conversation history
-                conversationHistory.push({
-                    role: 'assistant',
-                    content: finalResponse
-                });
-
-                // Update the stored history
-                updateConversationHistory(conversationKey, conversationHistory);
-
                 await message.reply(sanitizeResponse(finalResponse)).catch((err) => {
                     console.error('Error sending reply:', err);
                 });
             }
+
             return finalResponse;
-        }
-    } catch (error) {
-        // Delete conversation history on error
-        deleteConverstationHistory(conversationKey);
 
-        console.error('Error calling Claude API:', error);
-        throw error;
+        } catch (error) {
+            console.error('Error calling Claude API for execution:', error);
+            throw error;
+        }
     }
-}
-
-export async function askClaudeCommand(
-    prompt: string,
-    interaction: ChatInputCommandInteraction,
-    previousMessages: any[] = [],
-): Promise<string | undefined> {
-
-    const CLAUDE_MODEL = 'claude-3-5-haiku-20241022';
-    const SYSTEM_PROMPT = `${seroAgentDescription} \n ${discordContext} \n ${SSundeeRules} \n ${SSundeeInformation} \n ${SSundeeFAQ}`;
-    const MAX_TOKENS = 256;
-
-    // Create a unique key for the conversation based on channel and user ID
-    const conversationKey = createConversationKey(interaction.channelId, interaction.user.id);
-
-    try {
-        const systemPrompt = SYSTEM_PROMPT
-            .replace('{{date}}', new Date().toLocaleDateString())
-            .replace('{{time}}', new Date().toLocaleTimeString())
-            .replace('{{guildName}}', interaction.guild?.name ?? 'private')
-            .replace('{{guildId}}', interaction.guild?.id ?? 'private')
-            .replace(`{{username}}`, interaction.user.username)
-            .replace(`{{userId}}`, interaction.user.id)
-            .replace('{{channelName}}', interaction.channel && 'name' in interaction.channel && interaction.channel.name ? interaction.channel.name : 'Direct Message')
-            .replace('{{channelId}}', interaction.channelId)
-
-        // Get the conversation history
-        let conversationHistory = getConversationHistory(conversationKey) || [];
-
-        if (previousMessages.length > 0) {
-            conversationHistory = previousMessages;
-        } else if (prompt) {
-            conversationHistory.push({ role: 'user', content: prompt });
-        }
-
-        // Call the Claude API
-        const response = await anthropic.messages.create({
-            model: CLAUDE_MODEL,
-            max_tokens: MAX_TOKENS,
-            system: systemPrompt,
-            messages: conversationHistory,
-        });
-
-        // Get final response
-        const finalResponse = response.content.find(c => c.type === "text")?.text ?? "";
-
-        if (finalResponse) {
-            // Add assistant's response to conversation history
-            conversationHistory.push({
-                role: 'assistant',
-                content: finalResponse
-            });
-
-            // Update the stored history
-            updateConversationHistory(conversationKey, conversationHistory);
-
-            // Check if the interaction is deferred and use the appropriate method
-            if (interaction.deferred) {
-                await interaction.editReply({ content: sanitizeResponse(finalResponse) }).catch((err) => {
-                    console.error('Error editing reply:', err);
-                });
-            } else {
-                await interaction.reply({ content: sanitizeResponse(finalResponse), ephemeral: true }).catch((err) => {
-                    console.error('Error sending reply:', err);
-                });
-            }
-
-        }
-        return finalResponse;
-
-    } catch (error) {
-        // Delete conversation history on error
-        deleteConverstationHistory(conversationKey);
-
-        console.error('Error calling Claude API:', error);
-
-        // Try to send error message if the interaction hasn't timed out
-        try {
-            if (interaction.deferred) {
-                await interaction.editReply({ content: "Sorry, I encountered an error while processing your request." }).catch((err) => {
-                    console.error('Error editing reply:', err);
-                });
-            } else {
-                await interaction.reply({ content: "Sorry, I encountered an error while processing your request.", ephemeral: true }).catch((err) => {
-                    console.error('Error sending reply:', err);
-                });
-            }
-        } catch (replyError) {
-            console.error('Error sending error response:', replyError);
-        }
-
-        throw error;
-    }
-
 }
