@@ -2,7 +2,7 @@ import Anthropic from '@anthropic-ai/sdk';
 import { Message } from 'discord.js';
 import { sanitizeResponse } from '../utils';
 import { executeTool, initializeTools } from '../services/tools';
-import { retryApiCall } from './api'; 
+import { retryApiCall } from './api';
 
 // Gather the about me and discord guidelines context for the AI assistant
 import {

@@ -1,8 +1,6 @@
 import { Message, Events, Client } from 'discord.js';
 import { ClaudeService } from '../services/claude';
 
-
-
 export const name = Events.MessageCreate;
 export async function execute(message: Message) {
     const client = message.client as Client;
