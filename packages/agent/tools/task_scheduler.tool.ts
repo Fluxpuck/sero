@@ -3,12 +3,12 @@ import { ApiService, ApiResponse } from "../services/api";
 import { ClaudeTool, ClaudeToolType } from "../types/tool.types";
 import { ChannelResolver } from "../utils/channel-resolver";
 import * as cron from 'node-cron';
-import { UserResolver } from "../utils/user-resolver";
+import { ClaudeService } from "../services/claude";
 
 type TaskSchedulerInput = {
     schedule?: string; // Cron expression (e.g., "*/5 * * * *" for every 5 minutes)
-    tool?: string;
-    toolInput?: Record<string, any>;
+    task?: string;
+    taskId?: string;
     maxExecutions?: number;
     executionCount?: number;
     guildId?: string;
@@ -17,7 +17,6 @@ type TaskSchedulerInput = {
     startDate?: string;
     endDate?: string;
     operation: "schedule" | "list" | "cancel";
-    taskId?: string;
 }
 
 type StoredTaskInfo = {
@@ -26,13 +25,13 @@ type StoredTaskInfo = {
     maxExecutions?: number;
     channel: TextChannel | ThreadChannel;
     taskOwnerId?: string;
-    toolName: string;
-    toolInput: Record<string, any>;
+    prompt: string;    // Store the prompt to execute
     schedule: string;  // Store original schedule string
 }
 
 export class TaskSchedulerTool extends ClaudeToolType {
     private static scheduledTasks: Map<string, StoredTaskInfo> = new Map();
+    private readonly claudeService: ClaudeService;
 
     static getToolContext() {
         return {
@@ -45,13 +44,19 @@ export class TaskSchedulerTool extends ClaudeToolType {
                         type: "string",
                         description: "Cron expression for scheduling (e.g., '*/5 * * * *' for every 5 minutes)"
                     },
-                    tool: {
+                    task: {
                         type: "string",
-                        description: "Name of the tool to execute"
+                        description: "A description of the task to be executed. This should be a task description without the scheduled time.",
+                        examples: [
+                            "Send a reminder to take a break",
+                            "Fetch the latest news and send it to the channel",
+                            "Run a daily report at 9 AM",
+                            "Send a motivational quote every Monday at 8 AM",
+                        ],
                     },
-                    toolInput: {
-                        type: "object",
-                        description: "Input parameters for the tool"
+                    taskId: {
+                        type: "string",
+                        description: "Task ID to cancel (required for cancel operation)"
                     },
                     maxExecutions: {
                         type: "number",
@@ -73,10 +78,6 @@ export class TaskSchedulerTool extends ClaudeToolType {
                         type: "string",
                         description: "Operation to perform: 'schedule', 'list', or 'cancel'",
                         enum: ["schedule", "list", "cancel"]
-                    },
-                    taskId: {
-                        type: "string",
-                        description: "Task ID to cancel (required for cancel operation)"
                     }
                 },
                 required: ["operation"]
@@ -89,9 +90,10 @@ export class TaskSchedulerTool extends ClaudeToolType {
     constructor(
         private readonly client: Client,
         private readonly message: Message,
-        private readonly tools: Map<string, ClaudeToolType>
+        private readonly apiService: ApiService = new ApiService(),
     ) {
         super(TaskSchedulerTool.getToolContext());
+        this.claudeService = new ClaudeService();
         const guildId = this.message.guild?.id;
         if (guildId && !TaskSchedulerTool.initializedGuilds.has(guildId)) {
             TaskSchedulerTool.initializedGuilds.add(guildId);
@@ -111,7 +113,7 @@ export class TaskSchedulerTool extends ClaudeToolType {
         const existingTasksForGuild = Array.from(TaskSchedulerTool.scheduledTasks.entries())
             .filter(([_, taskInfo]) => taskInfo.channel.guild.id === guildId);
 
-        const response = await ApiService.get(`/guilds/${guildId}/tasks`) as ApiResponse;
+        const response = await this.apiService.get(`/guilds/${guildId}/tasks`) as ApiResponse;
         if (response.status === 200) {
 
             const tasks = response.data as TaskSchedulerInput[];
@@ -131,24 +133,22 @@ export class TaskSchedulerTool extends ClaudeToolType {
                 if (existingTask) {
                     // Update existing task's execution count
                     existingTask.executionCount = taskData.executionCount || 0;
-                } else if (taskData.schedule && taskData.tool && taskData.toolInput) {
+                } else if (taskData.schedule && taskData.task) {
                     // Create new task only if all required fields are present
-                    const tool = this.tools.get(taskData.tool);
-                    if (tool && cron.validate(taskData.schedule)) {
+                    if (cron.validate(taskData.schedule)) {
                         const channel = taskData.channelId
                             ? await ChannelResolver.resolve(this.message.guild!, taskData.channelId)
                             : this.message.channel;
 
                         if (channel instanceof TextChannel || channel instanceof ThreadChannel) {
-                            const task = this.scheduleTask(taskData, tool, taskData.taskId);
+                            const task = this.scheduleTask(taskData, taskData.taskId, channel);
                             await TaskSchedulerTool.saveTask(taskData.taskId, guildId, {
                                 task,
                                 executionCount: taskData.executionCount || 0,
                                 maxExecutions: taskData.maxExecutions,
                                 channel,
                                 taskOwnerId: taskData.userId,
-                                toolName: taskData.tool,
-                                toolInput: taskData.toolInput,
+                                prompt: taskData.task,
                                 schedule: taskData.schedule
                             });
                         }
@@ -177,7 +177,7 @@ export class TaskSchedulerTool extends ClaudeToolType {
                     }));
 
                 return tasks.length > 0
-                    ? `Scheduled tasks: ${tasks.map(task => `Task ID: ${task.taskId}, Tool: ${task.task.toolName}, Schedule: ${task.task.schedule}`).join("\n")}`
+                    ? `Scheduled tasks: ${tasks.map(task => `Task ID: ${task.taskId}, Schedule: ${task.task.schedule}`).join("\n")}`
                     : "No scheduled tasks found.";
             }
 
@@ -192,16 +192,11 @@ export class TaskSchedulerTool extends ClaudeToolType {
             }
 
             if (input.operation === "schedule") {
-                if (!input.schedule || !input.tool || !input.toolInput) {
-                    throw new Error("Schedule, tool, and toolInput are required for schedule operation");
+                if (!input.schedule || !input.task) {
+                    throw new Error("Schedule and prompt are required for schedule operation");
                 }
 
-                const tool = this.tools.get(input.tool);
-                if (!tool) {
-                    throw new Error(`Tool ${input.tool} not found`);
-                }
-
-                const taskId = `${this.message.id}`
+                const taskId = `${this.message.id}`;
 
                 const channel = input.channelId
                     ? await ChannelResolver.resolve(this.message.guild, input.channelId)
@@ -210,7 +205,7 @@ export class TaskSchedulerTool extends ClaudeToolType {
                     throw new Error("Channel must be a TextChannel or ThreadChannel");
                 }
 
-                const task = this.scheduleTask(input, tool, taskId);
+                const task = this.scheduleTask(input, taskId, channel);
 
                 await TaskSchedulerTool.saveTask(taskId, this.message.guild!.id, {
                     task,
@@ -218,15 +213,14 @@ export class TaskSchedulerTool extends ClaudeToolType {
                     maxExecutions: input.maxExecutions,
                     channel,
                     taskOwnerId: this.message.author.id,
-                    toolName: input.tool,
-                    toolInput: input.toolInput,
+                    prompt: input.task,
                     schedule: input.schedule
                 });
 
                 return `Task scheduled successfully. Task ID: ${taskId}`;
             }
 
-            throw new Error("Invalid operation. Supported operations are 'schedule' and 'cancel'.");
+            throw new Error("Invalid operation. Supported operations are 'schedule', 'list', or 'cancel'.");
         } catch (error) {
             throw new Error(`Failed to execute operation: ${error instanceof Error ? error.message : String(error)}`);
         }
@@ -237,9 +231,9 @@ export class TaskSchedulerTool extends ClaudeToolType {
         return date instanceof Date && !isNaN(date.getTime());
     }
 
-    private scheduleTask(input: TaskSchedulerInput, tool: ClaudeToolType, taskId: string): cron.ScheduledTask {
-        if (!input.schedule || !input.tool || !input.toolInput) {
-            throw new Error("Schedule, tool, and toolInput are required for schedule operation");
+    private scheduleTask(input: TaskSchedulerInput, taskId: string, channel: TextChannel | ThreadChannel): cron.ScheduledTask {
+        if (!input.schedule || !input.task) {
+            throw new Error("Schedule and prompt are required for schedule operation");
         }
 
         try {
@@ -279,8 +273,18 @@ export class TaskSchedulerTool extends ClaudeToolType {
                 }, FIVE_MINUTES_IN_SECONDS * 1000);
 
                 try {
-                    // Execute the tool
-                    await tool.execute(taskInfo.toolInput);
+                    // Create a message-like object using the channel from the task
+                    const messageProxy = {
+                        ...this.message,
+                        channel: taskInfo.channel,
+                        reply: async (content: any) => {
+                            return await taskInfo.channel.send(content);
+                        }
+                    };
+
+                    // Execute the prompt using ClaudeService execute
+                    const claudeService = new ClaudeService();
+                    await claudeService.execute(taskInfo.prompt, messageProxy as Message);
 
                     // Update local count only after successful execution
                     const updatedTaskInfo = TaskSchedulerTool.scheduledTasks.get(taskId);
@@ -293,7 +297,8 @@ export class TaskSchedulerTool extends ClaudeToolType {
                             TaskSchedulerTool.stopTask(taskId);
                             return;
                         } else {
-                            await ApiService.post(`/guilds/${taskInfo.channel.guild.id}/tasks/increment/${taskId}`);
+                            const apiService = new ApiService();
+                            await apiService.post(`/guilds/${taskInfo.channel.guild.id}/tasks/increment/${taskId}`);
                         }
                     }
                 } catch (error) {
@@ -392,14 +397,14 @@ export class TaskSchedulerTool extends ClaudeToolType {
     ) {
         TaskSchedulerTool.scheduledTasks.set(taskId, taskInfo);
 
-        const response = await ApiService.post(`/guilds/${guildId}/tasks`, {
+        const apiService = new ApiService();
+        const response = await apiService.post(`/guilds/${guildId}/tasks`, {
             taskId,
             guildId: guildId,
             userId: taskInfo.taskOwnerId,
             channelId: taskInfo.channel.id,
-            schedule: taskInfo.schedule,  // Use the original schedule string
-            tool: taskInfo.toolName,
-            toolInput: taskInfo.toolInput,
+            schedule: taskInfo.schedule,
+            prompt: taskInfo.prompt,
             maxExecutions: taskInfo.maxExecutions,
             executionCount: taskInfo.executionCount,
             status: 'active'
@@ -441,7 +446,8 @@ export class TaskSchedulerTool extends ClaudeToolType {
                 TaskSchedulerTool.scheduledTasks.delete(taskId);
 
                 // Delete from API
-                const response = await ApiService.delete(`/guilds/${taskInfo.channel.guild.id}/tasks/${taskId}`) as ApiResponse;
+                const apiService = new ApiService();
+                const response = await apiService.delete(`/guilds/${taskInfo.channel.guild.id}/tasks/${taskId}`) as ApiResponse;
                 if (response.status !== 200) {
                     console.error(`Failed to delete task ${taskId} from API: ${response.data}`);
                 }

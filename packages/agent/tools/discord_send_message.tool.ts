@@ -2,6 +2,7 @@ import { Client, Message, TextChannel, DMChannel, ThreadChannel } from "discord.
 import { ClaudeTool, ClaudeToolType } from "../types/tool.types";
 import { UserResolver } from "../utils/user-resolver";
 import { ChannelResolver } from "../utils/channel-resolver";
+import { ApiService, ApiResponse } from "../services/api";
 
 type SendMessageInput = {
     targetId: string;
@@ -61,13 +62,27 @@ export class DiscordSendMessageTool extends ClaudeToolType {
                     throw new Error("TENOR_KEY environment variable is not set");
                 }
 
-                const endpoint = content.toLowerCase() === 'random' 
-                    ? `https://tenor.googleapis.com/v2/featured?key=${tenorKey}&limit=20&contentfilter=medium`
-                    : `https://tenor.googleapis.com/v2/search?q=${encodeURIComponent(content)}&key=${tenorKey}&limit=20&contentfilter=medium`;
-                
-                const searchResponse = await fetch(endpoint);
+                // Build query parameters
+                const queryParams = new URLSearchParams({
+                    key: tenorKey,
+                    limit: '20',
+                    contentfilter: 'medium'
+                });
 
-                const data = await searchResponse.json();
+                // Add search query if not random
+                if (content.toLowerCase() !== 'random') {
+                    queryParams.append('q', content);
+                }
+
+                // Create a temporary API service for Tenor API
+                const tenorApiService = new ApiService('https://tenor.googleapis.com/v2/');
+
+                // Use apiService instead of fetch
+                const response = await (content.toLowerCase() === 'random'
+                    ? tenorApiService.get(`random?key=${tenorKey}&limit=20&contentfilter=medium`)
+                    : tenorApiService.get(`search?q=${encodeURIComponent(content)}&key=${tenorKey}&limit=20&contentfilter=medium`));
+
+                const data = response.data;
                 if (!data.results?.length) {
                     return `Error: No GIFs found for the given query`;
                 }

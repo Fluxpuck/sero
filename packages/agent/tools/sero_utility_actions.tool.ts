@@ -1,7 +1,7 @@
 import { Client, Message } from "discord.js";
 import { ClaudeTool, ClaudeToolType } from "../types/tool.types";
 import { UserResolver } from "../utils/user-resolver";
-import ApiService, { ApiResponse } from "../services/api";
+import { ApiService, ApiResponse } from "../services/api";
 
 type SeroUtilityActionType = "away" | "get-boost" | "set-boost" | "give-exp" | "remove-exp" | "give-money" | "remove-money";
 type SeroUtilityToolInput = {
@@ -60,6 +60,7 @@ export class SeroUtilityActionsTool extends ClaudeToolType {
     constructor(
         private readonly client: Client,
         private readonly message: Message,
+        private readonly apiService: ApiService = new ApiService(),
     ) {
         super(SeroUtilityActionsTool.getToolContext());
     }
@@ -117,7 +118,7 @@ export class SeroUtilityActionsTool extends ClaudeToolType {
     }
 
     private async handleAway(user: any, input: SeroUtilityToolInput): Promise<string> {
-        const response = await ApiService.post(`/guilds/${user.guild.id}/away`, {
+        const response = await this.apiService.post(`/guilds/${user.guild.id}/away`, {
             userId: user.id,
             duration: input.time,
             message: input.message
@@ -132,7 +133,7 @@ export class SeroUtilityActionsTool extends ClaudeToolType {
     }
 
     private async handleGetBoost(user: any): Promise<string> {
-        const response = await ApiService.get(`/guilds/${user.guild.id}`) as ApiResponse;
+        const response = await this.apiService.get(`/guilds/${user.guild.id}`) as ApiResponse;
 
         if (response.status === 200) {
             const { modifier, duration = 0, expireAt } = response.data;
@@ -149,7 +150,7 @@ export class SeroUtilityActionsTool extends ClaudeToolType {
     }
 
     private async handleSetBoost(user: any, input: SeroUtilityToolInput): Promise<string> {
-        const response = await ApiService.post(`/guilds/boost`, {
+        const response = await this.apiService.post(`/guilds/boost`, {
             guildId: user.guild.id,
             modifier: input.amount,
             duration: input.time
@@ -164,7 +165,7 @@ export class SeroUtilityActionsTool extends ClaudeToolType {
     }
 
     private async handleGiveExp(user: any, input: SeroUtilityToolInput): Promise<string> {
-        const response = await ApiService.post(`/guilds/${user.guild.id}/levels/exp/${user.id}`, {
+        const response = await this.apiService.post(`/guilds/${user.guild.id}/levels/exp/${user.id}`, {
             experience: input.amount
         }) as ApiResponse;
 
@@ -178,7 +179,7 @@ export class SeroUtilityActionsTool extends ClaudeToolType {
 
     private async handleRemoveExp(user: any, input: SeroUtilityToolInput): Promise<string> {
         const removeAmount = input.amount || 0;
-        const response = await ApiService.post(`/guilds/${user.guild.id}/levels/exp/${user.id}`, {
+        const response = await this.apiService.post(`/guilds/${user.guild.id}/levels/exp/${user.id}`, {
             experience: -removeAmount
         }) as ApiResponse;
 
@@ -193,7 +194,7 @@ export class SeroUtilityActionsTool extends ClaudeToolType {
     private async handleGiveMoney(user: any, input: SeroUtilityToolInput): Promise<string> {
         if (!input.economy_type) throw new Error("Economy type is required for money actions");
 
-        const response = await ApiService.post(`/guilds/${user.guild.id}/economy/${input.economy_type}/${user.id}`, {
+        const response = await this.apiService.post(`/guilds/${user.guild.id}/economy/${input.economy_type}/${user.id}`, {
             experience: input.amount
         }) as ApiResponse;
 
@@ -209,7 +210,7 @@ export class SeroUtilityActionsTool extends ClaudeToolType {
         if (!input.economy_type) throw new Error("Economy type is required for money actions");
 
         const removeAmount = input.amount || 0;
-        const response = await ApiService.post(`/guilds/${user.guild.id}/economy/${input.economy_type}/${user.id}`, {
+        const response = await this.apiService.post(`/guilds/${user.guild.id}/economy/${input.economy_type}/${user.id}`, {
             experience: -removeAmount
         }) as ApiResponse;
 

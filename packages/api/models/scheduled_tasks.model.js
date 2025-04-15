@@ -42,12 +42,8 @@ module.exports = sequelize => {
             type: DataTypes.STRING,
             allowNull: false
         },
-        tool: {
-            type: DataTypes.STRING,
-            allowNull: false
-        },
-        toolInput: {
-            type: DataTypes.JSON,
+        prompt: {
+            type: DataTypes.TEXT,
             allowNull: false
         },
         maxExecutions: {

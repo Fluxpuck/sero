@@ -58,14 +58,14 @@ router.get("/:userId", async (req, res, next) => {
  */
 router.post("/", async (req, res, next) => {
     const { guildId } = req.params;
-    const { taskId, userId, schedule, tool, toolInput, channelId, maxExecutions, executionCount, status } = req.body;
+    const { taskId, userId, schedule, prompt, channelId, maxExecutions, executionCount, status } = req.body;
 
     // Validate required fields
-    if (!taskId || !userId || !schedule || !tool || !toolInput) {
+    if (!taskId || !userId || !schedule || !prompt) {
         throw new RequestError(400, "Missing required fields", {
             method: req.method,
             path: req.path,
-            required: ['taskId', 'userId', 'schedule', 'tool', 'toolInput']
+            required: ['taskId', 'userId', 'schedule', 'prompt']
         });
     }
 
@@ -77,8 +77,7 @@ router.post("/", async (req, res, next) => {
                 userId,
                 channelId,
                 schedule,
-                tool,
-                toolInput,
+                prompt,
                 maxExecutions,
                 executionCount: executionCount || 0,
                 status: status || 'active'
