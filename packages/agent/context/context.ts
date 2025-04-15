@@ -45,9 +45,8 @@ export const toolsContext = `
 - Send follow-up messages only when essential
 
 ## Task Scheduling
-- IMPORTANT! Don't execute the task immediately; instead, schedule it for the specified time
+- Do not execute or test tasks before its scheduled time
 - Specifically mention the user and/or channel in the task description when scheduling tasks
-- Do not test the task before scheduling it
 
 ## Discord Tools
 - User disconnection actions do not require reason documentation
