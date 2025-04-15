@@ -1,7 +1,6 @@
 const express = require("express");
 const router = express.Router({ mergeParams: true });
 
-const { sequelize } = require('../../../../database/sequelize');
 const { ScheduledTasks } = require("../../../../database/models");
 const { findAllRecords, findOneRecord, createOrUpdateRecord, withTransaction } = require("../../../../utils/RequestManager");
 const { CreateError, RequestError } = require("../../../../utils/ClassManager");
@@ -13,7 +12,7 @@ const { CreateError, RequestError } = require("../../../../utils/ClassManager");
  */
 router.get("/", async (req, res, next) => {
     const { guildId } = req.params;
-    const options = { where: { guildId: guildId, status: 'active' } };
+    const options = { where: { guildId: guildId } };
 
     try {
         const guildTasks = await findAllRecords(ScheduledTasks, options);
@@ -35,7 +34,8 @@ router.get("/", async (req, res, next) => {
  * @param {string} userId - The id of the user
  */
 router.get("/:userId", async (req, res, next) => {
-    const options = { where: { guildId: guildId, userId: userId } };
+    const { guildId, userId } = req.params;
+    const options = { where: { guildId, userId } };
 
     try {
         const guildSettings = await findOneRecord(ScheduledTasks, options);
@@ -58,14 +58,14 @@ router.get("/:userId", async (req, res, next) => {
  */
 router.post("/", async (req, res, next) => {
     const { guildId } = req.params;
-    const { taskId, userId, schedule, prompt, channelId, maxExecutions, executionCount, status } = req.body;
+    const { taskId, userId, schedule, task, maxExecutions, executionCount, startDate, endDate } = req.body;
 
     // Validate required fields
-    if (!taskId || !userId || !schedule || !prompt) {
+    if (!taskId || !userId || !schedule || !task) {
         throw new RequestError(400, "Missing required fields", {
             method: req.method,
             path: req.path,
-            required: ['taskId', 'userId', 'schedule', 'prompt']
+            required: ['taskId', 'userId', 'schedule', 'task']
         });
     }
 
@@ -75,19 +75,19 @@ router.post("/", async (req, res, next) => {
                 taskId,
                 guildId,
                 userId,
-                channelId,
                 schedule,
-                prompt,
+                task,
                 maxExecutions,
                 executionCount: executionCount || 0,
-                status: status || 'active'
+                startDate,
+                endDate,
             };
 
-            const [task, created] = await createOrUpdateRecord(ScheduledTasks, taskData, t);
+            const [createdTask, created] = await createOrUpdateRecord(ScheduledTasks, taskData, t);
 
             return {
                 message: created ? "Task created successfully" : "Task updated successfully",
-                data: task
+                data: createdTask
             };
         });
 
@@ -96,6 +96,7 @@ router.post("/", async (req, res, next) => {
         next(error);
     }
 });
+
 
 /**
  * DELETE api/guilds/:guildId/tasks/:taskId

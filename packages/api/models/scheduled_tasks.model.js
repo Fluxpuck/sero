@@ -12,6 +12,7 @@ module.exports = sequelize => {
         taskId: {
             type: DataTypes.BIGINT,
             primaryKey: true,
+            unique: true,
             allowNull: false,
             validate: {
                 is: /^\d{17,20}$/ // Discord Snowflake
@@ -31,18 +32,11 @@ module.exports = sequelize => {
                 is: /^\d{17,20}$/ // Discord Snowflake
             }
         },
-        channelId: {
-            type: DataTypes.BIGINT,
-            allowNull: true,
-            validate: {
-                is: /^\d{17,20}$/ // Discord Snowflake
-            }
-        },
         schedule: {
             type: DataTypes.STRING,
             allowNull: false
         },
-        prompt: {
+        task: {
             type: DataTypes.TEXT,
             allowNull: false
         },
@@ -62,29 +56,13 @@ module.exports = sequelize => {
             type: DataTypes.DATE,
             allowNull: true
         },
-        status: {
-            type: DataTypes.ENUM('active', 'stopped'),
-            defaultValue: 'active'
-        }
     }, {
         sequelize,
         modelName: 'scheduled_tasks',
         timestamps: true,
         createdAt: true,
         updatedAt: true,
-        paranoid: true,
-        indexes: [
-            {
-                unique: true,
-                fields: ['channelId', 'startDate'],
-                where: {
-                    [Op.or]: [
-                        { channelId: { [Op.not]: null } },
-                        { startDate: { [Op.not]: null } }
-                    ]
-                }
-            }
-        ]
+        paranoid: true
     });
 
     ScheduledTasks.beforeDestroy(async (instance) => {
