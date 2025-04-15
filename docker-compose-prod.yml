@@ -57,7 +57,6 @@ services:
     environment:
       NODE_ENV: production
     restart: unless-stopped
-    command: sh -c "npm run deploy && npm start"
     depends_on:
       - redis
       - api
