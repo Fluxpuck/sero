@@ -47,6 +47,7 @@ export const toolsContext = `
 ## Task Scheduling
 - IMPORTANT! Don't execute the task immediately; instead, schedule it for the specified time
 - Specifically mention the user and/or channel in the task description when scheduling tasks
+- Do not test the task before scheduling it
 
 ## Discord Tools
 - User disconnection actions do not require reason documentation
