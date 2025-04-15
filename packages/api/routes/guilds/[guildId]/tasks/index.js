@@ -61,7 +61,7 @@ router.post("/", async (req, res, next) => {
     const { taskId, userId, schedule, prompt, channelId, maxExecutions, executionCount, status } = req.body;
 
     // Validate required fields
-    if (!taskId || !userId || !schedule || !tool || !toolInput) {
+    if (!taskId || !userId || !schedule || !prompt) {
         throw new RequestError(400, "Missing required fields", {
             method: req.method,
             path: req.path,

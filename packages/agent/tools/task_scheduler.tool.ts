@@ -7,7 +7,8 @@ import { ClaudeService } from "../services/claude";
 
 type TaskSchedulerInput = {
     schedule?: string; // Cron expression (e.g., "*/5 * * * *" for every 5 minutes)
-    prompt?: string;   // The prompt to execute with Claude
+    task?: string;
+    taskId?: string;
     maxExecutions?: number;
     executionCount?: number;
     guildId?: string;
@@ -16,7 +17,6 @@ type TaskSchedulerInput = {
     startDate?: string;
     endDate?: string;
     operation: "schedule" | "list" | "cancel";
-    taskId?: string;
 }
 
 type StoredTaskInfo = {
@@ -44,9 +44,19 @@ export class TaskSchedulerTool extends ClaudeToolType {
                         type: "string",
                         description: "Cron expression for scheduling (e.g., '*/5 * * * *' for every 5 minutes)"
                     },
-                    prompt: {
+                    task: {
                         type: "string",
-                        description: "Prompt to be executed by Claude at the scheduled time"
+                        description: "A description of the task to be executed. This should be a task description without the scheduled time.",
+                        examples: [
+                            "Send a reminder to take a break",
+                            "Fetch the latest news and send it to the channel",
+                            "Run a daily report at 9 AM",
+                            "Send a motivational quote every Monday at 8 AM",
+                        ],
+                    },
+                    taskId: {
+                        type: "string",
+                        description: "Task ID to cancel (required for cancel operation)"
                     },
                     maxExecutions: {
                         type: "number",
@@ -68,10 +78,6 @@ export class TaskSchedulerTool extends ClaudeToolType {
                         type: "string",
                         description: "Operation to perform: 'schedule', 'list', or 'cancel'",
                         enum: ["schedule", "list", "cancel"]
-                    },
-                    taskId: {
-                        type: "string",
-                        description: "Task ID to cancel (required for cancel operation)"
                     }
                 },
                 required: ["operation"]
@@ -84,7 +90,6 @@ export class TaskSchedulerTool extends ClaudeToolType {
     constructor(
         private readonly client: Client,
         private readonly message: Message,
-        private readonly tools: Map<string, ClaudeToolType>,
         private readonly apiService: ApiService = new ApiService(),
     ) {
         super(TaskSchedulerTool.getToolContext());
@@ -128,7 +133,7 @@ export class TaskSchedulerTool extends ClaudeToolType {
                 if (existingTask) {
                     // Update existing task's execution count
                     existingTask.executionCount = taskData.executionCount || 0;
-                } else if (taskData.schedule && taskData.prompt) {
+                } else if (taskData.schedule && taskData.task) {
                     // Create new task only if all required fields are present
                     if (cron.validate(taskData.schedule)) {
                         const channel = taskData.channelId
@@ -143,7 +148,7 @@ export class TaskSchedulerTool extends ClaudeToolType {
                                 maxExecutions: taskData.maxExecutions,
                                 channel,
                                 taskOwnerId: taskData.userId,
-                                prompt: taskData.prompt,
+                                prompt: taskData.task,
                                 schedule: taskData.schedule
                             });
                         }
@@ -187,7 +192,7 @@ export class TaskSchedulerTool extends ClaudeToolType {
             }
 
             if (input.operation === "schedule") {
-                if (!input.schedule || !input.prompt) {
+                if (!input.schedule || !input.task) {
                     throw new Error("Schedule and prompt are required for schedule operation");
                 }
 
@@ -208,7 +213,7 @@ export class TaskSchedulerTool extends ClaudeToolType {
                     maxExecutions: input.maxExecutions,
                     channel,
                     taskOwnerId: this.message.author.id,
-                    prompt: input.prompt,
+                    prompt: input.task,
                     schedule: input.schedule
                 });
 
@@ -227,7 +232,7 @@ export class TaskSchedulerTool extends ClaudeToolType {
     }
 
     private scheduleTask(input: TaskSchedulerInput, taskId: string, channel: TextChannel | ThreadChannel): cron.ScheduledTask {
-        if (!input.schedule || !input.prompt) {
+        if (!input.schedule || !input.task) {
             throw new Error("Schedule and prompt are required for schedule operation");
         }
 

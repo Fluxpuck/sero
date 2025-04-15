@@ -22,7 +22,7 @@ export function initializeTools(message: Message, client: Client) {
     toolInstances.set('discord_moderation_actions', new DiscordModerationTool(client, message));
     toolInstances.set('discord_user_logs', new DiscordUserLogsTool(client, message));
     toolInstances.set('sero_utility_actions', new SeroUtilityActionsTool(client, message));
-    toolInstances.set('task_scheduler', new TaskSchedulerTool(client, message, toolInstances));
+    toolInstances.set('task_scheduler', new TaskSchedulerTool(client, message));
 }
 
 /**
