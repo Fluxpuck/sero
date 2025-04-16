@@ -8,6 +8,7 @@ type ClaudeOptions = {
     previousMessages?: any[];
     reasoning?: boolean;
     excludeTools?: boolean;
+    finalResponse?: boolean;
 }
 
 type ClaudeContextOptions = {
@@ -137,6 +138,7 @@ export class ClaudeService {
         const previousMessages = (options?.previousMessages ?? []);
         const reasoning = (options?.reasoning ?? true);
         const excludeTools = (options?.excludeTools ?? false);
+        const finalResponse = (options?.finalResponse ?? true);
 
         // Create a unique key for the conversation based on channel and user ID
         const conversationKey = createConversationKey(message.channel.id, message.author.id);
@@ -238,9 +240,11 @@ export class ClaudeService {
                 updateConversationHistory(conversationKey, updatedHistory);
 
                 // Reply with the final response
-                await message.reply(sanitizeResponse(textResponse)).catch((err) => {
-                    console.error('Error sending reply:', err);
-                });
+                if (finalResponse) {
+                    await message.reply(sanitizeResponse(textResponse)).catch((err) => {
+                        console.error('Error sending reply:', err);
+                    });
+                }
             }
 
         } catch (error) {
@@ -291,7 +295,7 @@ export class ClaudeService {
             const response = await retryApiCall(() =>
                 this.anthropic.messages.create({
                     model: this.CLAUDE_MODEL,
-                    max_tokens: 128,
+                    max_tokens: this.MAX_TOKENS,
                     system: systemPrompt,
                     messages: conversationHistory,
                 })
@@ -313,17 +317,16 @@ export class ClaudeService {
                 updateConversationHistory(conversationKey, updatedHistory);
 
                 // Parse the response to check for violations
-                let parsedResponse: { violation: boolean; reason?: string } | null = null;
-                try {
-                    parsedResponse = JSON.parse(textResponse);
-                } catch (e) { }
-
+                const jsonMatch = textResponse.match(/\{.*\}/s)?.[0];
+                const parsedResponse = jsonMatch ? JSON.parse(jsonMatch) : null;
                 if (!parsedResponse) return;
 
                 if (parsedResponse.violation) {
                     const prompt = `The user ${message.author.id} has violated the server rules for the following reason: ${parsedResponse.reason}. Please take the appropriate action. Please direct your response to the user.`;
-                    this.askClaude(prompt, message, { reasoning: false });
+                    this.askClaude(prompt, message, { reasoning: false, finalResponse: false });
                 }
+
+                return parsedResponse;
             }
 
         } catch (error) {
