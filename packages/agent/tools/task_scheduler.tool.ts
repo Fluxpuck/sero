@@ -197,7 +197,7 @@ export class TaskSchedulerTool extends ClaudeToolType {
                     return;
                 }
 
-                // Execute task
+                // Execute scheduled task
                 await claudeService.execute(taskInfo.task!, message);
 
                 // Increment execution count
@@ -369,11 +369,14 @@ export class TaskSchedulerTool extends ClaudeToolType {
                     return await this.createTask(input);
 
                 case "update":
+                    if (!input.taskId) {
+                        return "TaskId is required for updating a task";
+                    }
                     return await this.updateTask(input);
 
                 case "delete":
                     if (!input.taskId) {
-                        return "Task ID is required for deletion";
+                        return "TaskId is required for deletion";
                     }
                     return await this.deleteTask(input.taskId);
 
