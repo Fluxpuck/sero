@@ -27,7 +27,7 @@ export async function execute(message: Message) {
 
         // Check if this message is for the bot
         const isMention = message.mentions.has(client.user?.id || '');
-        const isKeywordTrigger = /\b(hey sero|sero help|help sero)\b/i.test(message.content);
+        const isKeywordTrigger = /\b(hello sero|hey sero|sero help|help sero)\b/i.test(message.content);
         const isReplyToBot = message.reference?.messageId &&
             (await message.channel.messages.fetch(message.reference.messageId))
                 .author.id === client.user?.id;
