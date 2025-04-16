@@ -198,7 +198,7 @@ export class TaskSchedulerTool extends ClaudeToolType {
                 }
 
                 // Execute scheduled task
-                await claudeService.execute(taskInfo.task!, message);
+                await claudeService.askClaude(taskInfo.task!, message, { reasoning: false, });
 
                 // Increment execution count
                 if (message.guild?.id) {
@@ -252,7 +252,7 @@ export class TaskSchedulerTool extends ClaudeToolType {
             };
 
             // Store task in database
-            const response = await this.apiService.post(`/guilds/${this.message.guild.id}/tasks`, taskData);
+            await this.apiService.post(`/guilds/${this.message.guild.id}/tasks`, taskData);
 
             // Schedule the task
             await TaskSchedulerTool.scheduleTask(taskData, this.message, this.client, this.apiService);

@@ -4,6 +4,12 @@ import { sanitizeResponse } from '../utils';
 import { executeTool, initializeTools } from '../services/tools';
 import { retryApiCall } from './api';
 
+type ClaudeOptions = {
+    previousMessages?: any[];
+    reasoning?: boolean;
+    excludeTools?: boolean;
+}
+
 // Gather the about me and discord guidelines context for the AI assistant
 import {
     seroAgentDescription, discordContext, toolsContext, disclosedContext,
@@ -29,10 +35,8 @@ import {
 
 export class ClaudeService {
     private anthropic: Anthropic;
-    private readonly CLAUDE_REASONING_MODEL = 'claude-3-5-haiku-20241022';
-    private readonly CLAUDE_EXECUTION_MODEL = 'claude-3-5-haiku-20241022';
-    private readonly MAX_TOKENS_REASONING = 1024;
-    private readonly MAX_TOKENS_EXECUTION = 2048;
+    private readonly CLAUDE_MODEL = 'claude-3-5-haiku-20241022';
+    private readonly MAX_TOKENS = 1024;
 
     constructor() {
         this.anthropic = new Anthropic({
@@ -79,18 +83,26 @@ export class ClaudeService {
         ];
     }
 
-    /**
-     * Reasoning function - Allows Claude to use tools and engage in multi-turn reasoning
-     */
-    public async reasoning(
+    public async askClaude(
         prompt: string,
         message: Message,
-        previousMessages: any[] = [],
+        options?: ClaudeOptions
     ): Promise<string | undefined> {
+
+        // Set default values for ClaudeOptions
+        const previousMessages = (options?.previousMessages ?? []);
+        const reasoning = (options?.reasoning ?? true);
+        const excludeTools = (options?.excludeTools ?? false);
+
         // Create a unique key for the conversation based on channel and user ID
         const conversationKey = createConversationKey(message.channel.id, message.author.id);
 
         try {
+
+            if ('sendTyping' in message.channel) {
+                await message.channel.sendTyping();
+            }
+
             // Initialize tools with message context
             initializeTools(message, message.client);
             const systemPrompt = this.prepareSystemPrompt(message);
@@ -107,32 +119,27 @@ export class ClaudeService {
             // Call the Claude API with retry logic
             const response = await retryApiCall(() =>
                 this.anthropic.messages.create({
-                    model: this.CLAUDE_REASONING_MODEL,
-                    max_tokens: this.MAX_TOKENS_REASONING,
+                    model: this.CLAUDE_MODEL,
+                    max_tokens: this.MAX_TOKENS,
                     system: systemPrompt,
-                    tools: this.getTools(),
+                    ...(excludeTools ? {} : { tools: this.getTools() }), // Exclude tools if specified
                     messages: conversationHistory,
                 })
             );
 
             if (response.stop_reason === "tool_use") {
-                const textContent = response.content.find((c) => c.type === "text")?.text ?? "";
+                const textResponse = response.content.find((c) => c.type === "text")?.text ?? "";
                 const toolRequest = response.content.find((c) => c.type === "tool_use");
-
-                if (!toolRequest) return "No valid tool request found";
+                if (!toolRequest) return;
 
                 // Reply with temporary response if Claude provided text
-                if (textContent) {
-                    await message.reply(sanitizeResponse(textContent)).catch((err) => {
-                        console.error('Error sending reply:', err);
-                    });
+                if (textResponse && reasoning) {
+                    await message.reply(sanitizeResponse(textResponse));
                 }
 
                 try {
-                    // Extract tool details
+                    // Execute the tool and get the result
                     const { id, name, input } = toolRequest;
-
-                    // Execute the tool and get the result first
                     const toolResult = await executeTool(name, input);
 
                     // Only update history if tool execution was successful
@@ -141,7 +148,7 @@ export class ClaudeService {
                         {
                             role: 'assistant',
                             content: [
-                                ...(textContent ? [{ type: "text", text: textContent }] : []),
+                                ...(textResponse ? [{ type: "text", text: textResponse }] : []),
                                 { type: "tool_use", id, name, input }
                             ]
                         },
@@ -159,142 +166,44 @@ export class ClaudeService {
                     updateConversationHistory(conversationKey, updatedHistory);
 
                     // Recursive call with tool result and updated message history
-                    return await this.reasoning("", message, updatedHistory);
+                    return await this.askClaude("", message, {
+                        previousMessages: updatedHistory
+                    });
 
                 } catch (error) {
+                    console.error('Error executing tool:', error);
+
                     // Delete conversation history on error
                     deleteConverstationHistory(conversationKey);
-
-                    console.error('Error executing tool:', error);
-                    throw error;
                 }
-            } else {
-                // Get final response if no tool use
-                const finalResponse = response.content.find(c => c.type === "text")?.text ?? "";
-
-                if (finalResponse) {
-                    // Add assistant's response to conversation history
-                    conversationHistory.push({
-                        role: 'assistant',
-                        content: finalResponse
-                    });
-
-                    // Update the stored history
-                    updateConversationHistory(conversationKey, conversationHistory);
-
-                    await message.reply(sanitizeResponse(finalResponse)).catch((err) => {
-                        console.error('Error sending reply:', err);
-                    });
-                }
-                return finalResponse;
             }
+
+            if (response.stop_reason === "end_turn") {
+                const textResponse = response.content.find((c) => c.type === "text")?.text ?? "";
+
+                // Only update history if tool execution was successful
+                const updatedHistory = [
+                    ...conversationHistory,
+                    {
+                        role: 'assistant',
+                        content: textResponse
+                    }
+                ];
+
+                // Update the stored history only after successful execution
+                updateConversationHistory(conversationKey, updatedHistory);
+
+                // Reply with the final response
+                await message.reply(sanitizeResponse(textResponse)).catch((err) => {
+                    console.error('Error sending reply:', err);
+                });
+            }
+
         } catch (error) {
+            console.error('Error executing tool:', error);
+
             // Delete conversation history on error
             deleteConverstationHistory(conversationKey);
-
-            console.error('Error calling Claude API:', error);
-            throw error;
-        }
-    }
-
-    /**
-     * Execute function - Gets Claude to execute a prompt directly without multi-turn reasoning
-     * Useful for straightforward tasks that don't require complex reasoning chains
-     */
-    public async execute(
-        prompt: string,
-        message: Message,
-    ): Promise<string | undefined> {
-        try {
-            // Initialize tools with message context
-            initializeTools(message, message.client);
-            const systemPrompt = this.prepareSystemPrompt(message);
-
-            // Simplified prompt without conversation history
-            const messageContent = [{ role: 'user' as const, content: prompt }];
-
-            // Call the Claude API with retry logic
-            const response = await retryApiCall(() =>
-                this.anthropic.messages.create({
-                    model: this.CLAUDE_EXECUTION_MODEL,
-                    max_tokens: this.MAX_TOKENS_EXECUTION,
-                    system: systemPrompt,
-                    tools: this.getTools(), // Add tools so Claude can use them if needed
-                    messages: messageContent,
-                })
-            );
-
-            // Handle tool use case (single tool execution without conversation)
-            if (response.stop_reason === "tool_use") {
-                const textContent = response.content.find((c) => c.type === "text")?.text ?? "";
-                const toolRequest = response.content.find((c) => c.type === "tool_use");
-
-                if (!toolRequest) return "No valid tool request found";
-
-                // Send any explanatory text before tool execution
-                if (textContent) {
-                    await message.reply(sanitizeResponse(textContent)).catch((err) => {
-                        console.error('Error sending reply:', err);
-                    });
-                }
-
-                // Extract tool details and execute
-                const { name, input } = toolRequest;
-                const toolResult = await executeTool(name, input);
-
-                // Get final answer using tool result, without starting a conversation
-                const finalResponse = await this.getFinalAnswer(toolResult, systemPrompt);
-
-                if (finalResponse) {
-                    await message.reply(sanitizeResponse(finalResponse)).catch((err) => {
-                        console.error('Error sending reply:', err);
-                    });
-                }
-
-                return finalResponse;
-            } else {
-                // Get response if no tool use
-                const finalResponse = response.content.find(c => c.type === "text")?.text ?? "";
-
-                if (finalResponse) {
-                    await message.reply(sanitizeResponse(finalResponse)).catch((err) => {
-                        console.error('Error sending reply:', err);
-                    });
-                }
-
-                return finalResponse;
-            }
-        } catch (error) {
-            console.error('Error calling Claude API for execution:', error);
-        }
-    }
-
-    /**
-     * Helper method to get a final answer after tool execution
-     * Doesn't create conversation history or reasoning chains
-     */
-    private async getFinalAnswer(
-        toolResult: string,
-        systemPrompt: string
-    ): Promise<string | undefined> {
-        try {
-            // Create a prompt instructing Claude to provide a final answer based on tool results
-            const finalPrompt = `Here is the result of executing a tool. Please provide a final answer based on this information only. Do not engage in further reasoning or suggest additional actions:\n\n${toolResult}`;
-
-            // Call Claude to interpret the tool result
-            const response = await retryApiCall(() =>
-                this.anthropic.messages.create({
-                    model: this.CLAUDE_EXECUTION_MODEL,
-                    max_tokens: this.MAX_TOKENS_EXECUTION,
-                    system: systemPrompt,
-                    messages: [{ role: 'user', content: finalPrompt }],
-                })
-            );
-
-            return response.content.find(c => c.type === "text")?.text ?? "";
-        } catch (error) {
-            console.error('Error getting final answer:', error);
-            return `Error processing result: ${error instanceof Error ? error.message : 'Unknown error'}`;
         }
     }
 }
