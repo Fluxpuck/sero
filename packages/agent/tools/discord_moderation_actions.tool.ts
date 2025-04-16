@@ -146,6 +146,7 @@ export class DiscordModerationTool extends ClaudeToolType {
                         return `Unknown action: ${action}`;
                 }
             } catch (error) {
+                console.error(`Error on DiscordModerationTool:`, error);
                 throw new Error(`Failed to ${action} ${user.user.tag}: ${error instanceof Error ? error.message : 'Unknown error'}`);
             }
         });

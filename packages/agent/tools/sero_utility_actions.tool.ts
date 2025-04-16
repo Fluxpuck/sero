@@ -3,7 +3,7 @@ import { ClaudeTool, ClaudeToolType } from "../types/tool.types";
 import { UserResolver } from "../utils/user-resolver";
 import { ApiService, ApiResponse } from "../services/api";
 
-type SeroUtilityActionType = "away" | "get-boost" | "set-boost" | "give-exp" | "remove-exp" | "give-money" | "remove-money";
+type SeroUtilityActionType = "set-away" | "get-boost" | "set-boost" | "give-exp" | "remove-exp" | "give-money" | "remove-money";
 type SeroUtilityToolInput = {
     user: string;
     actions: SeroUtilityActionType[];
@@ -29,10 +29,10 @@ export class SeroUtilityActionsTool extends ClaudeToolType {
                         type: "array",
                         items: {
                             type: "string",
-                            enum: ["away", "get-boost", "set-boost", "give-exp", "remove-exp", "give-money", "remove-money"],
+                            enum: ["set-away", "get-boost", "set-boost", "give-exp", "remove-exp", "give-money", "remove-money"],
                             description: "Type of sero action to perform"
                         },
-                        description: "Array of sero actions to perform: Away (set user as away), Get Boost (get the current server boost), Set Boost (set the server boost), Give Exp (give experience points), Remove Exp (remove experience points), Give Money (give money), Remove Money (remove money)"
+                        description: "Array of sero actions to perform: Set Away (set user as away), Get Boost (get the current server boost), Set Boost (set the server boost), Give Exp (give experience points), Remove Exp (remove experience points), Give Money (give money), Remove Money (remove money)"
                     },
                     amount: {
                         type: "number",
@@ -40,7 +40,7 @@ export class SeroUtilityActionsTool extends ClaudeToolType {
                     },
                     time: {
                         type: "number",
-                        description: "Time in minutes for away action or time in hours for the boost action (optional)"
+                        description: "Time in minutes for set-away action or time in hours for the boost action (optional)"
                     },
                     message: {
                         type: "string",
@@ -87,7 +87,7 @@ export class SeroUtilityActionsTool extends ClaudeToolType {
     private async handleAction(action: SeroUtilityActionType, user: any, input: SeroUtilityToolInput): Promise<string> {
         try {
             switch (action) {
-                case "away":
+                case "set-away":
                     return await this.handleAway(user, input);
 
                 case "get-boost":

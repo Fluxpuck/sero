@@ -1,29 +1,42 @@
-import { Client, Message, GuildChannel, Role, CategoryChannel } from "discord.js";
+import { Client, Message, GuildChannel, Role, CategoryChannel, Guild, GuildScheduledEvent, ChannelType } from "discord.js";
 import { ClaudeTool, ClaudeToolType } from "../types/tool.types";
 import { ChannelResolver } from "../utils/channel-resolver";
 import { UserResolver } from "../utils/user-resolver";
 
-type GuildInfoActionType = "channel-info" | "category-channels" | "role-info" | "add-role" | "remove-role";
+type GuildInfoActionType =
+    "guild-info" |
+    "channel-info" |
+    "list-channels" |
+    "role-info" |
+    "list-events" |
+    "event-info";
 
 interface GuildInfoInput {
     action: GuildInfoActionType;
     channel?: string;
     category?: string;
     role?: string;
-    user?: string;
+    event?: string;
 }
 
 export class DiscordGuildInfoTool extends ClaudeToolType {
     static getToolContext() {
         return {
             name: "discord_guild_info",
-            description: "Get information about Discord guild elements and manage roles",
+            description: "Get information about Discord guild elements",
             input_schema: {
                 type: "object" as const,
                 properties: {
                     action: {
                         type: "string",
-                        enum: ["channel-info", "category-channels", "role-info", "add-role", "remove-role"],
+                        enum: [
+                            "guild-info",
+                            "channel-info",
+                            "list-channels",
+                            "role-info",
+                            "list-events",
+                            "event-info"
+                        ],
                         description: "Type of guild info action to perform"
                     },
                     channel: {
@@ -32,15 +45,15 @@ export class DiscordGuildInfoTool extends ClaudeToolType {
                     },
                     category: {
                         type: "string",
-                        description: "Category name or ID to list channels from"
+                        description: "Optional category name or ID to filter channels when listing"
                     },
                     role: {
                         type: "string",
-                        description: "Role name or ID to find or manage"
+                        description: "Role name or ID to find information about"
                     },
-                    user: {
+                    event: {
                         type: "string",
-                        description: "User to add/remove role from (required for role management actions)"
+                        description: "Event ID to get information about"
                     }
                 },
                 required: ["action"]
@@ -75,6 +88,65 @@ export class DiscordGuildInfoTool extends ClaudeToolType {
         ) || null;
     }
 
+    private async findEvent(query: string): Promise<GuildScheduledEvent | null> {
+        const guild = this.message.guild!;
+
+        // Try to find by ID first
+        if (/^\d+$/.test(query)) {
+            try {
+                return await guild.scheduledEvents.fetch(query) || null;
+            } catch {
+                // Continue to name search if ID lookup fails
+            }
+        }
+
+        // Search by name (case-insensitive)
+        const searchName = query.toLowerCase();
+        return (await guild.scheduledEvents.fetch()).find(event =>
+            event.name.toLowerCase() === searchName ||
+            event.name.toLowerCase().includes(searchName)
+        ) || null;
+    }
+
+    private formatGuild(guild: Guild): any {
+        return {
+            id: guild.id,
+            name: guild.name,
+            ownerId: guild.ownerId,
+            description: guild.description,
+            memberCount: guild.memberCount,
+            verified: guild.verified,
+            partnered: guild.partnered,
+            preferredLocale: guild.preferredLocale,
+            premiumTier: guild.premiumTier,
+            premiumSubscriptionCount: guild.premiumSubscriptionCount,
+            createdAt: guild.createdAt.toISOString(),
+            features: guild.features,
+            channelCount: guild.channels.cache.size,
+            roleCount: guild.roles.cache.size,
+            emojiCount: guild.emojis.cache.size,
+            stickerCount: guild.stickers.cache.size
+        };
+    }
+
+    private formatEvent(event: GuildScheduledEvent): any {
+        return {
+            id: event.id,
+            name: event.name,
+            description: event.description,
+            scheduledStartTime: event.scheduledStartAt?.toISOString(),
+            scheduledEndTime: event.scheduledEndAt?.toISOString(),
+            status: event.status,
+            creatorId: event.creatorId,
+            createdAt: event.createdAt?.toISOString(),
+            entityType: event.entityType,
+            entityId: event.entityId,
+            channelId: event.channelId,
+            location: event.entityMetadata?.location,
+            userCount: event.userCount
+        };
+    }
+
     async execute(input: GuildInfoInput): Promise<string> {
         if (!this.message.guild) {
             return `Error: This command can only be used in a guild.`;
@@ -82,24 +154,45 @@ export class DiscordGuildInfoTool extends ClaudeToolType {
 
         try {
             switch (input.action) {
+                case "guild-info": {
+                    return JSON.stringify(this.formatGuild(this.message.guild), null, 2);
+                }
+
                 case "channel-info": {
                     const channel = await ChannelResolver.resolve(this.message.guild, input.channel!);
                     if (!channel) return `Channel "${input.channel}" not found`;
                     return JSON.stringify(ChannelResolver.formatChannel(channel), null, 2);
                 }
 
-                case "category-channels": {
-                    const category = await ChannelResolver.resolve(this.message.guild, input.category!);
-                    if (!category || !(category instanceof CategoryChannel)) {
-                        return `Category "${input.category}" not found`;
+                case "list-channels": {
+                    let channels = this.message.guild.channels.cache;
+                    let categoryName = '';
+
+                    // Filter by category if specified
+                    if (input.category) {
+                        const category = await ChannelResolver.resolve(this.message.guild, input.category);
+                        if (!category || !(category instanceof CategoryChannel)) {
+                            return `Category "${input.category}" not found`;
+                        }
+
+                        channels = category.children.cache;
+                        categoryName = category.name;
                     }
 
-                    const children = category.children.cache.map(channel =>
-                        ChannelResolver.formatChannel(channel)
-                    );
+                    const formattedChannels = channels
+                        .map(channel => ({
+                            id: channel.id,
+                            name: channel.name,
+                            type: channel.type,
+                            parentId: channel.parentId,
+                            position: 'position' in channel ? channel.position : 0,
+                        }))
+                        .sort((a, b) => a.position - b.position);
+
                     return JSON.stringify({
-                        category: ChannelResolver.formatChannel(category),
-                        channels: children
+                        count: formattedChannels.length,
+                        categoryFilter: input.category ? categoryName : null,
+                        channels: formattedChannels
                     }, null, 2);
                 }
 
@@ -119,35 +212,26 @@ export class DiscordGuildInfoTool extends ClaudeToolType {
                     }, null, 2);
                 }
 
-                case "add-role":
-                case "remove-role": {
-                    if (!this.message.member?.permissions.has('ManageRoles')) {
-                        return "You don't have permission to manage roles";
-                    }
+                case "list-events": {
+                    const events = await this.message.guild.scheduledEvents.fetch();
+                    return JSON.stringify({
+                        count: events.size,
+                        events: Array.from(events.values()).map(event => this.formatEvent(event))
+                    }, null, 2);
+                }
 
-                    const role = await this.findRole(input.role!);
-                    if (!role) return `Role "${input.role}" not found`;
-
-                    const member = await UserResolver.resolve(this.message.guild, input.user!);
-                    if (!member) return `User "${input.user}" not found`;
-
-                    if (input.action === "add-role") {
-                        await member.roles.add(role).catch(error => {
-                            return `Failed to add role ${role.name} to ${member.user.tag}: ${error}`;
-                        });
-                        return `Added role ${role.name} to ${member.user.tag}`;
-                    } else {
-                        await member.roles.remove(role).catch(error => {
-                            return `Failed to remove role ${role.name} from ${member.user.tag}: ${error}`;
-                        });
-                        return `Removed role ${role.name} from ${member.user.tag}`;
-                    }
+                case "event-info": {
+                    if (!input.event) return "Event ID or name is required";
+                    const event = await this.findEvent(input.event);
+                    if (!event) return `Event "${input.event}" not found`;
+                    return JSON.stringify(this.formatEvent(event), null, 2);
                 }
 
                 default:
                     return `Unknown action: ${input.action}`;
             }
         } catch (error) {
+            console.error(`Error on DiscordGuildInfoTool:`, error);
             throw new Error(`Failed to execute ${input.action}: ${error instanceof Error ? error.message : 'Unknown error'}`);
         }
     }

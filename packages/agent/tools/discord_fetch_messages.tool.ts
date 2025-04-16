@@ -82,6 +82,7 @@ export class DiscordFetchMessagesTool extends ClaudeToolType {
             return JSON.stringify(response, null, 2);
 
         } catch (error) {
+            console.error(`Error on DiscordFetchMessagesTool:`, error);
             throw new Error(`Failed to fetch messages: ${error instanceof Error ? error.message : 'Unknown error'}`);
         }
     }

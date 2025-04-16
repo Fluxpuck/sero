@@ -79,7 +79,7 @@ export class DiscordSendMessageTool extends ClaudeToolType {
 
                 // Use apiService instead of fetch
                 const response = await (content.toLowerCase() === 'random'
-                    ? tenorApiService.get(`random?key=${tenorKey}&limit=20&contentfilter=medium`)
+                    ? tenorApiService.get(`random?key=${tenorKey}&limit=40&contentfilter=medium`)
                     : tenorApiService.get(`search?q=${encodeURIComponent(content)}&key=${tenorKey}&limit=20&contentfilter=medium`));
 
                 const data = response.data;
@@ -118,7 +118,8 @@ export class DiscordSendMessageTool extends ClaudeToolType {
             }
 
         } catch (error) {
-            throw new Error(`Failed to send message: ${error instanceof Error ? error.message : 'Unknown error'}`);
+            console.error(`Error on DiscordSendMessageTool:`, error);
+            return `Could not send message: ${error instanceof Error ? error.message : String(error)}`;
         }
     }
 }

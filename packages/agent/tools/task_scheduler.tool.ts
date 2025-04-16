@@ -92,8 +92,9 @@ export class TaskSchedulerTool extends ClaudeToolType {
             const guilds = client.guilds.cache;
 
             for (const [guildId, guild] of guilds) {
+                let taskCount = 0;
+
                 try {
-                    console.log(`Initializing scheduled tasks for guild: ${guild.name} (${guildId})`);
                     const response = await apiService.get(`/guilds/${guildId}/tasks`) as ApiResponse;
                     if (response.status === 200 && response.data) {
 
@@ -105,10 +106,7 @@ export class TaskSchedulerTool extends ClaudeToolType {
                         if (tasks.length > 0) {
                             for (const task of tasks) {
                                 const channel = guild.channels.cache.find(c => c.isTextBased()) as TextChannel;
-                                if (!channel) {
-                                    console.warn(`No text channel found for guild ${guild.name} to execute tasks`);
-                                    continue;
-                                }
+                                if (!channel) continue; // Skip if no text channel is found
 
                                 // Create a fake message object to pass to executeTask
                                 const fakeMessage = {
@@ -119,13 +117,15 @@ export class TaskSchedulerTool extends ClaudeToolType {
                                 } as unknown as Message;
 
                                 await this.scheduleTask(task, fakeMessage, client, apiService);
-                                console.log(`Scheduled task ${task.taskId} for guild ${guild.name}`);
+                                taskCount++;
                             }
                         }
                     }
                 } catch (error) {
                     console.error(`Error initializing tasks for guild ${guildId}:`, error);
                 }
+
+                console.log(`Scheduled ${taskCount} tasks for guild ${guild.name}`);
             }
         } catch (error) {
             console.error('Error initializing tasks:', error);
@@ -392,8 +392,8 @@ export class TaskSchedulerTool extends ClaudeToolType {
                     return `Unknown operation: ${input.operation}`;
             }
         } catch (error) {
-            console.error('Error executing task scheduler tool:', error);
-            return `Error: ${error instanceof Error ? error.message : String(error)}`;
+            console.error(`Error executing TaskScheduler:`, error);
+            throw new Error(`Failed to execute ${input.operation}: ${error instanceof Error ? error.message : String(error)}`);
         }
     }
 }

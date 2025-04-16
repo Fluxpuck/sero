@@ -120,7 +120,7 @@ export class DiscordUserLogsTool extends ClaudeToolType {
                     return `Unknown action: ${action}`;
             }
         } catch (error) {
-            console.error(`Failed to execute ${action} for ${user.user.tag}:`, error);
+            console.error(`Error on DiscordUserLogs:`, error);
             return `Failed to execute ${action} for ${user.user.tag}: ${error instanceof Error ? error.message : 'Unknown error'}`;
         }
     }
@@ -148,8 +148,7 @@ export class DiscordUserLogsTool extends ClaudeToolType {
         if (formattedLogs.length >= 1) {
             return `Audit Logs: ${JSON.stringify(formattedLogs)}`;
         } else {
-            console.error(`No AuditLogs found for user ${user.user.tag}`, auditLogs.entries);
-            return `No audit logs found for user ${user.user.tag}`;
+            return `Couldn't find any Audit Logs for user ${user.user.tag}`;
         }
     }
 
@@ -163,9 +162,7 @@ export class DiscordUserLogsTool extends ClaudeToolType {
 
             return `Sero Activity: ${JSON.stringify(activities)}`;
         }
-
-        console.error(`No Sero activities found for user ${user.user.tag}`, seroActivityResponse.status, seroActivityResponse.data);
-        return `No Sero activities found for user ${user.user.tag}`;
+        return `Couldn't find any Sero activities for user ${user.user.tag}`;
     }
 
     private async handleSeroLogs(user: GuildMember, input: UserToolInput): Promise<string> {
@@ -174,8 +171,6 @@ export class DiscordUserLogsTool extends ClaudeToolType {
         if (seroLogsResponse.status === 200 || seroLogsResponse.status === 201) {
             return `Sero Logs: ${JSON.stringify(seroLogsResponse.data)}`;
         }
-
-        console.error(`No Sero logs found for user ${user.user.tag}`, seroLogsResponse.status, seroLogsResponse.data);
         return `No Sero logs found for user ${user.user.tag}`;
     }
 
@@ -184,9 +179,7 @@ export class DiscordUserLogsTool extends ClaudeToolType {
         if (voiceSessionResponse.status === 200 || voiceSessionResponse.status === 201) {
             return `Voice Activity: ${JSON.stringify(voiceSessionResponse.data)}`;
         }
-
-        console.error(`No voice sessions found for user ${user.user.tag}`, voiceSessionResponse.status, voiceSessionResponse.data);
-        return `No voice sessions found in specified channel for ${user.user.tag}`;
+        return `Couldn't find any Voice Sessions for user ${user.user.tag}`;
     }
 }
 
