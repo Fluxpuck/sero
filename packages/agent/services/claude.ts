@@ -22,6 +22,7 @@ import { DiscordGuildInfoToolContext } from '../tools/discord_guild_info.tool';
 import { DiscordFetchMessagesToolContext } from '../tools/discord_fetch_messages.tool';
 import { DiscordModerationToolContext } from '../tools/discord_moderation_actions.tool';
 import { DiscordUserLogsToolContext } from '../tools/discord_user_logs.tool';
+import { DiscordUserActionsToolContext } from '../tools/discord_user_actions.tool';
 import { SeroUtilityToolContext } from '../tools/sero_utility_actions.tool';
 import { TaskSchedulerToolContext } from '../tools/task_scheduler.tool';
 
@@ -78,6 +79,7 @@ export class ClaudeService {
             ...DiscordFetchMessagesToolContext,
             ...DiscordModerationToolContext,
             ...DiscordUserLogsToolContext,
+            ...DiscordUserActionsToolContext,
             ...SeroUtilityToolContext,
             ...TaskSchedulerToolContext,
         ];

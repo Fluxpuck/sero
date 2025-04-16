@@ -2,13 +2,12 @@ import { Client, Message } from "discord.js";
 import { ClaudeTool, ClaudeToolType } from "../types/tool.types";
 import { UserResolver } from "../utils/user-resolver";
 
-type ModerationActionType = "timeout" | "disconnect" | "kick" | "ban" | "warn" | "nickname";
+type ModerationActionType = "timeout" | "disconnect" | "kick" | "ban" | "warn";
 type ModerationToolInput = {
     user: string;
     actions: ModerationActionType[];
     timeout_duration?: number;
     reason: string;
-    nickname?: string;
 };
 
 export class DiscordModerationTool extends ClaudeToolType {
@@ -28,7 +27,7 @@ export class DiscordModerationTool extends ClaudeToolType {
                         items: {
                             type: "string",
                             description: "Type of moderation action to perform",
-                            enum: ["timeout", "disconnect", "kick", "ban", "warn", "nickname"]
+                            enum: ["timeout", "disconnect", "kick", "ban", "warn"]
                         },
                         description: "Array of optional moderation actions to perform on the user: Timeout (mute), Disconnect (from voice), Kick, Ban, Warn"
                     },
@@ -39,10 +38,6 @@ export class DiscordModerationTool extends ClaudeToolType {
                     reason: {
                         type: "string",
                         description: "Reason for the moderation actions"
-                    },
-                    nickname: {
-                        type: "string",
-                        description: "New nickname for the user (ignored for other actions)"
                     }
                 },
                 required: ["user", "actions", "reason"]
@@ -57,7 +52,7 @@ export class DiscordModerationTool extends ClaudeToolType {
         super(DiscordModerationTool.getToolContext());
     }
 
-    async execute({ user: targetUser, actions, timeout_duration, reason, nickname }: ModerationToolInput): Promise<string> {
+    async execute({ user: targetUser, actions, timeout_duration, reason }: ModerationToolInput): Promise<string> {
         if (!this.message.guild) {
             return `Error: This command can only be used in a guild.`;
         }
@@ -76,8 +71,6 @@ export class DiscordModerationTool extends ClaudeToolType {
 
         const fullReason = `${reason} - Moderator: ${this.message.author.tag}`;
         const warning = `# You've received a warning!\n⚠️ ${reason}\n\n-# ${this.message.guild.name}`;
-
-        const newNickname = nickname || user.displayName;
 
         const actionPromises = actions.map(async (action) => {
             try {
@@ -129,18 +122,6 @@ export class DiscordModerationTool extends ClaudeToolType {
                             return `Error: Failed to send warning to user "${user.user.tag}". Their DMs are most likely disabled.`;
                         });
                         return `Warned ${user.user.tag}`;
-
-                    case "nickname":
-                        if (!this.message.member?.permissions.has('ManageNicknames')) {
-                            return `This user does not have permission to change nicknames.`;
-                        }
-                        if (!user.manageable) {
-                            return `This user is not manageable.`;
-                        }
-                        await user.setNickname(newNickname, fullReason).catch((error) => {
-                            return `Error: Failed to change nickname for user "${user.user.tag}". Reason: ${error}`;
-                        });
-                        return `Changed nickname for ${user.user.tag} to ${newNickname}`;
 
                     default:
                         return `Unknown action: ${action}`;
