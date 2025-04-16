@@ -35,7 +35,6 @@ export class ClaudeService {
     private readonly MAX_TOKENS_EXECUTION = 2048;
 
     constructor() {
-        // Initialize the Anthropic client with API key
         this.anthropic = new Anthropic({
             apiKey: process.env.ANTHROPIC_API_KEY,
         });
@@ -200,7 +199,7 @@ export class ClaudeService {
 
     /**
      * Execute function - Gets Claude to execute a prompt directly without multi-turn reasoning
-     * Useful for straightforward tasks that don't require tools or complex reasoning
+     * Useful for straightforward tasks that don't require complex reasoning chains
      */
     public async execute(
         prompt: string,
@@ -220,24 +219,82 @@ export class ClaudeService {
                     model: this.CLAUDE_EXECUTION_MODEL,
                     max_tokens: this.MAX_TOKENS_EXECUTION,
                     system: systemPrompt,
+                    tools: this.getTools(), // Add tools so Claude can use them if needed
                     messages: messageContent,
                 })
             );
 
-            // Get the response text
-            const finalResponse = response.content.find(c => c.type === "text")?.text ?? "";
+            // Handle tool use case (single tool execution without conversation)
+            if (response.stop_reason === "tool_use") {
+                const textContent = response.content.find((c) => c.type === "text")?.text ?? "";
+                const toolRequest = response.content.find((c) => c.type === "tool_use");
 
-            if (finalResponse) {
-                await message.reply(sanitizeResponse(finalResponse)).catch((err) => {
-                    console.error('Error sending reply:', err);
-                });
+                if (!toolRequest) return "No valid tool request found";
+
+                // Send any explanatory text before tool execution
+                if (textContent) {
+                    await message.reply(sanitizeResponse(textContent)).catch((err) => {
+                        console.error('Error sending reply:', err);
+                    });
+                }
+
+                // Extract tool details and execute
+                const { name, input } = toolRequest;
+                const toolResult = await executeTool(name, input);
+
+                // Get final answer using tool result, without starting a conversation
+                const finalResponse = await this.getFinalAnswer(toolResult, systemPrompt);
+
+                if (finalResponse) {
+                    await message.reply(sanitizeResponse(finalResponse)).catch((err) => {
+                        console.error('Error sending reply:', err);
+                    });
+                }
+
+                return finalResponse;
+            } else {
+                // Get response if no tool use
+                const finalResponse = response.content.find(c => c.type === "text")?.text ?? "";
+
+                if (finalResponse) {
+                    await message.reply(sanitizeResponse(finalResponse)).catch((err) => {
+                        console.error('Error sending reply:', err);
+                    });
+                }
+
+                return finalResponse;
             }
-
-            return finalResponse;
-
         } catch (error) {
             console.error('Error calling Claude API for execution:', error);
-            throw error;
+        }
+    }
+
+    /**
+     * Helper method to get a final answer after tool execution
+     * Doesn't create conversation history or reasoning chains
+     */
+    private async getFinalAnswer(
+        toolResult: string,
+        systemPrompt: string
+    ): Promise<string | undefined> {
+        try {
+            // Create a prompt instructing Claude to provide a final answer based on tool results
+            const finalPrompt = `Here is the result of executing a tool. Please provide a final answer based on this information only. Do not engage in further reasoning or suggest additional actions:\n\n${toolResult}`;
+
+            // Call Claude to interpret the tool result
+            const response = await retryApiCall(() =>
+                this.anthropic.messages.create({
+                    model: this.CLAUDE_EXECUTION_MODEL,
+                    max_tokens: this.MAX_TOKENS_EXECUTION,
+                    system: systemPrompt,
+                    messages: [{ role: 'user', content: finalPrompt }],
+                })
+            );
+
+            return response.content.find(c => c.type === "text")?.text ?? "";
+        } catch (error) {
+            console.error('Error getting final answer:', error);
+            return `Error processing result: ${error instanceof Error ? error.message : 'Unknown error'}`;
         }
     }
 }
