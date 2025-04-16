@@ -162,7 +162,7 @@ export class TaskSchedulerTool extends ClaudeToolType {
         // Create a new Claude service for the task
         const claudeService = new ClaudeService();
 
-        // Schedule the task
+        // Schedule the task with options to prevent immediate execution
         const scheduledTask = cron.schedule(taskInfo.schedule, async () => {
             try {
                 // Check if we've hit max executions
@@ -212,7 +212,12 @@ export class TaskSchedulerTool extends ClaudeToolType {
             } catch (error) {
                 console.error(`Error executing task ${taskInfo.taskId}:`, error);
             }
+        }, {
+            scheduled: false // Don't start immediately
         });
+
+        // Start the task after setup to prevent immediate execution
+        scheduledTask.start();
 
         // Store the scheduled task
         this.scheduledTasks.set(taskInfo.taskId, scheduledTask);
