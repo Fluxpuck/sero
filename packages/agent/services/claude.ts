@@ -10,9 +10,17 @@ type ClaudeOptions = {
     excludeTools?: boolean;
 }
 
+type ClaudeContextOptions = {
+    seroAgent: boolean;
+    moderationContext: boolean;
+    discordContext: boolean;
+    toolsContext: boolean;
+    SSundeeContext: boolean;
+}
+
 // Gather the about me and discord guidelines context for the AI assistant
 import {
-    seroAgentDescription, discordContext, toolsContext, disclosedContext,
+    seroAgentDescription, moderationContext, discordContext, toolsContext, disclosedContext,
     SSundeeRules, SSundeeInformation, SSundeeFAQ
 } from '../context/context';
 
@@ -48,15 +56,49 @@ export class ClaudeService {
     /**
      * Prepare system prompt with context variables replaced
      */
-    private prepareSystemPrompt(message: Message): string {
-        const SYSTEM_PROMPT = `
-        ${seroAgentDescription} \n 
-        ${discordContext} \n 
-        ${toolsContext} \n 
-        ${disclosedContext} \n 
-        ${SSundeeRules} \n 
-        ${SSundeeInformation} \n 
-        ${SSundeeFAQ}`;
+    private prepareSystemPrompt(
+        message: Message,
+        context_options: ClaudeContextOptions = {
+            seroAgent: true,
+            moderationContext: false,
+            discordContext: true,
+            toolsContext: true,
+            SSundeeContext: true
+        },
+        additional_context: string = ''
+    ): string {
+        // Build context based on options
+        const contextParts = [];
+
+        if (context_options.seroAgent) {
+            contextParts.push(seroAgentDescription);
+        }
+
+        if (context_options.moderationContext) {
+            contextParts.push(moderationContext);
+        }
+
+        if (context_options.discordContext) {
+            contextParts.push(discordContext);
+        }
+
+        if (context_options.toolsContext) {
+            contextParts.push(toolsContext);
+            contextParts.push(disclosedContext);
+        }
+
+        if (context_options.SSundeeContext) {
+            contextParts.push(SSundeeRules);
+            contextParts.push(SSundeeInformation);
+            contextParts.push(SSundeeFAQ);
+        }
+
+        // Add additional context if provided
+        if (additional_context) {
+            contextParts.push(additional_context);
+        }
+
+        const SYSTEM_PROMPT = contextParts.join('\n');
 
         return SYSTEM_PROMPT
             .replace('{{date}}', new Date().toLocaleDateString())
@@ -105,7 +147,7 @@ export class ClaudeService {
                 await message.channel.sendTyping();
             }
 
-            // Initialize tools with message context
+            // Initialize tools and system prompt
             initializeTools(message, message.client);
             const systemPrompt = this.prepareSystemPrompt(message);
 
@@ -202,10 +244,90 @@ export class ClaudeService {
             }
 
         } catch (error) {
-            console.error('Error executing tool:', error);
+            console.error('Error on askClaude:', error);
 
             // Delete conversation history on error
             deleteConverstationHistory(conversationKey);
+        }
+    }
+
+    public async checkViolation(
+        message: Message,
+        messageBatch?: Message[]
+    ): Promise<string | undefined> {
+
+        // Create a unique key for the conversation based on channel and user ID
+        const conversationKey = createConversationKey(message.channel.id, message.author.id);
+
+        try {
+            // Get the conversation history
+            let conversationHistory = getConversationHistory(conversationKey) || [];
+
+            if (messageBatch && messageBatch.length > 0) {
+                // If we have a batch of messages, combine their content
+                const combinedContent = messageBatch.map(msg =>
+                    `[${new Date(msg.createdTimestamp).toLocaleTimeString()}] ${msg.content}`
+                ).join('\n');
+
+                conversationHistory.push({
+                    role: 'user',
+                    content: `Recent messages from user:\n${combinedContent}`
+                });
+            } else {
+                // Single message case
+                conversationHistory.push({ role: 'user', content: message.content });
+            }
+
+            // Initialize system prompt
+            const checkViolationContext = `
+            Determine if any of the user's recent messages violate server rules.
+            Return {"violation": true, "reason": "rule violation details"} if rules are broken.
+            Return {"violation": false} if no rules are broken.
+            If you see multiple messages, evaluate them as a whole and also check for potential patterns of behavior.
+            `;
+            const systemPrompt = this.prepareSystemPrompt(message, { seroAgent: false, moderationContext: true, discordContext: false, toolsContext: false, SSundeeContext: true }, checkViolationContext);
+
+            // Call the Claude API with retry logic
+            const response = await retryApiCall(() =>
+                this.anthropic.messages.create({
+                    model: this.CLAUDE_MODEL,
+                    max_tokens: 128,
+                    system: systemPrompt,
+                    messages: conversationHistory,
+                })
+            );
+
+            if (response.stop_reason === "end_turn") {
+                const textResponse = response.content.find((c) => c.type === "text")?.text ?? "";
+
+                // Only update history if tool execution was successful
+                const updatedHistory = [
+                    ...conversationHistory,
+                    {
+                        role: 'assistant',
+                        content: textResponse
+                    }
+                ];
+
+                // Update the stored history only after successful execution
+                updateConversationHistory(conversationKey, updatedHistory);
+
+                // Parse the response to check for violations
+                let parsedResponse: { violation: boolean; reason?: string } | null = null;
+                try {
+                    parsedResponse = JSON.parse(textResponse);
+                } catch (e) { }
+
+                if (!parsedResponse) return;
+
+                if (parsedResponse.violation) {
+                    const prompt = `The user ${message.author.id} has violated the server rules for the following reason: ${parsedResponse.reason}. Please take the appropriate action. Please direct your response to the user.`;
+                    this.askClaude(prompt, message, { reasoning: false });
+                }
+            }
+
+        } catch (error) {
+            console.error('Error on checkViolation:', error);
         }
     }
 }

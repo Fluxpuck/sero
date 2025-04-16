@@ -3,9 +3,10 @@ import { UserResolver } from '../utils/user-resolver';
 
 export const name = 'MessageMention' as const;
 export async function execute(message: Message) {
-    const client = message.client as Client;
     if (!message.guild) return;
+    if (message.author.bot) return;
 
+    const client = message.client as Client;
     const isOwner = message.author.id === client.ownerId;
 
     try {

@@ -8,8 +8,9 @@ export async function execute(message: Message) {
     // Create an instance
     const claudeService = new ClaudeService();
 
-    // Run the message mention event
+    // Run custom client events
     client.emit('MessageMention', message);
+    client.emit('AutoModeration', message);
 
     try {
         // Skip forwarded messages
