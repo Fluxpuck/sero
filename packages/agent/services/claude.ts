@@ -257,34 +257,25 @@ export class ClaudeService {
 
     public async checkViolation(
         message: Message,
-        messageBatch?: Message[]
+        previousMessages?: Message[]
     ): Promise<string | undefined> {
 
         // Create a unique key for the conversation based on channel and user ID
-        const conversationKey = createConversationKey(message.channel.id, message.author.id);
+        const conversationKey = createConversationKey("violation_check", message.author.id);
 
         try {
             // Get the conversation history
             let conversationHistory = getConversationHistory(conversationKey) || [];
 
-            if (messageBatch && messageBatch.length > 0) {
-                // If we have a batch of messages, combine their content
-                const combinedContent = messageBatch.map(msg =>
-                    `[${new Date(msg.createdTimestamp).toLocaleTimeString()}] ${msg.content}`
-                ).join('\n');
-
-                conversationHistory.push({
-                    role: 'user',
-                    content: `Recent messages from user:\n${combinedContent}`
-                });
+            if (previousMessages && previousMessages.length > 0) {
+                conversationHistory = previousMessages;
             } else {
-                // Single message case
                 conversationHistory.push({ role: 'user', content: message.content });
             }
 
             // Initialize system prompt
             const checkViolationContext = `
-            Determine if any of the user's recent messages violate server rules.
+            Determine the user's recent messages violate server rules.
             Return {"violation": true, "reason": "rule violation details"} if rules are broken.
             Return {"violation": false} if no rules are broken.
             If you see multiple messages, evaluate them as a whole and also check for potential patterns of behavior.
