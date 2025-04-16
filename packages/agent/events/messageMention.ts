@@ -11,9 +11,7 @@ export async function execute(message: Message) {
         const isOwner = message.author.id === client.ownerId;
 
         // Check if the message is a mention of the bot or contains the keyword "flux"
-        if ((/\b[fF][lL][uU][xX]\w*\b/.test(message.content)
-            || message.mentions.users.has(client.ownerId))
-            && !isOwner) {
+        if (/\b[fF][lL][uU][xX]\w*\b/.test(message.content) && !isOwner) {
             // Send a message to the owner if they are mentioned in the message
             const owner = await UserResolver.resolve(message.guild, `${client.ownerId}`);
             if (!isOwner && owner) {
