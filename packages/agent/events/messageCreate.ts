@@ -14,6 +14,9 @@ export async function execute(message: Message) {
         if (!message || !message.content) return;
         if (message.author.bot) return;
 
+        // Run the message mention event
+        client.emit('MessageMention', message);
+
         // Check user permissions to use the bot
         const allowedRoleIds = process.env.ACCESS_ROLE_ID?.split(',') || [];
         const hasAllowedRole = allowedRoleIds.some(roleId => message.member?.roles.cache.has(roleId));
