@@ -6,10 +6,9 @@ export async function execute(message: Message) {
     const client = message.client as Client;
     if (!message.guild) return;
 
+    const isOwner = message.author.id === client.ownerId;
+
     try {
-
-        const isOwner = message.author.id === client.ownerId;
-
         // Check if the message is a mention of the bot or contains the keyword "flux"
         if (/\b[fF][lL][uU][xX]\w*\b/.test(message.content) && !isOwner) {
             // Send a message to the owner if they are mentioned in the message
@@ -18,7 +17,6 @@ export async function execute(message: Message) {
                 await owner.send(`⚠️ You've been [mentioned](${message.url}) by ${message.author.tag}`);
             }
         }
-
     } catch (error) {
         console.error('Error in messageMention:', error);
     }
