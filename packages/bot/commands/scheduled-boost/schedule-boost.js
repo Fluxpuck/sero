@@ -173,8 +173,8 @@ module.exports.run = async (client, interaction) => {
             // Chunk the data (because max fields = 25, I think 3 per page will do nicely)
             const scheduledBoostsFormatted = scheduledBoostsList.map((boost) => {
                 const eventName = boost.eventName
-                boostDate = getNextOccurence(boost.day, boost.time);
-                boostUnix = unixTimestamp(boostDate);
+                const boostDate = getNextOccurence(boost.day, boost.time);
+                const boostUnix = unixTimestamp(boostDate);
                 const daysOfWeek = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"]; // TODO: Move this to timeHelper?
                 return {
                     name: `Boost: \`${boost.boostName}\``,

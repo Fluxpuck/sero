@@ -154,7 +154,7 @@ module.exports = {
         const now = new Date();
         try {
             const next = nextDay(now, day);
-            const [hours, minutes] = time.split(':');
+            const [hours, minutes] = time.split(':').map(Number); // Turn them into Numbers (int)
             const nextDate = (next.getDay() === now.getDay() && new Date(now.getFullYear(), now.getMonth(), now.getDate(), hours, minutes) > now) ?
                 new Date(now.getFullYear(), now.getMonth(), now.getDate(), hours, minutes) :
                 new Date(next.getFullYear(), next.getMonth(), next.getDate(), hours, minutes);

@@ -108,10 +108,10 @@ module.exports = sequelize => {
             await guild.save({ transaction: t });
         });
         record.isBoostActive = true;
-        record.endAt = new Date(Date.now() + record.duration * 60 * 60 * 1000); // Convert duration from minutes to milliseconds
+        record.endAt = new Date(Date.now() + record.duration * 60 * 60 * 1000); // Convert duration from hours to milliseconds
         await record.save();
         publishMessage(REDIS_CHANNELS.SCHEDULED_BOOST, {
-            boostId: record.boostId,
+            boostId: record.id,
             guildId: record.guildId,
             boostName: record.boostName,
             modifier: record.modifier,
@@ -128,7 +128,7 @@ module.exports = sequelize => {
         const setting = await sequelize.models.guild_settings.findOne({ where: { guildId: record.guildId, type: "scheduled-boost-messages" } });
         if (guild) {
             publishMessage(REDIS_CHANNELS.SCHEDULED_BOOST, {
-                boostId: record.boostId,
+                boostId: record.id,
                 guildId: record.guildId,
                 boostName: record.boostName,
                 repeat: record.repeat,
@@ -152,7 +152,7 @@ module.exports = sequelize => {
         const setting = await sequelize.models.guild_settings.findOne({ where: { guildId: record.guildId, type: "scheduled-boost-messages" } });
         if (guild && record.isBoostActive) {
             publishMessage(REDIS_CHANNELS.SCHEDULED_BOOST, {
-                boostId: record.boostId,
+                boostId: record.id,
                 guildId: record.guildId,
                 boostName: record.boostName,
                 repeat: record.repeat,

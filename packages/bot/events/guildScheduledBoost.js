@@ -30,8 +30,9 @@ module.exports = async (client, payload) => {
             // If eventId is given, attempt to start the event
             if (payload.eventId) {
                 const event = await guild.scheduledEvents.fetch(payload.eventId);
-                event.edit(options = {
-                    // Source https://discord.js.org/docs/packages/discord.js/14.18.0/GuildScheduledEventManager:Class#edit
+                // Source https://discord.js.org/docs/packages/discord.js/14.18.0/GuildScheduledEvent:Class#edit
+                // event.edit() has one parameter called options, thus can be omitted
+                event.edit({
                     status: 2 // 2 = active
                 })
             }
@@ -64,8 +65,9 @@ module.exports = async (client, payload) => {
             // If eventId is given, attempt to end the event
             if (payload.eventId) {
                 const event = await guild.scheduledEvents.fetch(payload.eventId);
-                event.edit(options = {
-                    // Source https://discord.js.org/docs/packages/discord.js/14.18.0/GuildScheduledEventManager:Class#edit
+                // Source https://discord.js.org/docs/packages/discord.js/14.18.0/GuildScheduledEvent:Class#edit
+                // event.edit() has one parameter called options, thus can be omitted
+                event.edit({
                     status: 3 // 3 = completed (should reschedule or end)
                 }).catch(() => null);
             }
