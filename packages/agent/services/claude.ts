@@ -312,14 +312,15 @@ export class ClaudeService {
                     // Direct violation handling to moderation tool without additional messages
                     const prompt = `The user <@${message.author.id}> has violated the server rules for the following reason: ${parsedResponse.reason}. Use the discord_moderation_actions tool directly with appropriate parameters. Do not send any follow-up message.`;
 
-                    console.log("autoModeration Violation Detected: ", prompt, messageContent);
+                    console.log(`autoModeration violation detected on ${messageContent} for user ${message.author.id}`);
+                    console.log("Prompt for moderation tool:", prompt);
 
-                    // // Use reasoning: false to prevent intermediate response and finalResponse: false to prevent follow-up
-                    // await this.askClaude(prompt, message, {
-                    //     reasoning: false,
-                    //     excludeTools: false,
-                    //     finalResponse: false
-                    // });
+                    // Use reasoning: false to prevent intermediate response and finalResponse: false to prevent follow-up
+                    await this.askClaude(prompt, message, {
+                        reasoning: false,
+                        excludeTools: false,
+                        finalResponse: false
+                    });
                 }
 
                 return parsedResponse;
