@@ -17,3 +17,8 @@ export type MessageFormat = {
         guildId?: string;
     }
 }
+
+export type MessageViolationCheckInput = {
+    userId: string;
+    messages: string;
+}

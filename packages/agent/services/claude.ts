@@ -3,6 +3,7 @@ import { Message } from 'discord.js';
 import { sanitizeResponse } from '../utils';
 import { executeTool, initializeTools } from '../services/tools';
 import { retryApiCall } from './api';
+import { MessageViolationCheckInput } from '../types/message.types';
 
 type ClaudeOptions = {
     previousMessages?: any[];
@@ -255,30 +256,21 @@ export class ClaudeService {
         }
     }
 
+
     public async checkViolation(
         message: Message,
-        previousMessages?: Message[]
+        messageCollection?: MessageViolationCheckInput
     ): Promise<string | undefined> {
-
-        // Create a unique key for the conversation based on channel and user ID
-        const conversationKey = createConversationKey("violation_check", message.author.id);
-
         try {
-            // Get the conversation history
-            let conversationHistory = getConversationHistory(conversationKey) || [];
-
-            if (previousMessages && previousMessages.length > 0) {
-                conversationHistory = previousMessages;
-            } else {
-                conversationHistory.push({ role: 'user', content: message.content });
-            }
 
             // Initialize system prompt
             const checkViolationContext = `
-            Determine the user's recent messages violate server rules.
+            Determine if any messages in the conversation violate server rules.
             Return {"violation": true, "reason": "rule violation details"} if rules are broken.
             Return {"violation": false} if no rules are broken.
-            If you see multiple messages, evaluate them as a whole and also check for potential patterns of behavior.
+
+            Replace the values of these objects with the actual values.
+            Do not include any other text in the response.
             `;
             const systemPrompt = this.prepareSystemPrompt(message, { seroAgent: false, moderationContext: true, discordContext: false, toolsContext: false, SSundeeContext: true }, checkViolationContext);
 
@@ -288,24 +280,15 @@ export class ClaudeService {
                     model: this.CLAUDE_MODEL,
                     max_tokens: this.MAX_TOKENS,
                     system: systemPrompt,
-                    messages: conversationHistory,
+                    messages: [{
+                        role: 'user',
+                        content: messageCollection?.messages ?? message.content
+                    }],
                 })
             );
 
             if (response.stop_reason === "end_turn") {
                 const textResponse = response.content.find((c) => c.type === "text")?.text ?? "";
-
-                // Only update history if tool execution was successful
-                const updatedHistory = [
-                    ...conversationHistory,
-                    {
-                        role: 'assistant',
-                        content: textResponse
-                    }
-                ];
-
-                // Update the stored history only after successful execution
-                updateConversationHistory(conversationKey, updatedHistory);
 
                 // Parse the response to check for violations
                 const jsonMatch = textResponse.match(/\{.*\}/s)?.[0];
