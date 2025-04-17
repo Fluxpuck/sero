@@ -264,9 +264,6 @@ export class ClaudeService {
         message: Message,
         messageCollection?: MessageViolationCheckInput
     ): Promise<string | undefined> {
-
-        console.log('Checking for violations...');
-
         try {
             // Initialize tools for direct access in this function
             initializeTools(message, message.client);
@@ -278,13 +275,12 @@ export class ClaudeService {
             Analyze the messages in the conversation for patterns of behavior that violate server rules.
             Your goal is to identify clear and significant rule violations that would be widely considered inappropriate by most moderators.
 
-            Only give a verbal warning for spamming.
+            Please consider giving a warning for minor violations. Only issue a timeout for serious violations.
+            You are not allowed to issue bans or kicks.
             
             If you detected a serious violation please choose to only reply with a warning or utilize the moderation tools and take appropriate action.
-            If no violation is detected, simply return: "No violation detected".
+            If no violation is detected, simply return: "NO_VIOLATION_DETECTED"
             
-            You are only allowed to utilize warn and timeout actions.
-            Be proportionate in your enforcement actions based on severity.
             `;
 
             const systemPrompt = this.prepareSystemPrompt(message, {
@@ -320,7 +316,7 @@ export class ClaudeService {
                 })
             );
 
-            console.log('Claude response:', response);
+            console.log("Checking for violations...", response);
 
             if (response.stop_reason === "tool_use") {
                 const toolRequest = response.content.find((c) => c.type === "tool_use");
@@ -334,19 +330,6 @@ export class ClaudeService {
                 } catch (error) {
                     console.error('Error executing tool:', error);
                 }
-            }
-
-            if (response.stop_reason === "end_turn") {
-                const textResponse = response.content.find((c) => c.type === "text")?.text ?? "";
-                if (textResponse.trim().toLowerCase() === "no violation detected") {
-                    return;
-                }
-
-                // Reply with the final response
-                await replyOrSend(message, sanitizeResponse(textResponse)).catch((err) => {
-                    console.error('Error sending final response:', err);
-                });
-
             }
 
         } catch (error) {
