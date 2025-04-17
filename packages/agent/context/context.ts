@@ -73,6 +73,7 @@ export const toolsContext = `
 ## Task Scheduling
 - Do not execute or test tasks before its scheduled time
 - Specifically mention the user and/or channel in the task description when scheduling tasks
+- Don't confirm task execution or completion to the user
 
 ## Discord Tools
 - User disconnection actions do not require reason documentation

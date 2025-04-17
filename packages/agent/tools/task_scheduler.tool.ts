@@ -198,7 +198,7 @@ export class TaskSchedulerTool extends ClaudeToolType {
                 }
 
                 // Execute scheduled task
-                await claudeService.askClaude(taskInfo.task!, message, { reasoning: false, });
+                await claudeService.askClaude(taskInfo.task!, message, { reasoning: false });
 
                 // Increment execution count
                 if (message.guild?.id) {
