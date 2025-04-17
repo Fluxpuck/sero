@@ -1,4 +1,4 @@
-import { Message, Collection } from 'discord.js';
+import { Message, Collection, PermissionFlagsBits } from 'discord.js';
 import { ClaudeService } from '../services/claude';
 import { MessageViolationCheckInput } from '../types/message.types';
 
@@ -21,6 +21,7 @@ export async function execute(message: Message) {
 
     // Check if the message has a guild, is from a bot, or if the member is not moderatable
     if (!message.guild || message.author.bot || !message.member?.moderatable) return;
+    if (message.member.permissions.has(PermissionFlagsBits.ManageMessages)) return;
 
     // Only moderate on these channels
     const moderateChannelIds = process.env.AUTO_MODERATION_CHANNELS?.split(',') || [];
