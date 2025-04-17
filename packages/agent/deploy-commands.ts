@@ -3,7 +3,7 @@ import dotenv from 'dotenv';
 import { REST, Routes } from 'discord.js';
 import fs from 'fs';
 import path from 'path';
-import { Command } from './types/command.types';
+import { Command } from './types/client.types';
 
 dotenv.config({ path: path.join(__dirname, '.', 'config', '.env') });
 
