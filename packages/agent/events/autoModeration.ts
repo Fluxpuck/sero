@@ -23,14 +23,18 @@ export async function execute(message: Message) {
     if (!message.guild || message.author.bot || !message.member?.moderatable) return;
     if (message.member.permissions.has(PermissionFlagsBits.ManageMessages)) return;
 
+    // Exclude auto moderation for certain roles
+    const excludeAutoModerationRoles = process.env.EXCLUDE_AUTO_MODERATION_ROLES?.split(',') || [];
+    const hasExcludedRole = message.member.roles.cache.some(role => excludeAutoModerationRoles.includes(role.id));
+    if (hasExcludedRole) return;
+
     // Only moderate on these channels
     const moderateChannelIds = process.env.AUTO_MODERATION_CHANNELS?.split(',') || [];
     const isAutoModerationChannel = moderateChannelIds.some(channelId => message.channel.id === channelId);
     if (!isAutoModerationChannel) return;
 
-    const userId = message.author.id;
-
     // Get or create message collection for this user
+    const userId = message.author.id;
     if (!userMessages.has(userId)) {
         userMessages.set(userId, new Collection<string, Message>());
 
