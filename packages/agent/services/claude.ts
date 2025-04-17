@@ -4,6 +4,7 @@ import { sanitizeResponse } from '../utils';
 import { executeTool, initializeTools } from '../services/tools';
 import { retryApiCall } from './api';
 import { MessageViolationCheckInput } from '../types/message.types';
+import { replyOrSend } from '../utils/replyOrSend';
 
 type ClaudeOptions = {
     previousMessages?: any[];
@@ -181,7 +182,15 @@ export class ClaudeService {
 
                 // Reply with temporary response if Claude provided text
                 if (textResponse && reasoning) {
-                    await message.reply(sanitizeResponse(textResponse));
+                    try {
+                        await message.reply(sanitizeResponse(textResponse));
+                    } catch (err) {
+                        if ('send' in message.channel) {
+                            await message.channel.send(sanitizeResponse(textResponse)).catch((channelErr) => {
+                                console.error('Error sending message to channel:', channelErr);
+                            });
+                        }
+                    }
                 }
 
                 try {
@@ -242,9 +251,11 @@ export class ClaudeService {
 
                 // Reply with the final response
                 if (finalResponse) {
-                    await message.reply(sanitizeResponse(textResponse)).catch((err) => {
+
+                    await replyOrSend(message, sanitizeResponse(textResponse)).catch((err) => {
                         console.error('Error sending reply:', err);
                     });
+
                 }
             }
 
@@ -275,6 +286,7 @@ export class ClaudeService {
 
             Replace the values of these objects with the actual values.
             Do not include any other text in the response.
+            Always mention the violator and speak directly to them.
             `;
             const systemPrompt = this.prepareSystemPrompt(message, { seroAgent: false, moderationContext: true, discordContext: false, toolsContext: false, SSundeeContext: true }, checkViolationContext);
 
