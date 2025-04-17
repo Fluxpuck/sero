@@ -182,15 +182,9 @@ export class ClaudeService {
 
                 // Reply with temporary response if Claude provided text
                 if (textResponse && reasoning) {
-                    try {
-                        await message.reply(sanitizeResponse(textResponse));
-                    } catch (err) {
-                        if ('send' in message.channel) {
-                            await message.channel.send(sanitizeResponse(textResponse)).catch((channelErr) => {
-                                console.error('Error sending message to channel:', channelErr);
-                            });
-                        }
-                    }
+                    await replyOrSend(message, sanitizeResponse(textResponse)).catch((err) => {
+                        console.error('Error sending temporary response:', err);
+                    });
                 }
 
                 try {
@@ -251,11 +245,9 @@ export class ClaudeService {
 
                 // Reply with the final response
                 if (finalResponse) {
-
                     await replyOrSend(message, sanitizeResponse(textResponse)).catch((err) => {
-                        console.error('Error sending reply:', err);
+                        console.error('Error sending final response:', err);
                     });
-
                 }
             }
 

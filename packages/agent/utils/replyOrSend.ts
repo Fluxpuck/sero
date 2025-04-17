@@ -12,6 +12,17 @@ type MessageContent = string | MessagePayload | MessageCreateOptions;
  * @returns A Promise resolving to true if successful, false if both methods fail.
  */
 export async function replyOrSend(message: Message, content: MessageContent): Promise<void> {
+    // Check if content is empty string and handle appropriately
+    if (typeof content === 'string' && content.trim() === '') {
+        throw new Error('Attempted to send empty message, skipping');
+    }
+
+    // Check if content object has empty content property
+    if (typeof content === 'object' && 'content' in content &&
+        typeof content.content === 'string' && content.content.trim() === '') {
+        throw new Error('Attempted to send message with empty content, skipping');
+    }
+
     try {
         await replyToMessage(message, content);
     } catch (error) {

@@ -1,5 +1,9 @@
 // Sanitize the AI response by removing mentions
 export function sanitizeResponse(text: string): string {
+    if (!text || text.trim() === '') {
+        return 'I apologize, but I cannot provide a meaningful response at this time.';
+    }
+
     return text
         .replace(/@everyone/gi, 'everyone') // Replace everyone mentions
         .replace(/@here/gi, 'here') // Replace here mentions
