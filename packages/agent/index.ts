@@ -3,9 +3,8 @@ import dotenv from 'dotenv';
 import fs from 'fs';
 import path from 'path';
 import { Client, Collection, GatewayIntentBits } from 'discord.js';
-import { Command } from './types/command.types';
-import { Event } from './types/event.types';
 import NodeCache from 'node-cache';
+import { Command, Event } from './types/client.types';
 
 dotenv.config({ path: path.join(__dirname, '.', 'config', '.env') });
 

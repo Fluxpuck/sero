@@ -1,6 +1,6 @@
 // events/interactionCreate.ts
 import { Events, Interaction, MessageFlags } from 'discord.js';
-import { Event } from '../types/event.types';
+import { Event } from '../types/client.types';
 
 // Track cooldowns for commands and users
 const cooldowns = new Map<string, Map<string, number>>();

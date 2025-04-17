@@ -1,6 +1,6 @@
 // events/ready.ts
 import { Events, Client } from 'discord.js';
-import { Event } from '../types/event.types';
+import { Event } from '../types/client.types';
 import { TaskSchedulerTool } from '../tools/task_scheduler.tool';
 import { ApiService } from '../services/api';
 
