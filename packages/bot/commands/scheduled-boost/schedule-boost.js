@@ -303,7 +303,7 @@ module.exports.run = async (client, interaction) => {
             }
 
             // API request to add the scheduled boosts
-            guildId = interaction.guild.id;
+            const guildId = interaction.guild.id;
             try {
                 const created = await postRequest(`/guilds/${interaction.guild.id}/boost/scheduled`, {
                     guildId, boostName, modifier, duration, day, time, repeat, eventId,
