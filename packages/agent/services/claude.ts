@@ -278,6 +278,15 @@ export class ClaudeService {
             `;
             const systemPrompt = this.prepareSystemPrompt(message, { seroAgent: false, moderationContext: true, discordContext: false, toolsContext: false, SSundeeContext: true }, checkViolationContext);
 
+            // Get message content and ensure it's not empty
+            const messageContent = messageCollection?.messages ?? message.content;
+
+            // Check if content is empty or undefined
+            if (!messageContent || messageContent.trim() === '') {
+                console.log('Warning: Empty message content in checkViolation, skipping API call',);
+                return;
+            }
+
             // Call the Claude API with retry logic
             const response = await retryApiCall(() =>
                 this.anthropic.messages.create({
@@ -286,7 +295,7 @@ export class ClaudeService {
                     system: systemPrompt,
                     messages: [{
                         role: 'user',
-                        content: messageCollection?.messages ?? message.content
+                        content: messageContent
                     }],
                 })
             );
