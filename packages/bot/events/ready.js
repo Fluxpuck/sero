@@ -15,22 +15,13 @@ module.exports = async (client) => {
     // Create Client Application Commands through a seperate event
     client.emit(events.APPLICATION_CREATE);
 
-    // Set global guild active setting
-    Array.from(client.guilds.cache.values()).forEach(async guild => {
-        // Check if guild is available, else create a new entry
-        const guildResult = await getRequest(`/guilds/${guild.id}`);
-        if (guildResult?.status === 404) {
-            await postRequest(`/guilds/${guild.id}`, {
-                guildId: guild.id,
-                guildName: guild.name
-            })
-        }
-
-        // Fetch the guild's settings from the database
-        const guildSettings = await getRequest(`/guilds/${guild.id}/settings`);
-        if (guildSettings?.status === 200) {
-            // Add the guilds settings to the guild object
-            guild.guildSettings = guildSettings.data
-        }
+    // Fetch all guilds and set global guild active setting
+    const guilds = await client.guilds.fetch();
+    Array.from(guilds.values()).forEach(async guild => {
+        // Create or Update the guild in the database
+        await postRequest(`/guilds/${guild.id}`, {
+            guildId: guild.id,
+            guildName: guild.name
+        });
     });
 }

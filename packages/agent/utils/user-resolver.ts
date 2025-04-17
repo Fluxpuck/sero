@@ -1,54 +1,171 @@
-import { Collection, Snowflake, Guild, GuildMember } from 'discord.js';
+import { Snowflake, Collection, Guild, GuildMember } from 'discord.js';
+import { levenshteinDistance } from "../utils";
 
-/**
- * Find a user by their username
- * @param {Guild} guild - Discord Guild object
- * @param {string} query - Query to search for
- * @returns {Promise<GuildMember | null>}
- */
-export async function findUser(
-    guild: Guild,
-    query: string
-): Promise<GuildMember | null> {
-    if (!guild || !query) return null;
+interface UserSearchOptions {
+    limit?: number;
+    fuzzyThreshold?: number;
+    searchType?: 'all' | 'username' | 'displayName' | 'nickname';
+    caseSensitive?: boolean;
+}
 
-    try {
-        // Check if query is a user ID and try to fetch directly
-        if (/^\d{17,19}$/.test(query)) {
-            return findUserById(guild, query).catch(() => null);
+export class UserResolver {
+    /**
+     * Attempts to resolve a user from various input types with fuzzy matching
+     */
+    static async resolve(
+        guild: Guild,
+        input: string,
+        options: UserSearchOptions = {}
+    ): Promise<GuildMember | null> {
+        const {
+            fuzzyThreshold = 0.4,
+            searchType = 'all',
+            caseSensitive = false
+        } = options;
+
+        if (!guild || !input) return null;
+
+        try {
+            // Try mention format (<@123456789>)
+            const mentionMatch = input.match(/^<@!?(\d+)>$/);
+            if (mentionMatch) {
+                return await this.findUserById(guild, mentionMatch[1]);
+            }
+
+            // Direct ID lookup
+            if (/^\d{17,19}$/.test(input)) {
+                return await this.findUserById(guild, input);
+            }
+
+            // Perform advanced search
+            return (await this.searchUsers(guild, input, {
+                limit: 1,
+                fuzzyThreshold,
+                searchType,
+                caseSensitive
+            })).first() ?? null;
+
+        } catch (error) {
+            console.error(`User resolve error: ${error instanceof Error ? error.message : error}`);
+            return null;
+        }
+    }
+
+    /**
+     * Search for multiple users matching the criteria
+     */
+    static async searchUsers(
+        guild: Guild,
+        query: string,
+        options: UserSearchOptions = {}
+    ): Promise<Collection<string, GuildMember>> {
+        const {
+            limit = 5,
+            fuzzyThreshold = 0.4,
+            searchType = 'all',
+            caseSensitive = false
+        } = options;
+
+        if (!guild || !query) return new Collection();
+
+        try {
+            // First, try Discord's native search
+            const nativeResults = await guild.members.search({
+                query,
+                limit
+            });
+
+            if (nativeResults.size > 0) {
+                return nativeResults;
+            }
+
+            // Fallback to manual filtering with fuzzy matching
+            const members = await guild.members.fetch();
+            const searchTerm = caseSensitive ? query : query.toLowerCase();
+
+            const filtered = members.filter(member => {
+                const fields = this.getSearchFields(member, searchType, caseSensitive);
+
+                // Check each field using levenshtein distance
+                return fields.some(field => {
+                    // Exact match
+                    if (field === searchTerm) return true;
+
+                    // Fuzzy matching with normalized distance
+                    const distance = levenshteinDistance(field, searchTerm);
+                    const maxLength = Math.max(field.length, searchTerm.length);
+                    const normalizedDistance = distance / maxLength;
+
+                    return normalizedDistance <= fuzzyThreshold;
+                });
+            });
+
+            return new Collection(Array.from(filtered.entries()).slice(0, limit));
+        } catch (error) {
+            console.error(`Users search error: ${error instanceof Error ? error.message : error}`);
+            return new Collection();
+        }
+    }
+
+    /**
+     * Find a user by their Discord Snowflake ID
+     */
+    private static async findUserById(guild: Guild, id: string): Promise<GuildMember | null> {
+        try {
+            return await guild.members.fetch(id as Snowflake);
+        } catch {
+            return null;
+        }
+    }
+
+    /**
+     * Get searchable fields based on search type
+     */
+    private static getSearchFields(
+        member: GuildMember,
+        searchType: UserSearchOptions['searchType'],
+        caseSensitive: boolean
+    ): string[] {
+        const fields: string[] = [];
+        const transform = (str: string) => caseSensitive ? str : str.toLowerCase();
+
+        switch (searchType) {
+            case 'username':
+                fields.push(transform(member.user.username));
+                break;
+            case 'displayName':
+                fields.push(transform(member.displayName));
+                break;
+            case 'nickname':
+                if (member.nickname) fields.push(transform(member.nickname));
+                break;
+            default: // 'all'
+                fields.push(transform(member.user.username));
+                fields.push(transform(member.displayName));
+                if (member.nickname) fields.push(transform(member.nickname));
         }
 
-        return (await searchMembers(guild, query, 1)).first() ?? null;
-    } catch (error) {
-        console.error(`Error findUser: ${error}`);
-        return null;
+        return fields;
     }
-}
 
-
-
-/**
- * Find a user by their Discord Snowflake ID
- */
-function findUserById(guild: Guild, id: string): Promise<GuildMember | null> {
-    return guild.members.fetch(id as Snowflake);
-}
-
-/**
- * Advanced search function for finding members by username, nickname, or global name
- * Could return multiple potential matches instead of just one
- */
-async function searchMembers(
-    guild: Guild,
-    query: string,
-    limit: number = 3
-): Promise<Collection<string, GuildMember>> {
-    if (!guild || !query) return new Collection<string, GuildMember>();
-
-    try {
-        return await guild.members.search({ query, limit });
-    } catch (error) {
-        console.error(`Error searchMembers "${query}": ${error}`);
-        return new Collection<string, GuildMember>();
+    /**
+     * Format user information for display or logging
+     */
+    static formatUser(member: GuildMember): {
+        id: string;
+        username: string;
+        displayName: string;
+        nickname?: string;
+        joinedAt?: Date;
+        avatarURL?: string;
+    } {
+        return {
+            id: member.id,
+            username: member.user.username,
+            displayName: member.displayName,
+            nickname: member.nickname ?? undefined,
+            joinedAt: member.joinedAt ?? undefined,
+            avatarURL: member.avatarURL() ?? undefined
+        };
     }
 }

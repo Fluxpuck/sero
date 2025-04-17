@@ -5,7 +5,8 @@ const { ActionRowBuilder } = require("discord.js");
 const { createCustomEmbed } = require("../assets/embed");
 const ClientEmbedColors = require("../assets/embed-colors");
 const ClientButtonsEnum = require("../assets/embed-buttons");
-const { REWARD_MESSAGES, REWARD_GIFS } = require("../assets/reward-messages");
+const { REWARD_MESSAGES } = require("../assets/reward-messages");
+
 const { countUniqueUserIds } = require("../lib/helpers/ArrayHelpers/arrayHelper");
 
 module.exports = async (client, payload) => {
@@ -41,13 +42,11 @@ module.exports = async (client, payload) => {
 
         // Get random job message, based on the jobId
         let text_idx = Math.floor(Math.random() * REWARD_MESSAGES.length);
-        let url_idx = Math.floor(Math.random() * REWARD_GIFS.length);
 
         // Create an embed to display the user's balance
         const messageEmbed = createCustomEmbed({
             title: `🎁 Random Reward Drop! 🎁`,
             description: `${REWARD_MESSAGES[text_idx]}\nQuick, claim it before someone else does!`,
-            image: REWARD_GIFS[url_idx],
             color: ClientEmbedColors.YELLOW,
         });
 

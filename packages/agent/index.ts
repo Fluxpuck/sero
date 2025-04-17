@@ -3,8 +3,8 @@ import dotenv from 'dotenv';
 import fs from 'fs';
 import path from 'path';
 import { Client, Collection, GatewayIntentBits } from 'discord.js';
-import { Command } from './types/command.types';
-import { Event } from './types/event.types';
+import NodeCache from 'node-cache';
+import { Command, Event } from './types/client.types';
 
 dotenv.config({ path: path.join(__dirname, '.', 'config', '.env') });
 
@@ -22,11 +22,17 @@ const client = new Client({
 declare module 'discord.js' {
     export interface Client {
         commands: Collection<string, Command>;
+        cooldowns: NodeCache;
+        ownerId: string;
     }
 }
 
-// Initialize commands collection
+// Initialize additional client collections
 client.commands = new Collection<string, Command>();
+client.cooldowns = new NodeCache();
+
+// Set the owner ID from environment variables or default to '0'
+client.ownerId = process.env.OWNER_ID || '0';
 
 // Load events
 const loadEvents = (): void => {
@@ -43,7 +49,9 @@ const loadEvents = (): void => {
             client.on(event.name, (...args) => event.execute(...args));
         }
 
-        console.log(`Loaded event: ${event.name}`);
+        if (process.env.NODE_ENV !== 'production') {
+            console.log(`Loaded event: ${event.name}`);
+        }
     }
 };
 
@@ -59,9 +67,10 @@ const loadCommands = (): void => {
         // Set a new item in the Collection with the key as the command name and the value as the exported module
         if ('data' in command && 'execute' in command) {
             client.commands.set(command.data.name, command);
-            console.log(`Loaded command: ${command.data.name}`);
-        } else {
-            console.log(`[WARNING] The command at ${filePath} is missing a required "data" or "execute" property.`);
+
+            if (process.env.NODE_ENV !== 'production') {
+                console.log(`Loaded command: ${command.data.name}`);
+            };
         }
     }
 };

@@ -1,6 +1,7 @@
 const { MessageFlags } = require('discord.js');
 const { getRequest, postRequest } = require("../database/connection");
 const { getGuildActiveStatus } = require('../utils/cache/guild.cache');
+const { CLAIM_MESSAGES } = require("../assets/reward-messages");
 
 module.exports = async (client, interaction) => {
 
@@ -34,7 +35,7 @@ module.exports = async (client, interaction) => {
             // Check if the guild has already claimed the reward
             if (claimed) {
                 return interaction.followUp({
-                    content: `Sorry, you are just too late. This reward has already been claimed by someone else.`,
+                    content: "Wow, not fast enough! Better luck next time.",
                     flags: MessageFlags.Ephemeral
                 })
             } else {
@@ -43,7 +44,7 @@ module.exports = async (client, interaction) => {
                 // If the user is not in the collection, return a message
                 if (!activeMemberCollection.includes(interaction.member.id)) {
                     return interaction.followUp({
-                        content: `Sorry, you've not been active enough to claim this reward. Try again next time!`,
+                        content: "You've not been active enough to claim this reward! Try to be more active next time.",
                         flags: MessageFlags.Ephemeral
                     })
                 }
@@ -52,7 +53,7 @@ module.exports = async (client, interaction) => {
                 const userClaimedInfo = previousClaimedCollection.find(item => item.userId === interaction.member.id);
                 if (userClaimedInfo?.claimed >= 5) {
                     return interaction.followUp({
-                        content: `Sorry, you've already claimed so many rewards. Try again next time!`,
+                        content: "You can only claim so much... Try again next time!",
                         flags: MessageFlags.Ephemeral
                     })
                 }
@@ -94,9 +95,13 @@ module.exports = async (client, interaction) => {
                         additional: additionalData
                     });
 
+                    // Get a random message from the CLAIM_MESSAGES array
+                    const text_idx = Math.floor(Math.random() * CLAIM_MESSAGES.length);
+                    const claim_reward_message = CLAIM_MESSAGES[text_idx].replace("{{USER}}", `<@${interaction.member.id}>`).replace("{{AMOUNT}}", targetAmount);
+
                     // Return the message to the user
                     return interaction.followUp({
-                        content: `Congratulations <@${interaction.member.id}>! You claimed **${targetAmount}** experience!`,
+                        content: `${claim_reward_message}`,
 
                     })
 

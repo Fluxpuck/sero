@@ -5,7 +5,7 @@ import fs from 'fs';
 import path from 'path';
 import { Command } from './types/command.types';
 
-dotenv.config();
+dotenv.config({ path: path.join(__dirname, '.', 'config', '.env') });
 
 const commands: any[] = [];
 const commandsPath: string = path.join(__dirname, 'commands');
@@ -34,6 +34,12 @@ const rest = new REST().setToken(process.env.DISCORD_TOKEN);
 
 (async () => {
     try {
+        // First, get the existing commands to check what needs to be deleted
+        console.log('Fetching existing commands...');
+        const existingCommands = await rest.get(
+            Routes.applicationCommands(process.env.CLIENT_ID!)
+        ) as any[];
+
         console.log(`Started refreshing ${commands.length} application (/) commands globally.`);
 
         // The put method is used to fully refresh all commands
@@ -44,6 +50,17 @@ const rest = new REST().setToken(process.env.DISCORD_TOKEN);
         );
 
         console.log(`Successfully reloaded ${Array.isArray(data) ? data.length : 0} global application (/) commands.`);
+
+        // Check if any commands were removed
+        if (existingCommands && Array.isArray(existingCommands)) {
+            const newCommandNames = commands.map(cmd => cmd.name);
+            const removedCommands = existingCommands.filter(cmd => !newCommandNames.includes(cmd.name));
+
+            if (removedCommands.length > 0) {
+                console.log(`Detected ${removedCommands.length} removed command(s): ${removedCommands.map(cmd => cmd.name).join(', ')}`);
+            }
+        }
+
         console.log('Note: Global commands can take up to 1 hour to update across all servers.');
     } catch (error) {
         console.error(error);

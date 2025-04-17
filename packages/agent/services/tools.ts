@@ -1,38 +1,51 @@
-import { Message } from 'discord.js';
+import { Message, Client } from 'discord.js';
+import { ClaudeToolType } from '../types/tool.types';
 
-import { ModerateUser } from '../tools/userModeration';
-import { MiscUtilities } from '../tools/miscUtilities';
-import { UserInformation } from '../tools/userInformation';
-import { SeroUtilities } from '../tools/seroUtilities';
+import { DiscordSendMessageTool } from '../tools/discord_send_message.tool';
+import { DiscordGuildInfoTool } from '../tools/discord_guild_info.tool';
+import { DiscordFetchMessagesTool } from '../tools/discord_fetch_messages.tool';
+import { DiscordModerationTool } from '../tools/discord_moderation_actions.tool';
+import { DiscordUserLogsTool } from '../tools/discord_user_logs.tool';
+import { SeroUtilityActionsTool } from '../tools/sero_utility_actions.tool';
+import { TaskSchedulerTool } from '../tools/task_scheduler.tool';
+import { DiscordUserActionsTool } from '../tools/discord_user_actions.tool';
 
-// Interface for tool execution functions
-interface ToolFunction {
-    (message: Message, ...args: any[]): Promise<string> | string;
+// Map to store tool instances
+const toolInstances = new Map<string, ClaudeToolType>();
+
+/**
+ * Initialize tools with message and client context
+ */
+export function initializeTools(message: Message, client: Client) {
+    toolInstances.set('discord_send_message', new DiscordSendMessageTool(client, message));
+    toolInstances.set('discord_guild_info', new DiscordGuildInfoTool(client, message));
+    toolInstances.set('discord_fetch_messages', new DiscordFetchMessagesTool(client, message));
+    toolInstances.set('discord_moderation_actions', new DiscordModerationTool(client, message));
+    toolInstances.set('discord_user_logs', new DiscordUserLogsTool(client, message));
+    toolInstances.set('discord_user_actions', new DiscordUserActionsTool(client, message));
+    toolInstances.set('sero_utility_actions', new SeroUtilityActionsTool(client, message));
+    toolInstances.set('task_scheduler', new TaskSchedulerTool(client, message));
 }
 
-// Map to store all tool functions
-const toolFunctions = new Map<string, ToolFunction>();
-
-// Initialize tools
-export function initializeTools() {
-    toolFunctions.set('moderateUser', ModerateUser);
-    toolFunctions.set('miscUtilities', MiscUtilities);
-    toolFunctions.set('userInformation', UserInformation);
-    toolFunctions.set('seroUtilities', SeroUtilities);
-}
-
-// Execute a tool by name
-export async function executeTool(toolName: string, message: Message, ...args: any[]): Promise<string> {
-    const tool = toolFunctions.get(toolName);
+/**
+ * Execute a tool by name with input
+ */
+export async function executeTool(
+    toolName: string,
+    input: any
+): Promise<string> {
+    const tool = toolInstances.get(toolName);
 
     if (!tool) {
-        return `Tool "${toolName}" not found`;
+        throw new Error(`Tool "${toolName}" not found`);
     }
 
     try {
-        return await tool(message, ...args);
+        return await tool.execute(input);
     } catch (error) {
         console.error(`Error executing tool ${toolName}:`, error);
-        return `Error executing tool "${toolName}": ${error instanceof Error ? error.message : String(error)}`;
+        throw new Error(
+            `Error executing tool "${toolName}": ${error instanceof Error ? error.message : String(error)}`
+        );
     }
 }

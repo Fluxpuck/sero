@@ -51,12 +51,24 @@ module.exports.run = async (client, interaction) => {
     }
 
     // Set the data from the requests
-    const { level, createdAt, updatedAt } = userCareer.data;
-    const { name, emoji, description, salary, payRaise } = userCareer.data.job;
+    // Destructure career data with safe defaults
+    const {
+        level = 0,
+        createdAt = Date.now(),
+        updatedAt = Date.now(),
+        job: {
+            name = 'Unemployed',
+            emoji = '💼',
+            description = 'This user has not started their career yet.',
+            salary = 0,
+            payRaise = 0
+        } = {}
+    } = userCareer?.data || {};
 
-    const dailyIncome = calculateDailyIncome(salary, payRaise, level);
-    const totalIncome = careerIncome.data.total || 0;
-    const currentStreak = careerStreak.data.streak || 0;
+    // Calculate financial information
+    const dailyIncome = Math.max(0, calculateDailyIncome(salary, payRaise, level));
+    const totalIncome = Math.max(0, careerIncome?.data?.total || 0);
+    const currentStreak = Math.max(0, careerStreak?.data?.streak || 0);
 
     const startCareerDate = new Date(createdAt);
     const lastTimeWorked = new Date(updatedAt);

@@ -11,7 +11,11 @@ const { startOfHour, endOfHour, startOfToday, endOfToday, startOfWeek, endOfWeek
 // Helper function to fetch user activities
 const fetchUserActivities = async (options, res, next) => {
     try {
-        const userActivitiesData = await findAllRecords(UserActivities, options);
+        const fetchOptions = {
+            ...options,
+            order: [['createdAt', 'DESC']],
+        };
+        const userActivitiesData = await findAllRecords(UserActivities, fetchOptions);
         if (!userActivitiesData || userActivitiesData.length === 0) {
             throw new CreateError(404, "No activities found for the user");
         }

@@ -1,11 +1,14 @@
 // commands/ping.ts
-import { SlashCommandBuilder, ChatInputCommandInteraction } from 'discord.js';
+import { SlashCommandBuilder, ChatInputCommandInteraction, PermissionFlagsBits } from 'discord.js';
 import { Command } from '../types/command.types';
 
 const command: Command = {
     data: new SlashCommandBuilder()
         .setName('ping')
-        .setDescription('Replies with Pong and latency information!'),
+        .setDescription('Replies with Pong and latency information!')
+        .setDefaultMemberPermissions(PermissionFlagsBits.ManageGuild),
+
+    cooldown: 60,
 
     async execute(interaction: ChatInputCommandInteraction) {
         const sent = await interaction.reply({ content: 'Pinging...', fetchReply: true });
