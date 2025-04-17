@@ -17,7 +17,7 @@ router.get("/", async (req, res) => {
     try {
         const scheduledBoosts = await findAllRecords(ScheduledBoosts, options);
         if (!scheduledBoosts) {
-            throw new CreateError(404, "No logs were found for the user in the guild");
+            throw new CreateError(404, "No scheduled boosts were found for the guild");
         } else {
             res.status(200).json(scheduledBoosts);
         }

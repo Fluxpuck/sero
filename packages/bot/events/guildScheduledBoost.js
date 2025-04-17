@@ -47,7 +47,7 @@ module.exports = async (client, payload) => {
         }
 
         try {
-            // Send a message to the channel (channelId) and note the modifier and durarion
+            // Send a message to the channel (channelId) and note the modifier and duration
             const guild = await client.guilds.fetch(payload.guildId);
             const channel = await guild.channels.fetch(payload.channelId);
             if (channel) {

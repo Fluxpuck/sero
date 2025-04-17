@@ -150,7 +150,7 @@ module.exports = {
      * @param {*} day - The day of the week (Sunday = 0)
      * @param {*} time - The time of the day (eg: 13:45)
      */
-    getNextOccurence(day, time) {
+    getNextOccurrence(day, time) {
         const now = new Date();
         try {
             const next = nextDay(now, day);

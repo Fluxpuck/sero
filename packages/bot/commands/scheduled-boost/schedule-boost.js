@@ -3,7 +3,7 @@ const { deferInteraction, replyInteraction, updateInteraction } = require('../..
 const { getRequest, postRequest, deleteRequest } = require("../../database/connection");
 const ClientButtonsEnum = require("../../assets/embed-buttons");
 const { createCustomEmbed } = require("../../assets/embed");
-const { unixTimestamp, getNextOccurence } = require("../../lib/helpers/TimeDateHelpers/timeHelper")
+const { unixTimestamp, getNextOccurrence } = require("../../lib/helpers/TimeDateHelpers/timeHelper")
 const { chunk } = require("../../lib/helpers/MathHelpers/arrayHelper");
 
 module.exports.props = {
@@ -98,7 +98,8 @@ module.exports.props = {
             }
         ],
     },
-    defaultMemberPermissions: ['ManageGuild']
+    // defaultMemberPermissions: ['ManageGuild']
+    defaultMemberPermissions: ['SendMessages'], // Dev perms
 }
 
 module.exports.autocomplete = async (client, interaction) => {
@@ -173,7 +174,7 @@ module.exports.run = async (client, interaction) => {
             // Chunk the data (because max fields = 25, I think 3 per page will do nicely)
             const scheduledBoostsFormatted = scheduledBoostsList.map((boost) => {
                 const eventName = boost.eventName
-                const boostDate = getNextOccurence(boost.day, boost.time);
+                const boostDate = getNextOccurrence(boost.day, boost.time);
                 const boostUnix = unixTimestamp(boostDate);
                 const daysOfWeek = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"]; // TODO: Move this to timeHelper?
                 return {
@@ -230,11 +231,11 @@ module.exports.run = async (client, interaction) => {
                     if (selectedButton === "previous_pg" || selectedButton === "next_pg") {
                         // Update the page number based on the button pressed
                         if (selectedButton == 'previous_pg') {
-                            if (page <= 0) {
+                            if (page > 0) {
                                 page--;
                             }
                         } else if (selectedButton == 'next_pg') {
-                            if (page >= maxpages) {
+                            if (page < maxpages) {
                                 page++;
                             }
                         }

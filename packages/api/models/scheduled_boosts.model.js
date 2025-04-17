@@ -57,7 +57,7 @@ module.exports = sequelize => {
             type: DataTypes.STRING, // 24 hour using bot is UTC (e.g. 03:54)
             allowNull: false,
             validate: {
-                is: /^[0-2][0-9]:[0-5][0-9]$/,
+                is: /^(?:[01][0-9]|2[0-3]):[0-5][0-9]$/,
             },
         },
         repeat: {
