@@ -11,9 +11,9 @@ const userTimeouts = new Map<string, NodeJS.Timeout>();
 // Create a claude service instance
 const claudeService = new ClaudeService();
 
-// Time threshold in milliseconds (15 seconds)
-const TIME_THRESHOLD = 15_000;
-const MESSAGE_THRESHOLD = 15;
+// Time threshold in milliseconds (10 seconds)
+const TIME_THRESHOLD = 10_000;
+const MESSAGE_THRESHOLD = 10;
 
 export async function execute(message: Message) {
     // Check if auto moderation is enabled
