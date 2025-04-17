@@ -264,30 +264,43 @@ export class ClaudeService {
         message: Message,
         messageCollection?: MessageViolationCheckInput
     ): Promise<string | undefined> {
-        try {
-            // Initialize system prompt with more lenient guidance
-            const checkViolationContext = `
-            Analyze all messages in the conversation as a whole, not individually.
-            Be extremely lenient in your evaluation - only flag patterns that show clear and significant rule violations.
-            Minor infractions, mild language, borderline cases, or isolated incidents should NOT be flagged.
-            Only flag message collections that would be widely considered inappropriate by most moderators.
-            Consider context and frequency - occasional minor issues spread across messages are not violations.
-            
-            Return {"violation": true, "reason": "rule violation details"} ONLY if serious rules are broken consistently.
-            Return {"violation": false} if no severe pattern of rule violations exists.
 
-            Replace the values of these objects with the actual values.
-            Do not include any other text in the response.
-            Always mention the violator and speak directly to them.
+        console.log('Checking for violations...');
+
+        try {
+            // Initialize tools for direct access in this function
+            initializeTools(message, message.client);
+
+            // Initialize system prompt with more lenient guidance but include tools context
+            const checkViolationContext = `
+            You are a Discord server moderator responsible for identifying and acting on rule violations.
+            
+            Analyze the messages in the conversation for patterns of behavior that violate server rules.
+            Your goal is to identify clear and significant rule violations that would be widely considered inappropriate by most moderators.
+
+            Only give a verbal warning for spamming.
+            
+            If you detected a serious violation please choose to only reply with a warning or utilize the moderation tools and take appropriate action.
+            If no violation is detected, simply return: "No violation detected".
+            
+            You are only allowed to utilize warn and timeout actions.
+            Be proportionate in your enforcement actions based on severity.
             `;
-            const systemPrompt = this.prepareSystemPrompt(message, { seroAgent: false, moderationContext: true, discordContext: false, toolsContext: false, SSundeeContext: true }, checkViolationContext);
+
+            const systemPrompt = this.prepareSystemPrompt(message, {
+                seroAgent: true,
+                moderationContext: true,
+                discordContext: true,
+                toolsContext: true,
+                SSundeeContext: true
+            }, checkViolationContext);
 
             // Get message content and ensure it's not empty
             const messageContent = messageCollection?.messages ?? message.content;
 
             // Check if content is empty or undefined
             if (!messageContent || messageContent.trim() === '') {
-                console.log('Warning: Empty message content in checkViolation, skipping API call',);
+                console.log('Warning: Empty message content in checkViolation, skipping API call');
                 return;
             }
 
@@ -297,6 +310,9 @@ export class ClaudeService {
                     model: this.CLAUDE_MODEL,
                     max_tokens: this.MAX_TOKENS,
                     system: systemPrompt,
+                    tools: [
+                        ...DiscordModerationToolContext  // Only include moderation tools
+                    ],
                     messages: [{
                         role: 'user',
                         content: messageContent
@@ -304,31 +320,35 @@ export class ClaudeService {
                 })
             );
 
+            console.log('Claude response:', response);
+
+            if (response.stop_reason === "tool_use") {
+                const toolRequest = response.content.find((c) => c.type === "tool_use");
+                if (!toolRequest) return;
+
+                try {
+                    // Execute the tool and get the result
+                    const { name, input } = toolRequest;
+                    await executeTool(name, input);
+
+                } catch (error) {
+                    console.error('Error executing tool:', error);
+                }
+            }
+
             if (response.stop_reason === "end_turn") {
                 const textResponse = response.content.find((c) => c.type === "text")?.text ?? "";
-
-                // Parse the response to check for violations
-                const jsonMatch = textResponse.match(/\{.*\}/s)?.[0];
-                const parsedResponse = jsonMatch ? JSON.parse(jsonMatch) : null;
-                if (!parsedResponse) return;
-
-                if (parsedResponse.violation) {
-                    // Direct violation handling to moderation tool without additional messages
-                    const prompt = `The user <@${message.author.id}> has violated the server rules for the following reason: ${parsedResponse.reason}. Use the discord_moderation_actions tool directly with appropriate parameters. Do not send any follow-up message.`;
-
-                    console.log(`autoModeration violation detected on ${messageContent} for user ${message.author.id}`);
-                    console.log("Prompt for moderation tool:", prompt);
-
-                    // Use reasoning: false to prevent intermediate response and finalResponse: false to prevent follow-up
-                    await this.askClaude(prompt, message, {
-                        reasoning: false,
-                        excludeTools: false,
-                        finalResponse: false
-                    });
+                if (textResponse.trim().toLowerCase() === "no violation detected") {
+                    return;
                 }
 
-                return parsedResponse;
+                // Reply with the final response
+                await replyOrSend(message, sanitizeResponse(textResponse)).catch((err) => {
+                    console.error('Error sending final response:', err);
+                });
+
             }
+
         } catch (error) {
             console.error('Error on checkViolation:', error);
         }
