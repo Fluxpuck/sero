@@ -262,12 +262,16 @@ export class ClaudeService {
         messageCollection?: MessageViolationCheckInput
     ): Promise<string | undefined> {
         try {
-
-            // Initialize system prompt
+            // Initialize system prompt with more lenient guidance
             const checkViolationContext = `
-            Determine if any messages in the conversation violate server rules.
-            Return {"violation": true, "reason": "rule violation details"} if rules are broken.
-            Return {"violation": false} if no rules are broken.
+            Analyze all messages in the conversation as a whole, not individually.
+            Be extremely lenient in your evaluation - only flag patterns that show clear and significant rule violations.
+            Minor infractions, mild language, borderline cases, or isolated incidents should NOT be flagged.
+            Only flag message collections that would be widely considered inappropriate by most moderators.
+            Consider context and frequency - occasional minor issues spread across messages are not violations.
+            
+            Return {"violation": true, "reason": "rule violation details"} ONLY if serious rules are broken consistently.
+            Return {"violation": false} if no severe pattern of rule violations exists.
 
             Replace the values of these objects with the actual values.
             Do not include any other text in the response.
@@ -296,13 +300,19 @@ export class ClaudeService {
                 if (!parsedResponse) return;
 
                 if (parsedResponse.violation) {
-                    const prompt = `The user ${message.author.id} has violated the server rules for the following reason: ${parsedResponse.reason}. Please take the appropriate action. Please direct your response to the user.`;
-                    this.askClaude(prompt, message, { reasoning: false, finalResponse: false });
+                    // Direct violation handling to moderation tool without additional messages
+                    const prompt = `The user <@${message.author.id}> has violated the server rules for the following reason: ${parsedResponse.reason}. Use the discord_moderation_actions tool directly with appropriate parameters. Do not send any follow-up message.`;
+
+                    // Use reasoning: false to prevent intermediate response and finalResponse: false to prevent follow-up
+                    await this.askClaude(prompt, message, {
+                        reasoning: false,
+                        excludeTools: false,
+                        finalResponse: false
+                    });
                 }
 
                 return parsedResponse;
             }
-
         } catch (error) {
             console.error('Error on checkViolation:', error);
         }
