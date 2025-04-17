@@ -1,6 +1,6 @@
 // commands/ping.ts
 import { SlashCommandBuilder, ChatInputCommandInteraction, PermissionFlagsBits } from 'discord.js';
-import { Command } from '../types/command.types';
+import { Command } from '../types/client.types';
 
 const command: Command = {
     data: new SlashCommandBuilder()
