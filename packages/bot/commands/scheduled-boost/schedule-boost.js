@@ -127,7 +127,7 @@ module.exports.autocomplete = async (client, interaction) => {
         // Request from the API to get all scheduled boosts, if any
         const scheduledBoostsListData = await getRequest(`/guilds/${interaction.guild.id}/boost/scheduled`);
         const scheduledBoostsList = scheduledBoostsListData.status === 200 ? scheduledBoostsListData.data : [];
-        if (scheduledBoostsList == []) {
+        if (scheduledBoostsList.length === 0) {
             return interaction.respond([]);
         }
         // TODO (maybe not usefull) some filter for the input
