@@ -229,8 +229,15 @@ module.exports.run = async (client, interaction) => {
                     const selectedButton = button.customId;
                     if (selectedButton === "previous_pg" || selectedButton === "next_pg") {
                         // Update the page number based on the button pressed
-                        if (selectedButton == 'previous_pg') (page <= 0) ? 0 : page--
-                        if (selectedButton == 'next_pg') (page >= maxpages) ? maxpages : page++
+                        if (selectedButton == 'previous_pg') {
+                            if (page <= 0) {
+                                page--;
+                            }
+                        } else if (selectedButton == 'next_pg') {
+                            if (page >= maxpages) {
+                                page++;
+                            }
+                        }
 
                         // Update the button status, based on the page number
                         const previousIndex = scheduledBoostsListButtons.components.findIndex(button => button.data.custom_id === "previous_pg");
