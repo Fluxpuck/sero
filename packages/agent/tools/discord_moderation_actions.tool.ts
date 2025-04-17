@@ -1,13 +1,15 @@
 import { Client, Message } from "discord.js";
 import { ClaudeTool, ClaudeToolType } from "../types/tool.types";
 import { UserResolver } from "../utils/user-resolver";
+import { replyOrSend } from "../utils/replyOrSend";
 
-type ModerationActionType = "timeout" | "disconnect" | "kick" | "ban" | "warn";
+type ModerationActionType = "timeout" | "disconnect" | "kick" | "ban" | "warn" | "verbal-warning";
 type ModerationToolInput = {
     user: string;
     actions: ModerationActionType[];
     timeout_duration?: number;
     reason: string;
+    message?: string; // Optional custom message for verbal warnings
 };
 
 export class DiscordModerationTool extends ClaudeToolType {
@@ -27,9 +29,9 @@ export class DiscordModerationTool extends ClaudeToolType {
                         items: {
                             type: "string",
                             description: "Type of moderation action to perform",
-                            enum: ["timeout", "disconnect", "kick", "ban", "warn"]
+                            enum: ["timeout", "disconnect", "kick", "ban", "warn", "verbal-warning"]
                         },
-                        description: "Array of optional moderation actions to perform on the user: Timeout (mute), Disconnect (from voice), Kick, Ban, Warn"
+                        description: "Array of optional moderation actions to perform on the user: Timeout (mute), Disconnect (from voice), Kick, Ban, Warn (DM), Verbal-Warning (in channel)"
                     },
                     timeout_duration: {
                         type: "number",
@@ -38,6 +40,10 @@ export class DiscordModerationTool extends ClaudeToolType {
                     reason: {
                         type: "string",
                         description: "Reason for the moderation actions"
+                    },
+                    message: {
+                        type: "string",
+                        description: "Optional custom message for verbal warnings"
                     }
                 },
                 required: ["user", "actions", "reason"]
@@ -52,7 +58,7 @@ export class DiscordModerationTool extends ClaudeToolType {
         super(DiscordModerationTool.getToolContext());
     }
 
-    async execute({ user: targetUser, actions, timeout_duration, reason }: ModerationToolInput): Promise<string> {
+    async execute({ user: targetUser, actions, timeout_duration, reason, message: customMessage }: ModerationToolInput): Promise<string> {
         if (!this.message.guild) {
             return `Error: This command can only be used in a guild.`;
         }
@@ -76,44 +82,44 @@ export class DiscordModerationTool extends ClaudeToolType {
             try {
                 switch (action) {
                     case "timeout":
-                        if (timeout_duration) {
-                            await user.timeout(timeout_duration * 60 * 1000, fullReason).catch((error) => {
-                                return `Error: Failed to timeout user "${user.user.tag}". Reason: ${error}`;
-                            });
-                            return `Timed out ${user.user.tag} for ${timeout_duration} minutes`;
+                        if (!timeout_duration) {
+                            throw new Error(`Timeout duration is required for timeout action.`);
                         }
-                        return "Timeout duration not specified";
+                        await user.timeout(timeout_duration * 60 * 1000, fullReason).catch((error) => {
+                            return `Error: Failed to timeout user "${user.user.tag}". Reason: ${error}`;
+                        });
+                        return `Timed out ${user.user.tag} for ${timeout_duration} minutes`;
 
                     case "disconnect":
-                        if (user.voice.channel) {
-                            await user.voice.disconnect(fullReason).catch((error) => {
-                                return `Error: Failed to disconnect user "${user.user.tag}". Reason: ${error}`;
-                            });
-                            return `Disconnected ${user.user.tag} from voice`;
+                        if (!user.voice.channel) {
+                            throw new Error(`User is not in a voice channel.`);
                         }
-                        return `${user.user.tag} is not in a voice channel`;
+                        await user.voice.disconnect(fullReason).catch((error) => {
+                            return `Error: Failed to disconnect user "${user.user.tag}". Reason: ${error}`;
+                        });
+                        return `Disconnected ${user.user.tag} from voice`;
 
                     case "kick":
                         if (!this.message.member?.permissions.has('KickMembers')) {
-                            return `This user does not have permission to kick members.`;
+                            throw new Error(`This user does not have permission to kick members.`);
                         }
                         if (!user.kickable) {
-                            return `This user is not kickable.`;
+                            throw new Error(`This user is not kickable.`);
                         }
                         await user.kick(fullReason).catch((error) => {
-                            return `Error: Failed to kick user "${user.user.tag}". Reason: ${error}`;
+                            throw new Error(`Failed to kick user "${user.user.tag}". Reason: ${error}`);
                         });
                         return `Kicked ${user.user.tag}`;
 
                     case "ban":
                         if (!this.message.member?.permissions.has('BanMembers')) {
-                            return `This user does not have permission to ban members.`;
+                            throw new Error(`This user does not have permission to ban members.`);
                         }
                         if (!user.bannable) {
-                            return `This user is not bannable.`;
+                            throw new Error(`This user is not bannable.`);
                         }
                         await user.ban({ deleteMessageSeconds: 24 * 60 * 60, reason: fullReason }).catch((error) => {
-                            return `Error: Failed to ban user "${user.user.tag}". Reason: ${error}`;
+                            throw new Error(`Failed to ban user "${user.user.tag}". Reason: ${error}`);
                         });
                         return `Banned ${user.user.tag}`;
 
@@ -122,6 +128,15 @@ export class DiscordModerationTool extends ClaudeToolType {
                             return `Error: Failed to send warning to user "${user.user.tag}". Their DMs are most likely disabled.`;
                         });
                         return `Warned ${user.user.tag}`;
+
+                    case "verbal-warning":
+                        if (!customMessage) {
+                            return `Error: Custom message is required for verbal warnings.`;
+                        }
+                        await replyOrSend(this.message, customMessage).catch((error) => {
+                            throw new Error(`Failed to send verbal warning in channel. Reason: ${error}`);
+                        });
+                        return `Sent verbal warning to ${user.user.tag}`;
 
                     default:
                         return `Unknown action: ${action}`;
