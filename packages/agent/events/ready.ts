@@ -23,7 +23,6 @@ const event: Event = {
         // Initialize scheduled tasks from database
         try {
             await TaskSchedulerTool.initializeTasks(client, apiService);
-            console.log('Scheduled tasks initialized successfully');
         } catch (error) {
             console.error('Error initializing scheduled tasks:', error);
         }
