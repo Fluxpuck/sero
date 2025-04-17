@@ -1,6 +1,5 @@
 import { Message, Collection } from 'discord.js';
 import { ClaudeService } from '../services/claude';
-import NodeCache from 'node-cache';
 import { MessageViolationCheckInput } from '../types/message.types';
 
 export const name = 'AutoModeration' as const;
