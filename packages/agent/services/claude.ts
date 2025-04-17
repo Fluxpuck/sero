@@ -270,17 +270,11 @@ export class ClaudeService {
 
             // Initialize system prompt with more lenient guidance but include tools context
             const checkViolationContext = `
-            You are a Discord server moderator responsible for identifying and acting on rule violations.
-            
-            Analyze the messages in the conversation for patterns of behavior that violate server rules.
+            Analyze the messages in the conversation and identifying rule violations.
             Your goal is to identify clear and significant rule violations that would be widely considered inappropriate by most moderators.
 
-            Please consider giving a warning for minor violations. Only issue a timeout for serious violations.
-            You are not allowed to issue bans or kicks.
-            
             If you detected a serious violation please choose to only reply with a warning or utilize the moderation tools and take appropriate action.
             If no violation is detected, simply return: "NO_VIOLATION_DETECTED"
-            
             `;
 
             const systemPrompt = this.prepareSystemPrompt(message, {
