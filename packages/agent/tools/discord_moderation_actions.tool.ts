@@ -59,20 +59,23 @@ export class DiscordModerationTool extends ClaudeToolType {
     }
 
     async execute({ user: targetUser, actions, timeout_duration, reason, message: customMessage }: ModerationToolInput): Promise<string> {
+
         if (!this.message.guild) {
             return `Error: This command can only be used in a guild.`;
         }
 
-        if (!this.message.member?.permissions.has('ModerateMembers')) {
-            return `Error: This user does not have permission to moderate members.`;
-        }
+        // @TODO - Because of the checkViolation function, we can't check for permissions here...
+
+        // if (!this.message.member?.permissions.has('ModerateMembers')) {
+        //     return `Error: This user does not have permission to moderate members.`;
+        // }
 
         const user = await UserResolver.resolve(this.message.guild, targetUser);
         if (!user) {
-            return `Error: Could not find user "${targetUser}."`;
+            throw new Error(`User "${targetUser}" not found in this guild.`);
         }
         if (!user.moderatable) {
-            return `Error: Unable to moderate user "${user.user.tag}". Reason: User has higher permissions or role hierarchy prevents moderation.`;
+            throw new Error(`User "${user.user.tag}" is not moderatable.`);
         }
 
         const fullReason = `${reason} - Moderator: ${this.message.author.tag}`;
@@ -133,7 +136,8 @@ export class DiscordModerationTool extends ClaudeToolType {
                         if (!customMessage) {
                             return `Error: Custom message is required for verbal warnings.`;
                         }
-                        await replyOrSend(this.message, customMessage).catch((error) => {
+
+                        await replyOrSend(this.message, `<@${user.id}>, ${customMessage}`).catch((error) => {
                             throw new Error(`Failed to send verbal warning in channel. Reason: ${error}`);
                         });
                         return `Sent verbal warning to ${user.user.tag}`;
