@@ -42,7 +42,7 @@ module.exports = {
             Math.floor(Math.random() * (maxXP - baseXP + 1) + baseXP) :
             baseXP;
 
-        return xp * personalModifier * serverModifier;
+        return xp * serverModifier * personalModifier;
     },
 
     /**
