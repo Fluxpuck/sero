@@ -93,6 +93,9 @@ module.exports = {
      * @returns 
      */
     getTimeAgo: (date) => {
+        if (isNaN(new Date(date).getTime())) {
+            throw new Error('Invalid date input');
+        }
         return formatDistanceToNowStrict(new Date(date), { addSuffix: true });
     },
 
