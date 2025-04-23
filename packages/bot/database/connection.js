@@ -20,8 +20,10 @@ module.exports = {
             const response = await instance.get(endpoint);
             return response;
         } catch (error) {
-            const { status = 408, data = {} } = error?.response;
-            const errorMessage = data?.error?.data?.message || error?.message || "An error occurred while fetching data";
+            // Check if response exists before destructuring
+            const status = error?.response?.status || 408;
+            const errorData = error?.response?.data || {};
+            const errorMessage = errorData?.error?.data?.message || error?.message || "An error occurred while fetching data";
             return new CreateError(status, errorMessage, false);
         }
     },
@@ -36,8 +38,10 @@ module.exports = {
             const response = await instance.post(endpoint, data);
             return response;
         } catch (error) {
-            const { status = 408, data = {} } = error?.response;
-            const errorMessage = data?.error?.data?.message || error?.message || "An error occurred while posting data";
+            // Check if response exists before destructuring
+            const status = error?.response?.status || 408;
+            const errorData = error?.response?.data || {};
+            const errorMessage = errorData?.error?.data?.message || error?.message || "An error occurred while posting data";
             return new CreateError(status, errorMessage, false);
         }
     },
@@ -51,8 +55,10 @@ module.exports = {
             const response = await instance.delete(endpoint);
             return response;
         } catch (error) {
-            const { status = 408, data = {} } = error?.response;
-            const errorMessage = data?.error?.data?.message || error?.message || "An error occurred while deleting data";
+            // Check if response exists before destructuring
+            const status = error?.response?.status || 408;
+            const errorData = error?.response?.data || {};
+            const errorMessage = errorData?.error?.data?.message || error?.message || "An error occurred while deleting data";
             return new CreateError(status, errorMessage, false);
         }
     },
