@@ -1,4 +1,4 @@
-import { Message, TextChannel, Client } from "discord.js";
+import { Message, Client } from "discord.js";
 import { ApiService, ApiResponse } from "../services/api";
 import { ClaudeTool, ClaudeToolType } from "../types/tool.types";
 import * as cron from 'node-cron';
@@ -7,69 +7,71 @@ import { ClaudeService } from "../services/claude";
 type TaskInfo = {
     taskId: string;
     userId: string;
-    schedule: string; // Cron expression (e.g., "*/5 * * * *" for every 5 minutes)
-    task?: string;
-    maxExecutions?: number;
+    guildId: string;
+    schedule: string; // Cron expression
+    task_prompt: string;
     executionCount?: number;
-    startDate?: string;
-    endDate?: string;
+    maxExecutions?: number;
 }
 
-type TaskSchedulerInput = TaskInfo & {
-    operation: "create" | "update" | "delete" | "list";
+type TaskSchedulerInput = {
+    taskId?: string;
+    userId: string;
+    guildId: string;
+    schedule?: string;
+    task_prompt?: string;
+    executionCount?: number;
+    maxExecutions?: number;
+    action: "create" | "update" | "delete" | "list";
 }
 
 export class TaskSchedulerTool extends ClaudeToolType {
     private static scheduledTasks: Map<string, cron.ScheduledTask> = new Map();
     private static taskDetails: Map<string, TaskInfo> = new Map();
-    private readonly claudeService: ClaudeService;
+    private static claudeService: ClaudeService;
 
     static getToolContext() {
         return {
             name: "task_scheduler",
-            description: "Schedule a task, set a reminder, or cancel existing tasks.",
+            description: "Schedule, update, delete, or list tasks for automated execution",
             input_schema: {
                 type: "object" as const,
                 properties: {
                     taskId: {
                         type: "string",
-                        description: "Task ID to cancel (required for update or cancel operation)"
+                        description: "Task ID (required for update/delete actions)"
                     },
                     userId: {
                         type: "string",
-                        description: "User ID of the person who scheduled the task"
+                        description: "User ID who owns the task"
+                    },
+                    guildId: {
+                        type: "string",
+                        description: "Guild ID where the task should execute"
                     },
                     schedule: {
                         type: "string",
-                        description: "Cron expression for scheduling the task (e.g., '*/5 * * * *')"
+                        description: "Cron expression for scheduling (e.g., '0 9 * * *' for daily at 9am)"
                     },
-                    task: {
+                    task_prompt: {
                         type: "string",
-                        description: "A description of the task to be executed (required for create/update operations)"
-                    },
-                    maxExecutions: {
-                        type: "number",
-                        description: "Maximum number of times the task should execute (optional)"
+                        description: "Prompt describing what Claude should do when executing this task"
                     },
                     executionCount: {
                         type: "number",
-                        description: "Number of times the task has executed (optional)"
+                        description: "Current execution count (system managed)"
                     },
-                    startDate: {
-                        type: "string",
-                        description: "Start date for the task in ISO format (optional)"
+                    maxExecutions: {
+                        type: "number",
+                        description: "Maximum number of executions before task is auto-deleted"
                     },
-                    endDate: {
-                        type: "string",
-                        description: "End date for the task in ISO format (optional)"
-                    },
-                    operation: {
+                    action: {
                         type: "string",
                         enum: ["create", "update", "delete", "list"],
-                        description: "Operation to perform: create, update, delete, or list"
-                    },
+                        description: "Action to perform on the task"
+                    }
                 },
-                required: ["operation"]
+                required: ["action", "userId", "guildId"]
             }
         };
     }
@@ -80,52 +82,40 @@ export class TaskSchedulerTool extends ClaudeToolType {
         private readonly apiService: ApiService = new ApiService(),
     ) {
         super(TaskSchedulerTool.getToolContext());
-        this.claudeService = new ClaudeService();
+        if (!TaskSchedulerTool.claudeService) {
+            TaskSchedulerTool.claudeService = new ClaudeService();
+        }
     }
 
     /**
-     * Initialize tasks from database for a specific guild
+     * Initialize tasks from database for all guilds on bot startup
      */
     public static async initializeTasks(client: Client, apiService: ApiService): Promise<void> {
         try {
+            // Set the static Claude service
+            this.claudeService = new ClaudeService();
+
             // Get all guilds the bot is in
             const guilds = client.guilds.cache;
+            console.log(`Initializing tasks for ${guilds.size} guilds...`);
 
             for (const [guildId, guild] of guilds) {
-                let taskCount = 0;
-
                 try {
                     const response = await apiService.get(`/guilds/${guildId}/tasks`) as ApiResponse;
-                    if (response.status === 200 && response.data) {
 
-                        // Ensure tasks is an array
+                    if (response.status === 200 && response.data) {
                         const tasks = Array.isArray(response.data) ? response.data :
                             (response.data.tasks ? response.data.tasks : []);
 
-                        // Schedule each task if there are any
-                        if (tasks.length > 0) {
-                            for (const task of tasks) {
-                                const channel = guild.channels.cache.find(c => c.isTextBased()) as TextChannel;
-                                if (!channel) continue; // Skip if no text channel is found
+                        console.log(`Found ${tasks.length} tasks for guild ${guild.name}`);
 
-                                // Create a fake message object to pass to executeTask
-                                const fakeMessage = {
-                                    guild: guild,
-                                    channel: channel,
-                                    author: { id: task.userId },
-                                    client: client
-                                } as unknown as Message;
-
-                                await this.scheduleTask(task, fakeMessage, client, apiService);
-                                taskCount++;
-                            }
+                        for (const task of tasks) {
+                            await this.scheduleTask(task, client, apiService);
                         }
                     }
                 } catch (error) {
-                    console.error(`Error initializing tasks for guild ${guildId}:`, error);
+                    console.error(`Error loading tasks for guild ${guildId}:`, error);
                 }
-
-                console.log(`Scheduled ${taskCount} tasks for guild ${guild.name}`);
             }
         } catch (error) {
             console.error('Error initializing tasks:', error);
@@ -137,11 +127,10 @@ export class TaskSchedulerTool extends ClaudeToolType {
      */
     private static async scheduleTask(
         taskInfo: TaskInfo,
-        message: Message,
         client: Client,
         apiService: ApiService
     ): Promise<void> {
-        if (!taskInfo.taskId || !taskInfo.schedule || !taskInfo.task) {
+        if (!taskInfo.taskId || !taskInfo.schedule || !taskInfo.task_prompt) {
             throw new Error('Missing required task information');
         }
 
@@ -159,56 +148,61 @@ export class TaskSchedulerTool extends ClaudeToolType {
             this.scheduledTasks.delete(taskInfo.taskId);
         }
 
-        // Create a new Claude service for the task
-        const claudeService = new ClaudeService();
-
-        // Schedule the task with options to prevent immediate execution
+        // Schedule the task
         const scheduledTask = cron.schedule(taskInfo.schedule, async () => {
             try {
-                // Check if we've hit max executions
-                if (taskInfo.maxExecutions && taskInfo.executionCount &&
-                    taskInfo.executionCount >= taskInfo.maxExecutions) {
+                // Get the guild for this task
+                const guild = client.guilds.cache.get(taskInfo.guildId);
+                if (!guild) {
+                    console.error(`Guild ${taskInfo.guildId} not found for task ${taskInfo.taskId}`);
+                    return;
+                }
 
-                    // Stop and cleanup the task
+                // Find a text channel to execute in
+                const channel = guild.channels.cache.find(c => c.isTextBased());
+                if (!channel || !channel.isTextBased()) {
+                    console.error(`No text channel found in guild ${taskInfo.guildId} for task ${taskInfo.taskId}`);
+                    return;
+                }
+
+                // Create a message-like object for Claude execution
+                const mockMessage = {
+                    guild: guild,
+                    channel: channel,
+                    author: { id: taskInfo.userId },
+                    client: client
+                } as any;
+
+                // Execute the task by sending the prompt to Claude
+                await this.claudeService.askClaude(
+                    taskInfo.task_prompt,
+                    mockMessage,
+                    { reasoning: false, finalResponse: false }
+                );
+
+                // Increment execution count
+                taskInfo.executionCount = (taskInfo.executionCount || 0) + 1;
+
+                // Update in database
+                await apiService.put(`/guilds/${taskInfo.guildId}/tasks/${taskInfo.taskId}`, {
+                    executionCount: taskInfo.executionCount
+                });
+
+                // Store updated task info
+                this.taskDetails.set(taskInfo.taskId, taskInfo);
+
+                // Check if max executions reached
+                if (taskInfo.maxExecutions && taskInfo.executionCount >= taskInfo.maxExecutions) {
+                    console.log(`Task ${taskInfo.taskId} reached max executions. Cleaning up.`);
+
+                    // Stop the scheduled task
                     scheduledTask.stop();
                     this.scheduledTasks.delete(taskInfo.taskId);
                     this.taskDetails.delete(taskInfo.taskId);
 
-                    // Update task status in database
-                    if (message.guild?.id) {
-                        await apiService.delete(`/guilds/${message.guild.id}/tasks/${taskInfo.taskId}`);
-                    }
-                    return;
+                    // Delete from database
+                    await apiService.delete(`/guilds/${taskInfo.guildId}/tasks/${taskInfo.taskId}`);
                 }
-
-                // Check if task is within date range
-                const now = new Date();
-                if (taskInfo.startDate && now < new Date(taskInfo.startDate)) {
-                    console.log(`Task ${taskInfo.taskId} not started yet.`);
-                    return;
-                }
-                if (taskInfo.endDate && now > new Date(taskInfo.endDate)) {
-                    console.log(`Task ${taskInfo.taskId} expired. Stopping.`);
-                    scheduledTask.stop();
-                    this.scheduledTasks.delete(taskInfo.taskId);
-
-                    // Update task status in database
-                    await apiService.delete(`/guilds/${message.guild?.id}/tasks/${taskInfo.taskId}`);
-                    return;
-                }
-
-                // Execute scheduled task
-                await claudeService.askClaude(taskInfo.task!, message, { reasoning: false });
-
-                // Increment execution count
-                if (message.guild?.id) {
-                    await apiService.post(`/guilds/${message.guild.id}/tasks/increment/${taskInfo.taskId}`, {});
-                }
-
-                // Update local count
-                taskInfo.executionCount = (taskInfo.executionCount || 0) + 1;
-                this.taskDetails.set(taskInfo.taskId, taskInfo);
-
             } catch (error) {
                 console.error(`Error executing task ${taskInfo.taskId}:`, error);
             }
@@ -216,7 +210,7 @@ export class TaskSchedulerTool extends ClaudeToolType {
             scheduled: false // Don't start immediately
         });
 
-        // Start the task after setup to prevent immediate execution
+        // Start the task
         scheduledTask.start();
 
         // Store the scheduled task
@@ -224,40 +218,32 @@ export class TaskSchedulerTool extends ClaudeToolType {
     }
 
     /**
-     * Create and store a task
+     * Create a new task
      */
     private async createTask(input: TaskSchedulerInput): Promise<string> {
-        if (!this.message.guild) {
-            return "Cannot schedule tasks in DMs";
-        }
-
-        if (!input.task || !input.schedule) {
-            return "Task and schedule are required for scheduling a task";
+        if (!input.schedule || !input.task_prompt) {
+            return "Schedule and task_prompt are required for creating a task";
         }
 
         try {
-            // Generate a unique task ID if not provided
-            const taskId = input.taskId || Date.now().toString();
-
             // Prepare task data
-            const taskData = {
+            const taskData: TaskInfo = {
                 taskId: this.message.id,
-                userId: input.userId || this.message.author.id,
+                userId: input.userId,
+                guildId: input.guildId,
                 schedule: input.schedule,
-                task: input.task,
-                maxExecutions: input.maxExecutions,
-                executionCount: input.executionCount || 0,
-                startDate: input.startDate,
-                endDate: input.endDate,
+                task_prompt: input.task_prompt,
+                executionCount: 0,
+                maxExecutions: input.maxExecutions
             };
 
             // Store task in database
-            await this.apiService.post(`/guilds/${this.message.guild.id}/tasks`, taskData);
+            await this.apiService.post(`/guilds/${input.guildId}/tasks`, taskData);
 
             // Schedule the task
-            await TaskSchedulerTool.scheduleTask(taskData, this.message, this.client, this.apiService);
+            await TaskSchedulerTool.scheduleTask(taskData, this.client, this.apiService);
 
-            return `Task scheduled successfully with ID: ${taskId}`;
+            return `Task scheduled successfully with ID: ${this.message.id}`;
         } catch (error) {
             console.error('Error creating task:', error);
             return `Error creating task: ${error instanceof Error ? error.message : String(error)}`;
@@ -268,10 +254,6 @@ export class TaskSchedulerTool extends ClaudeToolType {
      * Update an existing task
      */
     private async updateTask(input: TaskSchedulerInput): Promise<string> {
-        if (!this.message.guild) {
-            return "Cannot update tasks in DMs";
-        }
-
         if (!input.taskId) {
             return "Task ID is required for updating a task";
         }
@@ -286,22 +268,21 @@ export class TaskSchedulerTool extends ClaudeToolType {
             const existingTask = TaskSchedulerTool.taskDetails.get(input.taskId)!;
 
             // Update task data
-            const taskData = {
+            const taskData: TaskInfo = {
                 taskId: input.taskId,
                 userId: input.userId || existingTask.userId,
+                guildId: input.guildId || existingTask.guildId,
                 schedule: input.schedule || existingTask.schedule,
-                task: input.task || existingTask.task,
-                maxExecutions: input.maxExecutions ?? existingTask.maxExecutions,
+                task_prompt: input.task_prompt || existingTask.task_prompt,
                 executionCount: input.executionCount ?? existingTask.executionCount,
-                startDate: input.startDate || existingTask.startDate,
-                endDate: input.endDate || existingTask.endDate,
+                maxExecutions: input.maxExecutions ?? existingTask.maxExecutions
             };
 
             // Update in database
-            const response = await this.apiService.put(`/guilds/${this.message.guild.id}/tasks/${input.taskId}`, taskData);
+            await this.apiService.put(`/guilds/${taskData.guildId}/tasks/${input.taskId}`, taskData);
 
-            // Reschedule the task with new parameters
-            await TaskSchedulerTool.scheduleTask(taskData, this.message, this.client, this.apiService);
+            // Re-schedule the task with new parameters
+            await TaskSchedulerTool.scheduleTask(taskData, this.client, this.apiService);
 
             return `Task ${input.taskId} updated successfully`;
         } catch (error) {
@@ -313,45 +294,46 @@ export class TaskSchedulerTool extends ClaudeToolType {
     /**
      * Delete a task
      */
-    private async deleteTask(taskId: string): Promise<string> {
-        if (!this.message.guild) {
-            return "Cannot manage tasks in DMs";
+    private async deleteTask(input: TaskSchedulerInput): Promise<string> {
+        if (!input.taskId) {
+            return "Task ID is required for deletion";
         }
 
         try {
             // Stop the scheduled task
-            if (TaskSchedulerTool.scheduledTasks.has(taskId)) {
-                TaskSchedulerTool.scheduledTasks.get(taskId)?.stop();
-                TaskSchedulerTool.scheduledTasks.delete(taskId);
-                TaskSchedulerTool.taskDetails.delete(taskId);
+            if (TaskSchedulerTool.scheduledTasks.has(input.taskId)) {
+                TaskSchedulerTool.scheduledTasks.get(input.taskId)?.stop();
+                TaskSchedulerTool.scheduledTasks.delete(input.taskId);
+                TaskSchedulerTool.taskDetails.delete(input.taskId);
             }
 
             // Delete from database
-            await this.apiService.delete(`/guilds/${this.message.guild.id}/tasks/${taskId}`);
+            await this.apiService.delete(`/guilds/${input.guildId}/tasks/${input.taskId}`);
 
-            return `Task ${taskId} has been cancelled`;
+            return `Task ${input.taskId} deleted successfully`;
         } catch (error) {
             console.error('Error deleting task:', error);
-            return `Error cancelling task: ${error instanceof Error ? error.message : String(error)}`;
+            return `Error deleting task: ${error instanceof Error ? error.message : String(error)}`;
         }
     }
 
     /**
-     * List all tasks
+     * List all tasks for a guild
      */
-    private async listTasks(): Promise<string> {
-        if (!this.message.guild) {
-            return "Cannot list tasks in DMs";
-        }
-
+    private async listTasks(input: TaskSchedulerInput): Promise<string> {
         try {
-            const response = await this.apiService.get(`/guilds/${this.message.guild.id}/tasks`) as ApiResponse;
+            const response = await this.apiService.get(`/guilds/${input.guildId}/tasks`) as ApiResponse;
 
-            if (response.status === 200 && response.data && response.data.length > 0) {
-                const tasks = response.data as TaskInfo[];
+            if (response.status === 200 && response.data) {
+                const tasks = Array.isArray(response.data) ? response.data :
+                    (response.data.tasks ? response.data.tasks : []);
 
-                const tasksList = tasks.map(task => {
-                    return `- Task ID: ${task.taskId}\n  Schedule: ${task.schedule}\n  Executions: ${task.executionCount || 0}${task.maxExecutions ? `/${task.maxExecutions}` : ''}\n  Task: ${task.task?.substring(0, 50)}${task.task && task.task.length > 50 ? '...' : ''}`;
+                if (tasks.length === 0) {
+                    return "No scheduled tasks found";
+                }
+
+                const tasksList = tasks.map((task: TaskInfo) => {
+                    return `- ID: ${task.taskId}\n  Schedule: ${task.schedule}\n  Executions: ${task.executionCount || 0}${task.maxExecutions ? `/${task.maxExecutions}` : ''}\n  Task: ${task.task_prompt?.substring(0, 50)}${task.task_prompt && task.task_prompt.length > 50 ? '...' : ''}`;
                 }).join('\n\n');
 
                 return `**Scheduled Tasks:**\n\n${tasksList}`;
@@ -364,36 +346,30 @@ export class TaskSchedulerTool extends ClaudeToolType {
         }
     }
 
-    /**
+    /** 
      * Execute the tool
      */
     public async execute(input: TaskSchedulerInput): Promise<string> {
         try {
-            switch (input.operation) {
+            switch (input.action) {
                 case "create":
                     return await this.createTask(input);
 
                 case "update":
-                    if (!input.taskId) {
-                        return "TaskId is required for updating a task";
-                    }
                     return await this.updateTask(input);
 
                 case "delete":
-                    if (!input.taskId) {
-                        return "TaskId is required for deletion";
-                    }
-                    return await this.deleteTask(input.taskId);
+                    return await this.deleteTask(input);
 
                 case "list":
-                    return await this.listTasks();
+                    return await this.listTasks(input);
 
                 default:
-                    return `Unknown operation: ${input.operation}`;
+                    return `Unknown action: ${input.action}`;
             }
         } catch (error) {
             console.error(`Error executing TaskScheduler:`, error);
-            throw new Error(`Failed to execute ${input.operation}: ${error instanceof Error ? error.message : String(error)}`);
+            throw new Error(`Failed to execute ${input.action}: ${error instanceof Error ? error.message : String(error)}`);
         }
     }
 }

@@ -36,7 +36,7 @@ module.exports = sequelize => {
             type: DataTypes.STRING,
             allowNull: false
         },
-        task: {
+        task_prompt: {
             type: DataTypes.TEXT,
             allowNull: false
         },
@@ -47,14 +47,6 @@ module.exports = sequelize => {
         executionCount: {
             type: DataTypes.INTEGER,
             defaultValue: 0
-        },
-        startDate: {
-            type: DataTypes.DATE,
-            allowNull: true
-        },
-        endDate: {
-            type: DataTypes.DATE,
-            allowNull: true
         },
     }, {
         sequelize,

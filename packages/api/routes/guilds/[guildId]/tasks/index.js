@@ -58,29 +58,27 @@ router.get("/:userId", async (req, res, next) => {
  */
 router.post("/", async (req, res, next) => {
     const { guildId } = req.params;
-    const { taskId, userId, schedule, task, maxExecutions, executionCount, startDate, endDate } = req.body;
-
-    // Validate required fields
-    if (!taskId || !userId || !schedule || !task) {
-        throw new RequestError(400, "Missing required fields", {
-            method: req.method,
-            path: req.path,
-            required: ['taskId', 'userId', 'schedule', 'task']
-        });
-    }
+    const { taskId, userId, schedule, task_prompt, maxExecutions, executionCount } = req.body;
 
     try {
+        // Validate required fields
+        if (!taskId || !userId || !schedule || !task_prompt) {
+            throw new RequestError(400, "Missing required fields", {
+                method: req.method,
+                path: req.path,
+                required: ['taskId', 'userId', 'schedule', 'task_prompt']
+            });
+        }
+
         const result = await withTransaction(async (t) => {
             const taskData = {
                 taskId,
                 guildId,
                 userId,
                 schedule,
-                task,
+                task_prompt,
                 maxExecutions,
                 executionCount: executionCount || 0,
-                startDate,
-                endDate,
             };
 
             const [createdTask, created] = await createOrUpdateRecord(ScheduledTasks, taskData, t);
