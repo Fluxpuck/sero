@@ -39,7 +39,7 @@ const findAllRecords = async (model, options, timeout = DEFAULT_TIMEOUT_MS) => {
         return result;
     } catch (error) {
         console.error(error, `findAllRecords`, model.name, options);
-        return new CreateError(408, `Timeout request on findAllRecords ${model.name}`, false);
+        throw new CreateError(408, `Timeout request on findAllRecords ${model.name}`, false);
     }
 };
 
@@ -56,7 +56,7 @@ const findOneRecord = async (model, options, timeout = DEFAULT_TIMEOUT_MS) => {
         return result;
     } catch (error) {
         console.error(error, `findOneRecord`, model.name, options);
-        return new CreateError(408, `Timeout request on findOneRecord ${model.name}`, false);
+        throw new CreateError(408, `Timeout request on findOneRecord ${model.name}`, false);
     }
 };
 
@@ -74,7 +74,7 @@ const createOrUpdateRecord = async (model, data, transaction, timeout = DEFAULT_
         return result;
     } catch (error) {
         console.error(error, `createOrUpdateRecord`, model.name, data);
-        return new CreateError(408, `Timeout request on createOrUpdateRecord ${model.name}`, false);
+        throw new CreateError(408, `Timeout request on createOrUpdateRecord ${model.name}`, false);
     }
 };
 
@@ -92,7 +92,7 @@ const createUniqueRecord = async (model, data, transaction, timeout = DEFAULT_TI
         return result;
     } catch (error) {
         console.error(error, `createUniqueRecord`, model.name, data);
-        return new CreateError(408, `Timeout request on createUniqueRecord ${model.name}`, false);
+        throw new CreateError(408, `Timeout request on createUniqueRecord ${model.name}`, false);
     }
 };
 
