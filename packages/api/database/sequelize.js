@@ -23,10 +23,15 @@ function createSequelizeInstance() {
                 dialect: 'postgres',
                 logging: false,
                 pool: {
-                    max: 10,        // Maximum number of connections
-                    min: 0,         // Minimum number of connections
-                    acquire: 30_000, // Maximum time to get a connection
-                    idle: 10_000     // Maximum idle time for a connection
+                    max: 20,
+                    min: 2,
+                    acquire: 60000,
+                    idle: 20000,
+                    evict: 30000
+                },
+                retry: {
+                    max: 3,
+                    match: [/Deadlock/i, /Connection acquired timeout/i]
                 }
             }
         );

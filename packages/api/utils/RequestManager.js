@@ -1,11 +1,13 @@
 const { sequelize } = require('../database/sequelize');
 const { CreateError } = require('./ClassManager');
 
-const DEFAULT_TIMEOUT_MS = 10_000;
+const DEFAULT_TIMEOUT_MS = 30_000;
 
-// Timeout function for requests
-const withTimeout = (promise, ms = DEFAULT_TIMEOUT_MS) => {
-    const timeout = new Promise((_, reject) => setTimeout(() => reject(new Error('Request has timed out')), ms));
+// Improve the withTimeout function to add more context
+const withTimeout = (promise, operation, model, ms = DEFAULT_TIMEOUT_MS) => {
+    const timeout = new Promise((_, reject) =>
+        setTimeout(() => reject(new Error(`${operation} on ${model} timed out after ${ms}ms`)), ms)
+    );
     return Promise.race([promise, timeout]);
 };
 
@@ -35,10 +37,15 @@ const withTransaction = async (callback) => {
  */
 const findAllRecords = async (model, options, timeout = DEFAULT_TIMEOUT_MS) => {
     try {
-        const result = await withTimeout(model.findAll(options), timeout);
+        const result = await withTimeout(model.findAll(options), 'findAllRecords', model.name, timeout);
         return result;
     } catch (error) {
-        console.error(error, `findAllRecords`, model.name, options);
+        console.error(`Database error: ${error.message}`, {
+            operation: 'findAllRecords',
+            model: model.name,
+            options: JSON.stringify(options),
+            stack: error.stack
+        });
         throw new CreateError(408, `Timeout request on findAllRecords ${model.name}`, false);
     }
 };
@@ -52,10 +59,15 @@ const findAllRecords = async (model, options, timeout = DEFAULT_TIMEOUT_MS) => {
  */
 const findOneRecord = async (model, options, timeout = DEFAULT_TIMEOUT_MS) => {
     try {
-        const result = await withTimeout(model.findOne(options), timeout);
+        const result = await withTimeout(model.findOne(options), 'findOneRecord', model.name, timeout);
         return result;
     } catch (error) {
-        console.error(error, `findOneRecord`, model.name, options);
+        console.error(`Database error: ${error.message}`, {
+            operation: 'findOneRecord',
+            model: model.name,
+            options: JSON.stringify(options),
+            stack: error.stack
+        });
         throw new CreateError(408, `Timeout request on findOneRecord ${model.name}`, false);
     }
 };
@@ -70,10 +82,15 @@ const findOneRecord = async (model, options, timeout = DEFAULT_TIMEOUT_MS) => {
  */
 const createOrUpdateRecord = async (model, data, transaction, timeout = DEFAULT_TIMEOUT_MS) => {
     try {
-        const result = await withTimeout(model.upsert(data, { transaction }), timeout);
+        const result = await withTimeout(model.upsert(data, { transaction }), 'createOrUpdateRecord', model.name, timeout);
         return result;
     } catch (error) {
-        console.error(error, `createOrUpdateRecord`, model.name, data);
+        console.error(`Database error: ${error.message}`, {
+            operation: 'createOrUpdateRecord',
+            model: model.name,
+            data: JSON.stringify(data),
+            stack: error.stack
+        });
         throw new CreateError(408, `Timeout request on createOrUpdateRecord ${model.name}`, false);
     }
 };
@@ -88,10 +105,15 @@ const createOrUpdateRecord = async (model, data, transaction, timeout = DEFAULT_
  */
 const createUniqueRecord = async (model, data, transaction, timeout = DEFAULT_TIMEOUT_MS) => {
     try {
-        const result = await withTimeout(model.create(data, { transaction }), timeout);
+        const result = await withTimeout(model.create(data, { transaction }), 'createUniqueRecord', model.name, timeout);
         return result;
     } catch (error) {
-        console.error(error, `createUniqueRecord`, model.name, data);
+        console.error(`Database error: ${error.message}`, {
+            operation: 'createUniqueRecord',
+            model: model.name,
+            data: JSON.stringify(data),
+            stack: error.stack
+        });
         throw new CreateError(408, `Timeout request on createUniqueRecord ${model.name}`, false);
     }
 };
