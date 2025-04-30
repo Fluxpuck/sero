@@ -81,28 +81,47 @@ module.exports = sequelize => {
         },
     });
 
-    // Clean up expired records every minute
     cron.schedule('* * * * *', async () => {
-        const timeout = new Promise((_, reject) => setTimeout(() => reject(new Error('Timeout')), 5000)); // 5 seconds timeout
+        const jobTimeout = 10_000;
+        const batchSize = 100;
+
         try {
-            const result = await Promise.race([
-                Away.destroy({
-                    where: {
-                        expireAt: {
-                            // Select records where expireAt is in the past
-                            [Sequelize.Op.lt]: new Date(),
-                        },
+            const now = new Date();
+
+            // Find records that need deletion
+            const expiredRecords = await Away.findAll({
+                where: {
+                    expireAt: {
+                        [Sequelize.Op.lt]: now,
                     },
-                }),
-                timeout
-            ]);
+                },
+                limit: batchSize,
+                attributes: ['userId', 'guildId']
+            });
 
-            if (result > 0 && process.env.NODE_ENV === "development") {
-                console.log(`Cleared ${result} expired away records`);
+            // If there are records to process
+            if (expiredRecords.length > 0) {
+                // Delete in batches with a timeout
+                const deletePromise = Away.destroy({
+                    where: {
+                        [Sequelize.Op.or]: expiredRecords.map(record => ({
+                            userId: record.userId,
+                            guildId: record.guildId
+                        }))
+                    }
+                });
+
+                const result = await Promise.race([
+                    deletePromise,
+                    new Promise((_, reject) => setTimeout(() => reject(new Error('Deletion timeout')), jobTimeout))
+                ]);
+
+                if (result > 0) {
+                    console.log(`Cleared ${result} expired away records`);
+                }
             }
-
         } catch (error) {
-            console.error('Error cleaning up expired away records:', error);
+            console.error('Error cleaning up expired away records:', error.message);
         }
     });
 
