@@ -6,8 +6,8 @@ const { getGuildActiveStatus } = require('../utils/cache/guild.cache');
 // In-memory queue to store voice sessions
 const voiceSessionQueue = new Map();
 
-// Interval check for awarding XP (every 10 minutes)
-const VOICE_XP_INTERVAL = 10 * 60 * 1000; // 10 minutes in milliseconds
+// Interval check for awarding XP (every 5 minutes)
+const VOICE_XP_INTERVAL = 5 * 60 * 1000; // 5 minutes in milliseconds
 let voiceXpInterval;
 
 // Function to check voice sessions and award XP to eligible users
