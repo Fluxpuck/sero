@@ -59,4 +59,8 @@ require('./utils/jobManager');
         `)
     });
 
+    // → Start Health Checks
+    const { startHealthChecks } = require('./database/healthCheck');
+    startHealthChecks();
+
 })();
