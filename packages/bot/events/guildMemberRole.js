@@ -12,6 +12,7 @@ module.exports = async (client, payload = []) => {
     // Get the guild by guildId and the member by userId
     const guild = await client.guilds.fetch(payload.guildId);
     const member = findUser(guild, payload.userId) || await guild.members.fetch(payload.userId);
+    if (!member) return;
 
     try {
         // REMOVE temporary role from the member
@@ -25,7 +26,6 @@ module.exports = async (client, payload = []) => {
                 throw new Error(`Error removing temporary role from ${member.name}`, err);
             });
         }
-
     } catch (err) {
         console.error(`Error processing role removal: ${err.message}`);
     }

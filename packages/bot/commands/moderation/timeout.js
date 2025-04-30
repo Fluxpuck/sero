@@ -79,6 +79,12 @@ module.exports.run = async (client, interaction) => {
 
     try {
         const member = await interaction.guild.members.fetch(targetUser.id).catch(() => null);
+        if (!member) {
+            return followUpInteraction(interaction, {
+                content: `Cannot timeout ${targetUser.username} because they are not a member of this server.`,
+                flags: MessageFlags.Ephemeral,
+            });
+        }
 
         if (targetUser.id === interaction.user.id) {
             return followUpInteraction(interaction, {
@@ -87,17 +93,16 @@ module.exports.run = async (client, interaction) => {
             });
         }
 
-        if (member && !member.moderatable) {
+        if (!member.moderatable) {
             return followUpInteraction(interaction, {
                 content: `<@${targetUser.id}> is a moderator!`,
                 flags: MessageFlags.Ephemeral
             });
         }
 
-        // Convert the duration to milliseconds
-        const duration = parseFloat(targetDuration) * 60 * 1000;
+        const duration = parseFloat(targetDuration) * 60 * 1000; // Convert the duration to milliseconds
 
-        member.timeout(duration, `${violationReason} - ${interaction.user.username}`)
+        await member.timeout(duration, `${violationReason} - ${interaction.user.username}`)
 
         return replyInteraction(interaction, {
             content: `You successfully muted <@${member.user.id}> for:\n> ${violationReason}`,

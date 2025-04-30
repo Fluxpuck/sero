@@ -81,15 +81,17 @@ module.exports.run = async (client, interaction, leaderboard = []) => {
     messageComponents?.components[nextIndex]?.data && (messageComponents.components[nextIndex].data.disabled = false);
 
     // Return the message
-    const response = await replyInteraction(interaction, {
+    await replyInteraction(interaction, {
         embeds: [messageEmbed],
         components: messageComponents ? [messageComponents] : [],
-
     });
+
+    // Fetch the message from the interaction response
+    const message = await interaction.fetchReply();
 
     // Collect the button selection
     const options = { componentType: ComponentType.Button, idle: 300_000, time: 3_600_000 }
-    const collector = response.createMessageComponentCollector({ options });
+    const collector = message.createMessageComponentCollector({ options });
     collector.on('collect', async i => {
 
         const selectedButton = i.customId;
