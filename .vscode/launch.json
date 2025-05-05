@@ -36,5 +36,16 @@
             "cwd": "${workspaceFolder}",
             "runtimeExecutable": "node"
         },
+        {
+            "name": "Sero API v2",
+            "type": "node",
+            "request": "launch",
+            "program": "${workspaceFolder}/packages/api-v2/main.ts",
+            "cwd": "${workspaceFolder}",
+            "runtimeExecutable": "ts-node",
+            "outFiles": [
+                "${workspaceFolder}/packages/api-v2/**/*.js"
+            ]
+        }
     ]
 }
