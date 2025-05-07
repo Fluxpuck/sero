@@ -9,7 +9,7 @@ import { Column, DataType, Model, Table } from "sequelize-typescript";
         }
     ]
 })
-export class Levels extends Model<Levels> {
+export class Level extends Model<Level> {
     @Column({
         type: DataType.INTEGER,
         autoIncrement: true,
@@ -25,7 +25,10 @@ export class Levels extends Model<Levels> {
 
     @Column({
         type: DataType.FLOAT,
-        allowNull: true,
+        allowNull: false,
+        validate: {
+            min: 0
+        }
     })
     declare experience: number;
 }

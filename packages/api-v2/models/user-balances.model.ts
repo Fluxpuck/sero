@@ -1,17 +1,17 @@
 import { Column, DataType, Default, Model, Table } from "sequelize-typescript";
 
 @Table({
-    tableName: "user_level_logs",
+    tableName: "UserBalances",
     createdAt: "createdAt",
     updatedAt: "updatedAt",
     indexes: [
         {
             unique: true,
             fields: ["userId", "guildId"]
-        },
+        }
     ]
 })
-export class UserLevelLogs extends Model<UserLevelLogs> {
+export class UserBalances extends Model<UserBalances> {
     @Column({
         type: DataType.INTEGER,
         autoIncrement: true,
@@ -37,29 +37,18 @@ export class UserLevelLogs extends Model<UserLevelLogs> {
     })
     declare userId: number;
 
+    @Default(0)
     @Column({
-        type: DataType.ENUM,
-        values: ["transfer", "give", "remove", "claim"],
+        type: DataType.INTEGER,
         allowNull: false,
     })
-    type!: "transfer" | "give" | "remove" | "claim";
+    wallet_balance!: number;
 
+    @Default(0)
     @Column({
-        type: DataType.BIGINT,
+        type: DataType.INTEGER,
         allowNull: false,
-        validate: {
-            isNumeric: true
-        }
     })
-    amount!: number;
-
-    @Column({
-        type: DataType.BIGINT,
-        allowNull: true,
-        validate: {
-            isNumeric: true
-        }
-    })
-    originId!: number | null;
+    bank_balance!: number;
 
 }

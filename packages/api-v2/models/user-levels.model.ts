@@ -1,17 +1,9 @@
-import { Column, DataType, Default, Model, Table } from "sequelize-typescript";
-
-export enum UserType {
-    ADMIN = "admin",
-    MODERATOR = "moderator",
-    USER = "user"
-}
+import { BeforeSave, Column, DataType, Default, Model, Table } from "sequelize-typescript";
 
 @Table({
     tableName: "user_levels",
     createdAt: "createdAt",
     updatedAt: "updatedAt",
-    deletedAt: "deletedAt",
-    paranoid: true,
     indexes: [
         {
             unique: true,
@@ -19,7 +11,7 @@ export enum UserType {
         }
     ]
 })
-export class UserLevels extends Model<UserLevels> {
+export class UserLevel extends Model<UserLevel> {
     @Column({
         type: DataType.INTEGER,
         autoIncrement: true,
@@ -34,7 +26,7 @@ export class UserLevels extends Model<UserLevels> {
             isNumeric: true
         }
     })
-    declare userId: number;
+    declare guildId: number;
 
     @Column({
         type: DataType.BIGINT,
@@ -43,66 +35,53 @@ export class UserLevels extends Model<UserLevels> {
             isNumeric: true
         }
     })
-    declare guildId: number;
+    declare userId: number;
 
+    @Default(0)
     @Column({
         type: DataType.INTEGER,
         allowNull: false,
-        defaultValue: 0,
-        validate: {
-            min: 0
-        }
     })
-    declare experience: number;
+    experience!: number;
 
+    @Default(0)
     @Column({
         type: DataType.INTEGER,
         allowNull: false,
-        defaultValue: 0,
-        validate: {
-            min: 0
-        }
     })
-    declare currentLevelExp: number;
+    level!: number;
 
+    @Default(0)
     @Column({
         type: DataType.INTEGER,
         allowNull: false,
-        defaultValue: 0,
-        validate: {
-            min: 0
-        }
     })
-    declare nextLevelExp: number;
+    rank!: number;
 
+    @Default(0)
     @Column({
         type: DataType.INTEGER,
         allowNull: false,
-        defaultValue: 0,
-        validate: {
-            min: 0
-        }
     })
-    declare remainingExp: number;
+    currentLevelExp!: number;
 
+    @Default(100)
     @Column({
         type: DataType.INTEGER,
         allowNull: false,
-        defaultValue: 1,
-        validate: {
-            min: 1
-        }
     })
-    declare level: number;
+    nextLevelExp!: number;
 
+    @Default(100)
     @Column({
         type: DataType.INTEGER,
-        allowNull: true,
-        validate: {
-            min: 1
-        }
+        allowNull: false,
     })
-    declare rank: number;
+    remainingExp!: number;
 
-
+    @BeforeSave
+    static async calculateLevelInfo(instance: UserLevel): Promise<void> {
+        // This is where you'd implement your level calculation logic,
+        // similar to what you had in the JS version
+    }
 }

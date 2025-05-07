@@ -1,47 +1,106 @@
 import { Sequelize } from "sequelize-typescript";
-import { Guilds } from "./guilds.model";
-import { Users } from "./user.model";
-import { Modifiers } from "./modifiers.model";
+import { Guild } from "./guilds.model";
+import { User } from "./user.model";
+import { UserLevel } from "./user-levels.model";
+import { TemporaryRole } from "./temporary-roles.model";
+import { Level } from "./levels.model";
+import { LevelRank } from "./level-ranks.model";
+// Import other models as needed
 
-// Export all models
-export { Guilds, Users, Modifiers };
+// Export all models with updated names
+export {
+    Guild,
+    User,
+    UserLevel,
+    TemporaryRole,
+    Level,
+    LevelRank
+};
 
 // Function to initialize models and their relationships
 export const initModels = (sequelize: Sequelize): void => {
-    sequelize.addModels([Guilds, Users, Modifiers]);
-
-    // Define associations between models
+    sequelize.addModels([
+        Guild,
+        User,
+        UserLevel,
+        TemporaryRole,
+        Level,
+        LevelRank
+    ]);
 
     // Guild associations
-    Guilds.hasMany(Users, {
+    Guild.hasMany(User, {
         foreignKey: 'guildId',
         as: 'users'
     });
 
-    Guilds.hasMany(Modifiers, {
+    Guild.hasMany(TemporaryRole, {
         foreignKey: 'guildId',
-        as: 'modifiers'
+        as: 'temporaryRoles'
+    });
+
+    Guild.hasMany(LevelRank, {
+        foreignKey: 'guildId',
+        as: 'levelRanks'
+    });
+
+    Guild.hasMany(UserLevel, {
+        foreignKey: 'guildId',
+        as: 'userLevels'
     });
 
     // User associations
-    Users.belongsTo(Guilds, {
+    User.belongsTo(Guild, {
         foreignKey: 'guildId',
         as: 'guild'
     });
 
-    Users.hasMany(Modifiers, {
+    User.hasMany(TemporaryRole, {
         foreignKey: 'userId',
-        as: 'modifiers'
+        as: 'temporaryRoles'
     });
 
-    // Modifier associations
-    Modifiers.belongsTo(Guilds, {
-        foreignKey: 'guildId',
-        as: 'guild'
+    User.hasOne(UserLevel, {
+        foreignKey: 'userId',
+        as: 'userLevel'
     });
 
-    Modifiers.belongsTo(Users, {
+    // Level associations
+    Level.hasMany(LevelRank, {
+        foreignKey: 'level',
+        as: 'levelRanks'
+    });
+
+    // UserLevel associations  
+    UserLevel.belongsTo(User, {
         foreignKey: 'userId',
         as: 'user'
+    });
+
+    UserLevel.belongsTo(Guild, {
+        foreignKey: 'guildId',
+        as: 'guild'
+    });
+
+    // TemporaryRole associations
+    TemporaryRole.belongsTo(Guild, {
+        foreignKey: 'guildId',
+        as: 'guild'
+    });
+
+    TemporaryRole.belongsTo(User, {
+        foreignKey: 'userId',
+        as: 'user'
+    });
+
+    // LevelRank associations
+    LevelRank.belongsTo(Guild, {
+        foreignKey: 'guildId',
+        as: 'guild'
+    });
+
+    LevelRank.belongsTo(Level, {
+        foreignKey: 'level',
+        as: 'level'
     });
 };

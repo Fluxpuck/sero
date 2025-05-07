@@ -1,5 +1,13 @@
 import { Column, DataType, Default, Model, Table } from "sequelize-typescript";
 
+export enum EconomyLogType {
+    TRANSFER = "transfer",
+    GIVE = "give",
+    REMOVE = "remove",
+    WORK = "work",
+    TREASURE_HUNT = "treasure-hunt"
+}
+
 @Table({
     tableName: "user_economy_logs",
     createdAt: "createdAt",
@@ -39,10 +47,10 @@ export class UserEconomyLogs extends Model<UserEconomyLogs> {
 
     @Column({
         type: DataType.ENUM,
-        values: ["transfer", "give", "remove"],
+        values: Object.values(EconomyLogType),
         allowNull: false,
     })
-    type!: "transfer" | "give" | "remove";
+    type!: EconomyLogType;
 
     @Column({
         type: DataType.BIGINT,
@@ -52,5 +60,11 @@ export class UserEconomyLogs extends Model<UserEconomyLogs> {
         }
     })
     amount!: number;
+
+    @Column({
+        type: DataType.JSON,
+        allowNull: true,
+    })
+    declare additional: Record<string, any>;
 
 }

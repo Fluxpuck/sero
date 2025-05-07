@@ -1,7 +1,7 @@
 import { Column, DataType, Model, Table } from "sequelize-typescript";
 
 @Table({
-    tableName: "level-ranks",
+    tableName: "level_ranks",
     indexes: [
         {
             unique: true,
@@ -9,7 +9,7 @@ import { Column, DataType, Model, Table } from "sequelize-typescript";
         }
     ]
 })
-export class LevelRanks extends Model<LevelRanks> {
+export class LevelRank extends Model<LevelRank> {
     @Column({
         type: DataType.INTEGER,
         autoIncrement: true,
@@ -33,8 +33,11 @@ export class LevelRanks extends Model<LevelRanks> {
     declare level: number;
 
     @Column({
-        type: DataType.FLOAT,
+        type: DataType.BIGINT,
         allowNull: true,
+        validate: {
+            isNumeric: true
+        }
     })
     declare roleId: number;
 }

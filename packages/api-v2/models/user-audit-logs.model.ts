@@ -56,7 +56,7 @@ export class UserAuditLogs extends Model<UserAuditLogs> {
 
     // Related to the user who performed the action
     @Column({
-        type: DataType.BIGINT,
+        type: DataType.INTEGER,
         allowNull: true,
         validate: {
             isNumeric: true

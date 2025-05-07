@@ -13,7 +13,7 @@ import { Column, DataType, Default, Model, Table } from "sequelize-typescript";
         }
     ]
 })
-export class Guilds extends Model<Guilds> {
+export class Guild extends Model<Guild> {
     @Column({
         type: DataType.INTEGER,
         autoIncrement: true,

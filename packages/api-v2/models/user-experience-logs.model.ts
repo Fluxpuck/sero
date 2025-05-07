@@ -1,25 +1,25 @@
 import { Column, DataType, Default, Model, Table } from "sequelize-typescript";
 
-export enum UserType {
-    ADMIN = "admin",
-    MODERATOR = "moderator",
-    USER = "user"
+export enum UserExperienceLogType {
+    TRANSFER = "transfer",
+    GIVE = "give",
+    REMOVE = "remove",
+    CLAIM = "claim"
 }
 
+
 @Table({
-    tableName: "users",
+    tableName: "user_experience_logs",
     createdAt: "createdAt",
     updatedAt: "updatedAt",
-    deletedAt: "deletedAt",
-    paranoid: true,
     indexes: [
         {
             unique: true,
             fields: ["userId", "guildId"]
-        }
+        },
     ]
 })
-export class User extends Model<User> {
+export class UserExperienceLogs extends Model<UserExperienceLogs> {
     @Column({
         type: DataType.INTEGER,
         autoIncrement: true,
@@ -34,7 +34,7 @@ export class User extends Model<User> {
             isNumeric: true
         }
     })
-    declare userId: number;
+    declare guildId: number;
 
     @Column({
         type: DataType.BIGINT,
@@ -43,26 +43,31 @@ export class User extends Model<User> {
             isNumeric: true
         }
     })
-    declare guildId: number;
+    declare userId: number;
 
-    @Column({
-        type: DataType.STRING(100),
-        allowNull: false,
-    })
-    username!: string;
-
-    @Default(false)
-    @Column({
-        type: DataType.BOOLEAN,
-        allowNull: false,
-    })
-    premium!: boolean;
-
-    @Default(() => UserType.USER)
     @Column({
         type: DataType.ENUM,
-        values: Object.values(UserType),
+        values: Object.values(UserExperienceLogType),
         allowNull: false,
     })
-    userType!: UserType;
+    type!: UserExperienceLogType;
+
+    @Column({
+        type: DataType.INTEGER,
+        allowNull: false,
+        validate: {
+            isNumeric: true
+        }
+    })
+    amount!: number;
+
+    @Column({
+        type: DataType.BIGINT,
+        allowNull: true,
+        validate: {
+            isNumeric: true
+        }
+    })
+    originId!: number | null;
+
 }

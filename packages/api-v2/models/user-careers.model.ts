@@ -1,7 +1,7 @@
 import { Column, DataType, Default, Model, Table } from "sequelize-typescript";
 
 @Table({
-    tableName: "user_voice_logs",
+    tableName: "UserCareers",
     createdAt: "createdAt",
     updatedAt: "updatedAt",
     indexes: [
@@ -11,7 +11,7 @@ import { Column, DataType, Default, Model, Table } from "sequelize-typescript";
         }
     ]
 })
-export class UserVoiceLogs extends Model<UserVoiceLogs> {
+export class UserCareers extends Model<UserCareers> {
     @Column({
         type: DataType.INTEGER,
         autoIncrement: true,
@@ -38,22 +38,26 @@ export class UserVoiceLogs extends Model<UserVoiceLogs> {
     declare userId: number;
 
     @Column({
-        type: DataType.BIGINT,
+        type: DataType.INTEGER,
         allowNull: false,
         validate: {
             isNumeric: true
         }
     })
-    declare channelId: number;
+    declare jobId: number;
 
+    @Default(0)
     @Column({
-        type: DataType.BIGINT,
+        type: DataType.INTEGER,
         allowNull: false,
-        validate: {
-            isNumeric: true
-        }
     })
-    duration!: number;
+    experience!: number;
 
+    @Default(0)
+    @Column({
+        type: DataType.INTEGER,
+        allowNull: false,
+    })
+    level!: number;
 
 }

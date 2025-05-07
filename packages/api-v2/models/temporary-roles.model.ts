@@ -1,4 +1,4 @@
-import { Column, DataType, Default, Model, Table } from "sequelize-typescript";
+import { BeforeCreate, BeforeUpdate, Column, DataType, Model, Table } from "sequelize-typescript";
 
 @Table({
     tableName: "temporary_roles",
@@ -13,7 +13,7 @@ import { Column, DataType, Default, Model, Table } from "sequelize-typescript";
         }
     ]
 })
-export class UserLevels extends Model<UserLevels> {
+export class TemporaryRole extends Model<TemporaryRole> {
     @Column({
         type: DataType.INTEGER,
         autoIncrement: true,
@@ -64,4 +64,12 @@ export class UserLevels extends Model<UserLevels> {
     })
     declare expireAt: Date | null;
 
+    @BeforeCreate
+    @BeforeUpdate
+    static checkExpiration(instance: TemporaryRole): void {
+        // If expiration date exists and has passed, set active to false
+        if (instance.expireAt && new Date() > instance.expireAt) {
+            instance.setDataValue('duration', 1);
+        }
+    }
 }
