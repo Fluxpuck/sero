@@ -14,7 +14,6 @@ export enum EconomyLogType {
     updatedAt: "updatedAt",
     indexes: [
         {
-            unique: true,
             fields: ["userId", "guildId"]
         }
     ]

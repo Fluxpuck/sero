@@ -20,7 +20,7 @@ export class LevelRank extends Model<LevelRank> {
 
     @ForeignKey(() => Guild)
     @Column({
-        type: DataType.INTEGER,
+        type: DataType.BIGINT,
         allowNull: false
     })
     declare guildId: number;

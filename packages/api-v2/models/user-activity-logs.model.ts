@@ -6,12 +6,11 @@ export enum UserActivityLogsType {
 }
 
 @Table({
-    tableName: "user_voice_logs",
+    tableName: "user_activity_logs",
     createdAt: "createdAt",
     updatedAt: "updatedAt",
     indexes: [
         {
-            unique: true,
             fields: ["userId", "guildId"]
         }
     ]

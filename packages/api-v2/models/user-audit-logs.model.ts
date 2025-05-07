@@ -10,7 +10,7 @@ import { v4 as uuidv4 } from "uuid";
     paranoid: true,
     indexes: [
         {
-            fields: ["id", "guildId"]
+            fields: ["guildId"]
         }
     ]
 })

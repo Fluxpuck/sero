@@ -14,9 +14,8 @@ export enum UserExperienceLogType {
     updatedAt: "updatedAt",
     indexes: [
         {
-            unique: true,
             fields: ["userId", "guildId"]
-        },
+        }
     ]
 })
 export class UserExperienceLogs extends Model<UserExperienceLogs> {

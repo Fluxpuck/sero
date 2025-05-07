@@ -8,7 +8,6 @@ import { Column, DataType, Default, Model, Table } from "sequelize-typescript";
     paranoid: true,
     indexes: [
         {
-            unique: true,
             fields: ["userId", "guildId"]
         }
     ]

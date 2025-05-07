@@ -12,7 +12,7 @@ import { UserAuditLogs } from './user-audit-logs.model';
 import { UserActivityLogs } from './user-activity-logs.model';
 import { UserEconomyLogs } from './user-economy-logs.model';
 import { UserExperienceLogs } from './user-experience-logs.model';
-import { UserVoiceLogs } from './user-voice-logs.model copy'; // This filename should be fixed
+import { UserVoiceLogs } from './user-voice-logs.model'; // This filename should be fixed
 import { TemporaryRole } from './temporary-roles.model';
 import { Level } from './levels.model';
 import { LevelRank } from './level-ranks.model';
