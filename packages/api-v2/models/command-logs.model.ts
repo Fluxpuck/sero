@@ -29,8 +29,8 @@ export class CommandLogs extends Model<CommandLogs> {
 
     @Column({
         type: DataType.INTEGER,
-        autoIncrement: true,
-        primaryKey: true,
+        allowNull: false,
+        unique: true,
     })
     declare commandId: number;
 

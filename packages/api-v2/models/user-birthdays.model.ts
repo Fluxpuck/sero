@@ -1,7 +1,7 @@
 import { Column, DataType, Default, Model, Table } from "sequelize-typescript";
 
 @Table({
-    tableName: "UserBirthdays",
+    tableName: "user_birthdays",
     createdAt: "createdAt",
     updatedAt: "updatedAt",
     deletedAt: "deletedAt",

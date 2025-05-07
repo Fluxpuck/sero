@@ -1,7 +1,7 @@
 import { Column, DataType, Default, Model, Table } from "sequelize-typescript";
 
 @Table({
-    tableName: "UserCareers",
+    tableName: "user_careers",
     createdAt: "createdAt",
     updatedAt: "updatedAt",
     indexes: [

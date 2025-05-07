@@ -13,7 +13,7 @@ import { Column, DataType, Default, Model, Table } from "sequelize-typescript";
         }
     ]
 })
-export class User extends Model<User> {
+export class Messages extends Model<Messages> {
     @Column({
         type: DataType.INTEGER,
         autoIncrement: true,

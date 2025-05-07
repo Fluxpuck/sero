@@ -1,7 +1,15 @@
 import { Sequelize } from "sequelize-typescript";
-
 import { config } from 'dotenv';
 import * as path from 'path';
+
+import {
+    User, Guild, GuildSettings, UserLevel, UserBirthdays, UserBalances,
+    UserCareers, UserAuditLogs, UserActivityLogs, UserEconomyLogs,
+    UserExperienceLogs, UserVoiceLogs, TemporaryRole, Level, LevelRank,
+    Commands, CommandLogs, Aways, Messages, Modifiers, Jobs,
+    initModels
+} from '../models';
+
 config({ path: path.resolve(__dirname, '../config/.env') });
 
 // Setup the environment variables
@@ -32,10 +40,15 @@ const sequelize = new Sequelize(
             match: [/Deadlock/i, /Connection acquired timeout/i]
         },
         models: [
-
+            User, Guild, GuildSettings, UserLevel, UserBirthdays, UserBalances,
+            UserCareers, UserAuditLogs, UserActivityLogs, UserEconomyLogs,
+            UserExperienceLogs, UserVoiceLogs, TemporaryRole, Level, LevelRank,
+            Commands, CommandLogs, Aways, Messages, Modifiers, Jobs
         ]
     }
 );
 
+// Initialize model relationships
+initModels(sequelize);
 
 export { sequelize };
