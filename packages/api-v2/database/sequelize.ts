@@ -1,6 +1,4 @@
 import { Sequelize } from "sequelize-typescript";
-import { Guilds, Users } from '../models';
-import { initModels } from '../models';
 
 import { config } from 'dotenv';
 import * as path from 'path';
@@ -34,12 +32,10 @@ const sequelize = new Sequelize(
             match: [/Deadlock/i, /Connection acquired timeout/i]
         },
         models: [
-            Guilds,
-            Users,
+
         ]
     }
 );
 
-initModels(sequelize); // Initialize model relationships
 
 export { sequelize };
