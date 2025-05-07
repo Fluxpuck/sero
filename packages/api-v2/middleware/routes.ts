@@ -69,6 +69,9 @@ const loadRoutes = (app: Application, dir: string, basePath: string = '', routeS
         }
     }
 
+    // Remove directories from total files count
+    routeStats.totalFiles -= files.filter(file => statSync(join(dir, file)).isDirectory()).length;
+
     return routeStats;
 };
 

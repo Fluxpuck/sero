@@ -1,40 +1,24 @@
-import { Request, Response, Router } from 'express';
-import { User } from '../../models/users.model';
-
-export function parseDate(date: any): string | null {
-    if (date instanceof Date) {
-        return date.toISOString();
-    }
-    if (typeof date === 'string' && date.includes('+')) {
-        return date;
-    }
-    // handle other cases or return a default value
-    return null;
-}
+import { Request, Response, Router, NextFunction } from 'express';
+import { User } from '../../models/user.model';
 
 const router = Router();
 
-router.get('/', async (req: Request, res: Response) => {
+router.get('/guild/:guildId/users', async (req: Request, res: Response, next: NextFunction) => {
+    const { guildId } = req.params;
+
     try {
-        const users = await User.findAll();
-        const parsedUsers = users.map(user => ({
-            ...user,
-            createdAt: parseDate(user.createdAt),
-            updatedAt: parseDate(user.updatedAt),
-        }));
+        const users = await User.findAll({
+            where: { guildId },
+            order: [['createdAt', 'DESC']]
+        });
 
-        console.log(users);
-        console.log(parsedUsers);
-
-        res.status(200).json(parsedUsers);
+        res.status(200).json({
+            success: true,
+            data: users
+        });
     } catch (error) {
-        res.status(500).json({ error: 'Failed to fetch users' });
-        console.log(error);
+        next(error);
     }
-});
-
-router.get('/:userName', async (req: Request, res: Response) => {
-    // Your existing code
 });
 
 export default router;
