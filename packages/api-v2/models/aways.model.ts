@@ -31,6 +31,15 @@ export class Aways extends Model<Aways> {
     declare guildId: number;
 
     @Column({
+        type: DataType.BIGINT,
+        allowNull: false,
+        validate: {
+            isNumeric: true
+        }
+    })
+    declare userId: number;
+
+    @Column({
         type: DataType.STRING,
         allowNull: true,
     })
