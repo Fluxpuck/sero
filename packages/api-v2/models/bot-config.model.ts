@@ -1,19 +1,15 @@
 import { BeforeCreate, BeforeUpdate, Column, DataType, Model, Table } from "sequelize-typescript";
 
 @Table({
-    tableName: "aways",
+    tableName: "bot_config",
     createdAt: "createdAt",
     updatedAt: "updatedAt",
     deletedAt: "deletedAt",
     paranoid: true,
-    indexes: [
-        {
-            unique: true,
-            fields: ["guildId", "userId"]
-        }
-    ]
+    indexes: []
 })
-export class Aways extends Model<Aways> {
+
+export class BotConfig extends Model<BotConfig> {
     @Column({
         type: DataType.INTEGER,
         autoIncrement: true,
@@ -28,4 +24,3 @@ export class Aways extends Model<Aways> {
     declare timezone: string;
 
 }
-
