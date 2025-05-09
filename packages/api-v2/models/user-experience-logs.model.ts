@@ -49,7 +49,7 @@ export class UserExperienceLogs extends Model<UserExperienceLogs> {
         values: Object.values(UserExperienceLogType),
         allowNull: false,
     })
-    type!: UserExperienceLogType;
+    declare type: UserExperienceLogType;
 
     @Column({
         type: DataType.INTEGER,
@@ -58,7 +58,7 @@ export class UserExperienceLogs extends Model<UserExperienceLogs> {
             isNumeric: true
         }
     })
-    amount!: number;
+    declare amount: number;
 
     @Column({
         type: DataType.STRING,
@@ -67,6 +67,6 @@ export class UserExperienceLogs extends Model<UserExperienceLogs> {
             isNumeric: true
         }
     })
-    originId!: number | null;
+    declare originId: number | null;
 
 }

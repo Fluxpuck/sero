@@ -1,7 +1,9 @@
-import { seedGuilds } from './guilds.seed';
-import { seedMessages } from './messages.seed';
 import { sequelize } from '../sequelize';
 import chalk from 'chalk';
+
+import { seedGuilds } from './guilds.seed';
+import { seedUsers } from './users.seed';
+import { seedMessages } from './messages.seed';
 
 (async () => {
     console.log(chalk.blue("Seeding database..."));
@@ -31,10 +33,16 @@ import chalk from 'chalk';
     // Seed the database
     try {
         console.log(chalk.blue('Seeding data...'));
+
         await seedGuilds();
         console.log(chalk.green('Guilds seeded successfully'));
+
+        await seedUsers();
+        console.log(chalk.green('Users seeded successfully'));
+
         await seedMessages(50);
         console.log(chalk.green('Messages seeded successfully'));
+
     } catch (error) {
         console.error(chalk.red('Error seeding database:'), error);
         process.exit(1);

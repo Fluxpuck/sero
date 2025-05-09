@@ -72,27 +72,4 @@ export class UserBirthdays extends Model<UserBirthdays> {
     })
     declare day: number;
 
-    @Column({
-        type: DataType.VIRTUAL,
-    })
-    get isValidDate(): boolean {
-        const date = new Date(this.year ?? 2000, this.month - 1, this.day);
-        return (
-            date.getFullYear() === (this.year ?? 2000) &&
-            date.getMonth() === this.month - 1 &&
-            date.getDate() === this.day
-        );
-    }
-
-    beforeSave(): void {
-        if (!this.isValidDate) {
-            throw new Error("Invalid date: The combination of year, month, and day is not a valid date.");
-        }
-    }
-
-    beforeUpdate(): void {
-        if (!this.isValidDate) {
-            throw new Error("Invalid date: The combination of year, month, and day is not a valid date.");
-        }
-    }
 }

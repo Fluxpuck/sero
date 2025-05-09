@@ -49,7 +49,7 @@ export class UserEconomyLogs extends Model<UserEconomyLogs> {
         values: Object.values(EconomyLogType),
         allowNull: false,
     })
-    type!: EconomyLogType;
+    declare type: EconomyLogType;
 
     @Column({
         type: DataType.INTEGER,
@@ -58,7 +58,7 @@ export class UserEconomyLogs extends Model<UserEconomyLogs> {
             isNumeric: true
         }
     })
-    amount!: number;
+    declare amount: number;
 
     @Column({
         type: DataType.JSON,

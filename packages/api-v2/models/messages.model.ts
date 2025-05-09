@@ -27,36 +27,39 @@ import { Op } from "sequelize";
     ]
 })
 export class Messages extends Model<Messages> {
-        static async findByGuildId(
-            guildId: string,
-            options?: {
-                channelId?: string;
-                userId?: string;
-                dateRange?: { startDate: Date; endDate: Date }
-            }
-        ): Promise<Messages[]> {
-            const whereClause: any = { guildId };
 
-            if (options?.channelId) {
-                whereClause.channelId = options.channelId;
-            }
+    static async findByGuildId(
+        guildId: string,
+        options?: {
+            channelId?: string;
+            userId?: string;
+            dateRange?: { startDate: Date; endDate: Date }
+        }
+    ): Promise<Messages[]> {
+        const whereClause: any = { guildId };
 
-            if (options?.userId) {
-                whereClause.userId = options.userId;
-            }
+        if (options?.channelId) {
+            whereClause.channelId = options.channelId;
+        }
 
-            if (options?.dateRange) {
-                whereClause.createdAt = {
-                    [Op.between]: [options.dateRange.startDate, options.dateRange.endDate]
-                };
-            }
+        if (options?.userId) {
+            whereClause.userId = options.userId;
+        }
 
-            return await this.findAll({ where: whereClause });
-        } @Column({
-            type: DataType.STRING,
-            primaryKey: true,
-            allowNull: false
-        })
+        if (options?.dateRange) {
+            whereClause.createdAt = {
+                [Op.between]: [options.dateRange.startDate, options.dateRange.endDate]
+            };
+        }
+
+        return await this.findAll({ where: whereClause });
+    }
+
+    @Column({
+        type: DataType.STRING,
+        primaryKey: true,
+        allowNull: false
+    })
     declare messageId: string;
 
     @Column({

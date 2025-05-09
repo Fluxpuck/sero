@@ -51,13 +51,13 @@ export class UserCareers extends Model<UserCareers> {
         type: DataType.INTEGER,
         allowNull: false,
     })
-    experience!: number;
+    declare experience: number;
 
     @Default(0)
     @Column({
         type: DataType.INTEGER,
         allowNull: false,
     })
-    level!: number;
+    declare level: number;
 
 }

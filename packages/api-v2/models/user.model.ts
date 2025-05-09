@@ -31,6 +31,7 @@ export class User extends Model<User> {
     @Column({
         type: DataType.UUID,
         allowNull: false,
+        unique: true,
     })
     declare uuid: string;
 
@@ -50,14 +51,14 @@ export class User extends Model<User> {
         type: DataType.STRING(100),
         allowNull: false,
     })
-    username!: string;
+    declare username: string;
 
     @Default(false)
     @Column({
         type: DataType.BOOLEAN,
         allowNull: false,
     })
-    premium!: boolean;
+    declare premium: boolean;
 
     @Default(() => UserType.USER)
     @Column({
@@ -65,5 +66,5 @@ export class User extends Model<User> {
         values: Object.values(UserType),
         allowNull: false,
     })
-    userType!: UserType;
+    declare userType: UserType;
 }

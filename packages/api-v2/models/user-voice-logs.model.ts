@@ -57,7 +57,7 @@ export class UserVoiceLogs extends Model<UserVoiceLogs> {
         values: Object.values(UserVoiceLogType),
         allowNull: false,
     })
-    type!: UserVoiceLogType;
+    declare type: UserVoiceLogType;
 
     @Column({
         type: DataType.INTEGER,
@@ -66,6 +66,6 @@ export class UserVoiceLogs extends Model<UserVoiceLogs> {
             isNumeric: true
         }
     })
-    duration!: number | null;
+    declare duration: number | null;
 
 }

@@ -42,13 +42,13 @@ export class UserBalances extends Model<UserBalances> {
         type: DataType.INTEGER,
         allowNull: false,
     })
-    wallet_balance!: number;
+    declare wallet_balance: number;
 
     @Default(0)
     @Column({
         type: DataType.INTEGER,
         allowNull: false,
     })
-    bank_balance!: number;
+    declare bank_balance: number;
 
 }

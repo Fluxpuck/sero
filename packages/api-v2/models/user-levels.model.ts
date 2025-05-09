@@ -35,53 +35,47 @@ export class UserLevel extends Model<UserLevel> {
     })
     declare userId: string;
 
+    @Default(0)
     @Column({
-        type: DataType.UUID,
-        allowNull: true, // Allow null for backward compatibility
+        type: DataType.INTEGER,
+        allowNull: false,
     })
-    declare userUuid: string;
+    declare experience: number;
 
     @Default(0)
     @Column({
         type: DataType.INTEGER,
         allowNull: false,
     })
-    experience!: number;
+    declare level: number;
 
     @Default(0)
     @Column({
         type: DataType.INTEGER,
         allowNull: false,
     })
-    level!: number;
+    declare rank: number;
 
     @Default(0)
     @Column({
         type: DataType.INTEGER,
         allowNull: false,
     })
-    rank!: number;
-
-    @Default(0)
-    @Column({
-        type: DataType.INTEGER,
-        allowNull: false,
-    })
-    currentLevelExp!: number;
+    declare currentLevelExp: number;
 
     @Default(100)
     @Column({
         type: DataType.INTEGER,
         allowNull: false,
     })
-    nextLevelExp!: number;
+    declare nextLevelExp: number;
 
     @Default(100)
     @Column({
         type: DataType.INTEGER,
         allowNull: false,
     })
-    remainingExp!: number;
+    declare remainingExp: number;
 
     @BeforeSave
     static async calculateLevelInfo(instance: UserLevel): Promise<void> {

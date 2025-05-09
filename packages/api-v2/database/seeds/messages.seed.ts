@@ -7,6 +7,7 @@ import { faker } from '@faker-js/faker';
 export async function seedMessages(count = 50) {
     try {
         console.log(`Seeding ${count} random messages...`);        // Define the guild, channel, and user IDs to use for seeding
+
         const guildIds = [
             '660103319557111808'
         ];
@@ -27,8 +28,8 @@ export async function seedMessages(count = 50) {
             const randomMessageId = faker.number.int({ min: 1000000000, max: 9999999999 }).toString();
 
             return {
-                guildId: '660103319557111808',
-                channelId: '1087368064200343592',
+                guildId: faker.helpers.arrayElement(guildIds),
+                channelId: faker.helpers.arrayElement(channelIds),
                 messageId: randomMessageId,
                 userId: faker.helpers.arrayElement(userIds),
                 content: faker.helpers.arrayElement([
