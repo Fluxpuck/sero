@@ -26,7 +26,9 @@ export class UserLevel extends Model<UserLevel> {
             isNumeric: true
         }
     })
-    declare guildId: string; @Column({
+    declare guildId: string;
+
+    @Column({
         type: DataType.STRING,
         allowNull: false,
         validate: {

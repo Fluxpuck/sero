@@ -78,101 +78,284 @@ export const initModels = (sequelize: Sequelize): void => {
         Jobs
     ]);
 
-    // Initialize all model relationships    // Guild relationships
-    Guild.hasMany(User, { foreignKey: 'guildId', sourceKey: 'guildId', as: 'users' });
-    Guild.hasOne(GuildSettings, { foreignKey: 'guildId', sourceKey: 'guildId', as: 'settings' });
-    Guild.hasMany(UserLevel, { foreignKey: 'guildId', sourceKey: 'guildId', as: 'userLevels' });
-    Guild.hasMany(TemporaryRole, { foreignKey: 'guildId', sourceKey: 'guildId', as: 'temporaryRoles' });
-    Guild.hasMany(CommandLogs, { foreignKey: 'guildId', sourceKey: 'guildId', as: 'commandLogs' });
-    Guild.hasMany(Messages, { foreignKey: 'guildId', sourceKey: 'guildId', as: 'messages' });
-    Guild.hasMany(Aways, { foreignKey: 'guildId', sourceKey: 'guildId', as: 'aways' });
+    // Define model relationships    
 
-    // User relationships
-    User.belongsTo(Guild, { foreignKey: 'guildId', targetKey: 'guildId' });
-    User.hasOne(UserLevel, { foreignKey: 'userUuid', sourceKey: 'uuid', as: 'level' });
-    User.hasOne(UserBirthdays, { foreignKey: 'userUuid', sourceKey: 'uuid', as: 'birthday' });
-    User.hasOne(UserBalances, { foreignKey: 'userUuid', sourceKey: 'uuid', as: 'balance' });
-    User.hasMany(UserCareers, { foreignKey: 'userUuid', sourceKey: 'uuid', as: 'careers' });
-    User.hasMany(UserAuditLogs, { foreignKey: 'userUuid', sourceKey: 'uuid', as: 'auditLogs' });
-    User.hasMany(UserActivityLogs, { foreignKey: 'userUuid', sourceKey: 'uuid', as: 'activityLogs' });
-    User.hasMany(UserEconomyLogs, { foreignKey: 'userUuid', sourceKey: 'uuid', as: 'economyLogs' });
-    User.hasMany(UserExperienceLogs, { foreignKey: 'userUuid', sourceKey: 'uuid', as: 'experienceLogs' });
-    User.hasMany(UserVoiceLogs, { foreignKey: 'userUuid', sourceKey: 'uuid', as: 'voiceLogs' });
-    User.hasMany(TemporaryRole, { foreignKey: 'userUuid', sourceKey: 'uuid', as: 'temporaryRoles' });
-    User.hasMany(CommandLogs, { foreignKey: 'executorUuid', sourceKey: 'uuid', as: 'commandLogs' });
-    User.hasMany(Aways, { foreignKey: 'userUuid', sourceKey: 'uuid', as: 'aways' });
-    User.hasMany(Messages, { foreignKey: 'userUuid', sourceKey: 'uuid', as: 'messages' });
+    // User relationships - using composite keys (userId + guildId) or the unique uuid
+    User.hasOne(UserLevel, {
+        foreignKey: 'userId',
+        constraints: false,
+        scope: {
+            guildId: { $col: 'User.guildId' }
+        }
+    });
+    User.hasOne(UserBirthdays, {
+        foreignKey: 'userId',
+        constraints: false,
+        scope: {
+            guildId: { $col: 'User.guildId' }
+        }
+    });
+    User.hasOne(UserBalances, {
+        foreignKey: 'userId',
+        constraints: false,
+        scope: {
+            guildId: { $col: 'User.guildId' }
+        }
+    });
+    User.hasMany(UserCareers, {
+        foreignKey: 'userId',
+        constraints: false,
+        scope: {
+            guildId: { $col: 'User.guildId' }
+        }
+    });
+    User.hasMany(UserAuditLogs, {
+        foreignKey: 'userId',
+        constraints: false,
+        scope: {
+            guildId: { $col: 'User.guildId' }
+        }
+    });
+    User.hasMany(UserActivityLogs, {
+        foreignKey: 'userId',
+        constraints: false,
+        scope: {
+            guildId: { $col: 'User.guildId' }
+        }
+    });
+    User.hasMany(UserEconomyLogs, {
+        foreignKey: 'userId',
+        constraints: false,
+        scope: {
+            guildId: { $col: 'User.guildId' }
+        }
+    });
+    User.hasMany(UserExperienceLogs, {
+        foreignKey: 'userId',
+        constraints: false,
+        scope: {
+            guildId: { $col: 'User.guildId' }
+        }
+    });
+    User.hasMany(UserVoiceLogs, {
+        foreignKey: 'userId',
+        constraints: false,
+        scope: {
+            guildId: { $col: 'User.guildId' }
+        }
+    });
+    User.hasMany(TemporaryRole, {
+        foreignKey: 'userId',
+        constraints: false,
+        scope: {
+            guildId: { $col: 'User.guildId' }
+        }
+    });
+    User.hasMany(CommandLogs, {
+        foreignKey: 'userId',
+        constraints: false,
+        scope: {
+            guildId: { $col: 'User.guildId' }
+        }
+    });
+    User.hasMany(Aways, {
+        foreignKey: 'userId',
+        constraints: false,
+        scope: {
+            guildId: { $col: 'User.guildId' }
+        }
+    });
 
-    // GuildSettings relationships
-    GuildSettings.belongsTo(Guild, { foreignKey: 'guildId', targetKey: 'guildId' });
-
-    // UserLevel relationships
-    UserLevel.belongsTo(User, { foreignKey: 'userUuid', targetKey: 'uuid' });
-    UserLevel.belongsTo(Guild, { foreignKey: 'guildId', targetKey: 'guildId' });
-    UserLevel.belongsTo(Level, { foreignKey: 'level', targetKey: 'level', as: 'levelDetails' });
+    // Guild relationships
+    Guild.hasMany(User, {
+        foreignKey: 'guildId',
+        constraints: false
+    });
+    Guild.hasOne(GuildSettings, {
+        foreignKey: 'guildId',
+        constraints: false
+    });
+    Guild.hasMany(UserLevel, {
+        foreignKey: 'guildId',
+        constraints: false
+    });
+    Guild.hasMany(UserBirthdays, {
+        foreignKey: 'guildId',
+        constraints: false
+    });
+    Guild.hasMany(UserBalances, {
+        foreignKey: 'guildId',
+        constraints: false
+    });
+    Guild.hasMany(UserCareers, {
+        foreignKey: 'guildId',
+        constraints: false
+    });
+    Guild.hasMany(UserAuditLogs, {
+        foreignKey: 'guildId',
+        constraints: false
+    });
+    Guild.hasMany(UserActivityLogs, {
+        foreignKey: 'guildId',
+        constraints: false
+    });
+    Guild.hasMany(UserEconomyLogs, {
+        foreignKey: 'guildId',
+        constraints: false
+    });
+    Guild.hasMany(UserExperienceLogs, {
+        foreignKey: 'guildId',
+        constraints: false
+    });
+    Guild.hasMany(UserVoiceLogs, {
+        foreignKey: 'guildId',
+        constraints: false
+    });
+    Guild.hasMany(TemporaryRole, {
+        foreignKey: 'guildId',
+        constraints: false
+    });
+    Guild.hasMany(CommandLogs, {
+        foreignKey: 'guildId',
+        constraints: false
+    });
+    Guild.hasMany(Aways, {
+        foreignKey: 'guildId',
+        constraints: false
+    });
+    Guild.hasMany(Messages, {
+        foreignKey: 'guildId',
+        constraints: false
+    });
+    Guild.hasMany(Modifiers, {
+        foreignKey: 'guildId',
+        constraints: false
+    });
 
     // Level relationships
-    Level.hasMany(UserLevel, { foreignKey: 'level', sourceKey: 'level', as: 'userLevels' });
-    Level.hasMany(LevelRank, { foreignKey: 'level', sourceKey: 'level', as: 'ranks' });
+    Level.hasMany(UserLevel, { foreignKey: 'level', constraints: false });
 
     // LevelRank relationships
-    LevelRank.belongsTo(Level, { foreignKey: 'level', targetKey: 'level' });
-    LevelRank.belongsTo(Guild, { foreignKey: 'guildId', targetKey: 'guildId' });
+    LevelRank.belongsTo(Guild, { foreignKey: 'guildId', constraints: false });
 
     // Command relationships
-    Commands.hasMany(CommandLogs, { foreignKey: 'commandId', sourceKey: 'commandId', as: 'logs' });
+    Commands.hasMany(CommandLogs, { foreignKey: 'commandId', constraints: false });
 
-    // CommandLog relationships
-    CommandLogs.belongsTo(Commands, { foreignKey: 'commandId', targetKey: 'commandId', as: 'command' });
-    CommandLogs.belongsTo(User, { foreignKey: 'executorUuid', targetKey: 'uuid', as: 'executor' });
-    CommandLogs.belongsTo(Guild, { foreignKey: 'guildId', targetKey: 'guildId' });
+    // Reverse relationships
+    UserLevel.belongsTo(User, {
+        foreignKey: 'userId',
+        constraints: false,
+        scope: {
+            guildId: { $col: 'UserLevel.guildId' }
+        }
+    });
+    UserLevel.belongsTo(Guild, { foreignKey: 'guildId', constraints: false });
+    UserLevel.belongsTo(Level, { foreignKey: 'level', constraints: false });
 
-    // UserBirthdays relationships
-    UserBirthdays.belongsTo(User, { foreignKey: 'userUuid', targetKey: 'uuid' });
-    UserBirthdays.belongsTo(Guild, { foreignKey: 'guildId', targetKey: 'guildId' });
+    UserBirthdays.belongsTo(User, {
+        foreignKey: 'userId',
+        constraints: false,
+        scope: {
+            guildId: { $col: 'UserBirthdays.guildId' }
+        }
+    });
+    UserBirthdays.belongsTo(Guild, { foreignKey: 'guildId', constraints: false });
 
-    // UserBalances relationships
-    UserBalances.belongsTo(User, { foreignKey: 'userUuid', targetKey: 'uuid' });
-    UserBalances.belongsTo(Guild, { foreignKey: 'guildId', targetKey: 'guildId' });
+    UserBalances.belongsTo(User, {
+        foreignKey: 'userId',
+        constraints: false,
+        scope: {
+            guildId: { $col: 'UserBalances.guildId' }
+        }
+    });
+    UserBalances.belongsTo(Guild, { foreignKey: 'guildId', constraints: false });
 
-    // UserCareers relationships
-    UserCareers.belongsTo(User, { foreignKey: 'userUuid', targetKey: 'uuid' });
-    UserCareers.belongsTo(Guild, { foreignKey: 'guildId', targetKey: 'guildId' });
-    UserCareers.belongsTo(Jobs, { foreignKey: 'jobId', targetKey: 'id', as: 'jobDetails' });
+    UserCareers.belongsTo(User, {
+        foreignKey: 'userId',
+        constraints: false,
+        scope: {
+            guildId: { $col: 'UserCareers.guildId' }
+        }
+    });
+    UserCareers.belongsTo(Guild, { foreignKey: 'guildId', constraints: false });
+    UserCareers.belongsTo(Jobs, { foreignKey: 'jobId', constraints: false });
 
-    // Jobs relationships
-    Jobs.hasMany(UserCareers, { foreignKey: 'jobId', sourceKey: 'id', as: 'careers' });
+    UserAuditLogs.belongsTo(User, {
+        foreignKey: 'userId',
+        constraints: false,
+        scope: {
+            guildId: { $col: 'UserAuditLogs.guildId' }
+        }
+    });
+    UserAuditLogs.belongsTo(Guild, { foreignKey: 'guildId', constraints: false });
 
-    // UserAuditLogs relationships
-    UserAuditLogs.belongsTo(User, { foreignKey: 'userUuid', targetKey: 'uuid' });
-    UserAuditLogs.belongsTo(Guild, { foreignKey: 'guildId', targetKey: 'guildId' });
+    UserActivityLogs.belongsTo(User, {
+        foreignKey: 'userId',
+        constraints: false,
+        scope: {
+            guildId: { $col: 'UserActivityLogs.guildId' }
+        }
+    });
+    UserActivityLogs.belongsTo(Guild, { foreignKey: 'guildId', constraints: false });
 
-    // UserActivityLogs relationships
-    UserActivityLogs.belongsTo(User, { foreignKey: 'userUuid', targetKey: 'uuid' });
-    UserActivityLogs.belongsTo(Guild, { foreignKey: 'guildId', targetKey: 'guildId' });
+    UserEconomyLogs.belongsTo(User, {
+        foreignKey: 'userId',
+        constraints: false,
+        scope: {
+            guildId: { $col: 'UserEconomyLogs.guildId' }
+        }
+    });
+    UserEconomyLogs.belongsTo(Guild, { foreignKey: 'guildId', constraints: false });
 
-    // UserEconomyLogs relationships
-    UserEconomyLogs.belongsTo(User, { foreignKey: 'userUuid', targetKey: 'uuid' });
-    UserEconomyLogs.belongsTo(Guild, { foreignKey: 'guildId', targetKey: 'guildId' });
+    UserExperienceLogs.belongsTo(User, {
+        foreignKey: 'userId',
+        constraints: false,
+        scope: {
+            guildId: { $col: 'UserExperienceLogs.guildId' }
+        }
+    });
+    UserExperienceLogs.belongsTo(Guild, { foreignKey: 'guildId', constraints: false });
 
-    // UserExperienceLogs relationships
-    UserExperienceLogs.belongsTo(User, { foreignKey: 'userUuid', targetKey: 'uuid' });
-    UserExperienceLogs.belongsTo(Guild, { foreignKey: 'guildId', targetKey: 'guildId' });
+    UserVoiceLogs.belongsTo(User, {
+        foreignKey: 'userId',
+        constraints: false,
+        scope: {
+            guildId: { $col: 'UserVoiceLogs.guildId' }
+        }
+    });
+    UserVoiceLogs.belongsTo(Guild, { foreignKey: 'guildId', constraints: false });
 
-    // UserVoiceLogs relationships
-    UserVoiceLogs.belongsTo(User, { foreignKey: 'userUuid', targetKey: 'uuid' });
-    UserVoiceLogs.belongsTo(Guild, { foreignKey: 'guildId', targetKey: 'guildId' });
+    TemporaryRole.belongsTo(User, {
+        foreignKey: 'userId',
+        constraints: false,
+        scope: {
+            guildId: { $col: 'TemporaryRole.guildId' }
+        }
+    });
+    TemporaryRole.belongsTo(Guild, { foreignKey: 'guildId', constraints: false });
 
-    // TemporaryRole relationships
-    TemporaryRole.belongsTo(User, { foreignKey: 'userUuid', targetKey: 'uuid' });
-    TemporaryRole.belongsTo(Guild, { foreignKey: 'guildId', targetKey: 'guildId' });
+    CommandLogs.belongsTo(User, {
+        foreignKey: 'userId',
+        constraints: false,
+        scope: {
+            guildId: { $col: 'CommandLogs.guildId' }
+        }
+    });
+    CommandLogs.belongsTo(Guild, { foreignKey: 'guildId', constraints: false });
+    CommandLogs.belongsTo(Commands, { foreignKey: 'commandId', constraints: false });
 
-    // Aways relationships
-    Aways.belongsTo(User, { foreignKey: 'userUuid', targetKey: 'uuid' });
-    Aways.belongsTo(Guild, { foreignKey: 'guildId', targetKey: 'guildId' });
+    Aways.belongsTo(User, {
+        foreignKey: 'userId',
+        constraints: false,
+        scope: {
+            guildId: { $col: 'Aways.guildId' }
+        }
+    });
+    Aways.belongsTo(Guild, { foreignKey: 'guildId', constraints: false });
 
-    // Messages relationships
-    Messages.belongsTo(User, { foreignKey: 'userUuid', targetKey: 'uuid' });
-    Messages.belongsTo(Guild, { foreignKey: 'guildId', targetKey: 'guildId' });
+    GuildSettings.belongsTo(Guild, { foreignKey: 'guildId', constraints: false });
 
+    Messages.belongsTo(Guild, { foreignKey: 'guildId', constraints: false });
+
+    Modifiers.belongsTo(Guild, { foreignKey: 'guildId', constraints: false });
 };
