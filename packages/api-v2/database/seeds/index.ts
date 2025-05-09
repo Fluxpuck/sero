@@ -1,57 +1,71 @@
 import { sequelize } from '../sequelize';
-import chalk from 'chalk';
 
 import { seedGuilds } from './guilds.seed';
 import { seedUsers } from './users.seed';
 import { seedMessages } from './messages.seed';
 
-(async () => {
-    console.log(chalk.blue("Seeding database..."));
+// Enhanced console color codes
+const colors = {
+    reset: '\x1b[0m',
+    red: '\x1b[31m',         // Error messages
+    green: '\x1b[32m',       // Success messages
+    yellow: '\x1b[33m',      // Warnings/cautions
+    blue: '\x1b[36m',        // Changed to cyan for better visibility - Process information
+    magenta: '\x1b[35m',     // Process termination
+    grey: '\x1b[90m',        // Supplementary information
+    brightGreen: '\x1b[92m', // Specific success actions
+    brightYellow: '\x1b[93m' // Specific action notifications
+};
+
+async function seedManager() {
+    console.log(`${colors.blue}--- Seed Manager 2.0 ---${colors.reset}`);
 
     // Ensure database connection is established and models are synced
     try {
         await sequelize.authenticate();
-        console.log(chalk.green('Database connection established successfully'));
+        console.log(`${colors.brightGreen}✓ Database connection established successfully${colors.reset}`);
     } catch (error) {
-        console.error(chalk.red('Error establishing database connection:'), error);
+        console.error(`${colors.red}✗ Error establishing database connection:${colors.reset}`, error);
         process.exit(1);
     }
 
     // Truncate all tables in the database
     try {
-        console.log(chalk.yellow('Truncating all tables...'));
+        console.log(`${colors.brightYellow}» Truncating all tables...${colors.reset}`);
         for (const model of Object.values(sequelize.models)) {
             await model.destroy({ truncate: true, cascade: true, force: true });
-            console.log(chalk.green(`Truncated table: ${model.getTableName()}`));
+            console.log(`${colors.grey}  Truncated table: ${colors.green}${model.getTableName()}${colors.reset}`);
         }
-        console.log(chalk.green('All models truncated successfully'));
+        console.log(`${colors.brightGreen}✓ All models truncated successfully${colors.reset}`);
     } catch (error) {
-        console.error(chalk.red('Error truncating tables:'), error);
+        console.error(`${colors.red}✗ Error truncating tables:${colors.reset}`, error);
         process.exit(1);
     }
 
     // Seed the database
     try {
-        console.log(chalk.blue('Seeding data...'));
+        console.log(`${colors.blue}» Starting data seeding process...${colors.reset}`);
 
         await seedGuilds();
-        console.log(chalk.green('Guilds seeded successfully'));
+        console.log(`${colors.green}✓ Guilds seeded successfully${colors.reset}`);
 
         await seedUsers();
-        console.log(chalk.green('Users seeded successfully'));
+        console.log(`${colors.green}✓ Users seeded successfully${colors.reset}`);
 
         await seedMessages(50);
-        console.log(chalk.green('Messages seeded successfully'));
+        console.log(`${colors.green}✓ Messages seeded successfully${colors.reset}`);
 
     } catch (error) {
-        console.error(chalk.red('Error seeding database:'), error);
+        console.error(`${colors.red}✗ Error seeding database:${colors.reset}`, error);
         process.exit(1);
     } finally {
-        console.log(chalk.green('Seeding completed successfully'));
+        console.log(`${colors.brightGreen}✓ Seeding completed successfully${colors.reset}`);
     }
-})();
+}
+
+seedManager(); // Run the seedManager function
 
 setTimeout(() => {
-    console.log(chalk.magenta('Closing process after 10 seconds...'));
+    console.log(`${colors.magenta}» Closing process after 10 seconds...${colors.reset}`);
     process.exit(0); // Exit process with success code
 }, 10_000);
