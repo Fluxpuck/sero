@@ -23,7 +23,7 @@ export class Modifiers extends Model<Modifiers> {
     declare id: number;
 
     @Column({
-        type: DataType.BIGINT,
+        type: DataType.STRING,
         allowNull: true,
         validate: {
             isNumeric: true
@@ -32,7 +32,7 @@ export class Modifiers extends Model<Modifiers> {
     declare userId: number | null;
 
     @Column({
-        type: DataType.BIGINT,
+        type: DataType.STRING,
         allowNull: false,
         validate: {
             isNumeric: true

@@ -22,7 +22,7 @@ export class Aways extends Model<Aways> {
     declare id: number;
 
     @Column({
-        type: DataType.BIGINT,
+        type: DataType.STRING,
         allowNull: false,
         validate: {
             isNumeric: true
@@ -31,7 +31,7 @@ export class Aways extends Model<Aways> {
     declare guildId: string;
 
     @Column({
-        type: DataType.BIGINT,
+        type: DataType.STRING,
         allowNull: false,
         validate: {
             isNumeric: true

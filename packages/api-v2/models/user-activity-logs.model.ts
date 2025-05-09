@@ -24,7 +24,7 @@ export class UserActivityLogs extends Model<UserActivityLogs> {
     declare id: number;
 
     @Column({
-        type: DataType.BIGINT,
+        type: DataType.STRING,
         allowNull: false,
         validate: {
             isNumeric: true
@@ -33,7 +33,7 @@ export class UserActivityLogs extends Model<UserActivityLogs> {
     declare guildId: string;
 
     @Column({
-        type: DataType.BIGINT,
+        type: DataType.STRING,
         allowNull: false,
         validate: {
             isNumeric: true
@@ -42,7 +42,7 @@ export class UserActivityLogs extends Model<UserActivityLogs> {
     declare userId: string;
 
     @Column({
-        type: DataType.BIGINT,
+        type: DataType.STRING,
         allowNull: false,
         validate: {
             isNumeric: true

@@ -20,7 +20,7 @@ export class UserBalances extends Model<UserBalances> {
     declare id: number;
 
     @Column({
-        type: DataType.BIGINT,
+        type: DataType.STRING,
         allowNull: false,
         validate: {
             isNumeric: true
@@ -29,7 +29,7 @@ export class UserBalances extends Model<UserBalances> {
     declare guildId: string;
 
     @Column({
-        type: DataType.BIGINT,
+        type: DataType.STRING,
         allowNull: false,
         validate: {
             isNumeric: true

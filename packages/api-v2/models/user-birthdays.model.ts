@@ -22,7 +22,7 @@ export class UserBirthdays extends Model<UserBirthdays> {
     declare id: number;
 
     @Column({
-        type: DataType.BIGINT,
+        type: DataType.STRING,
         allowNull: false,
         validate: {
             isNumeric: true
@@ -31,7 +31,7 @@ export class UserBirthdays extends Model<UserBirthdays> {
     declare guildId: string;
 
     @Column({
-        type: DataType.BIGINT,
+        type: DataType.STRING,
         allowNull: false,
         validate: {
             isNumeric: true

@@ -1,5 +1,4 @@
-import { Column, DataType, ForeignKey, Model, Table } from "sequelize-typescript";
-import { Guild } from "./guilds.model";
+import { Column, DataType, Model, Table } from "sequelize-typescript";
 
 @Table({
     tableName: "level_ranks",
@@ -18,9 +17,8 @@ export class LevelRank extends Model<LevelRank> {
     })
     declare id: number;
 
-    @ForeignKey(() => Guild)
     @Column({
-        type: DataType.BIGINT,
+        type: DataType.STRING,
         allowNull: false
     })
     declare guildId: string;
@@ -32,7 +30,7 @@ export class LevelRank extends Model<LevelRank> {
     declare level: number;
 
     @Column({
-        type: DataType.BIGINT,
+        type: DataType.STRING,
         allowNull: true,
         validate: {
             isNumeric: true

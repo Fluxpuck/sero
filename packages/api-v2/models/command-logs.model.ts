@@ -19,7 +19,7 @@ export class CommandLogs extends Model<CommandLogs> {
     declare id: number;
 
     @Column({
-        type: DataType.BIGINT,
+        type: DataType.STRING,
         allowNull: false,
         validate: {
             isNumeric: true
@@ -28,7 +28,7 @@ export class CommandLogs extends Model<CommandLogs> {
     declare guildId: string;
 
     @Column({
-        type: DataType.INTEGER,
+        type: DataType.STRING,
         allowNull: false,
         unique: true,
     })
@@ -38,10 +38,10 @@ export class CommandLogs extends Model<CommandLogs> {
         type: DataType.STRING,
         allowNull: true,
     })
-    name!: string
+    declare name: string;
 
     @Column({
-        type: DataType.BIGINT,
+        type: DataType.STRING,
         allowNull: true,
         validate: {
             isNumeric: true

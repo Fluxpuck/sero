@@ -27,7 +27,7 @@ export class UserEconomyLogs extends Model<UserEconomyLogs> {
     declare id: number;
 
     @Column({
-        type: DataType.BIGINT,
+        type: DataType.STRING,
         allowNull: false,
         validate: {
             isNumeric: true
@@ -36,7 +36,7 @@ export class UserEconomyLogs extends Model<UserEconomyLogs> {
     declare guildId: string;
 
     @Column({
-        type: DataType.BIGINT,
+        type: DataType.STRING,
         allowNull: false,
         validate: {
             isNumeric: true
@@ -52,7 +52,7 @@ export class UserEconomyLogs extends Model<UserEconomyLogs> {
     type!: EconomyLogType;
 
     @Column({
-        type: DataType.BIGINT,
+        type: DataType.INTEGER,
         allowNull: false,
         validate: {
             isNumeric: true

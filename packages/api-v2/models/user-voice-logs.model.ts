@@ -26,7 +26,7 @@ export class UserVoiceLogs extends Model<UserVoiceLogs> {
     declare id: number;
 
     @Column({
-        type: DataType.BIGINT,
+        type: DataType.STRING,
         allowNull: false,
         validate: {
             isNumeric: true
@@ -35,7 +35,7 @@ export class UserVoiceLogs extends Model<UserVoiceLogs> {
     declare guildId: string;
 
     @Column({
-        type: DataType.BIGINT,
+        type: DataType.STRING,
         allowNull: false,
         validate: {
             isNumeric: true
@@ -44,7 +44,7 @@ export class UserVoiceLogs extends Model<UserVoiceLogs> {
     declare userId: string;
 
     @Column({
-        type: DataType.BIGINT,
+        type: DataType.STRING,
         allowNull: false,
         validate: {
             isNumeric: true

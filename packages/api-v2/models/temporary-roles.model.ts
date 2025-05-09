@@ -19,7 +19,9 @@ export class TemporaryRole extends Model<TemporaryRole> {
         autoIncrement: true,
         primaryKey: true,
     })
-    declare id: number; @Column({
+    declare id: number;
+
+    @Column({
         type: DataType.STRING,
         allowNull: false
     })

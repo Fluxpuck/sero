@@ -24,7 +24,7 @@ export class UserAuditLogs extends Model<UserAuditLogs> {
     declare id: string;
 
     @Column({
-        type: DataType.BIGINT,
+        type: DataType.STRING,
         allowNull: false,
         validate: {
             isNumeric: true
@@ -36,17 +36,17 @@ export class UserAuditLogs extends Model<UserAuditLogs> {
         type: DataType.ENUM(...Object.keys(AuditLogEvent).filter(k => isNaN(Number(k)))),
         allowNull: false,
     })
-    action!: keyof typeof AuditLogEvent;
+    declare action: keyof typeof AuditLogEvent;
 
+    @Default(null)
     @Column({
         type: DataType.STRING,
         allowNull: true,
     })
-    reason: string | null = null;
+    declare reason: string | null;
 
-    // Related to the user who was affected by the action
     @Column({
-        type: DataType.BIGINT,
+        type: DataType.STRING,
         allowNull: true,
         validate: {
             isNumeric: true
@@ -54,7 +54,6 @@ export class UserAuditLogs extends Model<UserAuditLogs> {
     })
     declare targetId: string | null;
 
-    // Related to the user who performed the action
     @Column({
         type: DataType.INTEGER,
         allowNull: true,
