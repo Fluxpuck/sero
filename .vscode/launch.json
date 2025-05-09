@@ -46,6 +46,17 @@
             "outFiles": [
                 "${workspaceFolder}/packages/api-v2/**/*.js"
             ]
+        },
+        {
+            "name": "Seeder v2",
+            "type": "node",
+            "request": "launch",
+            "program": "${workspaceFolder}/packages/api-v2/database/seeds/index.ts",
+            "cwd": "${workspaceFolder}",
+            "runtimeExecutable": "ts-node",
+            "outFiles": [
+                "${workspaceFolder}/packages/api-v2/**/*.js"
+            ]
         }
     ]
 }

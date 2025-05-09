@@ -2,6 +2,11 @@
     "name": "backend",
     "version": "1.0.0",
     "main": "main.ts",
+    "scripts": {
+        "start": "ts-node main.ts",
+        "dev": "ts-node-dev --respawn main.ts",
+        "seed": "ts-node database/seeds/index.ts"
+    },
     "dependencies": {
         "chalk": "^4.1.2",
         "compression": "^1.8.0",
@@ -26,6 +31,9 @@
         "@types/express": "^4.17.17",
         "@types/morgan": "^1.9.9",
         "@types/node": "^18.16.3",
+        "@faker-js/faker": "^8.4.1",
+        "ts-node": "^10.9.2",
+        "ts-node-dev": "^2.0.0",
         "typescript": "^5.1.3"
     }
 }
