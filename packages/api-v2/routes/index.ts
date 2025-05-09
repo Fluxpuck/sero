@@ -4,9 +4,9 @@ const router = Router();
 
 router.get('/', (req: Request, res: Response) => {
     res.status(200).json({
-        name: "Sero Discord Bot API",
+        name: "Sero API",
         version: "2.0.0",
-        authors: ["Lars", "Mathijs"],
+        authors: ["Mathijs"],
         message: 'Successfully connected',
         documentation: '/docs'
     });
