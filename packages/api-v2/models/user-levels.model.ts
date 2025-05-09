@@ -26,9 +26,7 @@ export class UserLevel extends Model<UserLevel> {
             isNumeric: true
         }
     })
-    declare guildId: string;
-
-    @Column({
+    declare guildId: string; @Column({
         type: DataType.STRING,
         allowNull: false,
         validate: {
@@ -36,6 +34,12 @@ export class UserLevel extends Model<UserLevel> {
         }
     })
     declare userId: string;
+
+    @Column({
+        type: DataType.UUID,
+        allowNull: true, // Allow null for backward compatibility
+    })
+    declare userUuid: string;
 
     @Default(0)
     @Column({

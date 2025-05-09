@@ -27,6 +27,13 @@ export class User extends Model<User> {
     })
     declare id: number;
 
+    @Default(DataType.UUIDV4)
+    @Column({
+        type: DataType.UUID,
+        allowNull: false,
+    })
+    declare uuid: string;
+
     @Column({
         type: DataType.STRING,
         allowNull: false

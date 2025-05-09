@@ -13,9 +13,9 @@ import { ApplicationCommandOptionData, ApplicationCommandType, PermissionResolva
     ]
 })
 export class Commands extends Model<Commands> {
+
     @Column({
         type: DataType.STRING,
-        autoIncrement: true,
         primaryKey: true,
     })
     declare commandId: string;
