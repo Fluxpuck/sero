@@ -19,27 +19,22 @@ export class Guild extends Model<Guild> {
         autoIncrement: true,
         primaryKey: true,
     })
-    declare id: number;
-
-    @Column({
-        type: DataType.BIGINT,
-        allowNull: false,
-        validate: {
-            isNumeric: true
-        }
+    declare id: number; @Column({
+        type: DataType.STRING,
+        allowNull: false
     })
-    declare guildId: number;
+    declare guildId: string;
 
     @Column({
         type: DataType.STRING(100),
         allowNull: false,
     })
-    guildName!: string;
+    declare guildName: string;
 
     @Default(false)
     @Column({
         type: DataType.BOOLEAN,
         allowNull: false,
     })
-    premium!: boolean;
+    declare premium: boolean;
 }

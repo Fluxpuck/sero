@@ -19,34 +19,23 @@ export class TemporaryRole extends Model<TemporaryRole> {
         autoIncrement: true,
         primaryKey: true,
     })
-    declare id: number;
+    declare id: number; @Column({
+        type: DataType.STRING,
+        allowNull: false
+    })
+    declare guildId: string;
 
     @Column({
-        type: DataType.BIGINT,
-        allowNull: false,
-        validate: {
-            isNumeric: true
-        }
+        type: DataType.STRING,
+        allowNull: false
     })
-    declare guildId: number;
+    declare userId: string;
 
     @Column({
-        type: DataType.BIGINT,
-        allowNull: false,
-        validate: {
-            isNumeric: true
-        }
+        type: DataType.STRING,
+        allowNull: false
     })
-    declare userId: number;
-
-    @Column({
-        type: DataType.BIGINT,
-        allowNull: false,
-        validate: {
-            isNumeric: true
-        }
-    })
-    declare roleId: number;
+    declare roleId: string;
 
     @Column({
         type: DataType.INTEGER,

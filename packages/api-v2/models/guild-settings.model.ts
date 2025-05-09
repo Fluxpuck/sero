@@ -33,16 +33,11 @@ export class GuildSettings extends Model<GuildSettings> {
         autoIncrement: true,
         primaryKey: true,
     })
-    declare id: number;
-
-    @Column({
-        type: DataType.BIGINT,
-        allowNull: false,
-        validate: {
-            isNumeric: true
-        }
+    declare id: number; @Column({
+        type: DataType.STRING,
+        allowNull: false
     })
-    declare guildId: number;
+    declare guildId: string;
 
     @Column({
         type: DataType.ENUM,
@@ -52,15 +47,15 @@ export class GuildSettings extends Model<GuildSettings> {
     declare type: GuildSettingType;
 
     @Column({
-        type: DataType.INTEGER,
+        type: DataType.STRING,
         allowNull: true,
     })
-    declare typeId: number;
+    declare targetId: string;
 
     @Column({
         type: DataType.JSON,
         allowNull: true,
     })
-    declare excludeIds: number[];
+    declare excludeIds: string[];
 
 }

@@ -28,22 +28,16 @@ export class User extends Model<User> {
     declare id: number;
 
     @Column({
-        type: DataType.BIGINT,
-        allowNull: false,
-        validate: {
-            isNumeric: true
-        }
+        type: DataType.STRING,
+        allowNull: false
     })
-    declare userId: number;
+    declare userId: string;
 
     @Column({
-        type: DataType.BIGINT,
-        allowNull: false,
-        validate: {
-            isNumeric: true
-        }
+        type: DataType.STRING,
+        allowNull: false
     })
-    declare guildId: number;
+    declare guildId: string;
 
     @Column({
         type: DataType.STRING(100),

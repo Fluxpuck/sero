@@ -1,4 +1,5 @@
 import { Column, DataType, Default, Model, Table } from "sequelize-typescript";
+import { Op } from "sequelize";
 
 @Table({
     tableName: "messages",
@@ -8,58 +9,79 @@ import { Column, DataType, Default, Model, Table } from "sequelize-typescript";
     paranoid: true,
     indexes: [
         {
+            unique: true,
+            fields: ["messageId"]
+        },
+        {
+            unique: false,
+            fields: ["guildId"]
+        },
+        {
+            unique: false,
+            fields: ["channelId"]
+        },
+        {
+            unique: false,
             fields: ["userId", "guildId"]
         }
     ]
 })
 export class Messages extends Model<Messages> {
-    @Column({
-        type: DataType.INTEGER,
-        autoIncrement: true,
-        primaryKey: true,
-    })
-    declare id: number;
+        static async findByGuildId(
+            guildId: string,
+            options?: {
+                channelId?: string;
+                userId?: string;
+                dateRange?: { startDate: Date; endDate: Date }
+            }
+        ): Promise<Messages[]> {
+            const whereClause: any = { guildId };
+
+            if (options?.channelId) {
+                whereClause.channelId = options.channelId;
+            }
+
+            if (options?.userId) {
+                whereClause.userId = options.userId;
+            }
+
+            if (options?.dateRange) {
+                whereClause.createdAt = {
+                    [Op.between]: [options.dateRange.startDate, options.dateRange.endDate]
+                };
+            }
+
+            return await this.findAll({ where: whereClause });
+        } @Column({
+            type: DataType.STRING,
+            primaryKey: true,
+            allowNull: false
+        })
+    declare messageId: string;
 
     @Column({
-        type: DataType.BIGINT,
-        allowNull: false,
-        validate: {
-            isNumeric: true
-        }
+        type: DataType.STRING,
+        allowNull: false
     })
-    declare guildId: number;
+    declare guildId: string;
 
     @Column({
-        type: DataType.BIGINT,
-        allowNull: false,
-        validate: {
-            isNumeric: true
-        }
+        type: DataType.STRING,
+        allowNull: false
     })
-    declare channelId: number;
+    declare channelId: string;
 
     @Column({
-        type: DataType.BIGINT,
-        allowNull: false,
-        validate: {
-            isNumeric: true
-        }
+        type: DataType.STRING,
+        allowNull: false
     })
-    declare messageId: number;
-
-    @Column({
-        type: DataType.BIGINT,
-        allowNull: false,
-        validate: {
-            isNumeric: true
-        }
-    })
-    declare userId: number;
+    declare userId: string;
 
     @Column({
         type: DataType.STRING,
         allowNull: true,
     })
-    content!: string;
+    declare content: string;
 
 }
+
