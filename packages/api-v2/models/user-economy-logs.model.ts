@@ -33,7 +33,7 @@ export class UserEconomyLogs extends Model<UserEconomyLogs> {
             isNumeric: true
         }
     })
-    declare guildId: number;
+    declare guildId: string;
 
     @Column({
         type: DataType.BIGINT,
@@ -42,7 +42,7 @@ export class UserEconomyLogs extends Model<UserEconomyLogs> {
             isNumeric: true
         }
     })
-    declare userId: number;
+    declare userId: string;
 
     @Column({
         type: DataType.ENUM,

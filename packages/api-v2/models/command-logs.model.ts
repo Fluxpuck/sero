@@ -25,14 +25,14 @@ export class CommandLogs extends Model<CommandLogs> {
             isNumeric: true
         }
     })
-    declare guildId: number;
+    declare guildId: string;
 
     @Column({
         type: DataType.INTEGER,
         allowNull: false,
         unique: true,
     })
-    declare commandId: number;
+    declare commandId: string;
 
     @Column({
         type: DataType.STRING,
@@ -47,6 +47,6 @@ export class CommandLogs extends Model<CommandLogs> {
             isNumeric: true
         }
     })
-    declare executorId: number | null;
+    declare executorId: string | null;
 
 }

@@ -32,7 +32,7 @@ export class UserVoiceLogs extends Model<UserVoiceLogs> {
             isNumeric: true
         }
     })
-    declare guildId: number;
+    declare guildId: string;
 
     @Column({
         type: DataType.BIGINT,
@@ -41,7 +41,7 @@ export class UserVoiceLogs extends Model<UserVoiceLogs> {
             isNumeric: true
         }
     })
-    declare userId: number;
+    declare userId: string;
 
     @Column({
         type: DataType.BIGINT,
@@ -50,7 +50,7 @@ export class UserVoiceLogs extends Model<UserVoiceLogs> {
             isNumeric: true
         }
     })
-    declare channelId: number;
+    declare channelId: string;
 
     @Column({
         type: DataType.ENUM,

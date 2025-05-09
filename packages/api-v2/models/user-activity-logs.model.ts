@@ -30,7 +30,7 @@ export class UserActivityLogs extends Model<UserActivityLogs> {
             isNumeric: true
         }
     })
-    declare guildId: number;
+    declare guildId: string;
 
     @Column({
         type: DataType.BIGINT,
@@ -39,7 +39,7 @@ export class UserActivityLogs extends Model<UserActivityLogs> {
             isNumeric: true
         }
     })
-    declare userId: number;
+    declare userId: string;
 
     @Column({
         type: DataType.BIGINT,
@@ -48,7 +48,7 @@ export class UserActivityLogs extends Model<UserActivityLogs> {
             isNumeric: true
         }
     })
-    declare channelId: number;
+    declare channelId: string;
 
     @Column({
         type: DataType.ENUM,

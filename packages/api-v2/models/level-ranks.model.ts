@@ -23,7 +23,7 @@ export class LevelRank extends Model<LevelRank> {
         type: DataType.BIGINT,
         allowNull: false
     })
-    declare guildId: number;
+    declare guildId: string;
 
     @Column({
         type: DataType.INTEGER,
@@ -38,5 +38,5 @@ export class LevelRank extends Model<LevelRank> {
             isNumeric: true
         }
     })
-    declare roleId: number;
+    declare roleId: string;
 }

@@ -30,7 +30,7 @@ export class UserAuditLogs extends Model<UserAuditLogs> {
             isNumeric: true
         }
     })
-    declare guildId: number;
+    declare guildId: string;
 
     @Column({
         type: DataType.ENUM(...Object.keys(AuditLogEvent).filter(k => isNaN(Number(k)))),
@@ -52,7 +52,7 @@ export class UserAuditLogs extends Model<UserAuditLogs> {
             isNumeric: true
         }
     })
-    declare targetId: number | null;
+    declare targetId: string | null;
 
     // Related to the user who performed the action
     @Column({
@@ -62,6 +62,6 @@ export class UserAuditLogs extends Model<UserAuditLogs> {
             isNumeric: true
         }
     })
-    declare executorId: number | null;
+    declare executorId: string | null;
 
 }

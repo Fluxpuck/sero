@@ -18,7 +18,7 @@ export class Commands extends Model<Commands> {
         autoIncrement: true,
         primaryKey: true,
     })
-    declare commandId: number;
+    declare commandId: string;
 
     @Column({
         type: DataType.STRING,

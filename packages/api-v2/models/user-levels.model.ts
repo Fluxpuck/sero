@@ -26,7 +26,7 @@ export class UserLevel extends Model<UserLevel> {
             isNumeric: true
         }
     })
-    declare guildId: number;
+    declare guildId: string;
 
     @Column({
         type: DataType.BIGINT,
@@ -35,7 +35,7 @@ export class UserLevel extends Model<UserLevel> {
             isNumeric: true
         }
     })
-    declare userId: number;
+    declare userId: string;
 
     @Default(0)
     @Column({

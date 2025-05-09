@@ -38,7 +38,7 @@ export class Modifiers extends Model<Modifiers> {
             isNumeric: true
         }
     })
-    declare guildId: number;
+    declare guildId: string;
 
     @Column({
         type: DataType.INTEGER,
