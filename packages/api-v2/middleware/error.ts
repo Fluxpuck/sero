@@ -1,14 +1,13 @@
 import { Request, Response, NextFunction } from 'express';
+import { ResponseHandler } from '../utils/response.utils';
+import { ResponseCode } from '../types/response.types';
 
 interface AppError extends Error {
     statusCode?: number;
 }
 
 export const notFoundHandler = (req: Request, res: Response, next: NextFunction): void => {
-    res.status(404).json({
-        success: false,
-        message: 'Resource not found'
-    });
+    ResponseHandler.sendError(res, 'Resource not found', ResponseCode.NOT_FOUND);
 };
 
 export const errorHandler = (
@@ -17,10 +16,9 @@ export const errorHandler = (
     res: Response,
     next: NextFunction
 ): void => {
-    const statusCode = err.statusCode || 500;
+    const statusCode = err.statusCode || ResponseCode.INTERNAL_SERVER_ERROR;
 
     // Split the stack trace into an array of lines for better readability
-    // and to avoid sending the entire stack trace as a single string
     if (!err.stack) { err.stack = "No stack trace available"; }
     const stackTraceArray = err.stack.split("\n").map(line => line.trim());
 
@@ -30,12 +28,9 @@ export const errorHandler = (
         console.error('Error stack trace:', stackTraceArray.join('\n'));
     }
 
-    // Send a clear error response
-    res.status(statusCode).json({
-        success: false,
-        message: err.message || 'Internal Server Error',
-        ...(process.env.NODE_ENV === 'development' && { stack: stackTraceArray })
-    });
+    // Use ResponseHandler to send a standardized error response
+    const errorData = process.env.NODE_ENV === 'development' ? { stack: stackTraceArray } : undefined;
+    ResponseHandler.sendError(res, err.message || 'Internal Server Error', statusCode, errorData);
 
     // Pass to the next middleware if needed
     next();

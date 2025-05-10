@@ -1,5 +1,6 @@
 import { Request, Response, Router, NextFunction } from 'express';
-import { Messages, Guild, User } from '../../../../models';
+import { Messages } from '../../../../models';
+import { ResponseHandler } from '../../../../utils/response.utils';
 
 const router = Router();
 
@@ -66,21 +67,15 @@ router.get('/', async (req: Request, res: Response, next: NextFunction) => {
                 startDate: new Date(startDate as string),
                 endDate: new Date(endDate as string)
             };
-        }
-
-        // Fetch messages using the findByGuildId method
+        }        // Fetch messages using the findByGuildId method
         const messages = await Messages.findByGuildId(guildId, options);
 
-        res.status(200).json({
-            success: true,
-            data: messages
-        });
+        // Send standardized successful response
+        ResponseHandler.sendSuccess(res, messages, 'Messages retrieved successfully');
 
     } catch (error) {
         next(error);
     }
 });
-
-
 
 export default router;
