@@ -5,12 +5,15 @@
     "version": "2.0.0",
     "configurations": [
         {
-            "name": "Sero API",
+            "name": "Sero API II",
             "type": "node",
             "request": "launch",
-            "program": "${workspaceFolder}/packages/api/app.js",
+            "program": "${workspaceFolder}/packages/api-v2/main.ts",
             "cwd": "${workspaceFolder}",
-            "runtimeExecutable": "node"
+            "runtimeExecutable": "ts-node",
+            "outFiles": [
+                "${workspaceFolder}/packages/api-v2/**/*.js"
+            ]
         },
         {
             "name": "Sero Bot",
@@ -29,26 +32,7 @@
             "runtimeExecutable": "ts-node"
         },
         {
-            "name": "Seeder",
-            "type": "node",
-            "request": "launch",
-            "program": "${workspaceFolder}/packages/api/test/_seedManager.js",
-            "cwd": "${workspaceFolder}",
-            "runtimeExecutable": "node"
-        },
-        {
-            "name": "Sero API v2",
-            "type": "node",
-            "request": "launch",
-            "program": "${workspaceFolder}/packages/api-v2/main.ts",
-            "cwd": "${workspaceFolder}",
-            "runtimeExecutable": "ts-node",
-            "outFiles": [
-                "${workspaceFolder}/packages/api-v2/**/*.js"
-            ]
-        },
-        {
-            "name": "Seeder v2",
+            "name": "Seeder II",
             "type": "node",
             "request": "launch",
             "program": "${workspaceFolder}/packages/api-v2/database/seeds/index.ts",
