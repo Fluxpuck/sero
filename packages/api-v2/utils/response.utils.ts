@@ -1,5 +1,5 @@
 import { Response } from 'express';
-import { ApiResponse, ResponseCode, ResponseStatus } from '../types/response.types';
+import { ApiResponse, ResponseCode, ResponseStatus } from './response.types';
 
 /**
  * ResponseHandler - A class for standardized API responses

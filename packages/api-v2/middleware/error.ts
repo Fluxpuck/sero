@@ -1,6 +1,6 @@
 import { Request, Response, NextFunction } from 'express';
 import { ResponseHandler } from '../utils/response.utils';
-import { ResponseCode } from '../types/response.types';
+import { ResponseCode } from '../utils/response.types';
 
 interface AppError extends Error {
     statusCode?: number;
