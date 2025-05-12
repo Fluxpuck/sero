@@ -11,7 +11,10 @@ import { Column, DataType, Default, Model, Table } from "sequelize-typescript";
             unique: true,
             fields: ["guildId"]
         }
-    ]
+    ],
+    defaultScope: {
+        attributes: { exclude: ['deletedAt'] }
+    }
 })
 export class Guild extends Model<Guild> {
     @Column({
@@ -20,7 +23,7 @@ export class Guild extends Model<Guild> {
         primaryKey: true,
     })
     declare id: number;
-    
+
     @Column({
         type: DataType.STRING,
         allowNull: false

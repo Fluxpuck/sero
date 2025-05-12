@@ -1,6 +1,7 @@
 import { Sequelize } from "sequelize-typescript";
 
 // Import all models
+import { BotConfig } from "./bot-config.model";
 import { User } from './user.model';
 import { Guild } from './guilds.model';
 import { GuildSettings } from './guild-settings.model';
@@ -25,6 +26,7 @@ import { Jobs } from './jobs.model';
 
 // Export all models
 export {
+    BotConfig,
     User,
     Guild,
     GuildSettings,
@@ -55,6 +57,7 @@ export {
 export const initModels = (sequelize: Sequelize): void => {
     // Add all models to sequelize instance
     sequelize.addModels([
+        BotConfig,
         User,
         Guild,
         GuildSettings,
@@ -77,8 +80,6 @@ export const initModels = (sequelize: Sequelize): void => {
         Modifiers,
         Jobs
     ]);
-
-    // Define model relationships    
 
     // User relationships - using composite keys (userId + guildId) or the unique uuid
     User.hasOne(UserLevel, {

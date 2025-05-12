@@ -1,26 +1,28 @@
-import { BeforeCreate, BeforeUpdate, Column, DataType, Model, Table } from "sequelize-typescript";
+import { Column, DataType, Model, Table } from "sequelize-typescript";
 
 @Table({
     tableName: "bot_config",
     createdAt: "createdAt",
     updatedAt: "updatedAt",
-    deletedAt: "deletedAt",
-    paranoid: true,
-    indexes: []
+    indexes: [
+        {
+            unique: true,
+            fields: ["client_id"],
+        },
+    ]
 })
 
 export class BotConfig extends Model<BotConfig> {
     @Column({
-        type: DataType.INTEGER,
-        autoIncrement: true,
+        type: DataType.STRING,
         primaryKey: true,
     })
-    declare id: number;
+    declare client_id: string;
 
     @Column({
         type: DataType.STRING,
         allowNull: false,
     })
-    declare timezone: string;
+    declare api_base_route: string;
 
 }

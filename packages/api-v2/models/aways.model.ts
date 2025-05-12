@@ -11,7 +11,10 @@ import { BeforeCreate, BeforeUpdate, Column, DataType, Model, Table } from "sequ
             unique: true,
             fields: ["guildId", "userId"]
         }
-    ]
+    ],
+    defaultScope: {
+        attributes: { exclude: ['deletedAt'] }
+    }
 })
 export class Aways extends Model<Aways> {
     @Column({

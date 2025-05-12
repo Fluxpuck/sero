@@ -11,7 +11,10 @@ import { BeforeCreate, BeforeUpdate, Column, DataType, Model, Table } from "sequ
             unique: true,
             fields: ["userId", "guildId", "roleId"]
         }
-    ]
+    ],
+    defaultScope: {
+        attributes: { exclude: ['deletedAt'] }
+    }
 })
 export class TemporaryRole extends Model<TemporaryRole> {
     @Column({

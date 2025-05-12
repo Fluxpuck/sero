@@ -24,7 +24,10 @@ import { Op } from "sequelize";
             unique: false,
             fields: ["userId", "guildId"]
         }
-    ]
+    ],
+    defaultScope: {
+        attributes: { exclude: ['deletedAt'] }
+    }
 })
 export class Messages extends Model<Messages> {
 

@@ -12,7 +12,10 @@ import { v4 as uuidv4 } from "uuid";
         {
             fields: ["guildId"]
         }
-    ]
+    ],
+    defaultScope: {
+        attributes: { exclude: ['deletedAt'] }
+    }
 })
 export class UserAuditLogs extends Model<UserAuditLogs> {
     @Default(() => uuidv4())

@@ -11,7 +11,10 @@ import { Column, DataType, Default, Model, Table } from "sequelize-typescript";
             unique: true,
             fields: ["userId", "guildId"]
         }
-    ]
+    ],
+    defaultScope: {
+        attributes: { exclude: ['deletedAt'] }
+    }
 })
 export class UserBirthdays extends Model<UserBirthdays> {
     @Column({

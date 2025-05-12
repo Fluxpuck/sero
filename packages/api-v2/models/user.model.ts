@@ -17,7 +17,10 @@ export enum UserType {
             unique: true,
             fields: ["userId", "guildId"]
         }
-    ]
+    ],
+    defaultScope: {
+        attributes: { exclude: ['deletedAt'] }
+    }
 })
 export class User extends Model<User> {
     @Column({
