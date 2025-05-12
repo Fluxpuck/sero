@@ -78,4 +78,98 @@ router.get('/', async (req: Request, res: Response, next: NextFunction) => {
     }
 });
 
+/**
+ * @swagger
+ * /guild/{guildId}/message:
+ *   post:
+ *     summary: Create a new message for a guild
+ *     tags:
+ *       - Guild Messages
+ *     parameters:
+ *       - name: guildId
+ *         in: path
+ *         required: true
+ *         description: The ID of the guild to create a message for.
+ *         schema:
+ *           type: string
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required:
+ *               - channelId
+ *               - userId
+ *               - content
+ *             properties:
+ *               channelId:
+ *                 type: string
+ *                 description: The Discord channel ID where the message was sent
+ *               userId:
+ *                 type: string
+ *                 description: The Discord user ID who sent the message
+ *               content:
+ *                 type: string
+ *                 description: The content of the message
+ *               messageId:
+ *                 type: string
+ *                 description: The Discord message ID (optional)
+ *     responses:
+ *       201:
+ *         description: Message created successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 status:
+ *                   type: string
+ *                   enum: [success]
+ *                 code:
+ *                   type: integer
+ *                   example: 201
+ *                 message:
+ *                   type: string
+ *                 data:
+ *                   $ref: '#/components/schemas/Message'
+ *       400:
+ *         description: Invalid request body
+ *       500:
+ *         description: Server error
+ */
+router.post('/', async (req: Request, res: Response, next: NextFunction) => {
+    try {
+        const { guildId } = req.params;
+        const { channelId, userId, content, messageId } = req.body;
+
+        // Validate required fields
+        if (!channelId || !userId || !content) {
+            return ResponseHandler.sendValidationFail(
+                res,
+                'Missing required fields',
+                ['channelId, userId, and content are required fields']
+            );
+        }
+
+        // Create the message object as a plain object with explicit types
+        const messageData = {
+            guildId: guildId,
+            channelId: channelId,
+            userId: userId,
+            content: content,
+            messageId: messageId,
+        } as Messages;
+
+        // Create the message in the database
+        const message = await Messages.create(messageData);
+
+        // Send standardized successful response
+        ResponseHandler.sendSuccess(res, message, 'Message created successfully', 201);
+
+    } catch (error) {
+        next(error);
+    }
+});
+
 export default router;
