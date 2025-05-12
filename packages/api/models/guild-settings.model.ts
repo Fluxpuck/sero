@@ -22,7 +22,6 @@ export enum GuildSettingType {
     updatedAt: "updatedAt",
     indexes: [
         {
-            unique: true,
             fields: ["guildId"]
         }
     ]
@@ -34,7 +33,7 @@ export class GuildSettings extends Model<GuildSettings> {
         primaryKey: true,
     })
     declare id: number;
-    
+
     @Column({
         type: DataType.STRING,
         allowNull: false

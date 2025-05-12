@@ -170,46 +170,57 @@ export const initModels = (sequelize: Sequelize): void => {
     // Guild relationships
     Guild.hasMany(User, {
         foreignKey: 'guildId',
+        sourceKey: 'guildId',
         constraints: false
     });
-    Guild.hasOne(GuildSettings, {
+    Guild.hasMany(GuildSettings, {
         foreignKey: 'guildId',
+        sourceKey: 'guildId',
         constraints: false
     });
     Guild.hasMany(UserLevel, {
         foreignKey: 'guildId',
+        sourceKey: 'guildId',
         constraints: false
     });
     Guild.hasMany(UserBirthdays, {
         foreignKey: 'guildId',
+        sourceKey: 'guildId',
         constraints: false
     });
     Guild.hasMany(UserBalances, {
         foreignKey: 'guildId',
+        sourceKey: 'guildId',
         constraints: false
     });
     Guild.hasMany(UserCareers, {
         foreignKey: 'guildId',
+        sourceKey: 'guildId',
         constraints: false
     });
     Guild.hasMany(UserAuditLogs, {
         foreignKey: 'guildId',
+        sourceKey: 'guildId',
         constraints: false
     });
     Guild.hasMany(UserActivityLogs, {
         foreignKey: 'guildId',
+        sourceKey: 'guildId',
         constraints: false
     });
     Guild.hasMany(UserEconomyLogs, {
         foreignKey: 'guildId',
+        sourceKey: 'guildId',
         constraints: false
     });
     Guild.hasMany(UserExperienceLogs, {
         foreignKey: 'guildId',
+        sourceKey: 'guildId',
         constraints: false
     });
     Guild.hasMany(UserVoiceLogs, {
         foreignKey: 'guildId',
+        sourceKey: 'guildId',
         constraints: false
     });
     Guild.hasMany(TemporaryRole, {
@@ -218,18 +229,22 @@ export const initModels = (sequelize: Sequelize): void => {
     });
     Guild.hasMany(CommandLogs, {
         foreignKey: 'guildId',
+        sourceKey: 'guildId',
         constraints: false
     });
     Guild.hasMany(Aways, {
         foreignKey: 'guildId',
+        sourceKey: 'guildId',
         constraints: false
     });
     Guild.hasMany(Messages, {
         foreignKey: 'guildId',
+        sourceKey: 'guildId',
         constraints: false
     });
     Guild.hasMany(Modifiers, {
         foreignKey: 'guildId',
+        sourceKey: 'guildId',
         constraints: false
     });
 

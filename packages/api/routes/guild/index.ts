@@ -1,5 +1,5 @@
 import { Request, Response, Router, NextFunction } from 'express';
-import { Guild } from '../../models';
+import { Guild, GuildSettings } from '../../models';
 import { ResponseHandler } from '../../utils/response.utils';
 
 const router = Router();
@@ -44,9 +44,11 @@ const router = Router();
 router.get('/:guildId', async (req: Request, res: Response, next: NextFunction) => {
     try {
         const { guildId } = req.params;
+        const { settings = false } = req.query;
 
         const guild = await Guild.findOne({
-            where: { guildId }
+            where: { guildId },
+            include: settings === 'true' ? [GuildSettings] : []
         });
 
         if (!guild) {

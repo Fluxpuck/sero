@@ -8,11 +8,22 @@
             "name": "Sero API II",
             "type": "node",
             "request": "launch",
-            "program": "${workspaceFolder}/packages/api-v2/main.ts",
+            "program": "${workspaceFolder}/packages/api/main.ts",
             "cwd": "${workspaceFolder}",
             "runtimeExecutable": "ts-node",
             "outFiles": [
-                "${workspaceFolder}/packages/api-v2/**/*.js"
+                "${workspaceFolder}/packages/api/**/*.js"
+            ]
+        },
+        {
+            "name": "Seeder II",
+            "type": "node",
+            "request": "launch",
+            "program": "${workspaceFolder}/packages/api/database/seeds/index.ts",
+            "cwd": "${workspaceFolder}",
+            "runtimeExecutable": "ts-node",
+            "outFiles": [
+                "${workspaceFolder}/packages/api/**/*.js"
             ]
         },
         {
@@ -30,17 +41,6 @@
             "program": "${workspaceFolder}/packages/agent/index.ts",
             "cwd": "${workspaceFolder}",
             "runtimeExecutable": "ts-node"
-        },
-        {
-            "name": "Seeder II",
-            "type": "node",
-            "request": "launch",
-            "program": "${workspaceFolder}/packages/api-v2/database/seeds/index.ts",
-            "cwd": "${workspaceFolder}",
-            "runtimeExecutable": "ts-node",
-            "outFiles": [
-                "${workspaceFolder}/packages/api-v2/**/*.js"
-            ]
         }
     ]
 }
