@@ -13,22 +13,20 @@ const { CreateError, RequestError } = require("../../../../utils/ClassManager");
  */
 router.get("/", async (req, res, next) => {
     const { guildId } = req.params;
-    const { limit = 1000 } = req.query;
+    const { limit = 1000, type = "wallet" } = req.query;
 
     const options = {
         where: { guildId: guildId },
-        include: [
-            {
-                model: UserWallet,
-                required: false,
-                where: { guildId: guildId }
-            },
-            {
-                model: UserBank,
-                required: false,
-                where: { guildId: guildId }
-            }
+        include: {
+            model: type === "wallet" ? UserWallet : UserBank,
+            required: false,
+            where: { guildId: guildId },
+            attributes: ['balance'],
+        },
+        order: [
+            [type === "wallet" ? UserWallet : UserBank, "balance", "DESC NULLS LAST"]
         ],
+        subQuery: false,
         limit: parseInt(limit)
     };
 
@@ -39,14 +37,11 @@ router.get("/", async (req, res, next) => {
         }
 
         const responseData = usersData.map(user => {
-            const walletBalance = user.user_wallets?.[0]?.balance || 0;
-            const bankBalance = user.user_banks?.[0]?.balance || 0;
             return {
                 userId: user.userId,
                 userName: user.userName,
                 guildId: user.guildId,
-                wallet_balance: walletBalance,
-                bank_balance: bankBalance
+                balance: user[type === "wallet" ? "user_wallets" : "user_banks"]?.[0]?.balance || 0
             }
         });
 

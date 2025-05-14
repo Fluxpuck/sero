@@ -4,8 +4,8 @@ const { RedisCache, CACHE_CONFIG } = require("../../database/redisCache");
 const CACHE_KEY_PREFIX = CACHE_CONFIG.PREFIXES.GUILD_BALANCE;
 const CACHE_TTL = 300; // 5 minutes
 
-async function getCachedLeaderboardData(guildId) {
-    const cacheKey = `${CACHE_KEY_PREFIX}leaderboard:${guildId}`;
+async function getCachedLeaderboardData(guildId, type) {
+    const cacheKey = `${CACHE_KEY_PREFIX}${type}:leaderboard:${guildId}`;
 
     // Try to get from cache first
     const cachedData = await RedisCache.get(cacheKey);
@@ -15,7 +15,7 @@ async function getCachedLeaderboardData(guildId) {
 
     // If not in cache, fetch from API
     try {
-        const balanceResult = await getRequest(`/guilds/${guildId}/economy/balance?limit=100`);
+        const balanceResult = await getRequest(`/guilds/${guildId}/economy/balance?limit=100&type=${encodeURIComponent(type)}`);
         if (balanceResult?.status !== 200) {
             throw new Error('Failed to fetch leaderboard data');
         }
@@ -32,8 +32,13 @@ async function getCachedLeaderboardData(guildId) {
     }
 }
 
-async function invalidateLeaderboardCache(guildId) {
-    const cacheKey = `${CACHE_KEY_PREFIX}leaderboard:${guildId}`;
+async function invalidateLeaderboardCache(guildId, type = "both") {
+    if (type === "both") {
+        await invalidateLeaderboardCache(guildId, "wallet");
+        await invalidateLeaderboardCache(guildId, "bank");
+        return;
+    }
+    const cacheKey = `${CACHE_KEY_PREFIX}${type}:leaderboard:${guildId}`;
     await RedisCache.delete(cacheKey);
 }
 

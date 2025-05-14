@@ -19,7 +19,7 @@ module.exports.props = {
 
 const fetchLeaderboardData = async (interaction, type = "wallet") => {
     try {
-        const data = await getCachedLeaderboardData(interaction.guildId);
+        const data = await getCachedLeaderboardData(interaction.guildId, type);
         if (!data) {
             throw new Error('Failed to fetch leaderboard data');
         }
@@ -34,16 +34,10 @@ const fetchLeaderboardData = async (interaction, type = "wallet") => {
 };
 
 const updateLeaderboardValues = (leaderboardData, balanceType) => {
-    const sortedData = [...leaderboardData].sort((a, b) => {
-        const balanceA = balanceType === "wallet" ? a.wallet_balance : a.bank_balance;
-        const balanceB = balanceType === "wallet" ? b.wallet_balance : b.bank_balance;
-        return balanceB - balanceA;
-    });
-
-    const leaderboardValues = sortedData.map((user, index) => {
+    const leaderboardValues = leaderboardData.map((user, index) => {
         const rankings = ["🥇", "🥈", "🥉"];
         const ranking = rankings[index] || `${index + 1}.`;
-        const balance = balanceType === "wallet" ? user.wallet_balance.toLocaleString() : user.bank_balance.toLocaleString();
+        const balance = user.balance;
         const icon = balanceType === "wallet" ? "🪙" : "🏦";
         return `**${ranking}** \`${user.userName}\` - ${icon} ${balance}`;
     });
@@ -102,11 +96,6 @@ module.exports.run = async (client, interaction, balanceType = "wallet", page = 
 
     collector.on('collect', async i => {
         try {
-
-            // Fetch fresh data on each interaction
-            const freshData = await fetchLeaderboardData(interaction, balanceType);
-            if (!freshData.length) return;
-
             const selectedButton = i.customId;
 
             switch (selectedButton) {
@@ -124,6 +113,10 @@ module.exports.run = async (client, interaction, balanceType = "wallet", page = 
                 default:
                     return;
             }
+
+            // Fetch fresh data on each interaction
+            const freshData = await fetchLeaderboardData(interaction, balanceType);
+            if (!freshData.length) return;
 
             const { leaderboardPages: updatedPages, amount: updatedAmount, maxpages: updatedMaxPages } =
                 updateLeaderboardValues(freshData, balanceType);
@@ -144,12 +137,13 @@ module.exports.run = async (client, interaction, balanceType = "wallet", page = 
         }
     });
 
-
     collector.on('end', async i => {
-
         // Invalidate cache when the collector ends
         await invalidateLeaderboardCache(interaction.guildId);
 
+        // TODO: Disable button to prevent confusion
+        // Can't figure it out
+        
     });
 
 };
