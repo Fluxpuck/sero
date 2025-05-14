@@ -61,14 +61,14 @@ module.exports = {
 		if (num < 10000) {
 			return num.toString();
 		} else if (num < 1000000) {
-			const result = Math.round((num / 1000) * 10) / 10;
-			return result % 1 === 0 ? result.toFixed(0) + " K" : result + " K";
+			const result = (num / 1000);
+			return result.toFixed(1) + " K";
 		} else if (num < 1000000000) {
-			const result = Math.round((num / 1000000) * 10) / 10;
-			return result % 1 === 0 ? result.toFixed(0) + " M" : result + " M";
+			const result = (num / 1000000);
+			return result.toFixed(2) + " M";
 		} else if (num < 1000000000000) {
-			const result = Math.round((num / 1000000000) * 10) / 10;
-			return result % 1 === 0 ? result.toFixed(0) + " B" : result + " B";
+			const result = (num / 1000000000);
+			return result.toFixed(2) + " B";
 		}
 	},
 };
