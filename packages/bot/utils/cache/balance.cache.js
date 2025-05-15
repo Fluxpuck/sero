@@ -33,13 +33,11 @@ async function getCachedLeaderboardData(guildId, type) {
 }
 
 async function invalidateLeaderboardCache(guildId, type = "both") {
-    if (type === "both") {
-        await invalidateLeaderboardCache(guildId, "wallet");
-        await invalidateLeaderboardCache(guildId, "bank");
-        return;
+    const types = type === "both" ? ["wallet", "bank"] : [type];
+    for (const t of types) {
+        const cacheKey = `${CACHE_KEY_PREFIX}${t}:leaderboard:${guildId}`;
+        await RedisCache.delete(cacheKey);
     }
-    const cacheKey = `${CACHE_KEY_PREFIX}${type}:leaderboard:${guildId}`;
-    await RedisCache.delete(cacheKey);
 }
 
 module.exports = {
