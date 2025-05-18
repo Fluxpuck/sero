@@ -1,8 +1,6 @@
 // events/ready.ts
 import { Events, Client } from 'discord.js';
 import { Event } from '../types/client.types';
-import { TaskSchedulerTool } from '../tools/task_scheduler.tool';
-import { ApiService } from '../services/api';
 
 const event: Event = {
     name: Events.ClientReady,
@@ -16,16 +14,6 @@ const event: Event = {
             activities: [{ name: '🤖', type: 4 }],
             status: 'online'
         });
-
-        // Initialize the API service
-        const apiService = new ApiService();
-
-        // Initialize scheduled tasks from database
-        try {
-            await TaskSchedulerTool.initializeTasks(client, apiService);
-        } catch (error) {
-            console.error('Error initializing scheduled tasks:', error);
-        }
     },
 };
 

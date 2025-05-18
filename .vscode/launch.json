@@ -25,8 +25,12 @@
             "type": "node",
             "request": "launch",
             "program": "${workspaceFolder}/packages/agent/index.ts",
-            "cwd": "${workspaceFolder}",
-            "runtimeExecutable": "ts-node"
+            "cwd": "${workspaceFolder}/packages/agent",
+            "runtimeExecutable": "node",
+            "runtimeArgs": [
+                "-r",
+                "ts-node/register"
+            ],
         },
         {
             "name": "Seeder",
