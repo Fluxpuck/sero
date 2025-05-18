@@ -9,17 +9,17 @@ type FilterOptions = {
     inChannel?: string;
     fromUser?: string;
     limit?: number;
-    mode?: "user" | "channel" | "auto";
+    mode?: "user" | "channel" | "auto" | "single";
+    messageId?: string;
 }
 
 export class MessageResolver {
-
     static async fetchMessages(
         guild: Guild,
         options: FilterOptions = {}
     ): Promise<MessageFormat[] | null> {
 
-        const { inChannel, fromUser, limit = MAX_FETCH_MESSAGES, mode = "auto" } = options;
+        const { inChannel, fromUser, limit = MAX_FETCH_MESSAGES, mode = "auto", messageId } = options;
 
         if (!inChannel) {
             console.error('Channel ID is required for channel mode');
@@ -30,18 +30,27 @@ export class MessageResolver {
             throw new Error(`Cannot fetch more than ${MAX_FETCH_MESSAGES} messages at once`);
         }
 
-        // Determine fetch mode
-        let fetchMode = mode;
+        // Use single mode if messageId is provided
+        let fetchMode = messageId ? 'single' : mode;
+
+        // Determine fetch mode if auto
         if (fetchMode === 'auto') {
             if (inChannel) {
                 fetchMode = 'channel';
             } else if (fromUser) {
                 fetchMode = 'user';
             }
-        }
-
-        try {
+        } try {
             switch (fetchMode) {
+
+                case 'single':
+                    if (!messageId) {
+                        console.error('Message ID is required for single mode');
+                        throw new Error('Message ID is required for single mode');
+                    }
+
+                    const singleMessage = await this.fetchSingleMessage(guild, inChannel, messageId);
+                    return singleMessage ? [this.formatMessage(singleMessage)] : null;
 
                 case 'channel':
                     const channelMessages = await this.resolve(guild, inChannel, limit);
@@ -121,8 +130,7 @@ export class MessageResolver {
      * Format a message for display
      * @param message - Message to format
      * @returns Formatted message object
-     */
-    static formatMessage(message: Message): MessageFormat {
+     */    static formatMessage(message: Message): MessageFormat {
         return {
             id: message.id,
             content: message.content,
@@ -145,5 +153,34 @@ export class MessageResolver {
             channelId: message.channelId,
             hasStickers: message.stickers.size > 0,
         };
+    }
+
+    /**
+     * Fetch a single message by ID from a channel
+     * @param guild - Guild to fetch from
+     * @param channelId - Channel ID to fetch from
+     * @param messageId - Message ID to fetch
+     * @returns The message or null if not found
+     */
+    static async fetchSingleMessage(guild: Guild, channelId: string, messageId: string): Promise<Message | null> {
+        try {
+            const channel = await ChannelResolver.resolve(guild, channelId);
+            if (!channel || !channel.isTextBased()) {
+                console.error('Channel not found or not a text channel');
+                return null;
+            }
+
+            try {
+                // Directly fetch the message by ID
+                const message = await channel.messages.fetch(messageId);
+                return message || null;
+            } catch (error) {
+                console.error(`Error fetching message with ID ${messageId}:`, error);
+                return null;
+            }
+        } catch (error) {
+            console.error('Error in fetchSingleMessage:', error);
+            return null;
+        }
     }
 }
