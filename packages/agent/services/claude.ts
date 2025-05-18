@@ -14,6 +14,7 @@ import { executeTool, initializeTools } from './tools';
 import { DiscordGuildInfoToolContext } from '../tools/discord_guild_info.tool';
 import { DiscordFetchMessagesToolContext } from '../tools/discord_fetch_messages.tool';
 import { DiscordModerationToolContext } from '../tools/discord_moderation_actions.tool';
+import { DiscordSendMessageToolContext } from '../tools/discord_send_message.tool';
 
 type ClaudeOptions = {
     previousMessages?: any[];
@@ -57,7 +58,8 @@ export class ClaudeService {
         return [
             ...DiscordGuildInfoToolContext,
             ...DiscordFetchMessagesToolContext,
-            ...DiscordModerationToolContext
+            ...DiscordModerationToolContext,
+            ...DiscordSendMessageToolContext,
         ];
     }
 
