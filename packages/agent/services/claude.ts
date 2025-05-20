@@ -4,7 +4,6 @@ import { first } from 'lodash';
 
 // Import custom hooks
 import useContext from '../hooks/useContext';
-import useHistory from '../hooks/useHistory';
 
 // Import Utility functions
 import { sanitizeResponse } from '../utils';
@@ -28,13 +27,11 @@ export class ClaudeService {
     private anthropic: Anthropic;
     private readonly CLAUDE_MODEL = 'claude-3-5-haiku-20241022';
     private readonly MAX_TOKENS = 1024;
-    private historyManager: ReturnType<typeof useHistory>;
 
     constructor() {
         this.anthropic = new Anthropic({
             apiKey: process.env.ANTHROPIC_API_KEY,
         });
-        this.historyManager = useHistory();
     }
 
     /**
@@ -82,7 +79,6 @@ export class ClaudeService {
             const systemPrompt = this.prepareSystemPrompt(message);
 
             // Get the conversation history
-            const historyObj = this.historyManager.getHistory(conversationKey); //@TODO: Fix this the conversation history, since its not being stored nor fetched correctly
             let messages = [];
 
             if (previousMessages.length > 0) {
@@ -97,6 +93,7 @@ export class ClaudeService {
                 max_tokens: this.MAX_TOKENS,
                 system: systemPrompt,
                 tools: [
+                    ...(excludeTools ? [] : this.getTools()),
                     {
                         type: "web_search_20250305",
                         name: "web_search",
@@ -111,7 +108,6 @@ export class ClaudeService {
                             timezone: "America/Los_Angeles"
                         }
                     },
-                    ...(excludeTools ? [] : this.getTools())
                 ],
                 messages: messages,
             });
@@ -163,16 +159,6 @@ export class ClaudeService {
                         }
                     ];
 
-                    // Store user prompt and Claude's response in history
-                    if (prompt && toolTextResponse) {
-                        this.historyManager.addToHistory(
-                            historyObj,
-                            prompt,
-                            toolTextResponse,
-                            undefined
-                        );
-                    }
-
                     // Update the text response with the tool result
                     textResponse = toolTextResponse;
 
@@ -186,7 +172,6 @@ export class ClaudeService {
 
                 } catch (error) {
                     console.error('Error executing tool:', error);
-                    this.historyManager.deleteConversation(conversationKey);
                     return undefined;
                 }
             }
@@ -210,16 +195,6 @@ export class ClaudeService {
                 // Update the text response with the final result
                 textResponse += finalTextResponse;
 
-                // Store the conversation history with web search results if they exist
-                if (prompt && finalTextResponse) {
-                    this.historyManager.addToHistory(
-                        historyObj,
-                        prompt,
-                        finalTextResponse,
-                        webSearchResults
-                    );
-                }
-
                 // Reply with the final response if requested
                 if (finalResponse && finalTextResponse) {
                     await replyOrSend(message, sanitizeResponse(finalTextResponse))
@@ -233,7 +208,6 @@ export class ClaudeService {
 
         } catch (error) {
             console.error('Error on askClaude:', error);
-            this.historyManager.deleteConversation(conversationKey);
             return undefined;
         }
     }
