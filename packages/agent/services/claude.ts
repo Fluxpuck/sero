@@ -175,19 +175,12 @@ export class ClaudeService {
             if (response.stop_reason === "end_turn") {
                 // Get text from response
                 let finalTextResponse = "";
-                let webSearchResults: any = null;
 
                 for (const block of response.content) {
-                    if (block.type === "web_search_tool_result") {
-                        webSearchResults = block.content;
-                    }
-
                     if (block.type === "text") {
                         finalTextResponse += block.text;
                     }
                 }
-
-                console.log("webSearchResults", webSearchResults);
 
                 // Update the text response with the final result
                 textResponse += finalTextResponse;
