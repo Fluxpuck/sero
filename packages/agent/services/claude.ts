@@ -70,7 +70,7 @@ export class ClaudeService {
         // Generate a conversation key based on user ID and channel ID
         const conversationKey = `${message.author.id}-${message.channel.id}`;
         const { previousMessages = [], reasoning = true, excludeTools = false, finalResponse = true } = options || {};
-        let textResponse = ""; // Define textResponse in the outer scope for returning later
+        let textResponse = "";
 
         try {
             if ('sendTyping' in message.channel) {
@@ -119,12 +119,12 @@ export class ClaudeService {
             // Handle Tool use response
             if (response.stop_reason === "tool_use") {
                 // Extract text and tool use information
-                let textResponse = "";
+                let toolTextResponse = "";
                 let toolUseBlock: any = null;
 
                 for (const block of response.content) {
                     if (block.type === "text") {
-                        textResponse = block.text;
+                        toolTextResponse = block.text;
                     } else if (block.type === "tool_use") {
                         toolUseBlock = block;
                     }
@@ -133,8 +133,8 @@ export class ClaudeService {
                 if (!toolUseBlock) return undefined;
 
                 // Reply with temporary reasoning if Claude provided text
-                if (textResponse && reasoning) {
-                    await replyOrSend(message, sanitizeResponse(textResponse))
+                if (toolTextResponse && reasoning) {
+                    await replyOrSend(message, sanitizeResponse(toolTextResponse))
                         .catch(err => console.error('Error sending temp response:', err));
                 }
 
@@ -149,7 +149,7 @@ export class ClaudeService {
                         {
                             role: 'assistant',
                             content: [
-                                ...(textResponse ? [{ type: "text", text: textResponse }] : []),
+                                ...(toolTextResponse ? [{ type: "text", text: toolTextResponse }] : []),
                                 { type: "tool_use", id, name, input }
                             ]
                         },
@@ -164,14 +164,17 @@ export class ClaudeService {
                     ];
 
                     // Store user prompt and Claude's response in history
-                    if (prompt && textResponse) {
+                    if (prompt && toolTextResponse) {
                         this.historyManager.addToHistory(
                             historyObj,
                             prompt,
-                            textResponse,
+                            toolTextResponse,
                             undefined
                         );
                     }
+
+                    // Update the text response with the tool result
+                    textResponse = toolTextResponse;
 
                     // Recursive call with tool result and updated history
                     return await this.askClaude("", message, {
@@ -191,7 +194,7 @@ export class ClaudeService {
             // Handle End response
             if (response.stop_reason === "end_turn") {
                 // Get text from response
-                let textResponse = "";
+                let finalTextResponse = "";
                 let webSearchResults: any = null;
 
                 for (const block of response.content) {
@@ -200,23 +203,26 @@ export class ClaudeService {
                     }
 
                     if (block.type === "text") {
-                        textResponse += block.text;
+                        finalTextResponse += block.text;
                     }
                 }
 
+                // Update the text response with the final result
+                textResponse += finalTextResponse;
+
                 // Store the conversation history with web search results if they exist
-                if (prompt && textResponse) {
+                if (prompt && finalTextResponse) {
                     this.historyManager.addToHistory(
                         historyObj,
                         prompt,
-                        textResponse,
+                        finalTextResponse,
                         webSearchResults
                     );
                 }
 
                 // Reply with the final response if requested
-                if (finalResponse && textResponse) {
-                    await replyOrSend(message, sanitizeResponse(textResponse))
+                if (finalResponse && finalTextResponse) {
+                    await replyOrSend(message, sanitizeResponse(finalTextResponse))
                         .catch(err => console.error('Error sending response:', err));
                 }
 
