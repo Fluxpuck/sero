@@ -116,8 +116,6 @@ export class ClaudeService {
                 messages: messages,
             });
 
-            console.log(`[Claude] Response:`, response);
-
             // Handle Tool use response
             if (response.stop_reason === "tool_use") {
                 // Extract text and tool use information
