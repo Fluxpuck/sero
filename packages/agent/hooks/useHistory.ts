@@ -5,12 +5,22 @@
 import NodeCache from 'node-cache';
 
 /**
+ * Interface for web search results
+ */
+interface WebSearchResult {
+    title: string;
+    page_age_url: string;
+    page_url: string;
+}
+
+/**
  * Interface for a single conversation exchange
  */
 interface HistoryItem {
     prompt: string;
     response: string;
     timestamp: number;
+    webSearchResults?: WebSearchResult[];
 }
 
 /**
@@ -56,24 +66,25 @@ export const useHistory = () => {
         historyCache.set(conversationKey, newHistory);
 
         return newHistory;
-    };
-
-    /**
+    };    /**
      * Add a new exchange to the history
      * @param history - Current conversation history
      * @param prompt - User's prompt
      * @param response - Claude's response
+     * @param webSearchResults - Optional web search results from Claude
      * @returns Updated conversation history
      */
     const addToHistory = (
         history: ConversationHistory,
         prompt: string,
-        response: string
+        response: string,
+        webSearchResults?: WebSearchResult[]
     ): ConversationHistory => {
         const newHistoryItem: HistoryItem = {
             prompt,
             response,
             timestamp: Date.now(),
+            webSearchResults,
         };
 
         // Create a new history array with the new item at the beginning
@@ -99,8 +110,7 @@ export const useHistory = () => {
      * Format history for inclusion in Claude's context
      * @param history - Conversation history to format
      * @returns Formatted history string
-     */
-    const formatHistoryForContext = (history: ConversationHistory): string => {
+     */    const formatHistoryForContext = (history: ConversationHistory): string => {
         if (!history.history.length) return '';
 
         // Sort history by timestamp (newest last)
@@ -111,6 +121,16 @@ export const useHistory = () => {
         sortedHistory.forEach((item, index) => {
             formattedHistory += `## Exchange ${index + 1}\n`;
             formattedHistory += `User: ${item.prompt}\n\n`;
+
+            // Include web search results if available
+            if (item.webSearchResults && item.webSearchResults.length > 0) {
+                formattedHistory += `Web Search Results:\n`;
+                item.webSearchResults.forEach(result => {
+                    formattedHistory += `- ${result.title}: ${result.page_url}\n`;
+                });
+                formattedHistory += `\n`;
+            }
+
             formattedHistory += `Claude: ${item.response}\n\n`;
         });
 

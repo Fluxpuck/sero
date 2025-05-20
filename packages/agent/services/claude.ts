@@ -1,5 +1,6 @@
 import Anthropic from '@anthropic-ai/sdk';
 import { Message } from 'discord.js';
+import { first } from 'lodash';
 
 // Import custom hooks
 import useContext from '../hooks/useContext';
@@ -61,9 +62,7 @@ export class ClaudeService {
             ...DiscordModerationToolContext,
             ...DiscordSendMessageToolContext,
         ];
-    }
-
-    public async askClaude(
+    } public async askClaude(
         prompt: string,
         message: Message,
         options?: ClaudeOptions
@@ -71,6 +70,7 @@ export class ClaudeService {
         // Generate a conversation key based on user ID and channel ID
         const conversationKey = `${message.author.id}-${message.channel.id}`;
         const { previousMessages = [], reasoning = true, excludeTools = false, finalResponse = true } = options || {};
+        let textResponse = ""; // Define textResponse in the outer scope for returning later
 
         try {
             if ('sendTyping' in message.channel) {
@@ -96,11 +96,29 @@ export class ClaudeService {
                 model: this.CLAUDE_MODEL,
                 max_tokens: this.MAX_TOKENS,
                 system: systemPrompt,
-                ...(excludeTools ? {} : { tools: this.getTools() }),
+                tools: [
+                    {
+                        type: "web_search_20250305",
+                        name: "web_search",
+                        max_uses: 2,
+                        allowed_domains: null,
+                        blocked_domains: null,
+                        user_location: {
+                            type: "approximate",
+                            city: "San Francisco",
+                            region: "California",
+                            country: "US",
+                            timezone: "America/Los_Angeles"
+                        }
+                    },
+                    ...(excludeTools ? [] : this.getTools())
+                ],
                 messages: messages,
             });
 
-            // Handle tool use
+            console.log(`[Claude] Response:`, response);
+
+            // Handle Tool use response
             if (response.stop_reason === "tool_use") {
                 // Extract text and tool use information
                 let textResponse = "";
@@ -152,7 +170,8 @@ export class ClaudeService {
                         this.historyManager.addToHistory(
                             historyObj,
                             prompt,
-                            textResponse
+                            textResponse,
+                            undefined
                         );
                     }
 
@@ -171,24 +190,29 @@ export class ClaudeService {
                 }
             }
 
-            // Handle normal response
+            // Handle End response
             if (response.stop_reason === "end_turn") {
                 // Get text from response
                 let textResponse = "";
+                let webSearchResults: any = null;
 
                 for (const block of response.content) {
+                    if (block.type === "web_search_tool_result") {
+                        webSearchResults = block.content;
+                    }
+
                     if (block.type === "text") {
-                        textResponse = block.text;
-                        break;
+                        textResponse += block.text;
                     }
                 }
 
-                // Store the conversation history
+                // Store the conversation history with web search results if they exist
                 if (prompt && textResponse) {
                     this.historyManager.addToHistory(
                         historyObj,
                         prompt,
-                        textResponse
+                        textResponse,
+                        webSearchResults
                     );
                 }
 
