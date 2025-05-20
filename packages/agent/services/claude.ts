@@ -63,9 +63,7 @@ export class ClaudeService {
         prompt: string,
         message: Message,
         options?: ClaudeOptions
-    ): Promise<string | undefined> {
-        // Generate a conversation key based on user ID and channel ID
-        const conversationKey = `${message.author.id}-${message.channel.id}`;
+    ): Promise<void> {
         const { previousMessages = [], reasoning = true, excludeTools = false, finalResponse = true } = options || {};
         let textResponse = "";
 
@@ -78,14 +76,8 @@ export class ClaudeService {
             initializeTools(message, message.client);
             const systemPrompt = this.prepareSystemPrompt(message);
 
-            // Get the conversation history
-            let messages = [];
-
-            if (previousMessages.length > 0) {
-                messages = previousMessages;
-            } else if (prompt) {
-                messages.push({ role: 'user', content: prompt });
-            }
+            // Add the system prompt to the previous messages
+            previousMessages.push({ role: 'user', content: prompt })
 
             // Call the Claude API with the SDK
             const response = await this.anthropic.messages.create({
@@ -109,7 +101,7 @@ export class ClaudeService {
                         }
                     },
                 ],
-                messages: messages,
+                messages: previousMessages,
             });
 
             // Handle Tool use response
@@ -126,7 +118,8 @@ export class ClaudeService {
                     }
                 }
 
-                if (!toolUseBlock) return undefined;
+                // Check if tool use block is present
+                if (!toolUseBlock) return;
 
                 // Reply with temporary reasoning if Claude provided text
                 if (toolTextResponse && reasoning) {
@@ -141,7 +134,7 @@ export class ClaudeService {
 
                     // Update history with new messages
                     const updatedMessages = [
-                        ...messages,
+                        ...previousMessages,
                         {
                             role: 'assistant',
                             content: [
@@ -172,7 +165,7 @@ export class ClaudeService {
 
                 } catch (error) {
                     console.error('Error executing tool:', error);
-                    return undefined;
+                    return;
                 }
             }
 
@@ -192,6 +185,8 @@ export class ClaudeService {
                     }
                 }
 
+                console.log("webSearchResults", webSearchResults);
+
                 // Update the text response with the final result
                 textResponse += finalTextResponse;
 
@@ -200,15 +195,11 @@ export class ClaudeService {
                     await replyOrSend(message, sanitizeResponse(finalTextResponse))
                         .catch(err => console.error('Error sending response:', err));
                 }
-
-                return textResponse;
             }
-
-            return undefined;
 
         } catch (error) {
             console.error('Error on askClaude:', error);
-            return undefined;
+            return;
         }
     }
 }
