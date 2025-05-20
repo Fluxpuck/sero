@@ -82,7 +82,7 @@ export class ClaudeService {
             const systemPrompt = this.prepareSystemPrompt(message);
 
             // Get the conversation history
-            const historyObj = this.historyManager.getHistory(conversationKey);
+            const historyObj = this.historyManager.getHistory(conversationKey); //@TODO: Fix this the conversation history, since its not being stored nor fetched correctly
             let messages = [];
 
             if (previousMessages.length > 0) {
