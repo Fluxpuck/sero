@@ -59,7 +59,9 @@ export class ClaudeService {
             ...DiscordModerationToolContext,
             ...DiscordSendMessageToolContext,
         ];
-    } public async askClaude(
+    }
+
+    public async askClaude(
         prompt: string,
         message: Message,
         options?: ClaudeOptions

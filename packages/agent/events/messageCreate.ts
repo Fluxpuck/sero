@@ -79,11 +79,8 @@ export async function execute(message: Message) {
             prompt = "Hello, how can I help you?";
         }
 
-        // Send the prompt to Claude
-        const response = await claudeService.askClaude(prompt, message);
-        if (!response) {
-            console.log(`[Claude] No response generated for prompt: "${prompt.substring(0, 50)}..."`);
-        }
+        // Execute Claude service with the prompt
+        claudeService.askClaude(prompt, message);
 
     } catch (error) {
         console.error('Error in messageCreate:', error);
