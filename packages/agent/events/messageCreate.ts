@@ -1,31 +1,9 @@
 import { Message, Events, Client } from 'discord.js';
 import { ClaudeService } from '../services/claude';
-import { ApiService } from '../services/api';
 
 export const name = Events.MessageCreate;
 export async function execute(message: Message) {
     const client = message.client as Client;
-    const guildId = message.guild?.id || '';
-
-
-
-    console.log('MessageCreate event triggered');
-
-    try {
-        const fetchResponse = await fetch('http://localhost:3336/guild/' + guildId);
-        const data = await fetchResponse.json();
-        console.log('Fetched from localhost:3336:', data);
-    } catch (error) {
-        console.error('Error fetching from localhost:3336:', error);
-    }
-
-
-
-
-    return;
-}
-
-/*
 
     // Skip empty messages or messages from bots
     if (!message || !message.content || message.author.bot) return;
@@ -41,6 +19,17 @@ export async function execute(message: Message) {
 
         // Exit if user lacks permission
         if (!isOwner && !hasAllowedRole) return;
+
+
+        if (isOwner && message.content.includes('test-api')) {
+            try {
+                const fetchResponse = await fetch('http://localhost:3336/guild/' + message.guildId);
+                const data = await fetchResponse.json();
+                console.log('Fetched from localhost:3336:', data);
+            } catch (error) {
+                console.error('Error fetching from localhost:3336:', error);
+            }
+        }
 
         // Check if this message is for the bot
         const isMention = message.mentions.has(client.user?.id || '');
@@ -108,6 +97,3 @@ export async function execute(message: Message) {
         console.error('Error in messageCreate:', error);
     }
 }
-
-
-    */
