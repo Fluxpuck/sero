@@ -8,7 +8,7 @@
  * @param time - The current date/time string
  * @returns Formatted context string
  */
-export const useContext = (time: string, guildName: string, channelName: string): string => {
+const useContext = (time: string, guildName: string, channelName: string): string => {
     return `
 You are Sero Agent, built by Fluxpuck.
 

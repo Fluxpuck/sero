@@ -1,6 +1,5 @@
 import Anthropic from '@anthropic-ai/sdk';
 import { Message } from 'discord.js';
-import { first } from 'lodash';
 
 // Import custom hooks
 import useContext from '../hooks/useContext';
