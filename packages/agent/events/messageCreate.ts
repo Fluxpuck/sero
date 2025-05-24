@@ -1,9 +1,31 @@
 import { Message, Events, Client } from 'discord.js';
 import { ClaudeService } from '../services/claude';
+import { ApiService } from '../services/api';
 
 export const name = Events.MessageCreate;
 export async function execute(message: Message) {
     const client = message.client as Client;
+    const guildId = message.guild?.id || '';
+
+
+
+    console.log('MessageCreate event triggered');
+
+    try {
+        const fetchResponse = await fetch('http://localhost:3336/guild/' + guildId);
+        const data = await fetchResponse.json();
+        console.log('Fetched from localhost:3336:', data);
+    } catch (error) {
+        console.error('Error fetching from localhost:3336:', error);
+    }
+
+
+
+
+    return;
+}
+
+/*
 
     // Create an instance
     const claudeService = new ClaudeService();
@@ -47,3 +69,6 @@ export async function execute(message: Message) {
         console.error('Error in messageCreate:', error);
     }
 }
+
+
+    */
