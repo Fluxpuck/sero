@@ -4,10 +4,8 @@ import { faker } from '@faker-js/faker';
 /**
  * Seed messages with faker to generate realistic content
  */
-export async function seedMessages(count = 50) {
+export async function seedMessages(count = 100) {
     try {
-        console.log(`Seeding ${count} random messages...`);
-
         // Fetch all users from the database
         const users = await User.findAll({
             attributes: ['userId', 'guildId', 'uuid']
@@ -45,14 +43,13 @@ export async function seedMessages(count = 50) {
         });
 
         await Messages.bulkCreate(randomMessages as Messages[]);
+        console.log(`${count} messages have been seeded successfully.`);
+        return { success: true };
 
     } catch (error) {
-        console.error('Error seeding Messages:', error);
+        const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+        console.error(`Error seeding messages: ${errorMessage}`);
         return { success: false, error };
-
-    } finally {
-        console.log(`${count} message(s) have been seeded successfully.`);
-        return { success: true };
     }
 
 }

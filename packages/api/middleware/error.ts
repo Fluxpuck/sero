@@ -31,7 +31,4 @@ export const errorHandler = (
     // Use ResponseHandler to send a standardized error response
     const errorData = process.env.NODE_ENV === 'development' ? { stack: stackTraceArray } : undefined;
     ResponseHandler.sendError(res, err.message || 'Internal Server Error', statusCode, errorData);
-
-    // Pass to the next middleware if needed
-    next();
 };

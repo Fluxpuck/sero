@@ -2,7 +2,6 @@ import { User } from '../../models';
 import { UserType } from '../../models/user.model';
 
 export async function seedUsers(): Promise<{ success: boolean; error?: unknown }> {
-
     const users = [
         {
             userId: '270640827787771943',
@@ -36,14 +35,13 @@ export async function seedUsers(): Promise<{ success: boolean; error?: unknown }
 
     try {
         await User.bulkCreate(users as User[]);
-
-    } catch (error) {
-        console.error('Error seeding users:', error);
-        return { success: false, error };
-
-    } finally {
         console.log(`${users.length} users(s) have been seeded successfully.`);
         return { success: true };
+
+    } catch (error) {
+        const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+        console.error(`Error seeding users: ${errorMessage}`);
+        return { success: false, error };
     }
 
 }
