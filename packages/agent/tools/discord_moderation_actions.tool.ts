@@ -59,16 +59,14 @@ export class DiscordModerationTool extends ClaudeToolType {
     }
 
     async execute({ user: targetUser, actions, timeout_duration, reason, message: customMessage }: ModerationToolInput): Promise<string> {
-
         if (!this.message.guild) {
             return `Error: This command can only be used in a guild.`;
         }
 
-        // @TODO - Because of the checkViolation function, we can't check for permissions here...
-
-        // if (!this.message.member?.permissions.has('ModerateMembers')) {
-        //     return `Error: This user does not have permission to moderate members.`;
-        // }
+        // Check if the user has permission to moderate members
+        if (!this.message.member?.permissions.has('ModerateMembers')) {
+            return `Error: This user does not have permission to moderate members.`;
+        }
 
         const user = await UserResolver.resolve(this.message.guild, targetUser);
         if (!user) {

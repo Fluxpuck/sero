@@ -2,119 +2,112 @@ import { Client, Message, TextChannel, DMChannel, ThreadChannel } from "discord.
 import { ClaudeTool, ClaudeToolType } from "../types/tool.types";
 import { UserResolver } from "../utils/user-resolver";
 import { ChannelResolver } from "../utils/channel-resolver";
-import { ApiService, ApiResponse } from "../services/api";
+import axios from "axios";
 
 type SendMessageInput = {
+    type: "message" | "dm" | "gif";
     targetId: string;
     content: string;
-    isDM?: boolean;
-    sendGif?: boolean;
 }
 
 export class DiscordSendMessageTool extends ClaudeToolType {
     static getToolContext() {
         return {
             name: "discord_send_message",
-            description: "Send a message to a specific Discord channel or user",
+            description: "Send a message, DM, or GIF to a specific Discord channel or user",
             input_schema: {
                 type: "object" as const,
                 properties: {
+                    type: {
+                        type: "string",
+                        description: "The type of message to send: 'message', 'dm', or 'gif'",
+                        enum: ["message", "dm", "gif"],
+                    },
                     targetId: {
                         type: "string",
                         description: "The ID or search query for the channel/user to send the message to",
                     },
                     content: {
                         type: "string",
-                        description: "The message content to send",
-                    },
-                    isDM: {
-                        type: "boolean",
-                        description: "Whether to send as a direct message to a user",
-                        default: false,
-                    },
-                    sendGif: {
-                        type: "boolean",
-                        description: "Whether to send a GIF instead of a text message",
-                        default: false,
+                        description: "The message content or GIF search query to send",
                     }
                 },
-                required: ["targetId", "content"],
+                required: ["type", "targetId", "content"],
             },
         };
-    }
-
-    constructor(
+    } constructor(
         private readonly client: Client,
         private readonly message: Message,
     ) {
         super(DiscordSendMessageTool.getToolContext());
     }
 
-    async execute({ targetId, content, isDM = false, sendGif = false }: SendMessageInput): Promise<string> {
+    async execute({ type, targetId, content }: SendMessageInput): Promise<string> {
         if (!this.message.guild) {
             return `Error: This command can only be used in a guild.`;
-        }
+        } try {
+            let messageContent = content;
 
-        try {
-            if (sendGif) {
-                const tenorKey = process.env.TENOR_KEY;
-                if (!tenorKey) {
-                    throw new Error("TENOR_KEY environment variable is not set");
+            // Use a switch case to handle different message types
+            switch (type) {
+                case "gif": {
+                    const tenorKey = process.env.TENOR_KEY;
+                    if (!tenorKey) {
+                        throw new Error("TENOR_KEY environment variable is not set");
+                    }
+
+                    // Use axios directly for Tenor API requests
+                    const tenorApiService = axios.create({
+                        baseURL: 'https://tenor.googleapis.com/v2/',
+                    });
+
+                    // Use apiService instead of fetch
+                    const response = await (content.toLowerCase() === 'random'
+                        ? tenorApiService.get(`trending?key=${tenorKey}&limit=40&contentfilter=high`)
+                        : tenorApiService.get(`search?q=${encodeURIComponent(content)}&key=${tenorKey}&limit=20&contentfilter=high`));
+
+                    const data = response.data;
+                    if (!data.results?.length) {
+                        return `Error: No GIFs found for the given query`;
+                    }
+
+                    const randomGif = data.results[Math.floor(Math.random() * data.results.length)];
+                    messageContent = randomGif.media_formats.gif.url;
+
+                    // After getting GIF URL, send it as a regular message
+                    const channel = await ChannelResolver.resolve(this.message.guild, targetId) || this.message.channel;
+                    if (!(channel instanceof TextChannel || channel instanceof ThreadChannel)) {
+                        return `Error: The target channel "${targetId}" is not a text channel.`;
+                    }
+                    await channel.send(messageContent);
+                    return `GIF sent successfully to channel ${channel.name}`;
                 }
 
-                // Build query parameters
-                const queryParams = new URLSearchParams({
-                    key: tenorKey,
-                    limit: '20',
-                    contentfilter: 'medium'
-                });
+                case "dm": {
+                    const member = await UserResolver.resolve(this.message.guild, targetId);
+                    if (!member) {
+                        return `Error: Could not find user "${targetId}."`;
+                    }
 
-                // Add search query if not random
-                if (content.toLowerCase() !== 'random') {
-                    queryParams.append('q', content);
+                    try {
+                        await member.send(messageContent);
+                        return `Message sent successfully to user ${member.user.tag}`;
+                    } catch (error) {
+                        return `Failed to send DM to user "${member.user.tag}". Their DMs are most likely disabled.`;
+                    }
                 }
 
-                // Create a temporary API service for Tenor API
-                const tenorApiService = new ApiService('https://tenor.googleapis.com/v2/');
-
-                // Use apiService instead of fetch
-                const response = await (content.toLowerCase() === 'random'
-                    ? tenorApiService.get(`random?key=${tenorKey}&limit=40&contentfilter=medium`)
-                    : tenorApiService.get(`search?q=${encodeURIComponent(content)}&key=${tenorKey}&limit=20&contentfilter=medium`));
-
-                const data = response.data;
-                if (!data.results?.length) {
-                    return `Error: No GIFs found for the given query`;
+                case "message": {
+                    const channel = await ChannelResolver.resolve(this.message.guild, targetId) || this.message.channel;
+                    if (!(channel instanceof TextChannel || channel instanceof ThreadChannel)) {
+                        return `Error: The target channel "${targetId}" is not a text channel.`;
+                    }
+                    await channel.send(messageContent);
+                    return `Message sent successfully to channel ${channel.name}`;
                 }
 
-                const randomGif = data.results[Math.floor(Math.random() * data.results.length)];
-                content = randomGif.media_formats.gif.url;
-            }
-
-            if (isDM) {
-                if (!this.message.guild) {
-                    return `Error: Cannot search for users outside of a guild context.`;
-                }
-
-                const member = await UserResolver.resolve(this.message.guild, targetId);
-                if (!member) {
-                    return `Error: Could not find user "${targetId}."`;
-                }
-
-                await member.send(content).catch((error) => {
-                    return `Failed to send DM to user "${member.user.tag}". Their DMs are most likely disabled.`
-                });
-
-                return `Message sent successfully to user ${member.user.tag}`;
-
-            } else {
-                const channel = await ChannelResolver.resolve(this.message.guild, targetId) || this.message.channel;
-                if (!(channel instanceof TextChannel || channel instanceof ThreadChannel)) {
-                    return `Error: The target channel "${targetId}" is not a text channel.`;
-                }
-                await channel.send(content);
-
-                return `Message sent successfully to channel ${channel.name}`;
+                default:
+                    return `Error: Invalid message type "${type}"`;
             }
 
         } catch (error) {

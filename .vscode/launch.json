@@ -5,7 +5,7 @@
     "version": "2.0.0",
     "configurations": [
         {
-            "name": "Sero API II",
+            "name": "Sero API",
             "type": "node",
             "request": "launch",
             "program": "${workspaceFolder}/packages/api/main.ts",
@@ -20,7 +20,7 @@
             ]
         },
         {
-            "name": "Seeder II",
+            "name": "Seeder",
             "type": "node",
             "request": "launch",
             "program": "${workspaceFolder}/packages/api/database/seeds/index.ts",
@@ -47,8 +47,12 @@
             "type": "node",
             "request": "launch",
             "program": "${workspaceFolder}/packages/agent/index.ts",
-            "cwd": "${workspaceFolder}",
-            "runtimeExecutable": "ts-node"
+            "cwd": "${workspaceFolder}/packages/agent",
+            "runtimeExecutable": "node",
+            "runtimeArgs": [
+                "-r",
+                "ts-node/register"
+            ]
         }
     ]
 }

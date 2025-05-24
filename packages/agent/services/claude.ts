@@ -1,10 +1,19 @@
 import Anthropic from '@anthropic-ai/sdk';
 import { Message } from 'discord.js';
+
+// Import custom hooks
+import useContext from '../hooks/useContext';
+
+// Import Utility functions
 import { sanitizeResponse } from '../utils';
-import { executeTool, initializeTools } from '../services/tools';
-import { retryApiCall } from './api';
-import { MessageViolationCheckInput } from '../types/message.types';
 import { replyOrSend } from '../utils/replyOrSend';
+
+// Import tool classes for Claude context
+import { executeTool, initializeTools } from './tools';
+import { DiscordGuildInfoToolContext } from '../tools/discord_guild_info.tool';
+import { DiscordFetchMessagesToolContext } from '../tools/discord_fetch_messages.tool';
+import { DiscordModerationToolContext } from '../tools/discord_moderation_actions.tool';
+import { DiscordSendMessageToolContext } from '../tools/discord_send_message.tool';
 
 type ClaudeOptions = {
     previousMessages?: any[];
@@ -12,38 +21,6 @@ type ClaudeOptions = {
     excludeTools?: boolean;
     finalResponse?: boolean;
 }
-
-type ClaudeContextOptions = {
-    seroAgent: boolean;
-    moderationContext: boolean;
-    discordContext: boolean;
-    toolsContext: boolean;
-    SSundeeContext: boolean;
-}
-
-// Gather the about me and discord guidelines context for the AI assistant
-import {
-    seroAgentDescription, moderationContext, discordContext, toolsContext, disclosedContext,
-    SSundeeRules, SSundeeInformation, SSundeeFAQ
-} from '../context/context';
-
-// Gather the Tool Contexts
-import { DiscordSendMessageToolContext } from '../tools/discord_send_message.tool';
-import { DiscordGuildInfoToolContext } from '../tools/discord_guild_info.tool';
-import { DiscordFetchMessagesToolContext } from '../tools/discord_fetch_messages.tool';
-import { DiscordModerationToolContext } from '../tools/discord_moderation_actions.tool';
-import { DiscordUserLogsToolContext } from '../tools/discord_user_logs.tool';
-import { DiscordUserActionsToolContext } from '../tools/discord_user_actions.tool';
-import { SeroUtilityToolContext } from '../tools/sero_utility_actions.tool';
-import { TaskSchedulerToolContext } from '../tools/task_scheduler.tool';
-
-// Gather the conversation history
-import {
-    createConversationKey,
-    getConversationHistory,
-    updateConversationHistory,
-    deleteConverstationHistory
-} from '../services/history';
 
 export class ClaudeService {
     private anthropic: Anthropic;
@@ -57,76 +34,29 @@ export class ClaudeService {
     }
 
     /**
-     * Prepare system prompt with context variables replaced
+     * Prepare system prompt for Claude using useContext hook
+     * @param message - Discord message object
+     * @returns Formatted system prompt
      */
-    private prepareSystemPrompt(
-        message: Message,
-        context_options: ClaudeContextOptions = {
-            seroAgent: true,
-            moderationContext: false,
-            discordContext: true,
-            toolsContext: true,
-            SSundeeContext: true
-        },
-        additional_context: string = ''
-    ): string {
-        // Build context based on options
-        const contextParts = [];
-
-        if (context_options.seroAgent) {
-            contextParts.push(seroAgentDescription);
-        }
-
-        if (context_options.moderationContext) {
-            contextParts.push(moderationContext);
-        }
-
-        if (context_options.discordContext) {
-            contextParts.push(discordContext);
-        }
-
-        if (context_options.toolsContext) {
-            contextParts.push(toolsContext);
-            contextParts.push(disclosedContext);
-        }
-
-        if (context_options.SSundeeContext) {
-            contextParts.push(SSundeeRules);
-            contextParts.push(SSundeeInformation);
-            contextParts.push(SSundeeFAQ);
-        }
-
-        // Add additional context if provided
-        if (additional_context) {
-            contextParts.push(additional_context);
-        }
-
-        const SYSTEM_PROMPT = contextParts.join('\n');
-
-        return SYSTEM_PROMPT
-            .replace('{{date}}', new Date().toLocaleDateString())
-            .replace('{{time}}', new Date().toLocaleTimeString())
-            .replace('{{guildName}}', message.guild?.name ?? 'private')
-            .replace('{{guildId}}', message.guild?.id ?? 'private')
-            .replace(`{{username}}`, message.author.username)
-            .replace(`{{userId}}`, message.author.id)
-            .replace('{{channelName}}', 'name' in message.channel && message.channel.name ? message.channel.name : 'Direct Message')
-            .replace('{{channelId}}', message.channel.id);
+    private prepareSystemPrompt(message: Message): string {
+        const currentDate = new Date().toLocaleString();
+        return useContext(
+            currentDate,
+            message.guild?.name || 'DM',
+            (message.channel && 'name' in message.channel) ? (message.channel as any).name : 'DM'
+        );
     }
 
     /**
-     * Get the available tools context for API calls
+     * Get available tools for Claude
+     * @returns Array of tools for Claude API
      */
     private getTools() {
         return [
-            ...DiscordSendMessageToolContext,
             ...DiscordGuildInfoToolContext,
             ...DiscordFetchMessagesToolContext,
             ...DiscordModerationToolContext,
-            ...DiscordUserLogsToolContext,
-            ...DiscordUserActionsToolContext,
-            ...SeroUtilityToolContext,
-            ...TaskSchedulerToolContext,
+            ...DiscordSendMessageToolContext,
         ];
     }
 
@@ -134,19 +64,11 @@ export class ClaudeService {
         prompt: string,
         message: Message,
         options?: ClaudeOptions
-    ): Promise<string | undefined> {
-
-        // Set default values for ClaudeOptions
-        const previousMessages = (options?.previousMessages ?? []);
-        const reasoning = (options?.reasoning ?? true);
-        const excludeTools = (options?.excludeTools ?? false);
-        const finalResponse = (options?.finalResponse ?? true);
-
-        // Create a unique key for the conversation based on channel and user ID
-        const conversationKey = createConversationKey(message.channel.id, message.author.id);
+    ): Promise<void> {
+        const { previousMessages = [], reasoning = true, excludeTools = false, finalResponse = true } = options || {};
+        let textResponse = "";
 
         try {
-
             if ('sendTyping' in message.channel) {
                 await message.channel.sendTyping();
             }
@@ -155,50 +77,69 @@ export class ClaudeService {
             initializeTools(message, message.client);
             const systemPrompt = this.prepareSystemPrompt(message);
 
-            // Get the conversation history
-            let conversationHistory = getConversationHistory(conversationKey) || [];
+            // Add the system prompt to the previous messages
+            previousMessages.push({ role: 'user', content: prompt })
 
-            if (previousMessages.length > 0) {
-                conversationHistory = previousMessages;
-            } else if (prompt) {
-                conversationHistory.push({ role: 'user', content: prompt });
-            }
+            // Call the Claude API with the SDK
+            const response = await this.anthropic.messages.create({
+                model: this.CLAUDE_MODEL,
+                max_tokens: this.MAX_TOKENS,
+                system: systemPrompt,
+                tools: [
+                    ...(excludeTools ? [] : this.getTools()),
+                    {
+                        type: "web_search_20250305",
+                        name: "web_search",
+                        max_uses: 2,
+                        allowed_domains: null,
+                        blocked_domains: null,
+                        user_location: {
+                            type: "approximate",
+                            city: "San Francisco",
+                            region: "California",
+                            country: "US",
+                            timezone: "America/Los_Angeles"
+                        }
+                    },
+                ],
+                messages: previousMessages,
+            });
 
-            // Call the Claude API with retry logic
-            const response = await retryApiCall(() =>
-                this.anthropic.messages.create({
-                    model: this.CLAUDE_MODEL,
-                    max_tokens: this.MAX_TOKENS,
-                    system: systemPrompt,
-                    ...(excludeTools ? {} : { tools: this.getTools() }), // Exclude tools if specified
-                    messages: conversationHistory,
-                })
-            );
-
+            // Handle Tool use response
             if (response.stop_reason === "tool_use") {
-                const textResponse = response.content.find((c) => c.type === "text")?.text ?? "";
-                const toolRequest = response.content.find((c) => c.type === "tool_use");
-                if (!toolRequest) return;
+                // Extract text and tool use information
+                let toolTextResponse = "";
+                let toolUseBlock: any = null;
 
-                // Reply with temporary response if Claude provided text
-                if (textResponse && reasoning) {
-                    await replyOrSend(message, sanitizeResponse(textResponse)).catch((err) => {
-                        console.error('Error sending temporary response:', err);
-                    });
+                for (const block of response.content) {
+                    if (block.type === "text") {
+                        toolTextResponse = block.text;
+                    } else if (block.type === "tool_use") {
+                        toolUseBlock = block;
+                    }
+                }
+
+                // Check if tool use block is present
+                if (!toolUseBlock) return;
+
+                // Reply with temporary reasoning if Claude provided text
+                if (toolTextResponse && reasoning) {
+                    await replyOrSend(message, sanitizeResponse(toolTextResponse))
+                        .catch(err => console.error('Error sending temp response:', err));
                 }
 
                 try {
                     // Execute the tool and get the result
-                    const { id, name, input } = toolRequest;
+                    const { id, name, input } = toolUseBlock;
                     const toolResult = await executeTool(name, input);
 
-                    // Only update history if tool execution was successful
-                    const updatedHistory = [
-                        ...conversationHistory,
+                    // Update history with new messages
+                    const updatedMessages = [
+                        ...previousMessages,
                         {
                             role: 'assistant',
                             content: [
-                                ...(textResponse ? [{ type: "text", text: textResponse }] : []),
+                                ...(toolTextResponse ? [{ type: "text", text: toolTextResponse }] : []),
                                 { type: "tool_use", id, name, input }
                             ]
                         },
@@ -212,122 +153,47 @@ export class ClaudeService {
                         }
                     ];
 
-                    // Update the stored history only after successful execution
-                    updateConversationHistory(conversationKey, updatedHistory);
+                    // Update the text response with the tool result
+                    textResponse = toolTextResponse;
 
-                    // Recursive call with tool result and updated message history
+                    // Recursive call with tool result and updated history
                     return await this.askClaude("", message, {
-                        previousMessages: updatedHistory
+                        previousMessages: updatedMessages,
+                        reasoning,
+                        excludeTools,
+                        finalResponse
                     });
 
                 } catch (error) {
                     console.error('Error executing tool:', error);
-
-                    // Delete conversation history on error
-                    deleteConverstationHistory(conversationKey);
+                    return;
                 }
             }
 
+            // Handle End response
             if (response.stop_reason === "end_turn") {
-                const textResponse = response.content.find((c) => c.type === "text")?.text ?? "";
+                // Get text from response
+                let finalTextResponse = "";
 
-                // Only update history if tool execution was successful
-                const updatedHistory = [
-                    ...conversationHistory,
-                    {
-                        role: 'assistant',
-                        content: textResponse
+                for (const block of response.content) {
+                    if (block.type === "text") {
+                        finalTextResponse += block.text;
                     }
-                ];
+                }
 
-                // Update the stored history only after successful execution
-                updateConversationHistory(conversationKey, updatedHistory);
+                // Update the text response with the final result
+                textResponse += finalTextResponse;
 
-                // Reply with the final response
-                if (finalResponse) {
-                    await replyOrSend(message, sanitizeResponse(textResponse)).catch((err) => {
-                        console.error('Error sending final response:', err);
-                    });
+                // Reply with the final response if requested
+                if (finalResponse && finalTextResponse) {
+                    await replyOrSend(message, sanitizeResponse(finalTextResponse))
+                        .catch(err => console.error('Error sending response:', err));
                 }
             }
 
         } catch (error) {
             console.error('Error on askClaude:', error);
-
-            // Delete conversation history on error
-            deleteConverstationHistory(conversationKey);
-        }
-    }
-
-
-    public async checkViolation(
-        message: Message,
-        messageCollection?: MessageViolationCheckInput
-    ): Promise<string | undefined> {
-        try {
-            // Initialize tools for direct access in this function
-            initializeTools(message, message.client);
-
-            // Initialize system prompt with more lenient guidance but include tools context
-            const checkViolationContext = `
-            Analyze the messages in the conversation and identifying rule violations.
-            Your goal is to identify clear and significant rule violations that would be widely considered inappropriate by most moderators.
-
-            If you detected a serious violation please choose to only reply with a warning or utilize the moderation tools and take appropriate action.
-            If no violation is detected, simply return: "NO_VIOLATION_DETECTED"
-            `;
-
-            const systemPrompt = this.prepareSystemPrompt(message, {
-                seroAgent: true,
-                moderationContext: true,
-                discordContext: true,
-                toolsContext: true,
-                SSundeeContext: true
-            }, checkViolationContext);
-
-            // Get message content and ensure it's not empty
-            const messageContent = messageCollection?.messages ?? message.content;
-
-            // Check if content is empty or undefined
-            if (!messageContent || messageContent.trim() === '') {
-                console.log('Warning: Empty message content in checkViolation, skipping API call');
-                return;
-            }
-
-            // Call the Claude API with retry logic
-            const response = await retryApiCall(() =>
-                this.anthropic.messages.create({
-                    model: this.CLAUDE_MODEL,
-                    max_tokens: this.MAX_TOKENS,
-                    system: systemPrompt,
-                    tools: [
-                        ...DiscordModerationToolContext  // Only include moderation tools
-                    ],
-                    messages: [{
-                        role: 'user',
-                        content: messageContent
-                    }],
-                })
-            );
-
-            console.log("Checking for violations...", response);
-
-            if (response.stop_reason === "tool_use") {
-                const toolRequest = response.content.find((c) => c.type === "tool_use");
-                if (!toolRequest) return;
-
-                try {
-                    // Execute the tool and get the result
-                    const { name, input } = toolRequest;
-                    await executeTool(name, input);
-
-                } catch (error) {
-                    console.error('Error executing tool:', error);
-                }
-            }
-
-        } catch (error) {
-            console.error('Error on checkViolation:', error);
+            return;
         }
     }
 }

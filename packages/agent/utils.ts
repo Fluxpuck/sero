@@ -7,6 +7,9 @@ export function sanitizeResponse(text: string): string {
     return text
         .replace(/@everyone/gi, 'everyone') // Replace everyone mentions
         .replace(/@here/gi, 'here') // Replace here mentions
+        .replace(/<web_search>/gi, '**') // Remove <web_search>
+        .replace(/<\/web_search>/gi, '**') // Remove </web_search>
+        .trim();
 }
 
 // Helper function to split messages that exceed Discord's character limit

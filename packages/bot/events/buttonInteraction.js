@@ -22,13 +22,25 @@ module.exports = async (client, interaction) => {
 
             // Defer the interaction
             await interaction.deferUpdate();
-
+            
             // Check if the guild has a rewardDrop object
-            const { activeMemberCollection, previousClaimedCollection, payload, claimed = true } = interaction.guild?.rewardDrop
+            // Use optional chaining and provide default values to prevent destructuring errors
+            const rewardDrop = interaction.guild?.rewardDrop || {};
+            const {
+                activeMemberCollection = [],
+                previousClaimedCollection = [],
+                payload = null,
+                claimed = true
+            } = rewardDrop;
+
             if (!payload) { // Something went wrong, try to delete the message
                 try { // Check if the message is still available
                     const fetchedMessage = await interaction.message.fetch();
                     if (fetchedMessage.deletable) await fetchedMessage.delete();
+                    return interaction.followUp({
+                        content: "This reward drop is no longer available. It may have expired or the bot was restarted.",
+                        flags: MessageFlags.Ephemeral
+                    });
                 } catch (err) { }
             }
 
@@ -38,19 +50,17 @@ module.exports = async (client, interaction) => {
                     content: "Wow, not fast enough! Better luck next time.",
                     flags: MessageFlags.Ephemeral
                 })
-            } else {
-
-                // Check if the user is active enough to claim the reward
+            } else {                // Check if the user is active enough to claim the reward
                 // If the user is not in the collection, return a message
-                if (!activeMemberCollection.includes(interaction.member.id)) {
+                if (!activeMemberCollection || !activeMemberCollection.includes(interaction.member.id)) {
                     return interaction.followUp({
                         content: "You've not been active enough to claim this reward! Try to be more active next time.",
                         flags: MessageFlags.Ephemeral
                     })
-                }
+                }                // Check if the user has already claimed plenty rewards
+                const userClaimedInfo = previousClaimedCollection &&
+                    previousClaimedCollection.find?.(item => item.userId === interaction.member.id);
 
-                // Check if the user has already claimed plenty rewards
-                const userClaimedInfo = previousClaimedCollection.find(item => item.userId === interaction.member.id);
                 if (userClaimedInfo?.claimed >= 5) {
                     return interaction.followUp({
                         content: "You can only claim so much... Try again next time!",
