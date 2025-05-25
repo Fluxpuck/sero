@@ -1,13 +1,11 @@
 import { Message, Events, Client } from 'discord.js';
 import { ClaudeService } from '../services/claude';
-import useApi from '../hooks/useApi';
-import { ResponseStatus } from '../types/api.types';
 
 export const name = Events.MessageCreate;
 export async function execute(message: Message) {
     const client = message.client as Client;
 
-    // Skip empty messages or messages from bots 
+    // Skip empty messages or messages from bots
     if (!message || !message.content || message.author.bot) return;
 
     try {
@@ -22,29 +20,20 @@ export async function execute(message: Message) {
         // Exit if user lacks permission
         if (!isOwner && !hasAllowedRole) return;
 
-        /**
-         * @TESTING PURPOSES ONLY
-         * This block is for testing the API endpoint locally.
-         */
+
         if (isOwner && message.content.includes('test-api')) {
             try {
-                // Use the API hook instead of direct fetch
-                const api = useApi();
-                const response = await api.get('/guild/' + message.guildId);
-
-                if (response.status === ResponseStatus.SUCCESS) {
-                    console.log('Fetched from API:', response.data);
-                } else {
-                    console.error('API error:', response.message);
-                }
+                const fetchResponse = await fetch('http://localhost:3336/guild/' + message.guildId);
+                const data = await fetchResponse.json();
+                console.log('Fetched from localhost:3336:', data);
             } catch (error) {
-                console.error('Error fetching from API:', error);
+                console.error('Error fetching from localhost:3336:', error);
             }
         }
 
         // Check if this message is for the bot
         const isMention = message.mentions.has(client.user?.id || '');
-        const isKeywordTrigger = /\b(hello sero|hey sero)\b/i.test(message.content);
+        const isKeywordTrigger = /\b(hello sero|hey sero|sero help|help sero)\b/i.test(message.content);
         const isDM = message.channel.type === 1;
 
         // Check if message is a reply to bot
@@ -72,7 +61,7 @@ export async function execute(message: Message) {
 
         // Remove trigger words if present
         if (isKeywordTrigger) {
-            prompt = prompt.replace(/\b(hello sero|hey sero)\b/i, '').trim();
+            prompt = prompt.replace(/\b(hello sero|hey sero|sero help|help sero)\b/i, '').trim();
         }
 
         // Add context from referenced message if this is a reply

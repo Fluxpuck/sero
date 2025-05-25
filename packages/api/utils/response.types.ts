@@ -6,8 +6,7 @@ export enum ResponseCode {
     // Success codes
     SUCCESS = 200,
     CREATED = 201,
-    UPDATED = 202,
-    ACCEPTED = 203,
+    ACCEPTED = 202,
     NO_CONTENT = 204,
 
     // Client error codes
