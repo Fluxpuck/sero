@@ -1,4 +1,3 @@
-
 /**
  * Standard API response status codes
  */
