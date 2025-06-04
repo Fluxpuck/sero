@@ -3,7 +3,8 @@ import { Aways } from '../../../../models';
 import { ResponseHandler } from '../../../../utils/response.utils';
 import { ResponseCode } from '../../../../utils/response.types';
 
-const router = Router();
+// Enable mergeParams to access parent route parameters
+const router = Router({ mergeParams: true });
 
 /**
  * @swagger
@@ -44,7 +45,7 @@ const router = Router();
  */
 router.get('/', async (req: Request, res: Response, next: NextFunction) => {
     try {
-        const guildId = req.params.guildId;
+        const { guildId } = req.params;
 
         const aways = await Aways.findAll({
             where: { guildId }
