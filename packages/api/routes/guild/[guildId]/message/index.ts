@@ -2,7 +2,8 @@ import { Request, Response, Router, NextFunction } from 'express';
 import { Messages } from '../../../../models';
 import { ResponseHandler } from '../../../../utils/response.utils';
 
-const router = Router();
+// Enable mergeParams to access parent route parameters
+const router = Router({ mergeParams: true });
 
 /**
  * @swagger
