@@ -40,30 +40,31 @@ interface RouteStats {
  * - Handles index.ts by using the directory name
  * - Preserves other filenames as part of the route
  */
-const pathToRoute = (filePath: string, basePath: string): string => {
-    // Get relative path from routes directory
-    const relativePath = relative(basePath, filePath);
-    const { dir, name, ext } = parse(relativePath);
+const pathToRoute = (filePath: string, targetPath: string): string => {
+    // Get the relative path from the routes directory
+    const routesDir = join(process.cwd(), targetPath);
+    let relativePath = relative(routesDir, filePath);
 
-    // Split directory into parts and filter out empty parts
-    const dirParts = dir.split('/').filter(Boolean);
-    
-    // Process each directory part to handle parameters
-    const routeParts = dirParts.map(part => {
+    // Remove file extension
+    relativePath = relativePath.replace(/\.(ts|js)$/, '');
+
+    // Split into parts and process each part
+    const parts = relativePath.split('/');
+    const processedParts = [];
+
+    for (const part of parts) {
+        if (!part || part === 'index') continue;
+
         // Convert [param] to :param
         if (part.startsWith('[') && part.endsWith(']')) {
-            return `:${part.slice(1, -1)}`;
+            processedParts.push(`:${part.slice(1, -1)}`);
+        } else {
+            processedParts.push(part);
         }
-        return part;
-    });
-
-    // Only add the filename to the route if it's not index
-    if (name !== 'index') {
-        routeParts.push(name);
     }
 
-    // Join parts and clean up any double slashes
-    const route = '/' + routeParts.join('/').replace(/\/+/g, '/').replace(/\/$/, '');
+    // Join parts and clean up
+    const route = '/' + processedParts.join('/').replace(/\/+/g, '/');
     return route || '/';
 };
 
@@ -161,7 +162,7 @@ const loadRoutes = (app: Application, dir: string, basePath: string = '', routeS
                 }
 
                 // Generate route path and clean it up for logging
-                let routePath = pathToRoute(fullPath, join(process.cwd(), 'packages/api/routes'));
+                let routePath = pathToRoute(fullPath, '/routes');
                 // Remove any leading relative path segments
                 routePath = routePath.replace(/^(\/\.\.?)+/, '');
 
@@ -172,8 +173,9 @@ const loadRoutes = (app: Application, dir: string, basePath: string = '', routeS
                     app.use(routePath, routeModule.default);
                 }
 
-                // Log the loaded route
-                console.log(`${colors.green}${colors.bright}✓${colors.reset} Loaded route: ${routePath}`);
+                // Log the loaded route with the base route if specified
+                const displayPath = basePath ? `${basePath}${routePath}` : routePath;
+                console.log(`${colors.green}${colors.bright}✓${colors.reset} Loaded route: ${displayPath}`);
                 routeStats.loadedRoutes++;
 
                 // Track the route for logging
@@ -190,11 +192,14 @@ const loadRoutes = (app: Application, dir: string, basePath: string = '', routeS
     }
 };
 
-
 /**
  * Initializes all routes for the application
+ * @param app - Express application instance
+ * @param options - Configuration options
+ * @param options.baseRoute - Base route path (e.g., '/api')
  */
-export const run = (app: Application): void => {
+export const run = (app: Application, options: { baseRoute?: string } = {}): void => {
+    const { baseRoute = '' } = options;
     const routeStats: RouteStats = {
         totalFiles: 0,
         loadedRoutes: 0,
@@ -205,16 +210,23 @@ export const run = (app: Application): void => {
     // Load all routes from the routes directory
     const routesDir = join(__dirname, '../routes');
     console.log(`${colors.blue}${colors.bright}\nStarting route initialization...${colors.reset}`);
-    loadRoutes(app, routesDir, '', routeStats);
+
+    // Create a router for the base route if specified
+    const router = Router();
+    const targetApp = baseRoute ? router : app;
+    loadRoutes(targetApp as Application, routesDir, baseRoute, routeStats);
+
+    // Mount the router at the base route if specified
+    if (baseRoute) {
+        app.use(baseRoute, router);
+    }
 
     // Log route loading summary
     console.log(`\n${colors.blue}${colors.bright}Route Loading Summary:${colors.reset}`);
     console.log(`${colors.green}${colors.bright}✓${colors.reset} Successfully loaded ${routeStats.loadedRoutes} route modules`);
-    console.log(`${colors.yellow}- Skipped ${routeStats.skippedRoutes} files${colors.reset}`);
-    console.log(`${colors.dim}Total files processed: ${routeStats.totalFiles}\n${colors.reset}`);
+    console.log(`${colors.red}${colors.dim}x${colors.blue} Skipped ${routeStats.skippedRoutes} files${colors.reset}`);
+    console.log(`\n${colors.blue}${colors.bright}Total files processed: ${routeStats.totalFiles}\n${colors.reset}`);
 
-    // Log all registered routes
-    logRegisteredRoutes(app._router);
-
-    console.log(`${colors.green}${colors.bright}✓ Route initialization completed\n${colors.reset}`);
+    // Log all registered routes with base route
+    logRegisteredRoutes(baseRoute ? router : (app._router as Router), baseRoute);
 };

@@ -30,7 +30,7 @@ import compression from 'compression';
 
     // → Mount routes to the server
     const routes = await require('./middleware/routes');
-    routes.run(app);
+    routes.run(app, { baseRoute: '/api' });
 
     // → Use the custom 404 and error handlers
     const { notFoundHandler, errorHandler } = require('./middleware/error');
