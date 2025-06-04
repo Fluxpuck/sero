@@ -23,7 +23,7 @@ export async function execute(message: Message) {
 
         if (isOwner && message.content.includes('test-api')) {
             try {
-                const fetchResponse = await fetch('http://localhost:3336/guild/' + message.guildId);
+                const fetchResponse = await fetch('http://localhost:3336/api/guild/' + message.guildId);
                 const data = await fetchResponse.json();
                 console.log('Fetched from localhost:3336:', data);
             } catch (error) {
