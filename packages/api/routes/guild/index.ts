@@ -1,8 +1,10 @@
 import { Request, Response, Router, NextFunction } from 'express';
 import { Guild, GuildSettings } from '../../models';
 import { ResponseHandler } from '../../utils/response.utils';
+import { ResponseCode } from '../../utils/response.types';
 
-const router = Router();
+// Enable mergeParams to access parent route parameters
+const router = Router({ mergeParams: true });
 
 /**
  * @swagger
@@ -52,7 +54,7 @@ router.get('/:guildId', async (req: Request, res: Response, next: NextFunction) 
         });
 
         if (!guild) {
-            return ResponseHandler.sendError(res, 'Guild not found', 404);
+            return ResponseHandler.sendError(res, 'Guild not found', ResponseCode.NOT_FOUND);
         }
 
         ResponseHandler.sendSuccess(res, guild, 'Guild retrieved successfully');
@@ -136,5 +138,65 @@ router.post('/', async (req: Request, res: Response, next: NextFunction) => {
         next(error);
     }
 });
+
+/**
+ * @swagger
+ * /guild/{guildId}:
+ *   delete:
+ *     summary: Soft delete a guild
+ *     tags:
+ *       - Guilds
+ *     parameters:
+ *       - name: guildId
+ *         in: path
+ *         required: true
+ *         description: The Discord ID of the guild
+ *         schema:
+ *           type: string
+ *     responses:
+ *       200:
+ *         description: Guild deleted successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 status:
+ *                   type: string
+ *                   enum: [success]
+ *                 code:
+ *                   type: integer
+ *                   example: 200
+ *                 message:
+ *                   type: string
+ *       404:
+ *         description: Guild not found
+ *       500:
+ *         description: Server error
+ */
+router.delete('/:guildId', async (req: Request, res: Response, next: NextFunction) => {
+    try {
+        const { guildId } = req.params;
+
+        const deleted = await Guild.destroy({
+            where: {
+                guildId
+            }
+        });
+
+        if (deleted === 0) {
+            return ResponseHandler.sendError(
+                res,
+                'Guild not found for this guild',
+                ResponseCode.NOT_FOUND
+            );
+        }
+
+        ResponseHandler.sendSuccess(res, null, 'Guild deleted successfully');
+    } catch (error) {
+        next(error);
+    }
+});
+
 
 export default router;
