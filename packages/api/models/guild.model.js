@@ -82,7 +82,8 @@ module.exports = sequelize => {
     // Update expired records every 5 minutes
     cron.schedule('*/5 * * * *', async () => {
         try {
-            const result = await Guild.update({ modifier: 1 },
+            const result = await Guild.update(
+                { modifier: 1, expireAt: null },
                 {
                     where: {
                         expireAt: {

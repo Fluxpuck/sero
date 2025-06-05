@@ -12,6 +12,7 @@ const REDIS_CHANNELS = {
     ROLE: 'guildMemberRole',
     DROP: 'guildRewardDrops',
     BIRTHDAY: 'guildMemberBirthday',
+    SCHEDULED_BOOST: 'guildScheduledBoost',
 };
 
 const createRedisClient = () => {
