@@ -130,7 +130,7 @@ router.post('/', async (req: Request, res: Response, next: NextFunction) => {
 
         // Send appropriate response based on whether guild was created or updated
         if (created) {
-            ResponseHandler.sendSuccess(res, guild, 'Guild created successfully', 201);
+            ResponseHandler.sendSuccess(res, guild, 'Guild created successfully', ResponseCode.CREATED);
         } else {
             ResponseHandler.sendSuccess(res, guild, 'Guild updated successfully');
         }
