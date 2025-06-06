@@ -26,6 +26,7 @@ export enum GuildSettingType {
         }
     ]
 })
+
 export class GuildSettings extends Model<GuildSettings> {
     @Column({
         type: DataType.INTEGER,
@@ -58,5 +59,4 @@ export class GuildSettings extends Model<GuildSettings> {
         allowNull: true,
     })
     declare excludeIds: string[];
-
 }

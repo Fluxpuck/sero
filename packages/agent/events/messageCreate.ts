@@ -21,6 +21,9 @@ export async function execute(message: Message) {
         if (!isOwner && !hasAllowedRole) return;
 
 
+        /**
+         * Test API endpoint
+         */
         if (isOwner && message.content.includes('test-api')) {
             try {
                 const fetchResponse = await fetch(`http://localhost:3336/api/guild/${message.guildId}/message`);
@@ -30,6 +33,7 @@ export async function execute(message: Message) {
                 console.error('Error fetching from localhost:3336:', error);
             }
         }
+
 
         // Check if this message is for the bot
         const isMention = message.mentions.has(client.user?.id || '');
