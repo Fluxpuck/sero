@@ -140,16 +140,18 @@ router.get('/', async (req: Request, res: Response, next: NextFunction) => {
  *         description: Server error
  */
 router.post('/', async (req: Request, res: Response, next: NextFunction) => {
+    const transaction = await Messages.sequelize!.transaction();
+
     try {
         const { guildId } = req.params;
-        const { channelId, userId, content, messageId } = req.body;
+        const { channelId, userId, messageId, content = "" } = req.body;
 
         // Validate required fields
-        if (!channelId || !userId || !content) {
+        if (!channelId || !userId || !messageId) {
             return ResponseHandler.sendValidationFail(
                 res,
                 'Missing required fields',
-                ['channelId, userId, and content are required fields']
+                ['channelId, userId, and messageId are required fields']
             );
         }
 
@@ -169,6 +171,7 @@ router.post('/', async (req: Request, res: Response, next: NextFunction) => {
         ResponseHandler.sendSuccess(res, message, 'Message created successfully', 201);
 
     } catch (error) {
+        transaction.rollback();
         next(error);
     }
 });

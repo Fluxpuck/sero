@@ -34,7 +34,7 @@ const router = Router({ mergeParams: true });
  *               items:
  *                 $ref: '#/components/schemas/GuildSettings'
  *       404:
- *         description: Guild not found
+ *         description: No settings found for this guild
  *       500:
  *         description: Server error
  */
@@ -54,7 +54,7 @@ router.get('/', async (req: Request, res: Response, next: NextFunction) => {
         if (!settings.length) {
             return ResponseHandler.sendError(
                 res,
-                'Guild not found',
+                'No settings found for this guild',
                 ResponseCode.NOT_FOUND
             );
         }
@@ -119,6 +119,8 @@ router.get('/', async (req: Request, res: Response, next: NextFunction) => {
  *         description: Server error
  */
 router.post('/', async (req: Request, res: Response, next: NextFunction) => {
+    const transaction = await GuildSettings.sequelize!.transaction();
+
     try {
         const { guildId } = req.params;
         const { type, targetId, excludeIds } = req.body;
@@ -152,7 +154,7 @@ router.post('/', async (req: Request, res: Response, next: NextFunction) => {
                 type: type as GuildSettingType,
                 targetId,
                 excludeIds: excludeIds || []
-            } as any // Type assertion needed due to Sequelize type definitions
+            } as GuildSettings
         });
 
         // If setting already exists, update it
@@ -167,6 +169,7 @@ router.post('/', async (req: Request, res: Response, next: NextFunction) => {
 
         ResponseHandler.sendSuccess(res, setting, 'Guild setting created successfully', ResponseCode.CREATED);
     } catch (error) {
+        transaction.rollback(); 
         next(error);
     }
 });
@@ -199,6 +202,8 @@ router.post('/', async (req: Request, res: Response, next: NextFunction) => {
  *         description: Server error
  */
 router.delete('/:settingId', async (req: Request, res: Response, next: NextFunction) => {
+    const transaction = await GuildSettings.sequelize!.transaction();
+
     try {
         const { guildId, settingId } = req.params;
         
@@ -218,6 +223,7 @@ router.delete('/:settingId', async (req: Request, res: Response, next: NextFunct
         await setting.destroy();
         res.status(204).send();
     } catch (error) {
+        transaction.rollback();
         next(error);
     }
 });

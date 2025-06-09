@@ -85,7 +85,7 @@ router.get('/', async (req: Request, res: Response, next: NextFunction) => {
             order: [[sortBy, order]]
         });
 
-        return ResponseHandler.sendSuccess(res, balances);
+        return ResponseHandler.sendSuccess(res, balances, 'Balances retrieved successfully');
     } catch (error) {
         next(error);
     }
@@ -137,7 +137,7 @@ router.get('/:userId', async (req: Request, res: Response, next: NextFunction) =
         });
 
         await transaction.commit();
-        return ResponseHandler.sendSuccess(res, balance);
+        return ResponseHandler.sendSuccess(res, balance, 'Balance retrieved successfully');
     } catch (error) {
         transaction.rollback();
         next(error);

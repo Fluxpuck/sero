@@ -204,6 +204,8 @@ router.get('/:userId', async (req: Request, res: Response, next: NextFunction) =
  *         description: Server error
  */
 router.post('/', async (req: Request, res: Response, next: NextFunction) => {
+    const transaction = await User.sequelize!.transaction();
+
     try {
         const { guildId } = req.params;
         const { userId, username, premium = false, userType = UserType.USER } = req.body;
@@ -246,6 +248,7 @@ router.post('/', async (req: Request, res: Response, next: NextFunction) => {
             ResponseHandler.sendSuccess(res, user, 'User updated successfully');
         }
     } catch (error) {
+        transaction.rollback();
         next(error);
     }
 });
@@ -292,6 +295,8 @@ router.post('/', async (req: Request, res: Response, next: NextFunction) => {
  *         description: Server error
  */
 router.delete('/:userId', async (req: Request, res: Response, next: NextFunction) => {
+    const transaction = await User.sequelize!.transaction();
+
     try {
         const { guildId, userId } = req.params;
 
@@ -313,6 +318,7 @@ router.delete('/:userId', async (req: Request, res: Response, next: NextFunction
 
         ResponseHandler.sendSuccess(res, null, 'User deleted successfully');
     } catch (error) {
+        transaction.rollback();
         next(error);
     }
 });

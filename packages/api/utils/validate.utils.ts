@@ -1,5 +1,4 @@
 import { isFinite, isNumber, isEqual } from 'lodash';
-import { BalanceType } from './validate.types';
 
 /**
  * Validates if an amount is a valid non-zero number

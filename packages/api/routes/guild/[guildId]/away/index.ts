@@ -157,7 +157,7 @@ router.get('/:userId', async (req: Request, res: Response, next: NextFunction) =
  *                 description: Away message to display
  *               duration:
  *                 type: integer
- *                 description: Duration in hours for the away status
+ *                 description: Duration in minutes for the away status
  *     responses:
  *       200:
  *         description: Away status updated successfully
@@ -173,11 +173,20 @@ router.post('/:userId', async (req: Request, res: Response, next: NextFunction) 
         const { guildId, userId } = req.params;
         const { message, duration } = req.body;
 
-        // Calculate expiration date if duration is provided (in hours)
+        // Validate required fields
+        if (!duration) {
+            return ResponseHandler.sendValidationFail(
+                res,
+                'Missing required fields',
+                ['duration (in minutes) and message are required fields']
+            );
+        }
+
+        // Calculate expiration date if duration is provided (in minutes)
         let expireAt = null;
         if (duration) {
             expireAt = new Date();
-            expireAt.setHours(expireAt.getHours() + duration);
+            expireAt.setMinutes(expireAt.getMinutes() + duration);
         }
 
         // Check if the away status already exists
