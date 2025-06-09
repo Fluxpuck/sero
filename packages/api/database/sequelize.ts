@@ -6,7 +6,7 @@ import {
     User, Guild, GuildSettings, UserLevel, UserBirthdays, UserBalances,
     UserCareers, UserAuditLogs, UserActivityLogs, UserEconomyLogs,
     UserExperienceLogs, UserVoiceLogs, TemporaryRole, Level, LevelRank,
-    Commands, CommandLogs, Aways, Messages, Modifiers, Jobs,
+    Commands, CommandLogs, Aways, Messages, Modifier, Jobs,
     initModels
 } from '../models';
 
@@ -43,7 +43,7 @@ const sequelize = new Sequelize(
             User, Guild, GuildSettings, UserLevel, UserBirthdays, UserBalances,
             UserCareers, UserAuditLogs, UserActivityLogs, UserEconomyLogs,
             UserExperienceLogs, UserVoiceLogs, TemporaryRole, Level, LevelRank,
-            Commands, CommandLogs, Aways, Messages, Modifiers, Jobs
+            Commands, CommandLogs, Aways, Messages, Modifier, Jobs
         ]
     }
 );

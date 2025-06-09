@@ -34,7 +34,7 @@ export async function seedUsers(): Promise<{ success: boolean; error?: unknown }
     ];
 
     try {
-        await User.bulkCreate(users as User[]);
+        await User.bulkCreate(users as User[], { individualHooks: true });
         console.log(`${users.length} users(s) have been seeded successfully.`);
         return { success: true };
 

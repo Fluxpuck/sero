@@ -1,4 +1,4 @@
-import { BeforeCreate, Column, DataType, Default, Model, Table } from "sequelize-typescript";
+import { AfterCreate, Column, DataType, Default, Model, Table } from "sequelize-typescript";
 import { Modifier } from "./modifiers.model";
 
 export enum UserType {
@@ -72,7 +72,7 @@ export class User extends Model<User> {
     })
     declare userType: UserType;
 
-    @BeforeCreate
+    @AfterCreate
     static async addModifier(instance: User) {
         await Modifier.upsert({
             guildId: instance.guildId,
@@ -81,7 +81,7 @@ export class User extends Model<User> {
             active: true,
             expireAt: null,
         } as Modifier, {
-            conflictFields: ['guildId', 'userId']
+            conflictFields: ['userId', 'guildId']
         });
     }
 }
