@@ -20,10 +20,14 @@ export class ResponseHandler {
         message = 'Operation successful',
         code = ResponseCode.SUCCESS
     ): ApiResponse<T> {
+        // Get the size of the data
+        const size = data ? (Array.isArray(data) ? data.length : Object.keys(data).length) : 0;
+
         return {
             status: ResponseStatus.SUCCESS,
             code,
             message,
+            size,
             data
         };
     }

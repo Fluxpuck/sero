@@ -42,5 +42,6 @@ export interface ApiResponse<T = any> {
     status: ResponseStatus;
     code: ResponseCode;
     message: string;
+    size?: number;
     data?: T;
 }
