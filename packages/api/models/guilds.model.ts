@@ -1,4 +1,5 @@
-import { Column, DataType, Default, Model, Table } from "sequelize-typescript";
+import { BeforeCreate, Column, DataType, Default, Model, Table } from "sequelize-typescript";
+import { Modifier } from "./modifiers.model";
 
 @Table({
     tableName: "guilds",
@@ -42,4 +43,16 @@ export class Guild extends Model<Guild> {
         allowNull: false,
     })
     declare premium: boolean;
+
+    @BeforeCreate
+    static async addModifier(instance: Guild) {
+        await Modifier.upsert({
+            guildId: instance.guildId,
+            amount: 1,
+            active: true,
+            expireAt: null,
+        } as Modifier, {
+            conflictFields: ['guildId', 'userId']
+        });
+    }
 }

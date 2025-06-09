@@ -21,7 +21,7 @@ import { Commands } from './commands.model';
 import { CommandLogs } from './command-logs.model';
 import { Aways } from './aways.model';
 import { Messages } from './messages.model';
-import { Modifiers } from './modifiers.model';
+import { Modifier } from './modifiers.model';
 import { Jobs } from './jobs.model';
 
 // Export all models
@@ -46,7 +46,7 @@ export {
     CommandLogs,
     Aways,
     Messages,
-    Modifiers,
+    Modifier,
     Jobs
 };
 
@@ -77,7 +77,7 @@ export const initModels = (sequelize: Sequelize): void => {
         CommandLogs,
         Aways,
         Messages,
-        Modifiers,
+        Modifier,
         Jobs
     ]);
 
@@ -242,7 +242,7 @@ export const initModels = (sequelize: Sequelize): void => {
         sourceKey: 'guildId',
         constraints: false
     });
-    Guild.hasMany(Modifiers, {
+    Guild.hasMany(Modifier, {
         foreignKey: 'guildId',
         sourceKey: 'guildId',
         constraints: false
@@ -373,5 +373,5 @@ export const initModels = (sequelize: Sequelize): void => {
 
     Messages.belongsTo(Guild, { foreignKey: 'guildId', constraints: false });
 
-    Modifiers.belongsTo(Guild, { foreignKey: 'guildId', constraints: false });
+    Modifier.belongsTo(Guild, { foreignKey: 'guildId', constraints: false });
 };

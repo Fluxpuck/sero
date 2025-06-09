@@ -14,7 +14,7 @@ import { BeforeCreate, BeforeUpdate, Column, DataType, Model, Table } from "sequ
         },
     ]
 })
-export class Modifiers extends Model<Modifiers> {
+export class Modifier extends Model<Modifier> {
     @Column({
         type: DataType.INTEGER,
         autoIncrement: true,
@@ -24,12 +24,9 @@ export class Modifiers extends Model<Modifiers> {
 
     @Column({
         type: DataType.STRING,
-        allowNull: true,
-        validate: {
-            isNumeric: true
-        }
+        allowNull: true
     })
-    declare userId: number | null;
+    declare userId: string | null;
 
     @Column({
         type: DataType.STRING,
@@ -64,7 +61,7 @@ export class Modifiers extends Model<Modifiers> {
 
     @BeforeCreate
     @BeforeUpdate
-    static checkExpiration(instance: Modifiers) {
+    static checkExpiration(instance: Modifier) {
         // If expiration date exists and has passed
         if (instance.expireAt && new Date() > instance.expireAt) {
             instance.active = false;
