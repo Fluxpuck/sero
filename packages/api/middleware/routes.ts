@@ -119,7 +119,8 @@ const loadRoutes = (app: Application, dir: string, basePath: string = '', routeS
     }
 
     const files = readdirSync(dir);
-    routeStats.totalFiles += files.length;
+    // Only count actual files, not directories
+    routeStats.totalFiles += files.filter(file => !statSync(join(dir, file)).isDirectory()).length;
 
     for (const file of files) {
         const fullPath = join(dir, file);
