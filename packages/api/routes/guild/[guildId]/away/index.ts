@@ -169,6 +169,8 @@ router.get('/:userId', async (req: Request, res: Response, next: NextFunction) =
  *         description: Server error
  */
 router.post('/:userId', async (req: Request, res: Response, next: NextFunction) => {
+    const transaction = await Aways.sequelize!.transaction();
+
     try {
         const { guildId, userId } = req.params;
         const { message, duration } = req.body;
@@ -209,6 +211,8 @@ router.post('/:userId', async (req: Request, res: Response, next: NextFunction) 
         // Use upsert to create or update in a single operation
         const [away, created] = await Aways.upsert(awayData);
 
+        await transaction.commit();
+
         ResponseHandler.sendSuccess(
             res,
             away,
@@ -216,6 +220,7 @@ router.post('/:userId', async (req: Request, res: Response, next: NextFunction) 
             created ? ResponseCode.CREATED : ResponseCode.SUCCESS
         );
     } catch (error) {
+        transaction.rollback();
         next(error);
     }
 });

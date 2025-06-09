@@ -247,6 +247,9 @@ router.post('/', async (req: Request, res: Response, next: NextFunction) => {
         } else {
             ResponseHandler.sendSuccess(res, user, 'User updated successfully');
         }
+
+        await transaction.commit();
+
     } catch (error) {
         transaction.rollback();
         next(error);
