@@ -25,10 +25,9 @@ export const errorHandler = (
     // Log the error details to the console
     console.error(`Error occurred: ${err.message}`);
     if (process.env.NODE_ENV === 'development') {
-        console.error('Error stack trace:', stackTraceArray.join('\n'));
+        console.error('An error occurred:', { message: err.message, strackTrace: stackTraceArray });
     }
 
     // Use ResponseHandler to send a standardized error response
-    const errorData = process.env.NODE_ENV === 'development' ? { stack: stackTraceArray } : undefined;
-    ResponseHandler.sendError(res, err.message || 'Internal Server Error', statusCode, errorData);
+    ResponseHandler.sendError(res, 'Oops, something went wrong', statusCode);
 };
