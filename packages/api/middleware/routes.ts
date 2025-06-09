@@ -35,15 +35,19 @@ interface RouteStats {
 
 /**
  * Convert a file path to a route path
+ * - Normalizes path separators for cross-platform compatibility
  * - Removes file extensions
  * - Converts [param] to :param
  * - Handles index.ts by using the directory name
  * - Preserves other filenames as part of the route
  */
 const pathToRoute = (filePath: string, targetPath: string): string => {
+    // Normalize path separators to forward slashes
+    const normalizePath = (path: string) => path.replace(/\\/g, '/');
+    
     // Get the relative path from the routes directory
-    const routesDir = join(process.cwd(), targetPath);
-    let relativePath = relative(routesDir, filePath);
+    const routesDir = normalizePath(join(process.cwd(), targetPath));
+    let relativePath = normalizePath(relative(routesDir, filePath));
 
     // Remove file extension
     relativePath = relativePath.replace(/\.(ts|js)$/, '');
