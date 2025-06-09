@@ -36,7 +36,7 @@ export const calculateLevel = async (userLevel: UserLevel) => {
     return {
         level: previousLevel?.level ?? 1,
         currentLevelExp: previousLevel?.experience ?? 0,
-        nextLevelExp: nextLevel?.experience ?? Infinity,
+        nextLevelExp: nextLevel?.experience ?? 0,
         remainingExp: nextLevel?.experience ? nextLevel.experience - userLevel.experience : 0,
     };
 }
