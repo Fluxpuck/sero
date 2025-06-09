@@ -1,4 +1,5 @@
 import { BeforeSave, Column, DataType, Default, Model, Table } from "sequelize-typescript";
+import { calculateLevel, calculateRank } from "../utils/levels.utils";
 
 @Table({
     tableName: "user_levels",
@@ -80,8 +81,21 @@ export class UserLevel extends Model<UserLevel> {
     declare remainingExp: number;
 
     @BeforeSave
-    static async calculateLevelInfo(instance: UserLevel): Promise<void> {
-        // This is where you'd implement your level calculation logic,
-        // similar to what you had in the JS version
+    static async levelCalculations(userLevel: UserLevel): Promise<void> {
+
+        // Check if the user has reached a new level
+        const newLevel = await calculateLevel(userLevel);
+
+        userLevel.level = newLevel.level;
+        userLevel.currentLevelExp = newLevel.currentLevelExp;
+        userLevel.nextLevelExp = newLevel.nextLevelExp;
+        userLevel.remainingExp = newLevel.remainingExp;
+
+        // Update rank information if level has changed
+        if (userLevel.level !== newLevel.level) {
+            const newRank = await calculateRank(userLevel);
+            userLevel.rank = newRank.rank;
+        }
+
     }
 }
