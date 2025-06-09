@@ -21,7 +21,7 @@ export class ResponseHandler {
         code = ResponseCode.SUCCESS
     ): ApiResponse<T> {
         // Get the size of the data
-        const size = data ? (Array.isArray(data) ? data.length : Object.keys(data).length) : 0;
+        const size = data ? (Array.isArray(data) ? data.length : 1) : 0;
 
         return {
             status: ResponseStatus.SUCCESS,
