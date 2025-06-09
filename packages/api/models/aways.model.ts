@@ -4,17 +4,12 @@ import { BeforeCreate, BeforeUpdate, Column, DataType, Model, Table } from "sequ
     tableName: "aways",
     createdAt: "createdAt",
     updatedAt: "updatedAt",
-    deletedAt: "deletedAt",
-    paranoid: true,
     indexes: [
         {
             unique: true,
             fields: ["guildId", "userId"]
         }
-    ],
-    defaultScope: {
-        attributes: { exclude: ['deletedAt'] }
-    }
+    ]
 })
 export class Aways extends Model<Aways> {
     @Column({
