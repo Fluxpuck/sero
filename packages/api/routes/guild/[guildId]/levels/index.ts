@@ -55,9 +55,9 @@ router.get('/', async (req: Request, res: Response, next: NextFunction) => {
 
 /**
  * @swagger
- * /guild/{guildId}/levels:
+ * /guild/{guildId}/levels/{userId}:
  *   get:
- *     summary: Get the level data for all users in a guild
+ *     summary: Get the level data for a specific user
  *     tags:
  *       - Levels
  *     parameters:
@@ -66,15 +66,23 @@ router.get('/', async (req: Request, res: Response, next: NextFunction) => {
  *         description: The Discord ID of the guild
  *         schema:
  *           type: string
+ *       - in: path
+ *         name: userId
+ *         description: The Discord ID of the user
+ *         schema:
+ *           type: string
  *     responses:
  *       200:
- *         description: List of user levels
+ *         description: User level data
  *         content:
  *           application/json:
  *             schema:
- *               type: array
- *               items:
- *                 $ref: '#/components/schemas/UserLevel'
+ *               type:  object
+ *               properties:
+ *                 userLevel:
+ *                   $ref: '#/components/schemas/UserLevel'
+ *                 modifier:
+ *                   $ref: '#/components/schemas/Modifier'
  *       404:
  *         description: Guild not found
  *       500:
