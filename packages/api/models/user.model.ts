@@ -1,5 +1,5 @@
 import { AfterCreate, Column, DataType, Default, Model, Table } from "sequelize-typescript";
-import { Modifier } from "./modifiers.model";
+import { UserLevel, UserBalances, Modifier } from "../models";
 
 export enum UserType {
     ADMIN = "admin",
@@ -74,14 +74,22 @@ export class User extends Model<User> {
 
     @AfterCreate
     static async addModifier(instance: User) {
+        // Run UserLevel and UserBalances upserts in parallel
+        await Promise.all([
+            UserLevel.upsert({
+                guildId: instance.guildId,
+                userId: instance.userId,
+            } as UserLevel),
+            UserBalances.upsert({
+                guildId: instance.guildId,
+                userId: instance.userId,
+            } as UserBalances)
+        ]);
+
+        // Upsert the modifier
         await Modifier.upsert({
             guildId: instance.guildId,
             userId: instance.userId,
-            amount: 1,
-            active: true,
-            expireAt: null,
-        } as Modifier, {
-            conflictFields: ['userId', 'guildId']
-        });
+        } as Modifier);
     }
 }

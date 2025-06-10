@@ -45,7 +45,7 @@ export class UserLevel extends Model<UserLevel> {
     })
     declare experience: number;
 
-    @Default(0)
+    @Default(1)
     @Column({
         type: DataType.INTEGER,
         allowNull: false,

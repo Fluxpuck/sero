@@ -1,4 +1,4 @@
-import { BeforeCreate, BeforeUpdate, Column, DataType, Model, Table } from "sequelize-typescript";
+import { BeforeCreate, BeforeUpdate, Column, DataType, Default, Model, Table } from "sequelize-typescript";
 
 @Table({
     tableName: "modifiers",
@@ -37,6 +37,7 @@ export class Modifier extends Model<Modifier> {
     })
     declare guildId: string;
 
+    @Default(1)
     @Column({
         type: DataType.INTEGER,
         allowNull: false,
