@@ -4,6 +4,8 @@ import { UserLevel, Modifier } from '../../../../models';
 import { ResponseHandler } from '../../../../utils/response.utils';
 import { ResponseCode } from '../../../../utils/response.types';
 import { calculateXp } from '../../../../utils/levels.utils';
+import { logUserExperience } from '../../../../utils/log.utils';
+import { UserExperienceLogType } from '../../../../models/user-experience-logs.model';
 
 /**
  * Helper function to get or create a user's balance record
@@ -93,11 +95,14 @@ router.post('/:userId', async (req: Request, res: Response, next: NextFunction) 
         await transaction.commit();
 
         ResponseHandler.sendSuccess(res, userLevel, `User gained ${gain} experience`);
+
+        // Log the user experience gain
+        logUserExperience(guildId, userId, UserExperienceLogType.GAIN, gain);
+
     } catch (error) {
         transaction.rollback();
         next(error);
     }
 });
-
 
 export default router;

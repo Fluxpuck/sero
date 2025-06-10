@@ -4,7 +4,8 @@ export enum UserExperienceLogType {
     TRANSFER = "transfer",
     GIVE = "give",
     REMOVE = "remove",
-    CLAIM = "claim"
+    CLAIM = "claim",
+    GAIN = "gain"
 }
 
 
