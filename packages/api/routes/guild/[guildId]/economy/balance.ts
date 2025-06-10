@@ -1,4 +1,5 @@
 import { Request, Response, Router, NextFunction } from 'express';
+import { Transaction } from 'sequelize';
 import { UserBalances } from '../../../../models';
 import { ResponseHandler } from '../../../../utils/response.utils';
 import { ResponseCode } from '../../../../utils/response.types';
@@ -10,7 +11,7 @@ const DEFAULT_BALANCE = 0;
 /**
  * Helper function to get or create a user's balance record
  */
-async function getOrCreateBalance(guildId: string, userId: string, transaction: any) {
+async function getOrCreateBalance(guildId: string, userId: string, transaction: Transaction) {
     const [balance] = await UserBalances.findOrCreate({
         where: { guildId, userId },
         defaults: {

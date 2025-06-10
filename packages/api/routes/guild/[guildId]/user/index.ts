@@ -5,7 +5,7 @@ import { ResponseHandler } from '../../../../utils/response.utils';
 import { ResponseCode } from '../../../../utils/response.types';
 import { Op } from 'sequelize';
 
-// Enable mergeParams to access parent route parameters
+
 const router = Router({ mergeParams: true });
 
 /**

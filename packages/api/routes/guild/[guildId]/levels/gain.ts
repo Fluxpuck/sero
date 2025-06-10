@@ -1,15 +1,14 @@
 import { Request, Response, Router, NextFunction } from 'express';
+import { Transaction } from 'sequelize';
 import { UserLevel, Modifier } from '../../../../models';
 import { ResponseHandler } from '../../../../utils/response.utils';
 import { ResponseCode } from '../../../../utils/response.types';
 import { calculateXp } from '../../../../utils/levels.utils';
 
-const DEFAULT_GAIN = 0;
-
 /**
  * Helper function to get or create a user's balance record
  */
-async function getOrCreateUserLevel(guildId: string, userId: string, transaction: any) {
+async function getOrCreateUserLevel(guildId: string, userId: string, transaction: Transaction) {
     const [userLevel] = await UserLevel.findOrCreate({
         where: { guildId, userId },
         defaults: {
@@ -21,8 +20,6 @@ async function getOrCreateUserLevel(guildId: string, userId: string, transaction
     return [userLevel];
 }
 
-
-// Enable mergeParams to access parent route parameters
 const router = Router({ mergeParams: true });
 
 /**

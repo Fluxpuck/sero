@@ -3,9 +3,8 @@ import { UserLevel, Modifier } from '../../../../models';
 import { ResponseHandler } from '../../../../utils/response.utils';
 import { ResponseCode } from '../../../../utils/response.types';
 
-// Enable mergeParams to access parent route parameters
-const router = Router({ mergeParams: true });
 
+const router = Router({ mergeParams: true });
 
 /**
  * @swagger
@@ -51,7 +50,6 @@ router.get('/', async (req: Request, res: Response, next: NextFunction) => {
         next(error);
     }
 });
-
 
 /**
  * @swagger

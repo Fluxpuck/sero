@@ -67,6 +67,6 @@ export class UserExperienceLogs extends Model<UserExperienceLogs> {
             isNumeric: true
         }
     })
-    declare originId: number | null;
+    declare originId: string | null;
 
 }
