@@ -8,9 +8,9 @@ import { logUserExperience } from '../../../../utils/log.utils';
 import { UserExperienceLogType } from '../../../../models/user-experience-logs.model';
 
 /**
- * Helper function to get or create a user's balance record
+ * Helper function to get or create a user's level record
  */
-async function getOrCreateUserLevel(guildId: string, userId: string, transaction: Transaction) {
+export async function getOrCreateUserLevel(guildId: string, userId: string, transaction: Transaction) {
     const [userLevel] = await UserLevel.findOrCreate({
         where: { guildId, userId },
         defaults: {
