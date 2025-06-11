@@ -1,9 +1,10 @@
 import { sequelize } from '../sequelize';
 
+import { seedLevels } from './levels.seed';
+import { seedRanks } from './level-ranks.seed';
 import { seedGuilds } from './guilds.seed';
 import { seedUsers } from './users.seed';
 import { seedMessages } from './messages.seed';
-import { seedLevels } from './levels.seed';
 
 // Enhanced console color codes
 const colors = {
@@ -49,6 +50,9 @@ async function seedManager() {
 
         await seedLevels();
         console.log(`${colors.green}✓ Levels seeded successfully${colors.reset}`);
+
+        await seedRanks();
+        console.log(`${colors.green}✓ Ranks seeded successfully${colors.reset}`);
 
         await seedGuilds();
         console.log(`${colors.green}✓ Guilds seeded successfully${colors.reset}`);
