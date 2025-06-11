@@ -66,17 +66,7 @@ router.post('/:userId', async (req: Request, res: Response, next: NextFunction) 
     const transaction = await UserLevel.sequelize!.transaction();
 
     try {
-        const { guildId } = req.params;
-        const { userId } = req.body;
-
-        // Validate required fields
-        if (!userId) {
-            return ResponseHandler.sendValidationFail(
-                res,
-                'Missing required fields',
-                ['userId is required']
-            );
-        }
+        const { guildId, userId } = req.params;
 
         // Get Guild and User modifiers
         const guild_modifier = await Modifier.findOne({ where: { guildId } });
