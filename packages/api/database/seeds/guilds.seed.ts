@@ -11,7 +11,7 @@ export async function seedGuilds(): Promise<{ success: boolean; error?: unknown;
 
     try {
         await Guild.bulkCreate(guilds as Guild[], { individualHooks: true });
-        console.log(`${guilds.length} guild(s) have been processed successfully.`);
+        console.log(`${guilds.length} guilds have been processed successfully.`);
         return { success: true, count: guilds.length };
 
     } catch (error) {

@@ -3,6 +3,7 @@ import { sequelize } from '../sequelize';
 import { seedGuilds } from './guilds.seed';
 import { seedUsers } from './users.seed';
 import { seedMessages } from './messages.seed';
+import { seedLevels } from './levels.seed';
 
 // Enhanced console color codes
 const colors = {
@@ -45,6 +46,9 @@ async function seedManager() {
     // Seed the database
     try {
         console.log(`${colors.blue}» Starting data seeding process...${colors.reset}`);
+
+        await seedLevels();
+        console.log(`${colors.green}✓ Levels seeded successfully${colors.reset}`);
 
         await seedGuilds();
         console.log(`${colors.green}✓ Guilds seeded successfully${colors.reset}`);
