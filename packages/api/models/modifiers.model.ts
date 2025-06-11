@@ -24,18 +24,18 @@ export class Modifier extends Model<Modifier> {
 
     @Column({
         type: DataType.STRING,
-        allowNull: true
-    })
-    declare userId: string | null;
-
-    @Column({
-        type: DataType.STRING,
         allowNull: false,
         validate: {
             isNumeric: true
         }
     })
     declare guildId: string;
+
+    @Column({
+        type: DataType.STRING,
+        allowNull: true
+    })
+    declare userId: string | null;
 
     @Default(1)
     @Column({

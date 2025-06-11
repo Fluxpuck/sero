@@ -1,5 +1,6 @@
 import { Request, Response, Router, NextFunction } from 'express';
-import { UserLevel, Modifier } from '../../../../models';
+import { Op } from 'sequelize';
+import { UserLevel, LevelRank, Modifier } from '../../../../models';
 import { ResponseHandler } from '../../../../utils/response.utils';
 import { ResponseCode } from '../../../../utils/response.types';
 import { getOrCreateUserLevel } from './gain';
@@ -92,24 +93,31 @@ router.get('/:userId', async (req: Request, res: Response, next: NextFunction) =
     try {
         const { guildId, userId } = req.params;
 
-        const [userLevel, modifier] = await Promise.all([
-            UserLevel.findOrCreate({
-                where: { guildId, userId },
-                defaults: {
-                    guildId,
-                    userId,
-                } as UserLevel,
-            }),
-            Modifier.findOne({ where: { guildId, userId } })
-        ]);
+        const [userLevel, created] = await UserLevel.findOrCreate({
+            where: { guildId, userId },
+            defaults: {
+                guildId,
+                userId,
+            } as UserLevel,
+        });
 
-        // Add modifier to user level object
-        const userLevelWithModifier = {
+        const modifier = await Modifier.findOne({ where: { userId, guildId } })
+
+        const rewards = await LevelRank.findAll({
+            where: {
+                guildId: guildId,
+                level: { [Op.lte]: userLevel.level },
+            },
+            order: [['level', 'ASC']],
+        });
+
+        const response = {
             userLevel,
-            modifier
+            modifier: modifier?.amount ?? 1,
+            rewards: rewards ?? []
         };
 
-        return ResponseHandler.sendSuccess(res, userLevelWithModifier, 'User level retrieved successfully');
+        return ResponseHandler.sendSuccess(res, response, 'User level retrieved successfully');
     } catch (error) {
         next(error);
     }
