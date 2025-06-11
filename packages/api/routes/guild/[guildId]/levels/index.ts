@@ -103,7 +103,7 @@ router.get('/:userId', async (req: Request, res: Response, next: NextFunction) =
 
         const modifier = await Modifier.findOne({ where: { userId, guildId } })
 
-        const rewards = await LevelRank.findAll({
+        const ranks = await LevelRank.findAll({
             where: {
                 guildId: guildId,
                 level: { [Op.lte]: userLevel.level },
@@ -114,7 +114,7 @@ router.get('/:userId', async (req: Request, res: Response, next: NextFunction) =
         const response = {
             userLevel,
             modifier: modifier?.amount ?? 1,
-            rewards: rewards ?? []
+            ranks: ranks ?? []
         };
 
         return ResponseHandler.sendSuccess(res, response, 'User level retrieved successfully');
