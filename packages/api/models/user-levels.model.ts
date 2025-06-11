@@ -83,6 +83,9 @@ export class UserLevel extends Model<UserLevel> {
     @BeforeSave
     static async levelCalculations(userLevel: UserLevel): Promise<void> {
 
+        // Store previous Level record
+        const previousLevel = userLevel.level;
+
         // Check if the user has reached a new level
         const newLevel = await calculateLevel(userLevel);
 
@@ -92,7 +95,7 @@ export class UserLevel extends Model<UserLevel> {
         userLevel.remainingExp = newLevel.remainingExp;
 
         // Update rank information if level has changed
-        if (userLevel.level !== newLevel.level) {
+        if (previousLevel !== newLevel.level) {
             const newRank = await calculateRank(userLevel);
             userLevel.rank = newRank.rank;
         }

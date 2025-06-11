@@ -24,14 +24,16 @@ export const calculateXp = (personalModifier = 1, serverModifier = 1) => {
  * @returns An object containing the level, current experience, and remaining experience
  */
 export const calculateLevel = async (userLevel: UserLevel) => {
-    const [previousLevel, nextLevel] = await Level.findAll({
-        order: [['experience', 'ASC']],
-        where: {
-            experience: {
-                [Op.between]: [userLevel.experience - 1, userLevel.experience + 1],
-            },
-        },
-    });
+    const [previousLevel, nextLevel] = await Promise.all([
+        Level.findOne({
+            where: { experience: { [Op.lte]: userLevel.experience } },
+            order: [['experience', 'DESC']],
+        }),
+        Level.findOne({
+            where: { experience: { [Op.gt]: userLevel.experience } },
+            order: [['experience', 'ASC']],
+        }),
+    ]);
 
     return {
         level: previousLevel?.level ?? 1,
@@ -47,22 +49,33 @@ export const calculateLevel = async (userLevel: UserLevel) => {
  * @returns An object containing the rank, ranks, and rewards
  */
 export const calculateRank = async (userLevel: UserLevel) => {
-    const [userRank, ...userRanks] = await LevelRank.findAll({
+    const [userRank, ranks] = await Promise.all([
+        LevelRank.findOne({
+            where: {
+                guildId: userLevel.guildId,
+                level: { [Op.lte]: userLevel.level },
+            },
+            order: [['level', 'DESC']],
+        }),
+        LevelRank.findAll({
+            where: { guildId: userLevel.guildId },
+            order: [['level', 'ASC']],
+        }),
+    ]);
+
+    // Find all ranks that are same or lower as userLevel
+    const rewards = await LevelRank.findAll({
         where: {
             guildId: userLevel.guildId,
+            level: { [Op.lte]: userLevel.level },
         },
-        order: [['level', 'DESC']],
+        order: [['level', 'ASC']],
     });
 
     return {
         rank: userRank?.level ?? 1,
-        ranks: userRanks,
-        rewards: await LevelRank.findAll({
-            where: {
-                guildId: userLevel.guildId,
-            },
-            order: [['level', 'ASC']],
-        }),
+        ranks,
+        rewards,
     };
 
 }
