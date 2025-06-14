@@ -10,11 +10,11 @@ const publisher = new Redis(redisUrl);
 export function publish(channel: Channel, data: any): Promise<number> {
     if (!Object.values(Channel).includes(channel)) {
         // Send Message to Error Channel if channel does not exist
-        const payload: Payload = { message: "This channel does not exist", timestamp: new Date() };
+        const payload: Payload = { code: 404, message: "This channel does not exist", timestamp: new Date() };
         return publisher.publish(Channel.ERROR, JSON.stringify(payload));
     }
 
     // Publish Message to Channel
-    const payload: Payload = { code: channel, message: "Successfully published to channel", data, timestamp: new Date() };
+    const payload: Payload = { code: 200, message: "Successfully published to channel", data, timestamp: new Date() };
     return publisher.publish(channel, JSON.stringify(payload));
 }
