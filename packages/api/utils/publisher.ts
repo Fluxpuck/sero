@@ -41,3 +41,16 @@ export function publish(channel: Channel, data: any): Promise<number> {
     const payload: Payload = { code: 200, message: "Successfully published to channel", data, timestamp: new Date() };
     return publisher.publish(channel, JSON.stringify(payload));
 }
+
+/**
+ * Test the connection to Redis
+ */
+export async function testConnection(): Promise<boolean> {
+    try {
+        await publisher.ping();
+        return true;
+    } catch (err) {
+        console.error('Error connecting to Redis:', err);
+        return false;
+    }
+}

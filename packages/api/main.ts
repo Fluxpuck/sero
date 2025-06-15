@@ -4,6 +4,7 @@ import helmet from 'helmet';
 import cors from 'cors';
 import rateLimit from 'express-rate-limit';
 import compression from 'compression';
+import { testConnection } from './utils/publisher';
 
 (async () => {
 
@@ -43,12 +44,16 @@ import compression from 'compression';
     await sequelize.sync();
     const end = performance.now();
 
+    // → Test Redis Connection
+    const redisTest = await testConnection();
+
     // → Start server
     app.listen(port, () => {
         return console.log(`
     RESTFUL API - Startup details:
     > ${new Date().toUTCString()}
     > Database Synced in ${Math.round(end - start)} milliseconds
+    > Redis Publisher ${redisTest ? 'Connected' : 'Disconnected'}
     > Running in ${process.env.NODE_ENV || 'development'} mode
     > Ready on http://localhost:${port}
         `)
