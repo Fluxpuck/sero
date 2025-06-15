@@ -1,5 +1,6 @@
 import { BeforeSave, Column, DataType, Default, Model, Table } from "sequelize-typescript";
 import { calculateLevel, calculateRank } from "../utils/levels.utils";
+import { publish, Channel } from "../utils/publisher";
 
 @Table({
     tableName: "user_levels",
@@ -98,6 +99,9 @@ export class UserLevel extends Model<UserLevel> {
         if (previousLevel !== newLevel.level) {
             const newRank = await calculateRank(userLevel);
             userLevel.rank = newRank.rank;
+
+            // Publish a message
+            publish(Channel.GUILD_MEMBER_LEVEL, userLevel);
         }
 
     }
