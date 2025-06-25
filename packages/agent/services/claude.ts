@@ -76,6 +76,7 @@ export class ClaudeService {
       excludeTools = false,
       finalResponse = true,
     } = options || {};
+
     let textResponse = "";
 
     try {
@@ -95,7 +96,7 @@ export class ClaudeService {
       let oversizedAttachments = [];
 
       // Process images and text attachments - Support for other files may be added later
-      for (const attachment of message.attachments.values()) {
+      for (const attachment of attachments || []) {
         try {
           const isAttachmentOversized = attachment.size > MAX_FILE_SIZE_BYTES;
 
