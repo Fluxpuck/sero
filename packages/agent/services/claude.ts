@@ -22,6 +22,8 @@ type ClaudeOptions = {
   finalResponse?: boolean;
 };
 
+const MAX_IMAGE_SIZE_BYTES = 5 * 1024 * 1024; // 5MB
+
 export class ClaudeService {
   private anthropic: Anthropic;
   private readonly CLAUDE_MODEL = "claude-3-5-haiku-20241022";
@@ -90,9 +92,24 @@ export class ClaudeService {
 
       // If there are attachments, add them as blocks in a single user message
       const attachmentBlocks = [];
-      for (const attachment of attachments || []) {
+      let overSizedImages = [];
+
+      // Process images and text attachments - Support for other files may be added later
+      for (const attachment of message.attachments.values()) {
         try {
           if (attachment.contentType?.startsWith("image/")) {
+            const isImageOversized = attachment.size > MAX_IMAGE_SIZE_BYTES;
+
+            // Check image size before processing, skip oversized images
+            if (isImageOversized) {
+              overSizedImages.push({
+                name: attachment.name || "unnamed image",
+                size: attachment.size,
+              });
+              continue;
+            }
+
+            // Process image attachment
             const response = await fetch(attachment.url);
             const arrayBuffer = await response.arrayBuffer();
             const base64Data = Buffer.from(arrayBuffer).toString("base64");
@@ -115,6 +132,18 @@ export class ClaudeService {
         } catch (error) {
           console.error(`Error processing ${attachment.name}:`, error);
         }
+      }
+
+      // Add a message to the prompt for oversized images...
+      if (overSizedImages.length > 0) {
+        const sizeWarning = overSizedImages
+          .map((img) => `- ${img.name} (${img.size}MB)`)
+          .join("\n");
+
+        previousMessages.push({
+          role: "assistant",
+          content: `The following images exceed the 5MB size limit and will be skipped:\n${sizeWarning}`,
+        });
       }
 
       // Add attachment blocks to the user message
