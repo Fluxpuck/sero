@@ -22,7 +22,7 @@ type ClaudeOptions = {
   finalResponse?: boolean;
 };
 
-const MAX_IMAGE_SIZE_BYTES = 5 * 1024 * 1024; // 5MB
+const MAX_FILE_SIZE_BYTES = 5 * 1024 * 1024; // 5MB
 
 export class ClaudeService {
   private anthropic: Anthropic;
@@ -92,19 +92,20 @@ export class ClaudeService {
 
       // If there are attachments, add them as blocks in a single user message
       const attachmentBlocks = [];
-      let overSizedImages = [];
+      let oversizedAttachments = [];
 
       // Process images and text attachments - Support for other files may be added later
       for (const attachment of message.attachments.values()) {
         try {
-          if (attachment.contentType?.startsWith("image/")) {
-            const isImageOversized = attachment.size > MAX_IMAGE_SIZE_BYTES;
+          const isAttachmentOversized = attachment.size > MAX_FILE_SIZE_BYTES;
 
+          if (attachment.contentType?.startsWith("image/")) {
             // Check image size before processing, skip oversized images
-            if (isImageOversized) {
-              overSizedImages.push({
+            if (isAttachmentOversized) {
+              oversizedAttachments.push({
                 name: attachment.name || "unnamed image",
                 size: attachment.size,
+                type: attachment.contentType,
               });
               continue;
             }
@@ -122,6 +123,17 @@ export class ClaudeService {
               },
             });
           } else if (attachment.contentType?.startsWith("text/")) {
+            // Check text file size before processing, skip oversized files
+            if (isAttachmentOversized) {
+              oversizedAttachments.push({
+                name: attachment.name || "unnamed file",
+                size: attachment.size,
+                type: attachment.contentType,
+              });
+              continue;
+            }
+
+            // Process text attachment
             const response = await fetch(attachment.url);
             const textContent = await response.text();
             attachmentBlocks.push({
@@ -134,15 +146,18 @@ export class ClaudeService {
         }
       }
 
-      // Add a message to the prompt for oversized images...
-      if (overSizedImages.length > 0) {
-        const sizeWarning = overSizedImages
-          .map((img) => `- ${img.name} (${img.size}MB)`)
+      // Add a message to the prompt for oversized attachments...
+      if (oversizedAttachments.length > 0) {
+        const sizeWarning = oversizedAttachments
+          .map(
+            (attachment) =>
+              `${attachment.type} ${attachment.name} (${attachment.size}MB)`
+          )
           .join("\n");
 
         previousMessages.push({
           role: "assistant",
-          content: `The following images exceed the 5MB size limit and will be skipped:\n${sizeWarning}`,
+          content: `The following attachments exceed the 5MB size limit and will be skipped:\r\n${sizeWarning}`,
         });
       }
 
