@@ -78,7 +78,15 @@ export class OpenAIService {
       //
     } catch (error) {
       console.error(`Error generating image:`, error);
-      return { success: false, message: `Error: Failed to generate image.` };
+
+      return {
+        success: false,
+        message: `The image generation could not be completed. ${
+          error instanceof Error
+            ? error.message
+            : "Please try with a different image or prompt."
+        }`,
+      };
     }
 
     return { success: true, message: `Image generated successfully.` };
@@ -101,6 +109,15 @@ export class OpenAIService {
       this.message,
       this.client
     );
+
+    // If no attachments, return with success: true and a user-facing message
+    if (!attachments || attachments.length === 0) {
+      return {
+        success: false,
+        message:
+          "No image found to edit. Please attach an image and try again.",
+      };
+    }
 
     try {
       // Download the attachment into a buffer
@@ -137,7 +154,14 @@ export class OpenAIService {
       //
     } catch (error) {
       console.error(`Error editing image:`, error);
-      return { success: false, message: `Error: Failed to edit image.` };
+      return {
+        success: false,
+        message: `The image edit could not be completed. ${
+          error instanceof Error
+            ? error.message
+            : "Please try with a different image or prompt."
+        }`,
+      };
     }
 
     return { success: true, message: `Image edited successfully.` };
