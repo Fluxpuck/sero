@@ -28,6 +28,7 @@
         "lodash": "^4.17.21",
         "node-cache": "^5.1.2",
         "node-cron": "^3.0.3",
+        "openai": "^5.8.2",
         "uuid": "^11.1.0"
     },
     "devDependencies": {

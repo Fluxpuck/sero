@@ -14,6 +14,7 @@ import { DiscordGuildInfoToolContext } from "../tools/discord_guild_info.tool";
 import { DiscordFetchMessagesToolContext } from "../tools/discord_fetch_messages.tool";
 import { DiscordModerationToolContext } from "../tools/discord_moderation_actions.tool";
 import { DiscordSendMessageToolContext } from "../tools/discord_send_message.tool";
+import { GenerateImageToolContext } from "../tools/openai_image_generation.tool";
 
 type ClaudeOptions = {
   previousMessages?: any[];
@@ -61,6 +62,7 @@ export class ClaudeService {
       ...DiscordFetchMessagesToolContext,
       ...DiscordModerationToolContext,
       ...DiscordSendMessageToolContext,
+      ...GenerateImageToolContext,
     ];
   }
 
@@ -80,7 +82,7 @@ export class ClaudeService {
     let textResponse = "";
 
     try {
-      if ("sendTyping" in message.channel) {
+      if (finalResponse && "sendTyping" in message.channel) {
         await message.channel.sendTyping();
       }
 
@@ -256,7 +258,7 @@ export class ClaudeService {
             previousMessages: updatedMessages,
             reasoning,
             excludeTools,
-            finalResponse,
+            finalResponse: false,
           });
         } catch (error) {
           console.error("Error executing tool:", error);
