@@ -258,7 +258,7 @@ export class ClaudeService {
             previousMessages: updatedMessages,
             reasoning,
             excludeTools,
-            finalResponse: false,
+            finalResponse,
           });
         } catch (error) {
           console.error("Error executing tool:", error);
