@@ -1,11 +1,14 @@
 import { Client, Message, TextChannel, ThreadChannel } from "discord.js";
 import { ClaudeTool, ClaudeToolType } from "../types/tool.types";
-import { OpenAIService } from "../services/openai";
+import { OpenAIService, ImageGenerationResponse } from "../services/openai";
 import { ChannelResolver } from "../utils/channel-resolver";
 
+type ImageGenerationActionType = "generate" | "edit";
 type ImageGenerationToolInput = {
   prompt: string;
+  transparent_background: boolean;
   channelId: string;
+  action: ImageGenerationActionType;
 };
 
 export class GenerateImageTool extends ClaudeToolType {
@@ -24,13 +27,23 @@ export class GenerateImageTool extends ClaudeToolType {
             description:
               "A text description of the desired image(s). Maximum length is 1000 characters",
           },
+          transparent_background: {
+            type: "boolean",
+            description:
+              "Set to true to generate an image with a transparent background. False by default.",
+          },
           channelId: {
             type: "string",
             description:
               "The ID or search query for the channel to send the image to",
           },
+          action: {
+            type: "string",
+            description:
+              "The action to perform on the image. Can be 'generate' or 'edit'.",
+          },
         },
-        required: ["prompt", "channelId"],
+        required: ["prompt", "channelId", "action"],
       },
     };
   }
@@ -46,6 +59,7 @@ export class GenerateImageTool extends ClaudeToolType {
   async execute({
     prompt,
     channelId,
+    action,
   }: ImageGenerationToolInput): Promise<string> {
     try {
       if (!this.message.guild) {
@@ -61,12 +75,24 @@ export class GenerateImageTool extends ClaudeToolType {
         return `Error: The target channel "${channelId}" is not a text channel.`;
       }
 
-      const result = await this.openaiService.generateImage(prompt, channel);
+      let result: ImageGenerationResponse;
+      switch (action) {
+        case "generate":
+          result = await this.openaiService.generateImage(prompt, channel);
+          break;
+        case "edit":
+          result = await this.openaiService.editImage(prompt, channel);
+          break;
+        default:
+          return `Error: Invalid action "${action}". Must be 'generate' or 'edit'.`;
+      }
+
       if (!result.success) {
         throw new Error(result.message);
       }
 
       return result.message;
+      //
     } catch (error) {
       console.error(`Error in GenerateImageTool:`, error);
       return `Error executing GenerateImageTool: ${
