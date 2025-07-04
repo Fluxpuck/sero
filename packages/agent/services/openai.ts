@@ -70,15 +70,4 @@ export class OpenAIService {
       return { success: false, message: `Error: Failed to generate image.` };
     }
   }
-
-  public async editImage(
-    image: Attachment,
-    prompt: string,
-    variation = false
-  ): Promise<ImageGenerationResponse> {
-    return {
-      success: false,
-      message: "Error: Image editing is currently disabled.",
-    };
-  }
 }
