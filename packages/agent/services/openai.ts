@@ -119,6 +119,8 @@ export class OpenAIService {
       };
     }
 
+    const { transparent_background = false } = options || {};
+
     try {
       // Download the attachment into a buffer
       const response = await fetch(attachments[0].url);
@@ -135,6 +137,9 @@ export class OpenAIService {
         n: 1,
         image: file,
         prompt,
+        size: this.IMAGE_SIZE,
+        quality: this.IMAGE_QUALITY,
+        background: transparent_background ? "transparent" : "opaque",
       });
 
       // Check if image generation was successful
