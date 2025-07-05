@@ -41,12 +41,9 @@ export class OpenAIService {
     prompt: string,
     channel: Channel,
     options?: ImageGenerationOptions
-  ): Promise<ImageGenerationResponse> {
+  ): Promise<void> {
     if (!(channel instanceof TextChannel || channel instanceof ThreadChannel)) {
-      return {
-        success: false,
-        message: `Error: The target channel "${channel.id}" is not a text channel.`,
-      };
+      return;
     }
 
     const { transparent_background = false } = options || {};
@@ -63,7 +60,7 @@ export class OpenAIService {
 
       // Check if image generation was successful
       if (!image || !image.data) {
-        return { success: false, message: "Error: Failed to generate image." };
+        return;
       }
 
       const image_base64 = image.data[0].b64_json!;
@@ -78,30 +75,17 @@ export class OpenAIService {
       //
     } catch (error) {
       console.error(`Error generating image:`, error);
-
-      return {
-        success: false,
-        message: `The image generation could not be completed. ${
-          error instanceof Error
-            ? error.message
-            : "Please try with a different image or prompt."
-        }`,
-      };
+      return;
     }
-
-    return { success: true, message: `Image generated successfully.` };
   }
 
   public async editImage(
     prompt: string,
     channel: Channel,
     options?: ImageGenerationOptions
-  ): Promise<ImageGenerationResponse> {
+  ): Promise<void> {
     if (!(channel instanceof TextChannel || channel instanceof ThreadChannel)) {
-      return {
-        success: false,
-        message: `Error: The target channel "${channel.id}" is not a text channel.`,
-      };
+      return;
     }
 
     // Gather attachments and referenced content using utility
@@ -112,11 +96,7 @@ export class OpenAIService {
 
     // If no attachments, return with success: true and a user-facing message
     if (!attachments || attachments.length === 0) {
-      return {
-        success: false,
-        message:
-          "No image found to edit. Please attach an image and try again.",
-      };
+      return;
     }
 
     const { transparent_background = false } = options || {};
@@ -144,7 +124,7 @@ export class OpenAIService {
 
       // Check if image generation was successful
       if (!image || !image.data) {
-        return { success: false, message: "Error: Failed to generate image." };
+        return;
       }
 
       const image_base64 = image.data[0].b64_json!;
@@ -159,16 +139,7 @@ export class OpenAIService {
       //
     } catch (error) {
       console.error(`Error editing image:`, error);
-      return {
-        success: false,
-        message: `The image edit could not be completed. ${
-          error instanceof Error
-            ? error.message
-            : "Please try with a different image or prompt."
-        }`,
-      };
+      return;
     }
-
-    return { success: true, message: `Image edited successfully.` };
   }
 }

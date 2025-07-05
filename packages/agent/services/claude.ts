@@ -21,14 +21,17 @@ type ClaudeOptions = {
   reasoning?: boolean;
   excludeTools?: boolean;
   finalResponse?: boolean;
+  toolRetryCount?: number;
+  toolName?: string;
 };
-
-const MAX_FILE_SIZE_BYTES = 5 * 1024 * 1024; // 5MB
 
 export class ClaudeService {
   private anthropic: Anthropic;
   private readonly CLAUDE_MODEL = "claude-3-5-haiku-20241022";
   private readonly MAX_TOKENS = 1024;
+  private readonly DEFAULT_TOOL_RETRY_COUNT = 1;
+  private readonly MAX_FILE_SIZE_BYTES = 5 * 1024 * 1024; // 5MB
+  private readonly BLOCK_RECURSIVE_TOOL_REQUESTS = ["generate_image"];
 
   constructor() {
     this.anthropic = new Anthropic({
@@ -77,9 +80,20 @@ export class ClaudeService {
       reasoning = true,
       excludeTools = false,
       finalResponse = true,
+      toolRetryCount = 0,
+      toolName = "",
     } = options || {};
 
     let textResponse = "";
+    let activeRetryCount = toolRetryCount;
+
+    if (activeRetryCount >= this.DEFAULT_TOOL_RETRY_COUNT) {
+      await replyOrSend(
+        message,
+        "I'm having trouble with that request. Let's try something else."
+      );
+      return;
+    }
 
     try {
       if (finalResponse && "sendTyping" in message.channel) {
@@ -100,7 +114,8 @@ export class ClaudeService {
       // Process images and text attachments - Support for other files may be added later
       for (const attachment of attachments || []) {
         try {
-          const isAttachmentOversized = attachment.size > MAX_FILE_SIZE_BYTES;
+          const isAttachmentOversized =
+            attachment.size > this.MAX_FILE_SIZE_BYTES;
 
           if (attachment.contentType?.startsWith("image/")) {
             // Check image size before processing, skip oversized images
@@ -253,13 +268,18 @@ export class ClaudeService {
           // Update the text response with the tool result
           textResponse = toolTextResponse;
 
-          // Recursive call with tool result and updated history
-          return await this.askClaude("", message, attachments, {
-            previousMessages: updatedMessages,
-            reasoning,
-            excludeTools,
-            finalResponse,
-          });
+          // BLOCK_RECURSIVE_TOOL_REQUESTS is used to prevent recursive calls
+          // If the tool is not in the list, make a recursive call
+          if (!this.BLOCK_RECURSIVE_TOOL_REQUESTS.includes(name)) {
+            await this.askClaude("", message, attachments, {
+              previousMessages: updatedMessages,
+              reasoning,
+              excludeTools,
+              finalResponse,
+              toolRetryCount: activeRetryCount + 1,
+              toolName: name,
+            });
+          }
         } catch (error) {
           console.error("Error executing tool:", error);
           return;
