@@ -68,9 +68,7 @@ router.post("/", async (req, res, next) => {
         } = req.params;
         const {
             userId,
-            userName,
-            moderator = false,
-            active = true
+            userName
         } = req.body;
 
         // Check if the required fields are provided
@@ -80,14 +78,39 @@ router.post("/", async (req, res, next) => {
             });
         }
 
-        // Update or Create the record
-        const [result, created] = await createOrUpdateRecord(User, {
+        // Check if user exists to preserve moderator status if not explicitly provided
+        const existingUser = await findOneRecord(User, { where: { guildId, userId } });
+        
+        // Prepare update data with required fields
+        const userData = {
             guildId,
             userId,
-            userName,
-            moderator,
-            active
-        }, t);
+            userName
+        };
+        
+        // Handle moderator status
+        if (req.body.hasOwnProperty('moderator')) {
+            // Only update if explicitly provided in request
+            userData.moderator = req.body.moderator;
+        } else if (existingUser) {
+            // Keep existing moderator status for updates
+            userData.moderator = existingUser.moderator;
+        } else {
+            // Default for new users only
+            userData.moderator = false;
+        }
+        
+        // Handle active status
+        if (req.body.hasOwnProperty('active')) {
+            userData.active = req.body.active;
+        } else if (existingUser) {
+            userData.active = existingUser.active;
+        } else {
+            userData.active = true;
+        }
+        
+        // Update or Create the record
+        const [result, created] = await createOrUpdateRecord(User, userData, t);
 
         // Send the appropriate response
         if (created) {
@@ -103,30 +126,29 @@ router.post("/", async (req, res, next) => {
         t.rollback();
         next(error);
     }
+});
 
-    /**
-     * DELETE api/guilds/:guildId/users/:userId
-     * @description Delete a specific guild user
-     * @param {string} guildId - The id of the guild
-     * @param {string} userId - The id of the user
-     */
-    router.delete("/:userId", async (req, res, next) => {
-        const { guildId, userId } = req.params;
-        const options = { where: { guildId: guildId, userId: userId } };
+/**
+ * DELETE api/guilds/:guildId/users/:userId
+ * @description Delete a specific guild user
+ * @param {string} guildId - The id of the guild
+ * @param {string} userId - The id of the user
+ */
+router.delete("/:userId", async (req, res, next) => {
+    const { guildId, userId } = req.params;
+    const options = { where: { guildId: guildId, userId: userId } };
 
-        try {
-            const guildUser = await findOneRecord(User, options);
-            if (!guildUser) {
-                throw new CreateError(404, "User not found in the guild");
-            } else {
-                await guildUser.destroy();
-                res.status(200).json({ message: "User deleted successfully" });
-            }
-        } catch (error) {
-            next(error);
+    try {
+        const guildUser = await findOneRecord(User, options);
+        if (!guildUser) {
+            throw new CreateError(404, "User not found in the guild");
+        } else {
+            await guildUser.destroy();
+            res.status(200).json({ message: "User deleted successfully" });
         }
-    });
-
+    } catch (error) {
+        next(error);
+    }
 });
 
 module.exports = router;
