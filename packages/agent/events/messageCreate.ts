@@ -1,5 +1,6 @@
 import { Message, Events, Client } from "discord.js";
 import { ClaudeService } from "../services/claude";
+import { resolveAttachmentsAndContext } from "../utils/attachment-resolver";
 
 export const name = Events.MessageCreate;
 export async function execute(message: Message) {
@@ -60,44 +61,13 @@ export async function execute(message: Message) {
         .trim();
     }
 
-    // Gather attachments from the message and referenced message (if any)
-    let attachments = Array.from(message.attachments.values()) || [];
+    // Gather attachments and referenced content using utility
+    const { attachments, referencedContent } =
+      await resolveAttachmentsAndContext(message, client);
 
-    // Add context from referenced message if this is a reply
-    let referencedContent = "";
-    if (message.reference?.messageId) {
-      try {
-        const referencedMessage = await message.channel.messages.fetch(
-          message.reference.messageId
-        );
-
-        if (referencedMessage) {
-          // Format who the message is from
-          const referencedAuthor = referencedMessage.author.bot
-            ? referencedMessage.author.id === client.user?.id
-              ? "you"
-              : "another bot"
-            : `user ${referencedMessage.author.username}`;
-
-          const hasAttachments = referencedMessage.attachments.size > 0;
-
-          referencedContent = `\n\nI'm replying to this message from ${referencedAuthor}:\n"${referencedMessage.content}"\n\n`;
-
-          if (hasAttachments) {
-            // Add attachments from the referenced message
-            attachments.push(...referencedMessage.attachments.values());
-
-            referencedContent += `\n\nReferenced Attachments:\n`;
-            for (const attachment of referencedMessage.attachments.values()) {
-              referencedContent += `\n- ${attachment.name}: ${attachment.url}\n`;
-            }
-          }
-          // Prepend referenced message to the prompt for better context
-          prompt = referencedContent + prompt;
-        }
-      } catch (error) {
-        console.error("Error fetching referenced message:", error);
-      }
+    // Prepend referenced message to the prompt for better context
+    if (referencedContent) {
+      prompt = referencedContent + prompt;
     }
 
     // Set default prompt if empty after processing
