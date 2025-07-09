@@ -112,6 +112,15 @@ export const initModels = (sequelize: Sequelize): void => {
     });
     User.hasMany(UserAuditLogs, {
         foreignKey: 'executorId',
+        as: 'auditLogsAsExecutor',
+        constraints: false,
+        scope: {
+            guildId: { $col: 'User.guildId' }
+        }
+    });
+    User.hasMany(UserAuditLogs, {
+        foreignKey: 'targetId',
+        as: 'auditLogsAsTarget',
         constraints: false,
         scope: {
             guildId: { $col: 'User.guildId' }
@@ -125,14 +134,32 @@ export const initModels = (sequelize: Sequelize): void => {
         }
     });
     User.hasMany(UserEconomyLogs, {
-        foreignKey: 'userId',
+        foreignKey: 'originId',
+        as: 'economyLogsAsOrigin',
+        constraints: false,
+        scope: {
+            guildId: { $col: 'User.guildId' }
+        }
+    });
+    User.hasMany(UserEconomyLogs, {
+        foreignKey: 'targetId',
+        as: 'economyLogsAsTarget',
         constraints: false,
         scope: {
             guildId: { $col: 'User.guildId' }
         }
     });
     User.hasMany(UserExperienceLogs, {
-        foreignKey: 'userId',
+        foreignKey: 'originId',
+        as: 'experienceLogsAsOrigin',
+        constraints: false,
+        scope: {
+            guildId: { $col: 'User.guildId' }
+        }
+    });
+    User.hasMany(UserExperienceLogs, {
+        foreignKey: 'targetId',
+        as: 'experienceLogsAsTarget',
         constraints: false,
         scope: {
             guildId: { $col: 'User.guildId' }
@@ -299,6 +326,15 @@ export const initModels = (sequelize: Sequelize): void => {
     UserAuditLogs.belongsTo(User, {
         foreignKey: 'executorId',
         constraints: false,
+        as: 'executor',
+        scope: {
+            guildId: { $col: 'UserAuditLogs.guildId' }
+        }
+    });
+    UserAuditLogs.belongsTo(User, {
+        foreignKey: 'targetId',
+        constraints: false,
+        as: 'target',
         scope: {
             guildId: { $col: 'UserAuditLogs.guildId' }
         }
@@ -315,8 +351,17 @@ export const initModels = (sequelize: Sequelize): void => {
     UserActivityLogs.belongsTo(Guild, { foreignKey: 'guildId', constraints: false });
 
     UserEconomyLogs.belongsTo(User, {
-        foreignKey: 'userId',
+        foreignKey: 'originId',
         constraints: false,
+        as: 'origin',
+        scope: {
+            guildId: { $col: 'UserEconomyLogs.guildId' }
+        }
+    });
+    UserEconomyLogs.belongsTo(User, {
+        foreignKey: 'targetId',
+        constraints: false,
+        as: 'target',
         scope: {
             guildId: { $col: 'UserEconomyLogs.guildId' }
         }
@@ -324,8 +369,17 @@ export const initModels = (sequelize: Sequelize): void => {
     UserEconomyLogs.belongsTo(Guild, { foreignKey: 'guildId', constraints: false });
 
     UserExperienceLogs.belongsTo(User, {
-        foreignKey: 'userId',
+        foreignKey: 'originId',
         constraints: false,
+        as: 'origin',
+        scope: {
+            guildId: { $col: 'UserExperienceLogs.guildId' }
+        }
+    });
+    UserExperienceLogs.belongsTo(User, {
+        foreignKey: 'targetId',
+        constraints: false,
+        as: 'target',
         scope: {
             guildId: { $col: 'UserExperienceLogs.guildId' }
         }
