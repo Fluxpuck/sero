@@ -1,6 +1,6 @@
 const { MessageFlags } = require('discord.js');
 const { getRequest } = require("../../database/connection");
-const { createRankCard } = require("../../lib/canvas/rank");
+const { createRankCard } = require("../../lib/image/rank");
 const { deferInteraction, replyInteraction, followUpInteraction } = require("../../utils/InteractionManager");
 
 module.exports.props = {
