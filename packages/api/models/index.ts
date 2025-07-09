@@ -111,7 +111,7 @@ export const initModels = (sequelize: Sequelize): void => {
         }
     });
     User.hasMany(UserAuditLogs, {
-        foreignKey: 'userId',
+        foreignKey: 'executorId',
         constraints: false,
         scope: {
             guildId: { $col: 'User.guildId' }
@@ -153,7 +153,7 @@ export const initModels = (sequelize: Sequelize): void => {
         }
     });
     User.hasMany(CommandLogs, {
-        foreignKey: 'userId',
+        foreignKey: 'executorId',
         constraints: false,
         scope: {
             guildId: { $col: 'User.guildId' }
@@ -297,7 +297,7 @@ export const initModels = (sequelize: Sequelize): void => {
     UserCareers.belongsTo(Jobs, { foreignKey: 'jobId', constraints: false });
 
     UserAuditLogs.belongsTo(User, {
-        foreignKey: 'userId',
+        foreignKey: 'executorId',
         constraints: false,
         scope: {
             guildId: { $col: 'UserAuditLogs.guildId' }
@@ -351,7 +351,7 @@ export const initModels = (sequelize: Sequelize): void => {
     TemporaryRole.belongsTo(Guild, { foreignKey: 'guildId', constraints: false });
 
     CommandLogs.belongsTo(User, {
-        foreignKey: 'userId',
+        foreignKey: 'executorId',
         constraints: false,
         scope: {
             guildId: { $col: 'CommandLogs.guildId' }
