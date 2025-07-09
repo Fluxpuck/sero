@@ -1,8 +1,7 @@
-import { Request, Response, Router, NextFunction } from 'express';
-import { Aways } from '../../../../models';
-import { ResponseHandler } from '../../../../utils/response.utils';
-import { ResponseCode } from '../../../../utils/response.types';
-
+import { Request, Response, Router, NextFunction } from "express";
+import { Aways } from "../../../../models";
+import { ResponseHandler } from "../../../../utils/response.utils";
+import { ResponseCode } from "../../../../utils/response.types";
 
 const router = Router({ mergeParams: true });
 
@@ -43,18 +42,22 @@ const router = Router({ mergeParams: true });
  *       500:
  *         description: Server error
  */
-router.get('/', async (req: Request, res: Response, next: NextFunction) => {
-    try {
-        const { guildId } = req.params;
+router.get("/", async (req: Request, res: Response, next: NextFunction) => {
+  try {
+    const { guildId } = req.params;
 
-        const aways = await Aways.findAll({
-            where: { guildId }
-        });
+    const aways = await Aways.findAll({
+      where: { guildId },
+    });
 
-        ResponseHandler.sendSuccess(res, aways, 'Away statuses retrieved successfully');
-    } catch (error) {
-        next(error);
-    }
+    ResponseHandler.sendSuccess(
+      res,
+      aways,
+      "Away statuses retrieved successfully"
+    );
+  } catch (error) {
+    next(error);
+  }
 });
 
 /**
@@ -100,30 +103,37 @@ router.get('/', async (req: Request, res: Response, next: NextFunction) => {
  *       500:
  *         description: Server error
  */
-router.get('/:userId', async (req: Request, res: Response, next: NextFunction) => {
+router.get(
+  "/:userId",
+  async (req: Request, res: Response, next: NextFunction) => {
     try {
-        const { guildId, userId } = req.params;
+      const { guildId, userId } = req.params;
 
-        const away = await Aways.findOne({
-            where: {
-                guildId,
-                userId
-            }
-        });
+      const away = await Aways.findOne({
+        where: {
+          guildId,
+          userId,
+        },
+      });
 
-        if (!away) {
-            return ResponseHandler.sendError(
-                res,
-                'Away status not found for this user',
-                ResponseCode.NOT_FOUND
-            );
-        }
+      if (!away) {
+        return ResponseHandler.sendError(
+          res,
+          "Away status not found for this user",
+          ResponseCode.NOT_FOUND
+        );
+      }
 
-        ResponseHandler.sendSuccess(res, away, 'Away status retrieved successfully');
+      ResponseHandler.sendSuccess(
+        res,
+        away,
+        "Away status retrieved successfully"
+      );
     } catch (error) {
-        next(error);
+      next(error);
     }
-});
+  }
+);
 
 /**
  * @swagger
@@ -168,62 +178,58 @@ router.get('/:userId', async (req: Request, res: Response, next: NextFunction) =
  *       500:
  *         description: Server error
  */
-router.post('/:userId', async (req: Request, res: Response, next: NextFunction) => {
+router.post(
+  "/:userId",
+  async (req: Request, res: Response, next: NextFunction) => {
     const transaction = await Aways.sequelize!.transaction();
 
     try {
-        const { guildId, userId } = req.params;
-        const { message, duration } = req.body;
+      const { guildId, userId } = req.params;
+      const { message, duration } = req.body;
 
-        // Validate required fields
-        if (!duration) {
-            return ResponseHandler.sendValidationFail(
-                res,
-                'Missing required fields',
-                ['duration (in minutes) and message are required fields']
-            );
-        }
-
-        // Calculate expiration date if duration is provided (in minutes)
-        let expireAt = null;
-        if (duration) {
-            expireAt = new Date();
-            expireAt.setMinutes(expireAt.getMinutes() + duration);
-        }
-
-        // Check if the away status already exists
-        const existingAway = await Aways.findOne({
-            where: {
-                guildId,
-                userId
-            }
-        });
-
-        // Prepare away data for upsert
-        const awayData = {
-            guildId,
-            userId,
-            message: message !== undefined ? message : existingAway?.message || null,
-            duration: duration !== undefined ? duration : existingAway?.duration || null,
-            expireAt: duration !== undefined ? expireAt : existingAway?.expireAt || null
-        } as any; // Using 'as any' to bypass TS type checking issues
-
-        // Use upsert to create or update in a single operation
-        const [away, created] = await Aways.upsert(awayData);
-
-        await transaction.commit();
-
-        ResponseHandler.sendSuccess(
-            res,
-            away,
-            created ? 'Away status created successfully' : 'Away status updated successfully',
-            created ? ResponseCode.CREATED : ResponseCode.SUCCESS
+      // Validate required fields
+      if (!duration) {
+        return ResponseHandler.sendValidationFail(
+          res,
+          "Missing required fields",
+          ["duration (in minutes) and message are required fields"]
         );
+      }
+
+      // Calculate expiration date if duration is provided (in minutes)
+      let expireAt = null;
+      if (duration) {
+        expireAt = new Date();
+        expireAt.setMinutes(expireAt.getMinutes() + duration);
+      }
+      // Prepare away data for upsert
+      const awayData = {
+        guildId,
+        userId,
+        message,
+        duration,
+        expireAt,
+      } as Aways;
+
+      // Use upsert to create or update in a single operation
+      const [away, created] = await Aways.upsert(awayData);
+
+      await transaction.commit();
+
+      ResponseHandler.sendSuccess(
+        res,
+        away,
+        created
+          ? "Away status created successfully"
+          : "Away status updated successfully",
+        created ? ResponseCode.CREATED : ResponseCode.SUCCESS
+      );
     } catch (error) {
-        transaction.rollback();
-        next(error);
+      transaction.rollback();
+      next(error);
     }
-});
+  }
+);
 
 /**
  * @swagger
@@ -253,29 +259,37 @@ router.post('/:userId', async (req: Request, res: Response, next: NextFunction) 
  *       500:
  *         description: Server error
  */
-router.delete('/:userId', async (req: Request, res: Response, next: NextFunction) => {
+router.delete(
+  "/:userId",
+  async (req: Request, res: Response, next: NextFunction) => {
     try {
-        const { guildId, userId } = req.params;
+      const { guildId, userId } = req.params;
 
-        const deleted = await Aways.destroy({
-            where: {
-                guildId,
-                userId
-            }
-        });
+      const deleted = await Aways.destroy({
+        where: {
+          guildId,
+          userId,
+        },
+      });
 
-        if (deleted === 0) {
-            return ResponseHandler.sendError(
-                res,
-                'Away status not found for this user',
-                ResponseCode.NOT_FOUND
-            );
-        }
+      if (deleted === 0) {
+        return ResponseHandler.sendError(
+          res,
+          "Away status not found for this user",
+          ResponseCode.NOT_FOUND
+        );
+      }
 
-        ResponseHandler.sendSuccess(res, null, 'Away status deleted successfully', ResponseCode.NO_CONTENT);
+      ResponseHandler.sendSuccess(
+        res,
+        null,
+        "Away status deleted successfully",
+        ResponseCode.NO_CONTENT
+      );
     } catch (error) {
-        next(error);
+      next(error);
     }
-});
+  }
+);
 
 export default router;
