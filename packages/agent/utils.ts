@@ -8,7 +8,7 @@ export function sanitizeResponse(text: string): string {
     .replace(/@everyone/gi, "everyone") // Replace everyone mentions
     .replace(/@here/gi, "here") // Replace here mentions
     .replace(/<web_search_query>.*?<\/web_search_query>/g, " ") // Remove <web_search_query> and its content
-    .replace(/<web_search(?:_[^>]*)?\/?>/gi, "") // Remove <web_search> and <web_search_***> tags
+    .replace(/<web_search(?:_[^>]*)?\/*>/gi, "") // Remove <web_search> and <web_search_***> tags
     .replace(/<search_result\/?>/gi, "") // Remove <search_result> tags
     .trim();
 }
