@@ -9,10 +9,6 @@ import {
 } from "discord.js";
 import { resolveAttachmentsAndContext } from "../utils/attachment-resolver";
 
-export type ImageGenerationOptions = {
-  transparent_background: boolean;
-};
-
 export type ImageGenerationResponse = {
   success: boolean;
   message: string;
@@ -24,9 +20,10 @@ export type ImageGenerationResponse = {
  */
 export class OpenAIService {
   private openai: OpenAI;
-  private readonly OPENAI_MODEL = "gpt-image-1";
-  private readonly IMAGE_SIZE = "1024x1024";
-  private readonly IMAGE_QUALITY = "low";
+  private readonly GENERATE_MODEL = "dall-e-3";
+  private readonly EDIT_MODEL = "gpt-image-1";
+  private readonly DEFAULT_IMAGE_SIZE = "1024x1024";
+  private readonly DEFAULT_IMAGE_QUALITY = "standard";
 
   constructor(
     private readonly client: Client,
@@ -37,37 +34,36 @@ export class OpenAIService {
     });
   }
 
-  public async generateImage(
-    prompt: string,
-    channel: Channel,
-    options?: ImageGenerationOptions
-  ): Promise<void> {
+  public async generateImage(prompt: string, channel: Channel): Promise<void> {
     if (!(channel instanceof TextChannel || channel instanceof ThreadChannel)) {
       return;
     }
 
-    const { transparent_background = false } = options || {};
-
     try {
       // Generate image
       const image = await this.openai.images.generate({
-        model: this.OPENAI_MODEL,
+        model: this.GENERATE_MODEL,
         prompt,
-        size: this.IMAGE_SIZE,
-        quality: this.IMAGE_QUALITY,
-        background: transparent_background ? "transparent" : "opaque",
+        size: this.DEFAULT_IMAGE_SIZE,
+        quality: this.DEFAULT_IMAGE_QUALITY,
       });
 
       // Check if image generation was successful
-      if (!image || !image.data) {
+      if (!image || !image.data || !image.data[0].url) {
         return;
       }
 
-      const image_base64 = image.data[0].b64_json!;
-      const image_bytes = Buffer.from(image_base64, "base64");
+      // Fetch the image from the URL
+      const response = await fetch(image.data[0].url);
+      if (!response.ok) {
+        throw new Error(
+          `Failed to fetch image from OpenAI: ${response.statusText}`
+        );
+      }
 
-      const image_attachment = new AttachmentBuilder(image_bytes, {
-        name: `${this.OPENAI_MODEL}-${this.message.id}-generate.png`,
+      const image_buffer = Buffer.from(await response.arrayBuffer());
+      const image_attachment = new AttachmentBuilder(image_buffer, {
+        name: `${this.GENERATE_MODEL}-${image._request_id}.png`,
       });
 
       // Send image to specified channel
@@ -79,11 +75,7 @@ export class OpenAIService {
     }
   }
 
-  public async editImage(
-    prompt: string,
-    channel: Channel,
-    options?: ImageGenerationOptions
-  ): Promise<void> {
+  public async editImage(prompt: string, channel: Channel): Promise<void> {
     if (!(channel instanceof TextChannel || channel instanceof ThreadChannel)) {
       return;
     }
@@ -99,8 +91,6 @@ export class OpenAIService {
       return;
     }
 
-    const { transparent_background = false } = options || {};
-
     try {
       // Download the attachment into a buffer
       const response = await fetch(attachments[0].url);
@@ -113,13 +103,13 @@ export class OpenAIService {
 
       // Edit image
       const image = await this.openai.images.edit({
-        model: this.OPENAI_MODEL,
+        model: this.EDIT_MODEL,
         n: 1,
         image: file,
         prompt,
-        size: this.IMAGE_SIZE,
-        quality: this.IMAGE_QUALITY,
-        background: transparent_background ? "transparent" : "opaque",
+        size: this.DEFAULT_IMAGE_SIZE,
+        quality: this.DEFAULT_IMAGE_QUALITY,
+        background: "opaque",
       });
 
       // Check if image generation was successful
@@ -131,7 +121,7 @@ export class OpenAIService {
       const image_bytes = Buffer.from(image_base64, "base64");
 
       const image_attachment = new AttachmentBuilder(image_bytes, {
-        name: `${this.OPENAI_MODEL}-${this.message.id}-edit.png`,
+        name: `${this.EDIT_MODEL}-${image._request_id}.png`,
       });
 
       // Send image to specified channel
