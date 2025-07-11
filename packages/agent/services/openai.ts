@@ -70,7 +70,8 @@ export class OpenAIService {
       await channel.send({ files: [image_attachment] });
       //
     } catch (error) {
-      console.error(`Error generating image:`, error);
+      console.error(`Error generating image:`, { error });
+      channel.send({ content: "Something went wrong generating the image." });
       return;
     }
   }
@@ -128,7 +129,8 @@ export class OpenAIService {
       await channel.send({ files: [image_attachment] });
       //
     } catch (error) {
-      console.error(`Error editing image:`, error);
+      console.error(`Error editing image:`, { error });
+      channel.send({ content: "Something went wrong editing the image." });
       return;
     }
   }
