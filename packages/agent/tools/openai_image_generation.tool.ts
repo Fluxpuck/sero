@@ -1,12 +1,11 @@
 import { Client, Message, TextChannel, ThreadChannel } from "discord.js";
 import { ClaudeTool, ClaudeToolType } from "../types/tool.types";
-import { OpenAIService, ImageGenerationOptions } from "../services/openai";
+import { OpenAIService } from "../services/openai";
 import { ChannelResolver } from "../utils/channel-resolver";
 
 type ImageGenerationActionType = "generate" | "edit";
 type ImageGenerationToolInput = {
   prompt: string;
-  options: ImageGenerationOptions;
   channelId: string;
   action: ImageGenerationActionType;
 };
@@ -26,22 +25,6 @@ export class GenerateImageTool extends ClaudeToolType {
             type: "string",
             description:
               "A text description of the desired image(s). Maximum length is 1000 characters",
-          },
-          options: {
-            type: "array",
-            description:
-              "Options for image generation or editing. Only one option is allowed.",
-            items: {
-              type: "object",
-              properties: {
-                transparent_background: {
-                  type: "boolean",
-                  description:
-                    "Set to true to generate an image with a transparent background. False by default.",
-                },
-              },
-              required: ["transparent_background"],
-            },
           },
           channelId: {
             type: "string",
@@ -71,7 +54,6 @@ export class GenerateImageTool extends ClaudeToolType {
     prompt,
     channelId,
     action,
-    options,
   }: ImageGenerationToolInput): Promise<string> {
     try {
       if (!this.message.guild) {
@@ -90,14 +72,14 @@ export class GenerateImageTool extends ClaudeToolType {
       switch (action) {
         case "generate":
           try {
-            await this.openaiService.generateImage(prompt, channel, options);
+            await this.openaiService.generateImage(prompt, channel);
             return "Image generated successfully.";
           } catch (error) {
             return `Error: Failed to generate image. Reason: ${error}`;
           }
         case "edit":
           try {
-            await this.openaiService.editImage(prompt, channel, options);
+            await this.openaiService.editImage(prompt, channel);
             return "Image edited successfully.";
           } catch (error) {
             return `Error: Failed to edit image. Reason: ${error}`;

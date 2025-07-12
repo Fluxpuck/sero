@@ -61,6 +61,21 @@ services:
       - redis
       - api
 
+  metabase:
+    image: metabase/metabase
+    container_name: metabase
+    ports:
+      - "3000:3000"
+    environment:
+      MB_DB_TYPE: postgres
+      MB_DB_DBNAME: sero_database
+      MB_DB_PORT: 5432
+      MB_DB_USER: admin
+      MB_DB_PASS: curlywire90
+      MB_DB_HOST: postgres
+    depends_on:
+      - postgres
+
 volumes:
   postgres_data:
   redis-data:
