@@ -2,6 +2,7 @@ import { Request, Response, Router, NextFunction } from "express";
 import { Commands } from "../models";
 import { ResponseHandler } from "../utils/response.utils";
 import { ResponseCode } from "../utils/response.types";
+import { sequelize } from "../database/sequelize";
 
 const router = Router();
 
@@ -51,16 +52,16 @@ router.get("/", async (req: Request, res: Response, next: NextFunction) => {
 
 /**
  * @swagger
- * /commands/{commandId}:
+ * /commands/{name}:
  *   get:
- *     summary: Get a specific command by ID
+ *     summary: Get a specific command by name
  *     tags:
  *       - Commands
  *     parameters:
- *       - name: commandId
+ *       - name: name
  *         in: path
  *         required: true
- *         description: The ID of the command
+ *         description: The name of the command
  *         schema:
  *           type: string
  *     responses:
@@ -87,13 +88,13 @@ router.get("/", async (req: Request, res: Response, next: NextFunction) => {
  *         description: Server error
  */
 router.get(
-  "/:commandId",
+  "/:name",
   async (req: Request, res: Response, next: NextFunction) => {
     try {
-      const { commandId } = req.params;
+      const { name } = req.params;
 
       const command = await Commands.findOne({
-        where: { commandId },
+        where: { name },
       });
 
       if (!command) {
@@ -129,9 +130,6 @@ router.get(
  *           schema:
  *             type: object
  *             properties:
- *               commandId:
- *                 type: string
- *                 description: Unique identifier for the command
  *               name:
  *                 type: string
  *                 description: Name of the command
@@ -164,11 +162,10 @@ router.get(
  *         description: Server error
  */
 router.post("/", async (req: Request, res: Response, next: NextFunction) => {
-  const transaction = await Commands.sequelize!.transaction();
+  const transaction = await sequelize.transaction();
 
   try {
     const {
-      commandId,
       name,
       description,
       usage,
@@ -179,19 +176,17 @@ router.post("/", async (req: Request, res: Response, next: NextFunction) => {
     } = req.body;
 
     // Validate required fields
-    if (!commandId || !name || !description || !usage || !interactionType) {
+    if (!name || !description || !usage || !interactionType) {
+      await transaction.rollback();
       return ResponseHandler.sendValidationFail(
         res,
         "Missing required fields",
-        [
-          "commandId, name, description, usage, and interactionType are required fields",
-        ]
+        ["name, description, usage, and interactionType are required fields"]
       );
     }
 
     // Prepare command data for upsert
     const commandData = {
-      commandId,
       name,
       description,
       usage,
@@ -201,8 +196,10 @@ router.post("/", async (req: Request, res: Response, next: NextFunction) => {
       cooldown: cooldown || null,
     } as Commands;
 
-    // Use upsert to create or update in a single operation
-    const [command, created] = await Commands.upsert(commandData);
+    // Use upsert to create or update in a single operation, with transaction
+    const [command, created] = await Commands.upsert(commandData, {
+      transaction,
+    });
 
     await transaction.commit();
 
@@ -213,6 +210,7 @@ router.post("/", async (req: Request, res: Response, next: NextFunction) => {
       created ? ResponseCode.CREATED : ResponseCode.SUCCESS
     );
   } catch (error) {
+    console.error("Error creating or updating command:", error);
     await transaction.rollback();
     next(error);
   }

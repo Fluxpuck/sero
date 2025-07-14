@@ -1,11 +1,11 @@
-import { Request, Response, Router, NextFunction } from 'express';
-import { Op } from 'sequelize';
-import { UserLevel, LevelRank, Modifier } from '../../../../models';
-import { ResponseHandler } from '../../../../utils/response.utils';
-import { ResponseCode } from '../../../../utils/response.types';
-import { getOrCreateUserLevel } from './gain';
-import { logUserExperience } from '../../../../utils/log.utils';
-import { UserExperienceLogType } from '../../../../models/user-experience-logs.model';
+import { Request, Response, Router, NextFunction } from "express";
+import { Op } from "sequelize";
+import { UserLevel, LevelRank, Modifier } from "../../../../models";
+import { ResponseHandler } from "../../../../utils/response.utils";
+import { getOrCreateUserLevel } from "./gain";
+import { logUserExperience } from "../../../../utils/log.utils";
+import { UserExperienceLogType } from "../../../../models/user-experience-logs.model";
+import { sequelize } from "../../../../database/sequelize";
 
 const router = Router({ mergeParams: true });
 
@@ -36,22 +36,26 @@ const router = Router({ mergeParams: true });
  *       500:
  *         description: Server error
  */
-router.get('/', async (req: Request, res: Response, next: NextFunction) => {
-    try {
-        const { guildId } = req.params;
+router.get("/", async (req: Request, res: Response, next: NextFunction) => {
+  try {
+    const { guildId } = req.params;
 
-        const userLevels = await UserLevel.findAll({
-            where: { guildId },
-            order: [
-                ['rank', 'ASC'],
-                ['experience', 'DESC'],
-            ],
-        });
+    const userLevels = await UserLevel.findAll({
+      where: { guildId },
+      order: [
+        ["rank", "ASC"],
+        ["experience", "DESC"],
+      ],
+    });
 
-        return ResponseHandler.sendSuccess(res, userLevels, 'User levels retrieved successfully');
-    } catch (error) {
-        next(error);
-    }
+    return ResponseHandler.sendSuccess(
+      res,
+      userLevels,
+      "User levels retrieved successfully"
+    );
+  } catch (error) {
+    next(error);
+  }
 });
 
 /**
@@ -89,39 +93,46 @@ router.get('/', async (req: Request, res: Response, next: NextFunction) => {
  *       500:
  *         description: Server error
  */
-router.get('/:userId', async (req: Request, res: Response, next: NextFunction) => {
+router.get(
+  "/:userId",
+  async (req: Request, res: Response, next: NextFunction) => {
     try {
-        const { guildId, userId } = req.params;
+      const { guildId, userId } = req.params;
 
-        const [userLevel, created] = await UserLevel.findOrCreate({
-            where: { guildId, userId },
-            defaults: {
-                guildId,
-                userId,
-            } as UserLevel,
-        });
+      const [userLevel, created] = await UserLevel.findOrCreate({
+        where: { guildId, userId },
+        defaults: {
+          guildId,
+          userId,
+        } as UserLevel,
+      });
 
-        const modifier = await Modifier.findOne({ where: { userId, guildId } })
+      const modifier = await Modifier.findOne({ where: { userId, guildId } });
 
-        const ranks = await LevelRank.findAll({
-            where: {
-                guildId: guildId,
-                level: { [Op.lte]: userLevel.level },
-            },
-            order: [['level', 'ASC']],
-        });
+      const ranks = await LevelRank.findAll({
+        where: {
+          guildId: guildId,
+          level: { [Op.lte]: userLevel.level },
+        },
+        order: [["level", "ASC"]],
+      });
 
-        const response = {
-            userLevel,
-            modifier: modifier?.amount ?? 1,
-            ranks: ranks ?? []
-        };
+      const response = {
+        userLevel,
+        modifier: modifier?.amount ?? 1,
+        ranks: ranks ?? [],
+      };
 
-        return ResponseHandler.sendSuccess(res, response, 'User level retrieved successfully');
+      return ResponseHandler.sendSuccess(
+        res,
+        response,
+        "User level retrieved successfully"
+      );
     } catch (error) {
-        next(error);
+      next(error);
     }
-});
+  }
+);
 
 /**
  * @swagger
@@ -168,49 +179,61 @@ router.get('/:userId', async (req: Request, res: Response, next: NextFunction) =
  *       500:
  *         description: Server error
  */
-router.post('/give/:userId', async (req: Request, res: Response, next: NextFunction) => {
-    const transaction = await UserLevel.sequelize!.transaction();
-
+router.post(
+  "/give/:userId",
+  async (req: Request, res: Response, next: NextFunction) => {
     try {
-        const { guildId, userId } = req.params;
-        const { amount = 0, originId } = req.body;
+      await sequelize.transaction(async (transaction) => {
+      const { guildId, userId } = req.params;
+      const { amount = 0, originId } = req.body;
 
-        // Validate required fields
-        if (!amount) {
-            return ResponseHandler.sendValidationFail(
-                res,
-                'Missing required fields',
-                ['Amount is a required field']
-            );
-        }
+      // Validate required fields
+      if (!amount) {
+        return ResponseHandler.sendValidationFail(
+          res,
+          "Missing required fields",
+          ["Amount is a required field"]
+        );
+      }
 
-        if (amount !== Number(amount)) {
-            return ResponseHandler.sendValidationFail(
-                res,
-                'Invalid amount',
-                ['Amount must be a number']
-            );
-        }
+      if (amount !== Number(amount)) {
+        return ResponseHandler.sendValidationFail(res, "Invalid amount", [
+          "Amount must be a number",
+        ]);
+      }
 
-        // Get or create user level
-        const [userLevel] = await getOrCreateUserLevel(guildId, userId, transaction);
+      // Get or create user level
+      const [userLevel] = await getOrCreateUserLevel(
+        guildId,
+        userId,
+        transaction
+      );
 
-        // Update user level
-        userLevel.experience += amount;
-        await userLevel.save({ transaction });
+      // Update user level
+      userLevel.experience += amount;
+      await userLevel.save({ transaction });
 
-        await transaction.commit();
+      ResponseHandler.sendSuccess(
+        res,
+        userLevel,
+        `Gave ${amount} experience to user`
+      );
 
-        ResponseHandler.sendSuccess(res, userLevel, `Gave ${amount} experience to user`);
+      // Log the user experience increase
+      logUserExperience(
+        guildId,
+        userId,
+        UserExperienceLogType.GIVE,
+        amount,
+        originId
+      );
+    });
+  } catch (error) {
+    next(error);
+  }
+  }
+);
 
-        // Log the user experience increase
-        logUserExperience(guildId, userId, UserExperienceLogType.GIVE, amount, originId);
-
-    } catch (error) {
-        transaction.rollback();
-        next(error);
-    }
-});
 
 /**
  * @swagger
@@ -257,52 +280,64 @@ router.post('/give/:userId', async (req: Request, res: Response, next: NextFunct
  *       500:
  *         description: Server error
  */
-router.post('/remove/:userId', async (req: Request, res: Response, next: NextFunction) => {
-    const transaction = await UserLevel.sequelize!.transaction();
-
+router.post(
+  "/remove/:userId",
+  async (req: Request, res: Response, next: NextFunction) => {
     try {
-        const { guildId, userId } = req.params;
-        const { amount = 0, originId } = req.body;
+      await sequelize.transaction(async (transaction) => {
+      const { guildId, userId } = req.params;
+      const { amount = 0, originId } = req.body;
 
-        // Validate required fields
-        if (!amount) {
-            return ResponseHandler.sendValidationFail(
-                res,
-                'Missing required fields',
-                ['Amount is a required field']
-            );
-        }
+      // Validate required fields
+      if (!amount) {
+        return ResponseHandler.sendValidationFail(
+          res,
+          "Missing required fields",
+          ["Amount is a required field"]
+        );
+      }
 
-        if (amount !== Number(amount)) {
-            return ResponseHandler.sendValidationFail(
-                res,
-                'Invalid amount',
-                ['Amount must be a number']
-            );
-        }
+      if (amount !== Number(amount)) {
+        return ResponseHandler.sendValidationFail(res, "Invalid amount", [
+          "Amount must be a number",
+        ]);
+      }
 
-        // Get or create user level
-        const [userLevel] = await getOrCreateUserLevel(guildId, userId, transaction);
+      // Get or create user level
+      const [userLevel] = await getOrCreateUserLevel(
+        guildId,
+        userId,
+        transaction
+      );
 
-        // Update user level
-        userLevel.experience -= amount;
-        if (userLevel.experience < 0) {
-            userLevel.experience = 0;
-        }
+      // Update user level
+      userLevel.experience -= amount;
+      if (userLevel.experience < 0) {
+        userLevel.experience = 0;
+      }
 
-        await userLevel.save({ transaction });
+      await userLevel.save({ transaction });
 
-        await transaction.commit();
+      ResponseHandler.sendSuccess(
+        res,
+        userLevel,
+        `Removed ${amount} experience from user`
+      );
 
-        ResponseHandler.sendSuccess(res, userLevel, `Removed ${amount} experience from user`);
+      // Log the user experience decrease
+      logUserExperience(
+        guildId,
+        userId,
+        UserExperienceLogType.REMOVE,
+        amount,
+        originId
+      );
+    });
+  } catch (error) {
+    next(error);
+  }
+  }
+);
 
-        // Log the user experience decrease
-        logUserExperience(guildId, userId, UserExperienceLogType.REMOVE, amount, originId);
-
-    } catch (error) {
-        transaction.rollback();
-        next(error);
-    }
-});
 
 export default router;

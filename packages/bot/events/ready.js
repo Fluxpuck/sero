@@ -1,27 +1,18 @@
-const { join } = require('path');
+const { join } = require("path");
 const { loadCommands } = require("../utils/CommandManager");
-const { getRequest, postRequest } = require('../database/connection');
-const events = require('../config/eventEnum');
+const events = require("../config/eventEnum");
 
 module.exports = async (client) => {
+  // Sets the bot's presence to indicate that it is listening to a user with the username 'Fluxpuck#0001'.
+  client.user.setPresence({
+    activities: [{ type: "LISTENING", name: "Fluxpuck#0001" }],
+    status: "online",
+  });
 
-    // Sets the bot's presence to indicate that it is listening to a user with the username 'Fluxpuck#0001'.
-    client.user.setPresence({ activities: [{ type: 'LISTENING', name: 'Fluxpuck#0001' }], status: 'online' });
+  // Sets the directory path to the folder containing the bot's commands, and loads the commands into memory using the loadCommands function.
+  const filePath = join(__dirname, "..", "commands");
+  await loadCommands(client, filePath);
 
-    // Sets the directory path to the folder containing the bot's commands, and loads the commands into memory using the loadCommands function.
-    const filePath = join(__dirname, '..', 'commands');
-    await loadCommands(client, filePath);
-
-    // Create Client Application Commands through a seperate event
-    client.emit(events.APPLICATION_CREATE);
-
-    // Fetch all guilds and set global guild active setting
-    const guilds = await client.guilds.fetch();
-    Array.from(guilds.values()).forEach(async guild => {
-        // Create or Update the guild in the database
-        await postRequest(`/guilds/${guild.id}`, {
-            guildId: guild.id,
-            guildName: guild.name
-        });
-    });
-}
+  // Manage utility to handle creating, updating and removing application commands
+  client.emit(events.DEPLOY_COMMANDS);
+};

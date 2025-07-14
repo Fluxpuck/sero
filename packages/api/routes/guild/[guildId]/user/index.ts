@@ -1,10 +1,10 @@
-import { Request, Response, Router, NextFunction } from 'express';
-import { User } from '../../../../models';
-import { UserType } from '../../../../models/user.model';
-import { ResponseHandler } from '../../../../utils/response.utils';
-import { ResponseCode } from '../../../../utils/response.types';
-import { Op } from 'sequelize';
-
+import { Request, Response, Router, NextFunction } from "express";
+import { User } from "../../../../models";
+import { UserType } from "../../../../models/user.model";
+import { ResponseHandler } from "../../../../utils/response.utils";
+import { ResponseCode } from "../../../../utils/response.types";
+import { Op } from "sequelize";
+import { sequelize } from "../../../../database/sequelize";
 
 const router = Router({ mergeParams: true });
 
@@ -51,28 +51,28 @@ const router = Router({ mergeParams: true });
  *       500:
  *         description: Server error
  */
-router.get('/', async (req: Request, res: Response, next: NextFunction) => {
-    try {
-        const { guildId } = req.params;
-        const { username } = req.query;
+router.get("/", async (req: Request, res: Response, next: NextFunction) => {
+  try {
+    const { guildId } = req.params;
+    const { username } = req.query;
 
-        const whereClause: any = { guildId };
+    const whereClause: any = { guildId };
 
-        if (username) {
-            whereClause.username = {
-                [Op.iLike]: `%${username}%`
-            };
-        }
-
-        const users = await User.findAll({
-            where: whereClause,
-            order: [['username', 'ASC']]
-        });
-
-        ResponseHandler.sendSuccess(res, users, 'Users retrieved successfully');
-    } catch (error) {
-        next(error);
+    if (username) {
+      whereClause.username = {
+        [Op.iLike]: `%${username}%`,
+      };
     }
+
+    const users = await User.findAll({
+      where: whereClause,
+      order: [["username", "ASC"]],
+    });
+
+    ResponseHandler.sendSuccess(res, users, "Users retrieved successfully");
+  } catch (error) {
+    next(error);
+  }
 });
 
 /**
@@ -118,27 +118,30 @@ router.get('/', async (req: Request, res: Response, next: NextFunction) => {
  *       500:
  *         description: Server error
  */
-router.get('/:userId', async (req: Request, res: Response, next: NextFunction) => {
+router.get(
+  "/:userId",
+  async (req: Request, res: Response, next: NextFunction) => {
     try {
-        const { guildId, userId } = req.params;
+      const { guildId, userId } = req.params;
 
-        const user = await User.findOne({
-            where: { guildId, userId }
-        });
+      const user = await User.findOne({
+        where: { guildId, userId },
+      });
 
-        if (!user) {
-            return ResponseHandler.sendError(
-                res,
-                'User not found for this user',
-                ResponseCode.NOT_FOUND
-            );
-        }
+      if (!user) {
+        return ResponseHandler.sendError(
+          res,
+          "User not found for this user",
+          ResponseCode.NOT_FOUND
+        );
+      }
 
-        ResponseHandler.sendSuccess(res, user, 'User retrieved successfully');
+      ResponseHandler.sendSuccess(res, user, "User retrieved successfully");
     } catch (error) {
-        next(error);
+      next(error);
     }
-});
+  }
+);
 
 /**
  * @swagger
@@ -203,57 +206,59 @@ router.get('/:userId', async (req: Request, res: Response, next: NextFunction) =
  *       500:
  *         description: Server error
  */
-router.post('/', async (req: Request, res: Response, next: NextFunction) => {
-    const transaction = await User.sequelize!.transaction();
+router.post("/", async (req: Request, res: Response, next: NextFunction) => {
+  try {
+    await sequelize.transaction(async (transaction) => {
+    const { guildId } = req.params;
+    const {
+      userId,
+      username,
+      premium = false,
+      userType = UserType.USER,
+    } = req.body;
 
-    try {
-        const { guildId } = req.params;
-        const { userId, username, premium = false, userType = UserType.USER } = req.body;
-
-        // Validate required fields
-        if (!userId || !username) {
-            return ResponseHandler.sendValidationFail(
-                res,
-                'Missing required fields',
-                ['userId and username are required fields']
-            );
-        }
-
-        // Validate userType
-        if (!Object.values(UserType).includes(userType)) {
-            return ResponseHandler.sendValidationFail(
-                res,
-                'Invalid user type',
-                [`userType must be one of: ${Object.values(UserType).join(', ')}`]
-            );
-        }
-
-
-        // Upsert the user
-        const [user, created] = await User.upsert({
-            guildId,
-            userId,
-            username,
-            premium,
-            userType
-        } as any, {
-            returning: true,
-            conflictFields: ['userId', 'guildId']
-        });
-
-        // Send appropriate response based on whether user was created or updated
-        if (created) {
-            ResponseHandler.sendSuccess(res, user, 'User created successfully', 201);
-        } else {
-            ResponseHandler.sendSuccess(res, user, 'User updated successfully');
-        }
-
-        await transaction.commit();
-
-    } catch (error) {
-        transaction.rollback();
-        next(error);
+    // Validate required fields
+    if (!userId || !username) {
+      return ResponseHandler.sendValidationFail(
+        res,
+        "Missing required fields",
+        ["userId and username are required fields"]
+      );
     }
+
+    // Validate userType
+    if (!Object.values(UserType).includes(userType)) {
+      return ResponseHandler.sendValidationFail(res, "Invalid user type", [
+        `userType must be one of: ${Object.values(UserType).join(", ")}`,
+      ]);
+    }
+
+    // Upsert the user
+    const [user, created] = await User.upsert(
+      {
+        guildId,
+        userId,
+        username,
+        premium,
+        userType,
+      } as any,
+      {
+        returning: true,
+        conflictFields: ["userId", "guildId"],
+        transaction,
+      }
+    );
+
+    // Send appropriate response based on whether user was created or updated
+    if (created) {
+      ResponseHandler.sendSuccess(res, user, "User created successfully", 201);
+    } else {
+      ResponseHandler.sendSuccess(res, user, "User updated successfully");
+    }
+  });
+  } catch (error) {
+    next(error);
+  }
 });
 
 /**
@@ -297,33 +302,35 @@ router.post('/', async (req: Request, res: Response, next: NextFunction) => {
  *       500:
  *         description: Server error
  */
-router.delete('/:userId', async (req: Request, res: Response, next: NextFunction) => {
-    const transaction = await User.sequelize!.transaction();
-
+router.delete(
+  "/:userId",
+  async (req: Request, res: Response, next: NextFunction) => {
     try {
-        const { guildId, userId } = req.params;
+      await sequelize.transaction(async (transaction) => {
+      const { guildId, userId } = req.params;
 
-        // Find the user first to check if it exists
-        const user = await User.findOne({
-            where: { guildId, userId }
-        });
+      // Find the user first to check if it exists
+      const user = await User.findOne({
+        where: { guildId, userId },
+      });
 
-        if (!user) {
-            return ResponseHandler.sendError(
-                res,
-                'User not found for this user',
-                ResponseCode.NOT_FOUND
-            );
-        }
+      if (!user) {
+        return ResponseHandler.sendError(
+          res,
+          "User not found for this user",
+          ResponseCode.NOT_FOUND
+        );
+      }
 
-        // Soft delete the user
-        await user.destroy();
+      // Soft delete the user
+      await user.destroy({ transaction });
 
-        ResponseHandler.sendSuccess(res, null, 'User deleted successfully');
-    } catch (error) {
-        transaction.rollback();
-        next(error);
-    }
-});
+      ResponseHandler.sendSuccess(res, null, "User deleted successfully");
+    });
+  } catch (error) {
+    next(error);
+  }
+  }
+);
 
 export default router;

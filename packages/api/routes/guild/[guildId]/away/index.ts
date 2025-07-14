@@ -2,6 +2,7 @@ import { Request, Response, Router, NextFunction } from "express";
 import { Aways } from "../../../../models";
 import { ResponseHandler } from "../../../../utils/response.utils";
 import { ResponseCode } from "../../../../utils/response.types";
+import { sequelize } from "../../../../database/sequelize";
 
 const router = Router({ mergeParams: true });
 
@@ -181,7 +182,7 @@ router.get(
 router.post(
   "/:userId",
   async (req: Request, res: Response, next: NextFunction) => {
-    const transaction = await Aways.sequelize!.transaction();
+    const transaction = await sequelize.transaction();
 
     try {
       const { guildId, userId } = req.params;

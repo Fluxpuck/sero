@@ -12,20 +12,22 @@ import {
   indexes: [
     {
       unique: true,
-      fields: ["commandId"],
+      fields: ["name"],
     },
   ],
 })
 export class Commands extends Model<Commands> {
   @Column({
-    type: DataType.STRING,
+    type: DataType.INTEGER,
+    autoIncrement: true,
     primaryKey: true,
   })
-  declare commandId: string;
+  declare id: number;
 
   @Column({
     type: DataType.STRING,
     allowNull: false,
+    unique: true,
   })
   declare name: string;
 
@@ -54,7 +56,7 @@ export class Commands extends Model<Commands> {
   declare interactionOptions: ApplicationCommandOptionData[] | null;
 
   @Column({
-    type: DataType.STRING,
+    type: DataType.JSON,
     allowNull: true,
   })
   declare defaultMemberPermissions: PermissionResolvable | null;

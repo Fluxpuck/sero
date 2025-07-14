@@ -1,25 +1,29 @@
-import { Request, Response, Router, NextFunction } from 'express';
-import { Transaction } from 'sequelize';
-import { UserLevel, Modifier } from '../../../../models';
-import { ResponseHandler } from '../../../../utils/response.utils';
-import { ResponseCode } from '../../../../utils/response.types';
-import { calculateXp } from '../../../../utils/levels.utils';
-import { logUserExperience } from '../../../../utils/log.utils';
-import { UserExperienceLogType } from '../../../../models/user-experience-logs.model';
+import { Request, Response, Router, NextFunction } from "express";
+import { Transaction } from "sequelize";
+import { UserLevel, Modifier } from "../../../../models";
+import { ResponseHandler } from "../../../../utils/response.utils";
+import { calculateXp } from "../../../../utils/levels.utils";
+import { logUserExperience } from "../../../../utils/log.utils";
+import { UserExperienceLogType } from "../../../../models/user-experience-logs.model";
+import { sequelize } from "../../../../database/sequelize";
 
 /**
  * Helper function to get or create a user's level record
  */
-export async function getOrCreateUserLevel(guildId: string, userId: string, transaction: Transaction) {
-    const [userLevel] = await UserLevel.findOrCreate({
-        where: { guildId, userId },
-        defaults: {
-            guildId,
-            userId,
-        } as UserLevel,
-        transaction
-    });
-    return [userLevel];
+export async function getOrCreateUserLevel(
+  guildId: string,
+  userId: string,
+  transaction: Transaction
+) {
+  const [userLevel] = await UserLevel.findOrCreate({
+    where: { guildId, userId },
+    defaults: {
+      guildId,
+      userId,
+    } as UserLevel,
+    transaction,
+  });
+  return [userLevel];
 }
 
 const router = Router({ mergeParams: true });
@@ -62,37 +66,49 @@ const router = Router({ mergeParams: true });
  *             schema:
  *               $ref: '#/components/schemas/UserLevel'
  */
-router.post('/:userId', async (req: Request, res: Response, next: NextFunction) => {
-    const transaction = await UserLevel.sequelize!.transaction();
+router.post(
+  "/:userId",
+  async (req: Request, res: Response, next: NextFunction) => {
+    const transaction = await sequelize.transaction();
 
     try {
-        const { guildId, userId } = req.params;
+      const { guildId, userId } = req.params;
 
-        // Get Guild and User modifiers
-        const guild_modifier = await Modifier.findOne({ where: { guildId } });
-        const user_modifier = await Modifier.findOne({ where: { guildId, userId } });
+      // Get Guild and User modifiers
+      const guild_modifier = await Modifier.findOne({ where: { guildId } });
+      const user_modifier = await Modifier.findOne({
+        where: { guildId, userId },
+      });
 
-        // Calculate gain based on modifiers
-        const gain = calculateXp(guild_modifier?.amount, user_modifier?.amount);
+      // Calculate gain based on modifiers
+      const gain = calculateXp(guild_modifier?.amount, user_modifier?.amount);
 
-        // Get or create user level
-        const [userLevel] = await getOrCreateUserLevel(guildId, userId, transaction);
+      // Get or create user level
+      const [userLevel] = await getOrCreateUserLevel(
+        guildId,
+        userId,
+        transaction
+      );
 
-        // Update user level
-        userLevel.experience += gain;
-        await userLevel.save({ transaction });
+      // Update user level
+      userLevel.experience += gain;
+      await userLevel.save({ transaction });
 
-        await transaction.commit();
+      await transaction.commit();
 
-        ResponseHandler.sendSuccess(res, userLevel, `User gained ${gain} experience`);
+      ResponseHandler.sendSuccess(
+        res,
+        userLevel,
+        `User gained ${gain} experience`
+      );
 
-        // Log the user experience gain
-        logUserExperience(guildId, userId, UserExperienceLogType.GAIN, gain);
-
+      // Log the user experience gain
+      logUserExperience(guildId, userId, UserExperienceLogType.GAIN, gain);
     } catch (error) {
-        transaction.rollback();
-        next(error);
+      transaction.rollback();
+      next(error);
     }
-});
+  }
+);
 
 export default router;

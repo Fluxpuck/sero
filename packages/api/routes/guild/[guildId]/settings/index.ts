@@ -1,8 +1,11 @@
-import { Request, Response, Router, NextFunction } from 'express';
-import { GuildSettings, GuildSettingType } from '../../../../models/guild-settings.model';
-import { ResponseHandler } from '../../../../utils/response.utils';
-import { ResponseCode } from '../../../../utils/response.types';
-
+import { Request, Response, Router, NextFunction } from "express";
+import {
+  GuildSettings,
+  GuildSettingType,
+} from "../../../../models/guild-settings.model";
+import { ResponseHandler } from "../../../../utils/response.utils";
+import { ResponseCode } from "../../../../utils/response.types";
+import { sequelize } from "../../../../database/sequelize";
 
 const router = Router({ mergeParams: true });
 
@@ -38,31 +41,35 @@ const router = Router({ mergeParams: true });
  *       500:
  *         description: Server error
  */
-router.get('/', async (req: Request, res: Response, next: NextFunction) => {
-    try {
-        const { guildId } = req.params;
-        const { type } = req.query;
+router.get("/", async (req: Request, res: Response, next: NextFunction) => {
+  try {
+    const { guildId } = req.params;
+    const { type } = req.query;
 
-        const options: any = { where: { guildId } };
+    const options: any = { where: { guildId } };
 
-        if (type) {
-            options.where.type = type as GuildSettingType;
-        }
-
-        const settings = await GuildSettings.findAll(options);
-
-        if (!settings.length) {
-            return ResponseHandler.sendError(
-                res,
-                'No settings found for this guild',
-                ResponseCode.NOT_FOUND
-            );
-        }
-
-        ResponseHandler.sendSuccess(res, settings, 'Guild settings retrieved successfully');
-    } catch (error) {
-        next(error);
+    if (type) {
+      options.where.type = type as GuildSettingType;
     }
+
+    const settings = await GuildSettings.findAll(options);
+
+    if (!settings.length) {
+      return ResponseHandler.sendError(
+        res,
+        "No settings found for this guild",
+        ResponseCode.NOT_FOUND
+      );
+    }
+
+    ResponseHandler.sendSuccess(
+      res,
+      settings,
+      "Guild settings retrieved successfully"
+    );
+  } catch (error) {
+    next(error);
+  }
 });
 
 /**
@@ -118,60 +125,66 @@ router.get('/', async (req: Request, res: Response, next: NextFunction) => {
  *       500:
  *         description: Server error
  */
-router.post('/', async (req: Request, res: Response, next: NextFunction) => {
-    const transaction = await GuildSettings.sequelize!.transaction();
+router.post("/", async (req: Request, res: Response, next: NextFunction) => {
+  try {
+    await sequelize.transaction(async (transaction) => {
+    const { guildId } = req.params;
+    const { type, targetId, excludeIds } = req.body;
 
-    try {
-        const { guildId } = req.params;
-        const { type, targetId, excludeIds } = req.body;
-
-        if (!type || !targetId) {
-            return ResponseHandler.sendValidationFail(
-                res,
-                'Type and targetId are required',
-                ['Type and targetId are required fields']
-            );
-        }
-
-        // Validate the setting type
-        if (!Object.values(GuildSettingType).includes(type as GuildSettingType)) {
-            return ResponseHandler.sendValidationFail(
-                res,
-                'Invalid setting type',
-                [`'${type}' is not a valid setting type`]
-            );
-        }
-
-
-        // Try to find existing setting first
-        const [setting, created] = await GuildSettings.findOrCreate({
-            where: { 
-                guildId,
-                type: type as GuildSettingType
-            },
-            defaults: {
-                guildId,
-                type: type as GuildSettingType,
-                targetId,
-                excludeIds: excludeIds || []
-            } as GuildSettings
-        });
-
-        // If setting already exists, update it
-        if (!created) {
-            setting.targetId = targetId;
-            if (excludeIds) {
-                setting.excludeIds = excludeIds;
-            }
-            await setting.save();
-            return ResponseHandler.sendSuccess(res, setting, 'Guild setting updated successfully');
-        }
-
-        ResponseHandler.sendSuccess(res, setting, 'Guild setting created successfully', ResponseCode.CREATED);
-    } catch (error) {
-        transaction.rollback(); 
-        next(error);
+    if (!type || !targetId) {
+      return ResponseHandler.sendValidationFail(
+        res,
+        "Type and targetId are required",
+        ["Type and targetId are required fields"]
+      );
     }
+
+    // Validate the setting type
+    if (!Object.values(GuildSettingType).includes(type as GuildSettingType)) {
+      return ResponseHandler.sendValidationFail(res, "Invalid setting type", [
+        `'${type}' is not a valid setting type`,
+      ]);
+    }
+
+    // Try to find existing setting first
+    const [setting, created] = await GuildSettings.findOrCreate({
+      where: {
+        guildId,
+        type: type as GuildSettingType,
+      },
+      defaults: {
+        guildId,
+        type: type as GuildSettingType,
+        targetId,
+        excludeIds: excludeIds || [],
+      } as GuildSettings,
+      transaction,
+    });
+
+    // If setting already exists, update it
+    if (!created) {
+      setting.targetId = targetId;
+      if (excludeIds) {
+        setting.excludeIds = excludeIds;
+      }
+      await setting.save({ transaction });
+      return ResponseHandler.sendSuccess(
+        res,
+        setting,
+        "Guild setting updated successfully"
+      );
+    }
+
+    ResponseHandler.sendSuccess(
+      res,
+      setting,
+      "Guild setting created successfully",
+      ResponseCode.CREATED
+    );
+  });
+  } catch (error) {
+    next(error);
+  }
 });
 
 /**
@@ -201,31 +214,32 @@ router.post('/', async (req: Request, res: Response, next: NextFunction) => {
  *       500:
  *         description: Server error
  */
-router.delete('/:settingId', async (req: Request, res: Response, next: NextFunction) => {
-    const transaction = await GuildSettings.sequelize!.transaction();
-
+router.delete(
+  "/:settingId",
+  async (req: Request, res: Response, next: NextFunction) => {
     try {
-        const { guildId, settingId } = req.params;
-        
-        const setting = await GuildSettings.findOne({
-            where: { id: settingId, guildId }
-        });
+      await sequelize.transaction(async (transaction) => {
+      const { guildId, settingId } = req.params;
 
-        if (!setting) {
-            return ResponseHandler.sendError(
-                res,
-                'Setting not found for this guild',
-                ResponseCode.NOT_FOUND
-            );
-        }
+      const setting = await GuildSettings.findOne({
+        where: { id: settingId, guildId },
+      });
 
+      if (!setting) {
+        return ResponseHandler.sendError(
+          res,
+          "Setting not found for this guild",
+          ResponseCode.NOT_FOUND
+        );
+      }
 
-        await setting.destroy();
-        res.status(204).send();
-    } catch (error) {
-        transaction.rollback();
-        next(error);
-    }
-});
+      await setting.destroy({ transaction });
+      res.status(204).send();
+    });
+  } catch (error) {
+    next(error);
+  }
+  }
+);
 
 export default router;

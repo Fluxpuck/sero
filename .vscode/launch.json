@@ -1,58 +1,45 @@
 {
-    // Use IntelliSense to learn about possible attributes.
-    // Hover to view descriptions of existing attributes.
-    // For more information, visit: https://go.microsoft.com/fwlink/?linkid=830387
-    "version": "2.0.0",
-    "configurations": [
-        {
-            "name": "Sero API",
-            "type": "node",
-            "request": "launch",
-            "program": "${workspaceFolder}/packages/api/main.ts",
-            "cwd": "${workspaceFolder}/packages/api",
-            "runtimeExecutable": "node",
-            "runtimeArgs": [
-                "-r",
-                "ts-node/register"
-            ],
-            "outFiles": [
-                "${workspaceFolder}/packages/api/**/*.js"
-            ]
-        },
-        {
-            "name": "Seeder",
-            "type": "node",
-            "request": "launch",
-            "program": "${workspaceFolder}/packages/api/database/seeds/index.ts",
-            "cwd": "${workspaceFolder}/packages/api",
-            "runtimeExecutable": "node",
-            "runtimeArgs": [
-                "-r",
-                "ts-node/register"
-            ],
-            "outFiles": [
-                "${workspaceFolder}/packages/api/**/*.js"
-            ]
-        },
-        {
-            "name": "Sero Bot",
-            "type": "node",
-            "request": "launch",
-            "program": "${workspaceFolder}/packages/bot/bot.js",
-            "cwd": "${workspaceFolder}",
-            "runtimeExecutable": "node"
-        },
-        {
-            "name": "Sero Agent",
-            "type": "node",
-            "request": "launch",
-            "program": "${workspaceFolder}/packages/agent/index.ts",
-            "cwd": "${workspaceFolder}/packages/agent",
-            "runtimeExecutable": "node",
-            "runtimeArgs": [
-                "-r",
-                "ts-node/register"
-            ]
-        }
-    ]
+  // Use IntelliSense to learn about possible attributes.
+  // Hover to view descriptions of existing attributes.
+  // For more information, visit: https://go.microsoft.com/fwlink/?linkid=830387
+  "version": "2.0.0",
+  "configurations": [
+    {
+      "name": "Sero API",
+      "type": "node",
+      "request": "launch",
+      "program": "${workspaceFolder}/packages/api/main.ts",
+      "cwd": "${workspaceFolder}/packages/api",
+      "runtimeExecutable": "node",
+      "runtimeArgs": ["-r", "ts-node/register"],
+      "outFiles": ["${workspaceFolder}/packages/api/**/*.js"]
+    },
+    {
+      "name": "Sero Bot",
+      "type": "node",
+      "request": "launch",
+      "program": "${workspaceFolder}/packages/bot/bot.js",
+      "cwd": "${workspaceFolder}",
+      "runtimeExecutable": "node"
+    },
+    {
+      "name": "Sero Agent",
+      "type": "node",
+      "request": "launch",
+      "program": "${workspaceFolder}/packages/agent/index.ts",
+      "cwd": "${workspaceFolder}/packages/agent",
+      "runtimeExecutable": "node",
+      "runtimeArgs": ["-r", "ts-node/register"]
+    },
+    {
+      "name": "Seeder",
+      "type": "node",
+      "request": "launch",
+      "program": "${workspaceFolder}/packages/api/database/seeds/index.ts",
+      "cwd": "${workspaceFolder}/packages/api",
+      "runtimeExecutable": "node",
+      "runtimeArgs": ["-r", "ts-node/register"],
+      "outFiles": ["${workspaceFolder}/packages/api/**/*.js"]
+    }
+  ]
 }

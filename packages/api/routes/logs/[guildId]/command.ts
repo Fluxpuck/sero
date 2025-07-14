@@ -1,7 +1,8 @@
 import { Request, Response, Router, NextFunction } from "express";
-import { CommandLogs } from "../../../models";
+import { sequelize } from "../../../database/sequelize";
 import { ResponseHandler } from "../../../utils/response.utils";
 import { ResponseCode } from "../../../utils/response.types";
+import { CommandLogs } from "../../../models";
 
 const router = Router({ mergeParams: true });
 
@@ -187,39 +188,36 @@ router.get(
  *         description: Server error
  */
 router.post("/", async (req: Request, res: Response, next: NextFunction) => {
-  const transaction = await CommandLogs.sequelize!.transaction();
-
   try {
-    const { guildId } = req.params;
-    const { commandId, name, executorId } = req.body;
+    await sequelize.transaction(async (transaction) => {
+      const { guildId } = req.params;
+      const { commandId, name, executorId } = req.body;
 
-    // Validate required fields
-    if (!commandId || !name) {
-      return ResponseHandler.sendValidationFail(
+      // Validate required fields
+      if (!commandId || !name) {
+        return ResponseHandler.sendValidationFail(
+          res,
+          "Missing required fields",
+          ["commandId and name are required fields"]
+        );
+      }
+
+      // Create the command log
+      const commandLog = await CommandLogs.create({
+        guildId,
+        commandId,
+        name,
+        executorId: executorId || null,
+      } as CommandLogs, { transaction });
+
+      ResponseHandler.sendSuccess(
         res,
-        "Missing required fields",
-        ["commandId and name are required fields"]
+        commandLog,
+        "Command log created successfully",
+        ResponseCode.CREATED
       );
-    }
-
-    // Create the command log
-    const commandLog = await CommandLogs.create({
-      guildId,
-      commandId,
-      name,
-      executorId: executorId || null,
-    } as CommandLogs);
-
-    await transaction.commit();
-
-    ResponseHandler.sendSuccess(
-      res,
-      commandLog,
-      "Command log created successfully",
-      ResponseCode.CREATED
-    );
+    });
   } catch (error) {
-    await transaction.rollback();
     next(error);
   }
 });

@@ -1,5 +1,4 @@
 const axios = require('axios');
-const { CreateError } = require('../utils/ClassManager');
 
 const { NODE_ENV, PROD_API_URL } = process.env;
 const instance = axios.create({
@@ -10,71 +9,68 @@ const instance = axios.create({
     }
 });
 
-module.exports = {
-    /**
-     * GET request to the API
-     * @param {string} endpoint - The endpoint to make the request to
-     */
-    async getRequest(endpoint) {
-        try {
-            const response = await instance.get(endpoint);
-            return response;
-        } catch (error) {
-            // Check if response exists before destructuring
-            const status = error?.response?.status || 408;
-            const errorData = error?.response?.data || {};
-            const errorMessage = errorData?.error?.data?.message || error?.message || "An error occurred while fetching data";
-            return new CreateError(status, errorMessage, false);
-        }
-    },
-
-    /**
-     * POST request to the API
-     * @param {string} endpoint - The endpoint to make the request to
-     * @param {object} data - The data to send with the request 
-     */
-    async postRequest(endpoint, data) {
-        try {
-            const response = await instance.post(endpoint, data);
-            return response;
-        } catch (error) {
-            // Check if response exists before destructuring
-            const status = error?.response?.status || 408;
-            const errorData = error?.response?.data || {};
-            const errorMessage = errorData?.error?.data?.message || error?.message || "An error occurred while posting data";
-            return new CreateError(status, errorMessage, false);
-        }
-    },
-
-    /**
-     * DELETE request to the API
-     * @param {string} endpoint - The endpoint to make the request to
-     */
-    async deleteRequest(endpoint) {
-        try {
-            const response = await instance.delete(endpoint);
-            return response;
-        } catch (error) {
-            // Check if response exists before destructuring
-            const status = error?.response?.status || 408;
-            const errorData = error?.response?.data || {};
-            const errorMessage = errorData?.error?.data?.message || error?.message || "An error occurred while deleting data";
-            return new CreateError(status, errorMessage, false);
-        }
-    },
-
-    /**
-     * Check the connection to the API
-     */
-    async baseRequest() {
-        try {
-            const response = await instance.get('/');
-            return response
-        } catch (error) {
-            const status = error?.response?.status || 408;
-            const errorMessage = "An error occurred";
-            return new CreateError(status, errorMessage, false);
+class ApiResponse {
+    constructor({ status, code = 500, message = 'Bad Request', data, size }) {
+        this.status = status;
+        this.code = code;
+        this.message = message;
+        this.data = data;
+        if (size !== undefined) {
+            this.size = size;
         }
     }
 
+    toJSON() {
+        return {
+            status: this.status,
+            code: this.code,
+            message: this.message,
+            data: this.data,
+            size: this.size
+        };
+    }
+}
+
+module.exports = {
+    async getRequest(endpoint) {
+        try {
+            const response = await instance.get(endpoint)
+            return new ApiResponse(response.data);
+        
+        } catch (error) {
+            const status = error?.response?.status || 408;
+            const errorData = error?.response?.data || {};
+            const errorMessage = errorData?.error?.data?.message || error?.message || "An error occurred while fetching data";
+
+            return new ApiResponse({ status: "error", code: status, message: errorMessage });
+        }
+    },
+
+    async postRequest(endpoint, data) {
+        try {
+            const response = await instance.post(endpoint, data);
+            return new ApiResponse(response.data);
+
+        } catch (error) {
+            const status = error?.response?.status || 408;
+            const errorData = error?.response?.data || {};
+            const errorMessage = errorData?.error?.data?.message || error?.message || "An error occurred while posting data";
+
+            return new ApiResponse({ status: "error", code: status, message: errorMessage });
+        }
+    },
+
+    async deleteRequest(endpoint) {
+        try {
+            const response = await instance.delete(endpoint);
+            return new ApiResponse(response.data);
+
+        } catch (error) {
+            const status = error?.response?.status || 408;
+            const errorData = error?.response?.data || {};
+            const errorMessage = errorData?.error?.data?.message || error?.message || "An error occurred while deleting data";
+
+            return new ApiResponse({ status: "error", code: status, message: errorMessage });
+        }
+    },
 };

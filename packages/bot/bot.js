@@ -30,8 +30,8 @@ client.login(process.env.NODE_ENV === 'production'
     : process.env.DEVELOPMENT_TOKEN).then(async () => {
 
         // → Check API connection
-        const { baseRequest } = require('./database/connection');
-        const apiConnection = await baseRequest();
+        const { getRequest } = require('./database/connection');
+        const apiConnection = await getRequest("/");
 
         const isRedisConnected = redisClient?.status === 'ready';
         const isApiConnected = apiConnection?.status === 200;
