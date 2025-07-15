@@ -1,6 +1,6 @@
 import { Request, Response, Router, NextFunction } from "express";
 import { Transaction } from "sequelize";
-import { UserBalances } from "../../../../models";
+import { Guild, UserBalances } from "../../../../models";
 import { ResponseHandler } from "../../../../utils/response.utils";
 import { ResponseCode } from "../../../../utils/response.types";
 import {
@@ -222,15 +222,7 @@ router.get(
 router.post(
   "/:userId",
   async (req: Request, res: Response, next: NextFunction) => {
-    if (!UserBalances.sequelize) {
-      return ResponseHandler.sendError(
-        res,
-        "Database connection not available",
-        ResponseCode.INTERNAL_SERVER_ERROR
-      );
-    }
-
-    const transaction = await UserBalances.sequelize.transaction();
+    const transaction = await sequelize.transaction();
 
     try {
       const { guildId, userId } = req.params;
@@ -239,6 +231,17 @@ router.post(
         type,
         allowNegative = false,
       } = req.body as BalanceUpdateBody;
+
+      // Check if guild has premium
+      const guild = await Guild.findOne({ where: { guildId } });
+      if (!guild || !guild.hasPremium()) {
+        await transaction.rollback();
+        return ResponseHandler.sendError(
+          res,
+          "This guild does not have premium. Level updates are disabled.",
+          403
+        );
+      }
 
       // Input validation
       if (!validateAmount(amount) || !validateBalanceType(type)) {
@@ -364,6 +367,17 @@ router.post(
       const { amount, from, to, toUserId } = req.body;
       const targetUserId = toUserId || userId;
       const isSameUser = targetUserId === userId;
+
+      // Check if guild has premium
+      const guild = await Guild.findOne({ where: { guildId } });
+      if (!guild || !guild.hasPremium()) {
+        await transaction.rollback();
+        return ResponseHandler.sendError(
+          res,
+          "This guild does not have premium. Level updates are disabled.",
+          403
+        );
+      }
 
       // Input validation
       const amountValidation = validateAmount(amount);

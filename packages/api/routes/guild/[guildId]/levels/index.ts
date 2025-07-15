@@ -1,6 +1,6 @@
 import { Request, Response, Router, NextFunction } from "express";
 import { Op } from "sequelize";
-import { UserLevel, LevelRank, Modifier } from "../../../../models";
+import { Guild, UserLevel, LevelRank, Modifier } from "../../../../models";
 import { ResponseHandler } from "../../../../utils/response.utils";
 import { getOrCreateUserLevel } from "./gain";
 import { logUserExperience } from "../../../../utils/log.utils";
@@ -184,56 +184,66 @@ router.post(
   async (req: Request, res: Response, next: NextFunction) => {
     try {
       await sequelize.transaction(async (transaction) => {
-      const { guildId, userId } = req.params;
-      const { amount = 0, originId } = req.body;
+        const { guildId, userId } = req.params;
+        const { amount = 0, originId } = req.body;
 
-      // Validate required fields
-      if (!amount) {
-        return ResponseHandler.sendValidationFail(
-          res,
-          "Missing required fields",
-          ["Amount is a required field"]
+        // Check if guild has premium
+        const guild = await Guild.findOne({ where: { guildId } });
+        if (!guild || !guild.hasPremium()) {
+          await transaction.rollback();
+          return ResponseHandler.sendError(
+            res,
+            "This guild does not have premium. Level updates are disabled.",
+            403
+          );
+        }
+
+        // Validate required fields
+        if (!amount) {
+          return ResponseHandler.sendValidationFail(
+            res,
+            "Missing required fields",
+            ["Amount is a required field"]
+          );
+        }
+
+        if (amount !== Number(amount)) {
+          return ResponseHandler.sendValidationFail(res, "Invalid amount", [
+            "Amount must be a number",
+          ]);
+        }
+
+        // Get or create user level
+        const [userLevel] = await getOrCreateUserLevel(
+          guildId,
+          userId,
+          transaction
         );
-      }
 
-      if (amount !== Number(amount)) {
-        return ResponseHandler.sendValidationFail(res, "Invalid amount", [
-          "Amount must be a number",
-        ]);
-      }
+        // Update user level
+        userLevel.experience += amount;
+        await userLevel.save({ transaction });
 
-      // Get or create user level
-      const [userLevel] = await getOrCreateUserLevel(
-        guildId,
-        userId,
-        transaction
-      );
+        ResponseHandler.sendSuccess(
+          res,
+          userLevel,
+          `Gave ${amount} experience to user`
+        );
 
-      // Update user level
-      userLevel.experience += amount;
-      await userLevel.save({ transaction });
-
-      ResponseHandler.sendSuccess(
-        res,
-        userLevel,
-        `Gave ${amount} experience to user`
-      );
-
-      // Log the user experience increase
-      logUserExperience(
-        guildId,
-        userId,
-        UserExperienceLogType.GIVE,
-        amount,
-        originId
-      );
-    });
-  } catch (error) {
-    next(error);
-  }
+        // Log the user experience increase
+        logUserExperience(
+          guildId,
+          userId,
+          UserExperienceLogType.GIVE,
+          amount,
+          originId
+        );
+      });
+    } catch (error) {
+      next(error);
+    }
   }
 );
-
 
 /**
  * @swagger
@@ -285,59 +295,69 @@ router.post(
   async (req: Request, res: Response, next: NextFunction) => {
     try {
       await sequelize.transaction(async (transaction) => {
-      const { guildId, userId } = req.params;
-      const { amount = 0, originId } = req.body;
+        const { guildId, userId } = req.params;
+        const { amount = 0, originId } = req.body;
 
-      // Validate required fields
-      if (!amount) {
-        return ResponseHandler.sendValidationFail(
-          res,
-          "Missing required fields",
-          ["Amount is a required field"]
+        // Check if guild has premium
+        const guild = await Guild.findOne({ where: { guildId } });
+        if (!guild || !guild.hasPremium()) {
+          await transaction.rollback();
+          return ResponseHandler.sendError(
+            res,
+            "This guild does not have premium. Level updates are disabled.",
+            403
+          );
+        }
+
+        // Validate required fields
+        if (!amount) {
+          return ResponseHandler.sendValidationFail(
+            res,
+            "Missing required fields",
+            ["Amount is a required field"]
+          );
+        }
+
+        if (amount !== Number(amount)) {
+          return ResponseHandler.sendValidationFail(res, "Invalid amount", [
+            "Amount must be a number",
+          ]);
+        }
+
+        // Get or create user level
+        const [userLevel] = await getOrCreateUserLevel(
+          guildId,
+          userId,
+          transaction
         );
-      }
 
-      if (amount !== Number(amount)) {
-        return ResponseHandler.sendValidationFail(res, "Invalid amount", [
-          "Amount must be a number",
-        ]);
-      }
+        // Update user level
+        userLevel.experience -= amount;
+        if (userLevel.experience < 0) {
+          userLevel.experience = 0;
+        }
 
-      // Get or create user level
-      const [userLevel] = await getOrCreateUserLevel(
-        guildId,
-        userId,
-        transaction
-      );
+        await userLevel.save({ transaction });
 
-      // Update user level
-      userLevel.experience -= amount;
-      if (userLevel.experience < 0) {
-        userLevel.experience = 0;
-      }
+        ResponseHandler.sendSuccess(
+          res,
+          userLevel,
+          `Removed ${amount} experience from user`
+        );
 
-      await userLevel.save({ transaction });
-
-      ResponseHandler.sendSuccess(
-        res,
-        userLevel,
-        `Removed ${amount} experience from user`
-      );
-
-      // Log the user experience decrease
-      logUserExperience(
-        guildId,
-        userId,
-        UserExperienceLogType.REMOVE,
-        amount,
-        originId
-      );
-    });
-  } catch (error) {
-    next(error);
-  }
+        // Log the user experience decrease
+        logUserExperience(
+          guildId,
+          userId,
+          UserExperienceLogType.REMOVE,
+          amount,
+          originId
+        );
+      });
+    } catch (error) {
+      next(error);
+    }
   }
 );
-
 
 export default router;

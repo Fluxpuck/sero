@@ -1,6 +1,6 @@
 import { Request, Response, Router, NextFunction } from "express";
 import { Transaction } from "sequelize";
-import { UserLevel, Modifier } from "../../../../models";
+import { UserLevel, Modifier, Guild } from "../../../../models";
 import { ResponseHandler } from "../../../../utils/response.utils";
 import { calculateXp } from "../../../../utils/levels.utils";
 import { logUserExperience } from "../../../../utils/log.utils";
@@ -73,6 +73,17 @@ router.post(
 
     try {
       const { guildId, userId } = req.params;
+
+      // Check if guild has premium
+      const guild = await Guild.findOne({ where: { guildId } });
+      if (!guild || !guild.hasPremium()) {
+        await transaction.rollback();
+        return ResponseHandler.sendError(
+          res,
+          "This guild does not have premium. Level updates are disabled.",
+          403
+        );
+      }
 
       // Get Guild and User modifiers
       const guild_modifier = await Modifier.findOne({ where: { guildId } });

@@ -1,8 +1,7 @@
-import { Request, Response, Router, NextFunction } from 'express';
-import { Guild, GuildSettings } from '../../models';
-import { ResponseHandler } from '../../utils/response.utils';
-import { ResponseCode } from '../../utils/response.types';
-
+import { Request, Response, Router, NextFunction } from "express";
+import { Guild, GuildSettings } from "../../models";
+import { ResponseHandler } from "../../utils/response.utils";
+import { ResponseCode } from "../../utils/response.types";
 
 const router = Router({ mergeParams: true });
 
@@ -43,25 +42,37 @@ const router = Router({ mergeParams: true });
  *       500:
  *         description: Server error
  */
-router.get('/:guildId', async (req: Request, res: Response, next: NextFunction) => {
+router.get(
+  "/:guildId",
+  async (req: Request, res: Response, next: NextFunction) => {
     try {
-        const { guildId } = req.params;
-        const { settings = false } = req.query;
+      const { guildId } = req.params;
+      const { settings = false } = req.query;
 
-        const guild = await Guild.findOne({
-            where: { guildId },
-            include: settings === 'true' ? [GuildSettings] : []
-        });
+      console.log("GuildId", guildId);
 
-        if (!guild) {
-            return ResponseHandler.sendError(res, 'Guild not found', ResponseCode.NOT_FOUND);
-        }
+      const guild = await Guild.findOne({
+        where: { guildId },
+        include: settings === "true" ? [GuildSettings] : [],
+      });
 
-        ResponseHandler.sendSuccess(res, guild, 'Guild retrieved successfully');
+      console.log("Guild", guild);
+
+      if (!guild) {
+        return ResponseHandler.sendError(
+          res,
+          "Guild not found",
+          ResponseCode.NOT_FOUND
+        );
+      }
+
+      ResponseHandler.sendSuccess(res, guild, "Guild retrieved successfully");
     } catch (error) {
-        next(error);
+      console.error(error);
+      next(error);
     }
-});
+  }
+);
 
 /**
  * @swagger
@@ -100,43 +111,49 @@ router.get('/:guildId', async (req: Request, res: Response, next: NextFunction) 
  *       500:
  *         description: Server error
  */
-router.post('/', async (req: Request, res: Response, next: NextFunction) => {
-    try {
-        const { guildId, guildName, premium } = req.body;
+router.post("/", async (req: Request, res: Response, next: NextFunction) => {
+  try {
+    const { guildId, guildName, premium } = req.body;
 
-        // Validate required fields
-        if (!guildId || !guildName) {
-            return ResponseHandler.sendValidationFail(
-                res,
-                'Guild ID and Guild Name are required',
-                ['guildId and guildName are required fields']
-            );
-        }
-
-        // Check if guild exists to determine if this is create or update
-        const existingGuild = await Guild.findOne({
-            where: { guildId }
-        });
-
-        // Prepare guild data
-        const guildData = {
-            guildId,
-            guildName,
-            premium: premium !== undefined ? premium : (existingGuild?.premium || false)
-        } as Guild;
-
-        // Use upsert to create or update
-        const [guild, created] = await Guild.upsert(guildData);
-
-        // Send appropriate response based on whether guild was created or updated
-        if (created) {
-            ResponseHandler.sendSuccess(res, guild, 'Guild created successfully', ResponseCode.CREATED);
-        } else {
-            ResponseHandler.sendSuccess(res, guild, 'Guild updated successfully');
-        }
-    } catch (error) {
-        next(error);
+    // Validate required fields
+    if (!guildId || !guildName) {
+      return ResponseHandler.sendValidationFail(
+        res,
+        "Guild ID and Guild Name are required",
+        ["guildId and guildName are required fields"]
+      );
     }
+
+    // Check if guild exists to determine if this is create or update
+    const existingGuild = await Guild.findOne({
+      where: { guildId },
+    });
+
+    // Prepare guild data
+    const guildData = {
+      guildId,
+      guildName,
+      premium:
+        premium !== undefined ? premium : existingGuild?.premium || false,
+    } as Guild;
+
+    // Use upsert to create or update
+    const [guild, created] = await Guild.upsert(guildData);
+
+    // Send appropriate response based on whether guild was created or updated
+    if (created) {
+      ResponseHandler.sendSuccess(
+        res,
+        guild,
+        "Guild created successfully",
+        ResponseCode.CREATED
+      );
+    } else {
+      ResponseHandler.sendSuccess(res, guild, "Guild updated successfully");
+    }
+  } catch (error) {
+    next(error);
+  }
 });
 
 /**
@@ -174,29 +191,31 @@ router.post('/', async (req: Request, res: Response, next: NextFunction) => {
  *       500:
  *         description: Server error
  */
-router.delete('/:guildId', async (req: Request, res: Response, next: NextFunction) => {
+router.delete(
+  "/:guildId",
+  async (req: Request, res: Response, next: NextFunction) => {
     try {
-        const { guildId } = req.params;
+      const { guildId } = req.params;
 
-        const deleted = await Guild.destroy({
-            where: {
-                guildId
-            }
-        });
+      const deleted = await Guild.destroy({
+        where: {
+          guildId,
+        },
+      });
 
-        if (deleted === 0) {
-            return ResponseHandler.sendError(
-                res,
-                'Guild not found for this guild',
-                ResponseCode.NOT_FOUND
-            );
-        }
+      if (deleted === 0) {
+        return ResponseHandler.sendError(
+          res,
+          "Guild not found for this guild",
+          ResponseCode.NOT_FOUND
+        );
+      }
 
-        ResponseHandler.sendSuccess(res, null, 'Guild deleted successfully');
+      ResponseHandler.sendSuccess(res, null, "Guild deleted successfully");
     } catch (error) {
-        next(error);
+      next(error);
     }
-});
-
+  }
+);
 
 export default router;
