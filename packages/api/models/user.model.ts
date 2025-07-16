@@ -1,5 +1,6 @@
 import {
   AfterCreate,
+  BeforeSave,
   Column,
   DataType,
   Default,
@@ -84,6 +85,26 @@ export class User extends Model<User> {
     allowNull: true,
   })
   declare moderatorSince: Date | null;
+
+  @BeforeSave
+  static async updateModeratorSince(instance: User) {
+    // Check if this is an existing record being updated
+    if (instance.isNewRecord === false) {
+      // Get the previous state of the instance
+      const previousInstance = await User.findByPk(instance.id);
+
+      // If previous instance exists and userType is changing from USER to ADMIN or MODERATOR
+      if (
+        previousInstance &&
+        previousInstance.userType === UserType.USER &&
+        (instance.userType === UserType.ADMIN ||
+          instance.userType === UserType.MODERATOR)
+      ) {
+        // Set moderatorSince to current date
+        instance.moderatorSince = new Date();
+      }
+    }
+  }
 
   @AfterCreate
   static async addModifier(instance: User) {
