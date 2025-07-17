@@ -10,8 +10,49 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Notify Discord
+        env:
+          DISCORD_WEBHOOK: ${{ secrets.DISCORD_WEBHOOK }}
         run: |
-          curl -H "Content-Type: application/json" \
-               -X POST \
-               -d "{\"content\": \"📢 New activity in [${{ github.repository }}](https://github.com/${{ github.repository }})\n**Event**: ${{ github.event_name }}\n**User**: ${{ github.actor }}\n**Ref**: ${{ github.ref }}\"}" \
-               ${{ secrets.DISCORD_WEBHOOK }}
+          echo "Preparing embed..."
+
+          EVENT_NAME="${{ github.event_name }}"
+          ACTION="${{ github.event.action || 'push' }}"
+          REPO="${{ github.repository }}"
+          USER="${{ github.actor }}"
+          BRANCH="${{ github.ref_name || github.head_ref }}"
+          PR_TITLE="${{ github.event.pull_request.title || '' }}"
+          COMMIT_MSG="${{ github.event.head_commit.message || '' }}"
+          URL="https://github.com/${{ github.repository }}"
+
+          if [ "$EVENT_NAME" = "push" ]; then
+            COLOR=3447003  # Blue
+            TITLE="📦 New Push to $BRANCH"
+            DESCRIPTION="**Message:** $COMMIT_MSG"
+          elif [ "$ACTION" = "opened" ] || [ "$ACTION" = "reopened" ] || [ "$ACTION" = "synchronize" ]; then
+            COLOR=15844367  # Yellow
+            TITLE="🛠 Pull Request $ACTION"
+            DESCRIPTION="**${PR_TITLE}**"
+            URL="${{ github.event.pull_request.html_url }}"
+          else
+            COLOR=3066993  # Green
+            TITLE="✅ Pull Request Merged"
+            DESCRIPTION="**${PR_TITLE}**"
+            URL="${{ github.event.pull_request.html_url }}"
+          fi
+
+          curl -X POST "$DISCORD_WEBHOOK" \
+            -H "Content-Type: application/json" \
+            -d "{
+              \"embeds\": [{
+                \"title\": \"$TITLE\",
+                \"description\": \"$DESCRIPTION\",
+                \"url\": \"$URL\",
+                \"color\": $COLOR,
+                \"fields\": [
+                  { \"name\": \"Repository\", \"value\": \"$REPO\", \"inline\": true },
+                  { \"name\": \"User\", \"value\": \"$USER\", \"inline\": true },
+                  { \"name\": \"Branch\", \"value\": \"$BRANCH\", \"inline\": true }
+                ],
+                \"timestamp\": \"$(date -u +"%Y-%m-%dT%H:%M:%SZ")\"
+              }]
+            }"
