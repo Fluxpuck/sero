@@ -28,11 +28,34 @@ module.exports.props = {
 const fetchLeaderboardData = async (interaction, type = "wallet") => {
   try {
     const data = await getCachedLeaderboardData(interaction.guildId, type);
-    if (!data) {
+    if (!data || !data.length) {
       throw new Error("Failed to fetch leaderboard data");
     }
-    return data;
+    
+    // Fetch usernames for the users in the leaderboard
+    const userIds = data.map(user => user.userId);
+    const usernamePromises = userIds.map(async (userId) => {
+      try {
+        // Try to fetch the user from the guild
+        const member = await interaction.guild.members.fetch(userId).catch(() => null);
+        return member ? member.user.username : userId;
+      } catch {
+        // If we can't fetch the user, just use the ID
+        return userId;
+      }
+    });
+    
+    const usernames = await Promise.all(usernamePromises);
+    
+    // Add usernames to the data
+    const enrichedData = data.map((user, index) => ({
+      ...user,
+      userName: usernames[index]
+    }));
+    
+    return enrichedData;
   } catch (error) {
+    console.error("Leaderboard error:", error);
     await followUpInteraction(interaction, {
       content: `Oops! Something went wrong while trying to fetch the leaderboard!`,
       flags: MessageFlags.Ephemeral,
