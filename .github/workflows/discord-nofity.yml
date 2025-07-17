@@ -1,0 +1,17 @@
+name: Discord Notifications
+
+on:
+  push: # Any commit to any branch
+  pull_request: # PR events: open, close, merge
+    types: [opened, closed, merged]
+
+jobs:
+  discord:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Notify Discord
+        run: |
+          curl -H "Content-Type: application/json" \
+               -X POST \
+               -d "{\"content\": \"📢 New activity in [${{ github.repository }}](https://github.com/${{ github.repository }})\n**Event**: ${{ github.event_name }}\n**User**: ${{ github.actor }}\n**Ref**: ${{ github.ref }}\"}" \
+               ${{ secrets.DISCORD_WEBHOOK }}
