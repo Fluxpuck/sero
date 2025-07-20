@@ -50,7 +50,8 @@ module.exports.run = async (client, interaction) => {
 
     // Fetch user transfer activities from today
     let eligibleForTransfer = false;
-    const userActivities = await getRequest(`/guilds/${interaction.guildId}/activities/user/${interaction.user.id}/transfer-exp?today=true`);
+    // Missing Route: API route for fetching user transfer activities needs to be implemented
+    const userActivities = await getRequest(`/guild/${interaction.guildId}/activities/user/${interaction.user.id}/transfer-exp?today=true`);
 
     // If there are no activities, the user is eligible for transfer
     if (userActivities.status === 404) {
@@ -103,13 +104,15 @@ module.exports.run = async (client, interaction) => {
     if (eligibleForTransfer) {
         try {
             // Remove exp from the author
-            const removeResult = await postRequest(`/guilds/${interaction.guildId}/levels/exp/${interaction.user.id}`, { experience: -transferAmount });
+            // Missing Route: API route for removing experience from a user needs to be implemented
+            const removeResult = await postRequest(`/guild/${interaction.guildId}/levels/exp/${interaction.user.id}`, { experience: -transferAmount });
             if (removeResult.status !== 200) {
                 throw new Error("Something went wrong while removing experience from your account.");
             }
 
             // Add exp to the target
-            const addResult = await postRequest(`/guilds/${interaction.guildId}/levels/exp/${targetUser.id}`, { experience: transferAmount });
+            // Missing Route: API route for adding experience to a user needs to be implemented
+            const addResult = await postRequest(`/guild/${interaction.guildId}/levels/exp/${targetUser.id}`, { experience: transferAmount });
             if (addResult.status !== 200) {
                 throw new Error(`Something went wrong while adding experience to the target user.`);
             }
@@ -123,8 +126,9 @@ module.exports.run = async (client, interaction) => {
         }
 
         // Store the transfer activity in the database
-        postRequest(`/guilds/${interaction.guild.id}/activities`, {
-            guildId: interaction.guild.id,
+        // Missing Route: API route for storing activities needs to be implemented
+        postRequest(`/guild/${interaction.guildId}/activities`, {
+            guildId: interaction.guildId,
             userId: interaction.user.id,
             type: "transfer-exp",
             additional: {

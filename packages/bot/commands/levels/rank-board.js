@@ -25,7 +25,8 @@ module.exports.run = async (client, interaction, leaderboard = []) => {
   await deferInteraction(interaction, false);
 
   // Get all levels for a specific guild from the database
-  const result = await getRequest(`/guilds/${interaction.guildId}/levels`);
+  // Missing Route: API route for fetching guild levels leaderboard needs to be implemented
+  const result = await getRequest(`/guild/${interaction.guildId}/levels`);
   if (result?.status === 200) {
     leaderboard = result.data;
   }

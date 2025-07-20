@@ -22,8 +22,9 @@ module.exports.props = {
 module.exports.run = async (client, interaction) => {
   await deferInteraction(interaction, true);
 
+  // Missing Route: API route for fetching reward drop settings needs to be implemented
   const rewardDropSetting = await getRequest(
-    `/guilds/${interaction.guild.id}/settings/exp-reward-drops`
+    `/guild/${interaction.guild.id}/settings/exp-reward-drops`
   );
   if (rewardDropSetting.status !== 200) {
     return replyInteraction(interaction, {

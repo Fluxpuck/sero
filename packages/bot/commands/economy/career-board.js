@@ -76,8 +76,9 @@ const updateLeaderboardComponents = (leaderboardPages, page, maxpages) => {
 module.exports.run = async (client, interaction, page = 0) => {
   await deferInteraction(interaction, false);
 
+  // Missing Route: API route for career leaderboard needs to be implemented
   const careerResult = await getRequest(
-    `/guilds/${interaction.guildId}/economy/career/`
+    `/guild/${interaction.guildId}/economy/career/`
   );
   if (careerResult?.status !== 200) {
     return followUpInteraction(interaction, {

@@ -28,8 +28,9 @@ module.exports.run = async (client, interaction) => {
   await deferInteraction(interaction, false);
 
   // Check if the user has already claimed their daily work reward
+  // Missing Route: API route for fetching user career needs to be implemented
   const userCareer = await getRequest(
-    `/guilds/${interaction.guildId}/economy/career/${interaction.user.id}`
+    `/guild/${interaction.guildId}/economy/career/${interaction.user.id}`
   );
   if (userCareer.status !== 200) {
     return followUpInteraction(interaction, {
@@ -40,8 +41,9 @@ module.exports.run = async (client, interaction) => {
   }
 
   // Check if the user has already claimed their weekly reward
+  // Missing Route: API route for checking weekly reward status needs to be implemented
   const weeklyRewardResult = await getRequest(
-    `/guilds/${interaction.guildId}/activities/user/${interaction.user.id}/daily-work-reward?thisWeek=true`
+    `/guild/${interaction.guildId}/activities/user/${interaction.user.id}/daily-work-reward?thisWeek=true`
   );
 
   if (weeklyRewardResult.status === 200) {
@@ -61,8 +63,9 @@ module.exports.run = async (client, interaction) => {
   }
 
   // Check if the user has a streak of at least 5 days
+  // Missing Route: API route for checking activity streak needs to be implemented
   const careerStreak = await getRequest(
-    `/guilds/${interaction.guildId}/activities/streak/${interaction.user.id}/daily-work`
+    `/guild/${interaction.guildId}/activities/streak/${interaction.user.id}/daily-work`
   );
   if (careerStreak.status !== 200 || careerStreak.data.streak < 5) {
     return followUpInteraction(interaction, {
@@ -87,7 +90,8 @@ module.exports.run = async (client, interaction) => {
   });
 
   // Store the transfer activity in the database
-  postRequest(`/guilds/${interaction.guild.id}/activities`, {
+  // Missing Route: API route for storing activities needs to be implemented
+  postRequest(`/guild/${interaction.guild.id}/activities`, {
     guildId: interaction.guild.id,
     userId: interaction.user.id,
     type: "daily-work-reward",
@@ -97,15 +101,17 @@ module.exports.run = async (client, interaction) => {
   });
 
   // Add experience points to the user's career
+  // Missing Route: API route for gaining experience points needs to be implemented
   postRequest(
-    `/guilds/${interaction.guild.id}/economy/exp/gain/${interaction.user.id}`,
+    `/guild/${interaction.guild.id}/economy/exp/gain/${interaction.user.id}`,
     { amount: BASE_REWARD_EXPERIENCE }
   );
 
   // Give the user the target amount of money
+  // Missing Route: API route for bank deposit needs to be implemented
   const bankDeposit = await postRequest(
-    `guilds/${interaction.guild.id}/economy/bank/${interaction.user.id}`,
-    { amount: rewardAmount }
+    `/guild/${interaction.guild.id}/economy/balance/${interaction.user.id}`,
+    { amount: rewardAmount, type: 'bank' }
   );
   if (bankDeposit?.status !== 200) {
     return followUpInteraction(interaction, {

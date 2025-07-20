@@ -28,8 +28,9 @@ module.exports.run = async (client, interaction) => {
   await deferInteraction(interaction, false);
 
   // Check if the user has already searched for treasure this hour
+  // Missing Route: API route for checking treasure hunt cooldown needs to be implemented
   const hourlyRewardResult = await getRequest(
-    `/guilds/${interaction.guildId}/activities/user/${interaction.user.id}/treasure-hunt?thisHour=true`
+    `/guild/${interaction.guildId}/activities/user/${interaction.user.id}/treasure-hunt?thisHour=true`
   );
 
   if (hourlyRewardResult.status === 200) {
@@ -56,9 +57,10 @@ module.exports.run = async (client, interaction) => {
       ) + MIN_NEGATIVE_REWARD;
 
   // Deposit the reward amount to the user's wallet - allowReset is set to true by default
+  // Missing Route: API route for wallet transaction needs to be implemented
   const walletTransaction = await postRequest(
-    `guilds/${interaction.guild.id}/economy/wallet/${interaction.user.id}`,
-    { amount: rewardAmount, allowReset: true }
+    `/guild/${interaction.guild.id}/economy/balance/${interaction.user.id}`,
+    { amount: rewardAmount, type: 'wallet', allowNegative: true }
   );
   // Get the true amount of the transaction
   const transactionAmount =
@@ -73,7 +75,8 @@ module.exports.run = async (client, interaction) => {
 
   try {
     // Store the activity in the database
-    await postRequest(`/guilds/${interaction.guild.id}/activities`, {
+    // Missing Route: API route for storing activities needs to be implemented
+    await postRequest(`/guild/${interaction.guild.id}/activities`, {
       guildId: interaction.guild.id,
       userId: interaction.user.id,
       type: "treasure-hunt",
@@ -93,8 +96,9 @@ module.exports.run = async (client, interaction) => {
     // Only if the reward is positive
     // Add experience points to the user's career
     // No amount is passed, so the default amount is used (100)
+    // Missing Route: API route for gaining experience points needs to be implemented
     postRequest(
-      `/guilds/${interaction.guild.id}/economy/exp/gain/${interaction.user.id}`
+      `/guild/${interaction.guild.id}/economy/exp/gain/${interaction.user.id}`
     );
   }
 
