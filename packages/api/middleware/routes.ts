@@ -247,9 +247,12 @@ export const run = (
   }
 
   // Log route loading summary
-  logger.info("Route initialization complete");
-  logger.success(`✓ Loaded ${routeStats.loadedRoutes} routes`);
-  logger.warn(`⚠ Skipped ${routeStats.skippedRoutes} routes`);
+  if (routeStats.loadedRoutes > 0) {
+    logger.success(`✓ Loaded ${routeStats.loadedRoutes} routes`);
+  }
+  if (routeStats.skippedRoutes > 0) {
+    logger.warn(`⚠ Skipped ${routeStats.skippedRoutes} routes`);
+  }
   logger.info(`Total files processed: ${routeStats.totalFiles}`);
 
   // Log all registered routes with base route
