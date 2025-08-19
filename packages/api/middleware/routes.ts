@@ -234,7 +234,7 @@ export const run = (
 
   // Load all routes from the routes directory
   const routesDir = join(__dirname, "../routes");
-  logger.info("\nStarting route initialization...");
+  logger.info("Starting route initialization...");
 
   // Create a router for the base route if specified
   const router = Router();
