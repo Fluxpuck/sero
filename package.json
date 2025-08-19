@@ -18,7 +18,9 @@
     "@bot": "./packages/bot"
   },
   "dependencies": {
+    "@types/cron": "^2.4.3",
     "amqplib": "^0.10.3",
+    "cron": "^4.3.3",
     "module-alias": "^2.2.3"
   },
   "devDependencies": {

@@ -7,7 +7,7 @@ import {
   Table,
 } from "sequelize-typescript";
 import { calculateLevel, calculateRank } from "../utils/levels.utils";
-import { publish, Channel } from "../utils/publisher";
+import { publish, RedisChannel } from "../utils/publisher";
 
 @Table({
   tableName: "user_levels",
@@ -107,7 +107,7 @@ export class UserLevel extends Model<UserLevel> {
       userLevel.rank = newRank.rank;
 
       // Publish a message
-      publish(Channel.GUILD_MEMBER_LEVEL, userLevel);
+      publish(RedisChannel.GUILD_MEMBER_LEVEL, userLevel);
     }
   }
 }

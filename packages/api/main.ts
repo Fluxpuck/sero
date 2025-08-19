@@ -4,6 +4,7 @@ import helmet from "helmet";
 import cors from "cors";
 import compression from "compression";
 import { testConnection } from "./utils/publisher";
+import { initCronJobs } from "./cron";
 
 (async () => {
   // → Setup server
@@ -40,7 +41,7 @@ import { testConnection } from "./utils/publisher";
 
   // → Start server
   app.listen(port, () => {
-    return console.log(`
+    console.log(`
     RESTFUL API - Startup details:
     > ${new Date().toUTCString()}
     > Database Synced in ${Math.round(end - start)} milliseconds
@@ -48,5 +49,8 @@ import { testConnection } from "./utils/publisher";
     > Running in ${process.env.NODE_ENV || "development"} mode
     > Ready on http://localhost:${port}
     `);
+
+    // → Initialize cron jobs
+    initCronJobs();
   });
 })();
