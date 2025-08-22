@@ -32,6 +32,15 @@
       "runtimeArgs": ["-r", "ts-node/register"]
     },
     {
+      "name": "Sero Bot 2",
+      "type": "node",
+      "request": "launch",
+      "program": "${workspaceFolder}/packages/sero/index.ts",
+      "cwd": "${workspaceFolder}/packages/sero",
+      "runtimeExecutable": "node",
+      "runtimeArgs": ["-r", "ts-node/register"]
+    },
+    {
       "name": "Seeder",
       "type": "node",
       "request": "launch",
