@@ -1,4 +1,5 @@
 import Redis from "ioredis";
+import { Client } from "discord.js";
 
 export enum RedisChannels {
   LEVEL = "guildMemberLevel",
@@ -19,16 +20,13 @@ export const redis = new Redis({
   },
 });
 
-// Log connection events
-redis.on("connect", () => console.log("[Redis] Connected"));
-redis.on("error", (err) => console.error("[Redis] Error:", err));
-
 /**
  * Subscribe to Redis channels and handle messages
  */
-export type MessageHandler = (channel: string, message: string) => void;
-export function subscribe(channels: RedisChannels[], handler: MessageHandler) {
+export type payload = { code: string; data: any };
+export function subscribe(client: Client) {
   // Subscribe to channels
+  const channels = Object.values(RedisChannels);
   channels.forEach((channel) => {
     redis.subscribe(channel, (err) => {
       if (err) console.error(`[Redis] Failed to subscribe to ${channel}:`, err);
@@ -40,35 +38,14 @@ export function subscribe(channels: RedisChannels[], handler: MessageHandler) {
 
   // Listen for messages
   redis.on("message", (channel, message) => {
-    try {
-      handler(channel, message);
-    } catch (error) {
-      console.error(`[Redis] Error handling message from ${channel}:`, error);
+    // Emit the Discord Client Event
+    const payload: payload = JSON.parse(message);
+    client.emit(payload.code, payload.data);
+
+    if (process.env.NODE_ENV === "development") {
+      console.log(`[Redis] Received event ${channel}`, payload);
     }
   });
 
   return () => channels.forEach((channel) => redis.unsubscribe(channel));
-}
-
-/**
- * Test the Redis connection
- * @returns Promise that resolves if connection is successful, rejects otherwise
- */
-export function testRedisConnection(): Promise<void> {
-  return new Promise((resolve, reject) => {
-    const pingTimeout = setTimeout(() => {
-      reject(new Error("Redis connection test timed out"));
-    }, 5000);
-
-    redis
-      .ping()
-      .then(() => {
-        clearTimeout(pingTimeout);
-        resolve();
-      })
-      .catch((error) => {
-        clearTimeout(pingTimeout);
-        reject(error);
-      });
-  });
 }

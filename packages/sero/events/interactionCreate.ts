@@ -1,9 +1,5 @@
-// events/interactionCreate.ts
 import { Events, Interaction, MessageFlags } from "discord.js";
 import { Event } from "../types/client.types";
-
-// Track cooldowns for commands and users
-const cooldowns = new Map<string, Map<string, number>>();
 
 const event: Event = {
   name: Events.InteractionCreate,
@@ -27,7 +23,6 @@ const event: Event = {
       }
 
       if (command.cooldown) {
-        
         // Create cooldown key
         const cooldown_key = `${interaction.user.id}_${interaction.guildId}_${command.data.name}`;
         if (interaction.client.cooldowns.has(cooldown_key)) {
@@ -108,4 +103,4 @@ const event: Event = {
   },
 };
 
-export = event;
+export default event;

@@ -6,9 +6,6 @@ import NodeCache from "node-cache";
 import { Client, Collection, GatewayIntentBits } from "discord.js";
 import { Command, Event } from "./types/client.types";
 
-import { testAPIConnection } from "./database/connection";
-import { testRedisConnection } from "./redis/subscribe";
-
 dotenv.config({ path: path.join(__dirname, ".", "config", ".env") });
 
 const client = new Client({
@@ -39,7 +36,7 @@ const loadEvents = (): void => {
 
   for (const file of eventFiles) {
     const filePath: string = path.join(eventsPath, file);
-    const event: Event = require(filePath);
+    const event: Event = require(filePath).default;
 
     if (event.once) {
       client.once(event.name, (...args) => event.execute(...args));
@@ -89,13 +86,7 @@ const initBot = async (): Promise<void> => {
     // Load commands
     await loadCommands();
 
-    // Verify connections
-    await testAPIConnection();
-
-    // Verify Redis connection
-    await testRedisConnection();
-
-    // Login to Discord with token from .env
+    // Login to Discord
     await client.login(token);
   } catch (error) {
     console.error("[SERO] Error initializing bot:", error);

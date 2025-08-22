@@ -95,19 +95,4 @@ function handleRequestError(error: unknown): ApiResponse {
   }
 }
 
-/**
- * Test the API connection
- * @returns Promise with the connection status
- */
-export async function testAPIConnection(): Promise<void> {
-  try {
-    const response = await instance.get("health");
-    if (response.status === 200) {
-      console.log("[API] Connected");
-    }
-  } catch (error) {
-    console.log("[API] Error:", error);
-  }
-}
-
 export default instance;
