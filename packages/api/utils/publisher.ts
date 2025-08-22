@@ -8,7 +8,6 @@ export enum RedisChannel {
   GUILD_MEMBER_LEVEL = "guildMemberLevel",
   GUILD_MEMBER_ROLE = "guildMemberRole",
   GUILD_MEMBER_BIRTHDAY = "guildMemberBirthday",
-
   GUILD_DROP_REWARD = "guildRewardDrops",
 
   ERROR = "error",

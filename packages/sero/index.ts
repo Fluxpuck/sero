@@ -1,9 +1,13 @@
 import dotenv from "dotenv";
 import fs from "fs";
 import path from "path";
-import { Client, Collection, GatewayIntentBits } from "discord.js";
 import NodeCache from "node-cache";
+
+import { Client, Collection, GatewayIntentBits } from "discord.js";
 import { Command, Event } from "./types/client.types";
+
+import { testAPIConnection } from "./database/connection";
+import { testRedisConnection } from "./redis/subscribe";
 
 dotenv.config({ path: path.join(__dirname, ".", "config", ".env") });
 
@@ -44,7 +48,7 @@ const loadEvents = (): void => {
     }
 
     if (process.env.NODE_ENV !== "production") {
-      console.log(`Loaded event: ${event.name}`);
+      console.log(`[Event] loaded ${event.name}`);
     }
   }
 };
@@ -64,7 +68,7 @@ const loadCommands = (): void => {
       client.commands.set(command.data.name, command);
 
       if (process.env.NODE_ENV !== "production") {
-        console.log(`Loaded command: ${command.data.name}`);
+        console.log(`[Command] loaded ${command.data.name}`);
       }
     }
   }
@@ -73,21 +77,28 @@ const loadCommands = (): void => {
 // Initialize bot
 const initBot = async (): Promise<void> => {
   try {
-    // Load events and commands
-    loadEvents();
-    loadCommands();
-
     // Check for Discord token
     const token = process.env.DISCORD_TOKEN;
     if (!token) {
       throw new Error("DISCORD_TOKEN is missing in the environment variables");
     }
 
+    // Load events
+    await loadEvents();
+
+    // Load commands
+    await loadCommands();
+
+    // Verify connections
+    await testAPIConnection();
+
+    // Verify Redis connection
+    await testRedisConnection();
+
     // Login to Discord with token from .env
     await client.login(token);
-    console.log(`Logged in as ${client.user?.tag || "unknown"}`);
   } catch (error) {
-    console.error("Error initializing bot:", error);
+    console.error("[SERO] Error initializing bot:", error);
     process.exit(1);
   }
 };
