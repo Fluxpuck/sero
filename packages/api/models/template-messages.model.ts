@@ -1,23 +1,26 @@
 import { Column, DataType, Model, Table } from "sequelize-typescript";
 
 export enum TemplateMessagesType {
+  WELCOME = "welcome",
   BIRTHDAY = "birthday",
   JOB = "job",
   LEVELUP = "levelup",
   REWARD_DROP = "reward-drop",
   CLAIM_REWARD = "claim-reward",
+  TREASURE = "treasure",
 }
 
 @Table({
   tableName: "template_messages",
   createdAt: "createdAt",
   updatedAt: "updatedAt",
-  deletedAt: "deletedAt",
-  paranoid: true,
   indexes: [
     {
       unique: true,
       fields: ["guildId", "type"],
+    },
+    {
+      fields: ["id"],
     },
   ],
   defaultScope: {
@@ -34,9 +37,9 @@ export class TemplateMessages extends Model<TemplateMessages> {
 
   @Column({
     type: DataType.STRING,
-    allowNull: false,
+    allowNull: true,
   })
-  declare guildId: string;
+  declare guildId: string | null;
 
   @Column({
     type: DataType.ENUM,

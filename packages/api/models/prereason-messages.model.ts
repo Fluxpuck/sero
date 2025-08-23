@@ -12,8 +12,6 @@ export enum ModerationType {
   tableName: "prereason_messages",
   createdAt: "createdAt",
   updatedAt: "updatedAt",
-  deletedAt: "deletedAt",
-  paranoid: true,
   indexes: [
     {
       unique: true,

@@ -4,8 +4,6 @@ import { Column, DataType, Model, Table } from "sequelize-typescript";
   tableName: "job_messages",
   createdAt: "createdAt",
   updatedAt: "updatedAt",
-  deletedAt: "deletedAt",
-  paranoid: true,
   indexes: [
     {
       unique: true,
