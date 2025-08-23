@@ -6,6 +6,7 @@ import {
 import { ResponseHandler } from "../../utils/response.utils";
 import { ResponseCode } from "../../utils/response.types";
 import { sequelize } from "../../database/sequelize";
+import { cache, invalidateCache } from "../../middleware/cache";
 
 const router = Router();
 
@@ -30,7 +31,7 @@ const router = Router();
  *       500:
  *         description: Server error
  */
-router.get("/", async (req: Request, res: Response, next: NextFunction) => {
+router.get("/", cache({ ttl: 60 * 10 }), async (req: Request, res: Response, next: NextFunction) => {
   try {
     const { type } = req.query;
     const where: any = {};
@@ -78,7 +79,7 @@ router.get("/", async (req: Request, res: Response, next: NextFunction) => {
  *       500:
  *         description: Server error
  */
-router.get("/:id", async (req: Request, res: Response, next: NextFunction) => {
+router.get("/:id", cache({ ttl: 60 * 15 }), async (req: Request, res: Response, next: NextFunction) => {
   try {
     const { id } = req.params;
 
@@ -127,6 +128,10 @@ router.get("/:id", async (req: Request, res: Response, next: NextFunction) => {
  */
 router.get(
   "/type/:type",
+  cache({
+    ttl: 60 * 15,
+    keyGenerator: (req) => `prereason-messages-by-type-${req.params.type}`
+  }),
   async (req: Request, res: Response, next: NextFunction) => {
     try {
       const { type } = req.params;
@@ -195,7 +200,7 @@ router.get(
  *       500:
  *         description: Server error
  */
-router.post("/", async (req: Request, res: Response, next: NextFunction) => {
+router.post("/", invalidateCache("api-cache:"), async (req: Request, res: Response, next: NextFunction) => {
   const transaction = await sequelize.transaction();
 
   try {
@@ -291,6 +296,7 @@ router.post("/", async (req: Request, res: Response, next: NextFunction) => {
  */
 router.delete(
   "/:id",
+  invalidateCache("api-cache:"),
   async (req: Request, res: Response, next: NextFunction) => {
     try {
       const { id } = req.params;
