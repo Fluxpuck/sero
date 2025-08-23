@@ -3,6 +3,7 @@ import { JobMessages } from "../../models/job-messages.model";
 import { ResponseHandler } from "../../utils/response.utils";
 import { ResponseCode } from "../../utils/response.types";
 import { sequelize } from "../../database/sequelize";
+import { cache, invalidateCache } from "../../middleware/cache";
 
 const router = Router();
 
@@ -26,7 +27,7 @@ const router = Router();
  *       500:
  *         description: Server error
  */
-router.get("/", async (req: Request, res: Response, next: NextFunction) => {
+router.get("/", cache({ ttl: 60 * 5 }), async (req: Request, res: Response, next: NextFunction) => {
   try {
     const { jobId } = req.query;
     const where: any = {};
@@ -71,7 +72,7 @@ router.get("/", async (req: Request, res: Response, next: NextFunction) => {
  *       500:
  *         description: Server error
  */
-router.get("/:id", async (req: Request, res: Response, next: NextFunction) => {
+router.get("/:id", cache({ ttl: 60 * 10 }), async (req: Request, res: Response, next: NextFunction) => {
   try {
     const { id } = req.params;
 
@@ -119,6 +120,10 @@ router.get("/:id", async (req: Request, res: Response, next: NextFunction) => {
  */
 router.get(
   "/job/:jobId",
+  cache({
+    ttl: 60 * 5,
+    keyGenerator: (req) => `job-messages-by-job-${req.params.jobId}`
+  }),
   async (req: Request, res: Response, next: NextFunction) => {
     try {
       const { jobId } = req.params;
@@ -176,7 +181,7 @@ router.get(
  *       500:
  *         description: Server error
  */
-router.post("/", async (req: Request, res: Response, next: NextFunction) => {
+router.post("/", invalidateCache("api-cache:GET:/assets/job-messages"), async (req: Request, res: Response, next: NextFunction) => {
   const transaction = await sequelize.transaction();
 
   try {
@@ -250,7 +255,7 @@ router.post("/", async (req: Request, res: Response, next: NextFunction) => {
  *       500:
  *         description: Server error
  */
-router.put("/:id", async (req: Request, res: Response, next: NextFunction) => {
+router.put("/:id", invalidateCache("api-cache:"), async (req: Request, res: Response, next: NextFunction) => {
   const transaction = await sequelize.transaction();
 
   try {
@@ -321,6 +326,7 @@ router.put("/:id", async (req: Request, res: Response, next: NextFunction) => {
  */
 router.delete(
   "/:id",
+  invalidateCache("api-cache:"),
   async (req: Request, res: Response, next: NextFunction) => {
     try {
       const { id } = req.params;
