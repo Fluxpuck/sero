@@ -1,14 +1,17 @@
 import { Request, Response, Router, NextFunction } from "express";
-import { TemplateMessages, TemplateMessagesType } from "../models/template-messages.model";
-import { ResponseHandler } from "../utils/response.utils";
-import { ResponseCode } from "../utils/response.types";
-import { sequelize } from "../database/sequelize";
+import {
+  TemplateMessages,
+  TemplateMessagesType,
+} from "../../models/template-messages.model";
+import { ResponseHandler } from "../../utils/response.utils";
+import { ResponseCode } from "../../utils/response.types";
+import { sequelize } from "../../database/sequelize";
 
 const router = Router();
 
 /**
  * @swagger
- * /template-messages:
+ * /assets/template-messages:
  *   get:
  *     summary: Get all template messages
  *     tags:
@@ -42,7 +45,10 @@ router.get("/", async (req: Request, res: Response, next: NextFunction) => {
       where.guildId = guildId;
     }
 
-    if (type && Object.values(TemplateMessagesType).includes(type as TemplateMessagesType)) {
+    if (
+      type &&
+      Object.values(TemplateMessagesType).includes(type as TemplateMessagesType)
+    ) {
       where.type = type;
     }
 
@@ -62,7 +68,7 @@ router.get("/", async (req: Request, res: Response, next: NextFunction) => {
 
 /**
  * @swagger
- * /template-messages/{id}:
+ * /assets/template-messages/{id}:
  *   get:
  *     summary: Get a specific template message by ID
  *     tags:
@@ -85,9 +91,9 @@ router.get("/", async (req: Request, res: Response, next: NextFunction) => {
 router.get("/:id", async (req: Request, res: Response, next: NextFunction) => {
   try {
     const { id } = req.params;
-    
+
     const templateMessage = await TemplateMessages.findByPk(id);
-    
+
     if (!templateMessage) {
       return ResponseHandler.sendError(
         res,
@@ -95,7 +101,7 @@ router.get("/:id", async (req: Request, res: Response, next: NextFunction) => {
         ResponseCode.NOT_FOUND
       );
     }
-    
+
     ResponseHandler.sendSuccess(
       res,
       templateMessage,
@@ -108,7 +114,7 @@ router.get("/:id", async (req: Request, res: Response, next: NextFunction) => {
 
 /**
  * @swagger
- * /template-messages/guild/{guildId}/type/{type}:
+ * /assets/template-messages/guild/{guildId}/type/{type}:
  *   get:
  *     summary: Get a specific template message by guild ID and type
  *     tags:
@@ -135,46 +141,53 @@ router.get("/:id", async (req: Request, res: Response, next: NextFunction) => {
  *       500:
  *         description: Server error
  */
-router.get("/guild/:guildId/type/:type", async (req: Request, res: Response, next: NextFunction) => {
-  try {
-    const { guildId, type } = req.params;
-    
-    if (!Object.values(TemplateMessagesType).includes(type as TemplateMessagesType)) {
-      return ResponseHandler.sendValidationFail(
+router.get(
+  "/guild/:guildId/type/:type",
+  async (req: Request, res: Response, next: NextFunction) => {
+    try {
+      const { guildId, type } = req.params;
+
+      if (
+        !Object.values(TemplateMessagesType).includes(
+          type as TemplateMessagesType
+        )
+      ) {
+        return ResponseHandler.sendValidationFail(
+          res,
+          "Invalid template message type",
+          [`Valid types are: ${Object.values(TemplateMessagesType).join(", ")}`]
+        );
+      }
+
+      const templateMessage = await TemplateMessages.findOne({
+        where: {
+          guildId,
+          type,
+        },
+      });
+
+      if (!templateMessage) {
+        return ResponseHandler.sendError(
+          res,
+          "Template message not found",
+          ResponseCode.NOT_FOUND
+        );
+      }
+
+      ResponseHandler.sendSuccess(
         res,
-        "Invalid template message type",
-        [`Valid types are: ${Object.values(TemplateMessagesType).join(", ")}`]
+        templateMessage,
+        "Template message retrieved successfully"
       );
+    } catch (error) {
+      next(error);
     }
-    
-    const templateMessage = await TemplateMessages.findOne({
-      where: {
-        guildId,
-        type,
-      },
-    });
-    
-    if (!templateMessage) {
-      return ResponseHandler.sendError(
-        res,
-        "Template message not found",
-        ResponseCode.NOT_FOUND
-      );
-    }
-    
-    ResponseHandler.sendSuccess(
-      res,
-      templateMessage,
-      "Template message retrieved successfully"
-    );
-  } catch (error) {
-    next(error);
   }
-});
+);
 
 /**
  * @swagger
- * /template-messages:
+ * /assets/template-messages:
  *   post:
  *     summary: Create or update a template message
  *     tags:
@@ -208,10 +221,10 @@ router.get("/guild/:guildId/type/:type", async (req: Request, res: Response, nex
  */
 router.post("/", async (req: Request, res: Response, next: NextFunction) => {
   const transaction = await sequelize.transaction();
-  
+
   try {
     const { guildId, type, message } = req.body;
-    
+
     // Validate required fields
     if (!type || !message) {
       await transaction.rollback();
@@ -221,7 +234,7 @@ router.post("/", async (req: Request, res: Response, next: NextFunction) => {
         ["type and message are required fields"]
       );
     }
-    
+
     // Validate type
     if (!Object.values(TemplateMessagesType).includes(type)) {
       await transaction.rollback();
@@ -231,14 +244,14 @@ router.post("/", async (req: Request, res: Response, next: NextFunction) => {
         [`Valid types are: ${Object.values(TemplateMessagesType).join(", ")}`]
       );
     }
-    
+
     // Prepare template message data for upsert
     const templateMessageData = {
       guildId: guildId || null,
       type,
       message,
     } as any; // Using 'any' to bypass TypeScript's strict checking
-    
+
     // Find existing record to determine if this is an update or create
     const existingMessage = await TemplateMessages.findOne({
       where: {
@@ -247,26 +260,30 @@ router.post("/", async (req: Request, res: Response, next: NextFunction) => {
       },
       transaction,
     });
-    
+
     let result;
     let created = false;
-    
+
     if (existingMessage) {
       // Update existing record
       existingMessage.message = message;
       result = await existingMessage.save({ transaction });
     } else {
       // Create new record
-      result = await TemplateMessages.create(templateMessageData, { transaction });
+      result = await TemplateMessages.create(templateMessageData, {
+        transaction,
+      });
       created = true;
     }
-    
+
     await transaction.commit();
-    
+
     ResponseHandler.sendSuccess(
       res,
       result,
-      created ? "Template message created successfully" : "Template message updated successfully",
+      created
+        ? "Template message created successfully"
+        : "Template message updated successfully",
       created ? ResponseCode.CREATED : ResponseCode.SUCCESS
     );
   } catch (error) {
@@ -278,7 +295,7 @@ router.post("/", async (req: Request, res: Response, next: NextFunction) => {
 
 /**
  * @swagger
- * /template-messages/{id}:
+ * /assets/template-messages/{id}:
  *   delete:
  *     summary: Delete a template message
  *     tags:
@@ -298,30 +315,33 @@ router.post("/", async (req: Request, res: Response, next: NextFunction) => {
  *       500:
  *         description: Server error
  */
-router.delete("/:id", async (req: Request, res: Response, next: NextFunction) => {
-  try {
-    const { id } = req.params;
-    
-    const templateMessage = await TemplateMessages.findByPk(id);
-    
-    if (!templateMessage) {
-      return ResponseHandler.sendError(
+router.delete(
+  "/:id",
+  async (req: Request, res: Response, next: NextFunction) => {
+    try {
+      const { id } = req.params;
+
+      const templateMessage = await TemplateMessages.findByPk(id);
+
+      if (!templateMessage) {
+        return ResponseHandler.sendError(
+          res,
+          "Template message not found",
+          ResponseCode.NOT_FOUND
+        );
+      }
+
+      await templateMessage.destroy();
+
+      ResponseHandler.sendSuccess(
         res,
-        "Template message not found",
-        ResponseCode.NOT_FOUND
+        { id },
+        "Template message deleted successfully"
       );
+    } catch (error) {
+      next(error);
     }
-    
-    await templateMessage.destroy();
-    
-    ResponseHandler.sendSuccess(
-      res,
-      { id },
-      "Template message deleted successfully"
-    );
-  } catch (error) {
-    next(error);
   }
-});
+);
 
 export default router;

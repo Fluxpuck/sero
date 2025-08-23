@@ -1,14 +1,14 @@
 import { Request, Response, Router, NextFunction } from "express";
-import { JobMessages } from "../models/job-messages.model";
-import { ResponseHandler } from "../utils/response.utils";
-import { ResponseCode } from "../utils/response.types";
-import { sequelize } from "../database/sequelize";
+import { JobMessages } from "../../models/job-messages.model";
+import { ResponseHandler } from "../../utils/response.utils";
+import { ResponseCode } from "../../utils/response.types";
+import { sequelize } from "../../database/sequelize";
 
 const router = Router();
 
 /**
  * @swagger
- * /job-messages:
+ * /assets/job-messages:
  *   get:
  *     summary: Get all job messages
  *     tags:
@@ -51,7 +51,7 @@ router.get("/", async (req: Request, res: Response, next: NextFunction) => {
 
 /**
  * @swagger
- * /job-messages/{id}:
+ * /assets/job-messages/{id}:
  *   get:
  *     summary: Get a specific job message by ID
  *     tags:
@@ -97,7 +97,7 @@ router.get("/:id", async (req: Request, res: Response, next: NextFunction) => {
 
 /**
  * @swagger
- * /job-messages/job/{jobId}:
+ * /assets/job-messages/job/{jobId}:
  *   get:
  *     summary: Get job messages by job ID
  *     tags:
@@ -150,7 +150,7 @@ router.get(
 
 /**
  * @swagger
- * /job-messages:
+ * /assets/job-messages:
  *   post:
  *     summary: Create a new job message
  *     tags:
@@ -218,7 +218,7 @@ router.post("/", async (req: Request, res: Response, next: NextFunction) => {
 
 /**
  * @swagger
- * /job-messages/{id}:
+ * /assets/job-messages/{id}:
  *   put:
  *     summary: Update a job message
  *     tags:
@@ -299,7 +299,7 @@ router.put("/:id", async (req: Request, res: Response, next: NextFunction) => {
 
 /**
  * @swagger
- * /job-messages/{id}:
+ * /assets/job-messages/{id}:
  *   delete:
  *     summary: Delete a job message
  *     tags:

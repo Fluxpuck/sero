@@ -1,14 +1,17 @@
 import { Request, Response, Router, NextFunction } from "express";
-import { PrereasonMessages, ModerationType } from "../models/prereason-messages.model";
-import { ResponseHandler } from "../utils/response.utils";
-import { ResponseCode } from "../utils/response.types";
-import { sequelize } from "../database/sequelize";
+import {
+  PrereasonMessages,
+  ModerationType,
+} from "../../models/prereason-messages.model";
+import { ResponseHandler } from "../../utils/response.utils";
+import { ResponseCode } from "../../utils/response.types";
+import { sequelize } from "../../database/sequelize";
 
 const router = Router();
 
 /**
  * @swagger
- * /prereason-messages:
+ * /assets/prereason-messages:
  *   get:
  *     summary: Get all prereason messages
  *     tags:
@@ -32,7 +35,10 @@ router.get("/", async (req: Request, res: Response, next: NextFunction) => {
     const { type } = req.query;
     const where: any = {};
 
-    if (type && Object.values(ModerationType).includes(type as ModerationType)) {
+    if (
+      type &&
+      Object.values(ModerationType).includes(type as ModerationType)
+    ) {
       where.type = type;
     }
 
@@ -52,7 +58,7 @@ router.get("/", async (req: Request, res: Response, next: NextFunction) => {
 
 /**
  * @swagger
- * /prereason-messages/{id}:
+ * /assets/prereason-messages/{id}:
  *   get:
  *     summary: Get a specific prereason message by ID
  *     tags:
@@ -75,9 +81,9 @@ router.get("/", async (req: Request, res: Response, next: NextFunction) => {
 router.get("/:id", async (req: Request, res: Response, next: NextFunction) => {
   try {
     const { id } = req.params;
-    
+
     const prereasonMessage = await PrereasonMessages.findByPk(id);
-    
+
     if (!prereasonMessage) {
       return ResponseHandler.sendError(
         res,
@@ -85,7 +91,7 @@ router.get("/:id", async (req: Request, res: Response, next: NextFunction) => {
         ResponseCode.NOT_FOUND
       );
     }
-    
+
     ResponseHandler.sendSuccess(
       res,
       prereasonMessage,
@@ -98,7 +104,7 @@ router.get("/:id", async (req: Request, res: Response, next: NextFunction) => {
 
 /**
  * @swagger
- * /prereason-messages/type/{type}:
+ * /assets/prereason-messages/type/{type}:
  *   get:
  *     summary: Get a specific prereason message by type
  *     tags:
@@ -119,45 +125,48 @@ router.get("/:id", async (req: Request, res: Response, next: NextFunction) => {
  *       500:
  *         description: Server error
  */
-router.get("/type/:type", async (req: Request, res: Response, next: NextFunction) => {
-  try {
-    const { type } = req.params;
-    
-    if (!Object.values(ModerationType).includes(type as ModerationType)) {
-      return ResponseHandler.sendValidationFail(
+router.get(
+  "/type/:type",
+  async (req: Request, res: Response, next: NextFunction) => {
+    try {
+      const { type } = req.params;
+
+      if (!Object.values(ModerationType).includes(type as ModerationType)) {
+        return ResponseHandler.sendValidationFail(
+          res,
+          "Invalid moderation type",
+          [`Valid types are: ${Object.values(ModerationType).join(", ")}`]
+        );
+      }
+
+      const prereasonMessage = await PrereasonMessages.findOne({
+        where: {
+          type,
+        },
+      });
+
+      if (!prereasonMessage) {
+        return ResponseHandler.sendError(
+          res,
+          "Prereason message not found",
+          ResponseCode.NOT_FOUND
+        );
+      }
+
+      ResponseHandler.sendSuccess(
         res,
-        "Invalid moderation type",
-        [`Valid types are: ${Object.values(ModerationType).join(", ")}`]
+        prereasonMessage,
+        "Prereason message retrieved successfully"
       );
+    } catch (error) {
+      next(error);
     }
-    
-    const prereasonMessage = await PrereasonMessages.findOne({
-      where: {
-        type,
-      },
-    });
-    
-    if (!prereasonMessage) {
-      return ResponseHandler.sendError(
-        res,
-        "Prereason message not found",
-        ResponseCode.NOT_FOUND
-      );
-    }
-    
-    ResponseHandler.sendSuccess(
-      res,
-      prereasonMessage,
-      "Prereason message retrieved successfully"
-    );
-  } catch (error) {
-    next(error);
   }
-});
+);
 
 /**
  * @swagger
- * /prereason-messages:
+ * /assets/prereason-messages:
  *   post:
  *     summary: Create or update a prereason message
  *     tags:
@@ -188,10 +197,10 @@ router.get("/type/:type", async (req: Request, res: Response, next: NextFunction
  */
 router.post("/", async (req: Request, res: Response, next: NextFunction) => {
   const transaction = await sequelize.transaction();
-  
+
   try {
     const { type, message } = req.body;
-    
+
     // Validate required fields
     if (!type || !message) {
       await transaction.rollback();
@@ -201,7 +210,7 @@ router.post("/", async (req: Request, res: Response, next: NextFunction) => {
         ["type and message are required fields"]
       );
     }
-    
+
     // Validate type
     if (!Object.values(ModerationType).includes(type)) {
       await transaction.rollback();
@@ -211,13 +220,13 @@ router.post("/", async (req: Request, res: Response, next: NextFunction) => {
         [`Valid types are: ${Object.values(ModerationType).join(", ")}`]
       );
     }
-    
+
     // Prepare prereason message data for upsert
     const prereasonMessageData = {
       type,
       message,
     } as any; // Using 'any' to bypass TypeScript's strict checking
-    
+
     // Find existing record to determine if this is an update or create
     const existingMessage = await PrereasonMessages.findOne({
       where: {
@@ -225,26 +234,30 @@ router.post("/", async (req: Request, res: Response, next: NextFunction) => {
       },
       transaction,
     });
-    
+
     let result;
     let created = false;
-    
+
     if (existingMessage) {
       // Update existing record
       existingMessage.message = message;
       result = await existingMessage.save({ transaction });
     } else {
       // Create new record
-      result = await PrereasonMessages.create(prereasonMessageData, { transaction });
+      result = await PrereasonMessages.create(prereasonMessageData, {
+        transaction,
+      });
       created = true;
     }
-    
+
     await transaction.commit();
-    
+
     ResponseHandler.sendSuccess(
       res,
       result,
-      created ? "Prereason message created successfully" : "Prereason message updated successfully",
+      created
+        ? "Prereason message created successfully"
+        : "Prereason message updated successfully",
       created ? ResponseCode.CREATED : ResponseCode.SUCCESS
     );
   } catch (error) {
@@ -256,7 +269,7 @@ router.post("/", async (req: Request, res: Response, next: NextFunction) => {
 
 /**
  * @swagger
- * /prereason-messages/{id}:
+ * /assets/prereason-messages/{id}:
  *   delete:
  *     summary: Delete a prereason message
  *     tags:
@@ -276,30 +289,33 @@ router.post("/", async (req: Request, res: Response, next: NextFunction) => {
  *       500:
  *         description: Server error
  */
-router.delete("/:id", async (req: Request, res: Response, next: NextFunction) => {
-  try {
-    const { id } = req.params;
-    
-    const prereasonMessage = await PrereasonMessages.findByPk(id);
-    
-    if (!prereasonMessage) {
-      return ResponseHandler.sendError(
+router.delete(
+  "/:id",
+  async (req: Request, res: Response, next: NextFunction) => {
+    try {
+      const { id } = req.params;
+
+      const prereasonMessage = await PrereasonMessages.findByPk(id);
+
+      if (!prereasonMessage) {
+        return ResponseHandler.sendError(
+          res,
+          "Prereason message not found",
+          ResponseCode.NOT_FOUND
+        );
+      }
+
+      await prereasonMessage.destroy();
+
+      ResponseHandler.sendSuccess(
         res,
-        "Prereason message not found",
-        ResponseCode.NOT_FOUND
+        { id },
+        "Prereason message deleted successfully"
       );
+    } catch (error) {
+      next(error);
     }
-    
-    await prereasonMessage.destroy();
-    
-    ResponseHandler.sendSuccess(
-      res,
-      { id },
-      "Prereason message deleted successfully"
-    );
-  } catch (error) {
-    next(error);
   }
-});
+);
 
 export default router;
