@@ -85,7 +85,6 @@ export function subscribe(client: Client): () => void {
       }
     } catch (error) {
       logger.error(`Redis: Failed to process message from ${channel}:`, error);
-      logger.error(`Redis: Invalid message format: ${message}`);
     }
   });
 

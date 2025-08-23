@@ -29,8 +29,6 @@ declare module "discord.js" {
 client.commands = new Collection<string, Command>();
 client.cooldowns = new NodeCache();
 
-// Loader functions are now imported from utils/loaders.ts
-
 // Initialize bot
 const initBot = async (): Promise<void> => {
   try {
