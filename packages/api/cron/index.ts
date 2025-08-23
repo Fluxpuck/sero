@@ -13,9 +13,9 @@ export const initCronJobs = (delay: number = 0): void => {
   jobs.forEach((job) => {
     if (job && job.start) {
       job.start();
-      logger.info(`Cron job "${job.name || "unnamed"}" started`);
+      logger.debug(`Started ${job.name || "unnamed"}`);
     }
   });
 
-  logger.info(`${jobs.length} cron jobs initialized`);
+  logger.info(`Total cron-jobs started: ${jobs.length}`);
 };

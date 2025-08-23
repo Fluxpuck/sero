@@ -1,10 +1,12 @@
 import dotenv from "dotenv";
-import fs from "fs";
 import path from "path";
 import NodeCache from "node-cache";
 
 import { Client, Collection, GatewayIntentBits } from "discord.js";
-import { Command, Event } from "./types/client.types";
+import { Command } from "./types/client.types";
+import { loadEvents, loadCommands } from "./utils/loaders";
+
+import { logger } from "./utils/logger";
 
 dotenv.config({ path: path.join(__dirname, ".", "config", ".env") });
 
@@ -27,49 +29,7 @@ declare module "discord.js" {
 client.commands = new Collection<string, Command>();
 client.cooldowns = new NodeCache();
 
-// Load events
-const loadEvents = (): void => {
-  const eventsPath: string = path.join(__dirname, "events");
-  const eventFiles: string[] = fs
-    .readdirSync(eventsPath)
-    .filter((file) => file.endsWith(".ts"));
-
-  for (const file of eventFiles) {
-    const filePath: string = path.join(eventsPath, file);
-    const event: Event = require(filePath).default;
-
-    if (event.once) {
-      client.once(event.name, (...args) => event.execute(...args));
-    } else {
-      client.on(event.name, (...args) => event.execute(...args));
-    }
-
-    if (process.env.NODE_ENV !== "production") {
-      console.log(`[Event] loaded ${event.name}`);
-    }
-  }
-};
-
-// Load commands
-const loadCommands = (): void => {
-  const commandsPath: string = path.join(__dirname, "commands");
-  const commandFiles: string[] = fs
-    .readdirSync(commandsPath)
-    .filter((file) => file.endsWith(".ts"));
-
-  for (const file of commandFiles) {
-    const filePath: string = path.join(commandsPath, file);
-    const command: Command = require(filePath).default;
-
-    if ("data" in command && "execute" in command) {
-      client.commands.set(command.data.name, command);
-
-      if (process.env.NODE_ENV !== "production") {
-        console.log(`[Command] loaded ${command.data.name}`);
-      }
-    }
-  }
-};
+// Loader functions are now imported from utils/loaders.ts
 
 // Initialize bot
 const initBot = async (): Promise<void> => {
@@ -81,15 +41,15 @@ const initBot = async (): Promise<void> => {
     }
 
     // Load events
-    await loadEvents();
+    loadEvents(client);
 
     // Load commands
-    await loadCommands();
+    loadCommands(client);
 
     // Login to Discord
     await client.login(token);
   } catch (error) {
-    console.error("[SERO] Error initializing bot:", error);
+    logger.error("Error initializing bot:", error);
     process.exit(1);
   }
 };

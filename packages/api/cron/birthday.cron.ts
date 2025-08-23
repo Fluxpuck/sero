@@ -6,7 +6,7 @@ import {
   GuildSettingType,
 } from "../models/guild-settings.model";
 
-import { publish, RedisChannel } from "../utils/publisher";
+import { publish, RedisChannel } from "../redis/publisher";
 
 export const PublishBirthday = new CronJob(
   "0 15 * * *", // Cron expression: At 15:00 (3 PM) UTC every day

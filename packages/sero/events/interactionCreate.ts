@@ -1,5 +1,6 @@
 import { Events, Interaction, MessageFlags } from "discord.js";
 import { Event } from "../types/client.types";
+import { logger } from "../utils/logger";
 
 const event: Event = {
   name: Events.InteractionCreate,
@@ -16,7 +17,7 @@ const event: Event = {
       const command = interaction.client.commands.get(interaction.commandName);
 
       if (!command) {
-        console.error(
+        logger.error(
           `No command matching ${interaction.commandName} was found.`
         );
         return;
@@ -49,7 +50,7 @@ const event: Event = {
       try {
         await command.execute(interaction);
       } catch (error) {
-        console.error(`Error executing ${interaction.commandName}:`, error);
+        logger.error(`Error executing ${interaction.commandName}:`, error);
 
         const replyOptions = {
           content: "There was an error while executing this command!",
@@ -67,13 +68,13 @@ const event: Event = {
     // Handle message component interactions (buttons, select menus)
     else if (interaction.isMessageComponent()) {
       // You can add custom handling for buttons/select menus here
-      console.log(`Received component interaction: ${interaction.customId}`);
+      logger.debug(`Received component interaction: ${interaction.customId}`);
     }
 
     // Handle modal submissions
     else if (interaction.isModalSubmit()) {
       // You can add custom handling for modal submissions here
-      console.log(`Received modal submission: ${interaction.customId}`);
+      logger.debug(`Received modal submission: ${interaction.customId}`);
     }
 
     // Handle autocomplete interactions
@@ -81,7 +82,7 @@ const event: Event = {
       const command = interaction.client.commands.get(interaction.commandName);
 
       if (!command || !("autocomplete" in command)) {
-        console.error(
+        logger.error(
           `No autocomplete handler for ${interaction.commandName} was found.`
         );
         return;
@@ -94,7 +95,7 @@ const event: Event = {
           await command.autocomplete(interaction);
         }
       } catch (error) {
-        console.error(
+        logger.error(
           `Error handling autocomplete for ${interaction.commandName}:`,
           error
         );

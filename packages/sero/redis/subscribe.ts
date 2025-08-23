@@ -1,5 +1,6 @@
 import Redis from "ioredis";
 import { Client } from "discord.js";
+import { logger } from "../utils/logger";
 
 export enum RedisChannels {
   LEVEL = "guildMemberLevel",
@@ -13,39 +14,84 @@ export const redis = new Redis({
   reconnectOnError: () => true,
   retryStrategy: (times) => {
     const delay = Math.min(times * 1000, 5000);
-    console.log(
-      `[Redis] Retrying connection in ${delay / 1000}s (attempt ${times})`
+    logger.warn(
+      `Redis: Retrying connection in ${delay / 1000}s (attempt ${times})`
     );
     return delay;
   },
 });
 
 /**
- * Subscribe to Redis channels and handle messages
+ * Redis message payload structure
  */
-export type payload = { code: string; data: any };
-export function subscribe(client: Client) {
+export interface RedisPayload<T = any> {
+  code: number;
+  message?: string;
+  data?: T;
+  timestamp: Date;
+}
+
+/**
+ * Subscribe to Redis channels and handle messages
+ * @param client - Discord.js Client to emit events to
+ * @returns Cleanup function that unsubscribes from all channels
+ */
+export function subscribe(client: Client): () => void {
   // Subscribe to channels
   const channels = Object.values(RedisChannels);
-  channels.forEach((channel) => {
-    redis.subscribe(channel, (err) => {
-      if (err) console.error(`[Redis] Failed to subscribe to ${channel}:`, err);
-      else if (process.env.NODE_ENV === "development") {
-        console.log(`[Redis] Subscribed to ${channel}`);
-      }
+
+  // Track subscription status
+  const subscriptionStatus = new Map<string, boolean>();
+
+  // Subscribe to all channels
+  const subscribePromises = channels.map((channel) => {
+    return new Promise<void>((resolve) => {
+      redis.subscribe(channel, (err) => {
+        if (err) {
+          logger.error(`Redis: Failed to subscribe to ${channel}:`, err);
+          subscriptionStatus.set(channel, false);
+        } else {
+          subscriptionStatus.set(channel, true);
+          if (process.env.NODE_ENV === "development") {
+            logger.debug(`Redis: Subscribed to ${channel}`);
+          }
+        }
+        resolve();
+      });
     });
+  });
+
+  // Wait for all subscriptions to complete
+  Promise.all(subscribePromises).then(() => {
+    const successCount = Array.from(subscriptionStatus.values()).filter(
+      Boolean
+    ).length;
+    logger.info(
+      `Redis: Successfully subscribed to ${successCount}/${channels.length} channels`
+    );
   });
 
   // Listen for messages
   redis.on("message", (channel, message) => {
-    // Emit the Discord Client Event
-    const payload: payload = JSON.parse(message);
-    client.emit(payload.code, payload.data);
+    try {
+      // Parse the message
+      const payload = JSON.parse(message) as RedisPayload;
 
-    if (process.env.NODE_ENV === "development") {
-      console.log(`[Redis] Received event ${channel}`, payload);
+      // Emit the Discord Client Event
+      client.emit(channel, payload.data);
+
+      if (process.env.NODE_ENV === "development") {
+        logger.debug(`Redis: Received event ${channel}`, payload);
+      }
+    } catch (error) {
+      logger.error(`Redis: Failed to process message from ${channel}:`, error);
+      logger.error(`Redis: Invalid message format: ${message}`);
     }
   });
 
-  return () => channels.forEach((channel) => redis.unsubscribe(channel));
+  // Return cleanup function
+  return () => {
+    channels.forEach((channel) => redis.unsubscribe(channel));
+    logger.info("Redis: Unsubscribed from all channels");
+  };
 }

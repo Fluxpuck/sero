@@ -6,7 +6,7 @@ import {
   GuildSettingType,
 } from "../models/guild-settings.model";
 
-import { publish, RedisChannel } from "../utils/publisher";
+import { publish, RedisChannel } from "../redis/publisher";
 
 const MIN_DELAY = 2 * 60 * 1000; // 2 minutes in milliseconds
 const MAX_DELAY = 30 * 60 * 1000; // 30 minutes in milliseconds

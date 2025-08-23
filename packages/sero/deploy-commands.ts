@@ -4,6 +4,7 @@ import { REST, Routes } from "discord.js";
 import fs from "fs";
 import path from "path";
 import { Command } from "./types/client.types";
+import { logger } from "./utils/logger";
 
 dotenv.config({ path: path.join(__dirname, ".", "config", ".env") });
 
@@ -20,8 +21,8 @@ for (const file of commandFiles) {
   if ("data" in command) {
     commands.push(command.data.toJSON());
   } else {
-    console.log(
-      `[WARNING] The command at ${filePath} is missing a required "data" property.`
+    logger.warn(
+      `The command at ${filePath} is missing a required "data" property.`
     );
   }
 }
@@ -39,12 +40,12 @@ const rest = new REST().setToken(process.env.DISCORD_TOKEN);
 (async () => {
   try {
     // First, get the existing commands to check what needs to be deleted
-    console.log("Fetching existing commands...");
+    logger.info("Fetching existing commands...");
     const existingCommands = (await rest.get(
       Routes.applicationCommands(process.env.CLIENT_ID!)
     )) as any[];
 
-    console.log(
+    logger.info(
       `Started refreshing ${commands.length} application (/) commands globally.`
     );
 
@@ -55,7 +56,7 @@ const rest = new REST().setToken(process.env.DISCORD_TOKEN);
       { body: commands }
     );
 
-    console.log(
+    logger.success(
       `Successfully reloaded ${
         Array.isArray(data) ? data.length : 0
       } global application (/) commands.`
@@ -69,7 +70,7 @@ const rest = new REST().setToken(process.env.DISCORD_TOKEN);
       );
 
       if (removedCommands.length > 0) {
-        console.log(
+        logger.info(
           `Detected ${
             removedCommands.length
           } removed command(s): ${removedCommands
@@ -79,10 +80,10 @@ const rest = new REST().setToken(process.env.DISCORD_TOKEN);
       }
     }
 
-    console.log(
+    logger.info(
       "Note: Global commands can take up to 1 hour to update across all servers."
     );
   } catch (error) {
-    console.error(error);
+    logger.error("Error deploying commands:", error);
   }
 })();

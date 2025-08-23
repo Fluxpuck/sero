@@ -1,5 +1,5 @@
 import { Request, Response, Router } from "express";
-import { testConnection } from "../utils/publisher";
+import { testConnection } from "../redis/publisher";
 import { sequelize } from "../database/sequelize";
 
 const router = Router();

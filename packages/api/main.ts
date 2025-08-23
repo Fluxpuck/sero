@@ -3,7 +3,7 @@ import express from "express";
 import helmet from "helmet";
 import cors from "cors";
 import compression from "compression";
-import { testConnection } from "./utils/publisher";
+import { testConnection } from "./redis/publisher";
 import { initCronJobs } from "./cron";
 
 (async () => {

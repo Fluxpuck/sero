@@ -7,7 +7,7 @@ import {
   Table,
 } from "sequelize-typescript";
 import { calculateLevel, calculateRank } from "../utils/levels.utils";
-import { publish, RedisChannel } from "../utils/publisher";
+import { publish, RedisChannel } from "../redis/publisher";
 
 @Table({
   tableName: "user_levels",

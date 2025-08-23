@@ -198,7 +198,7 @@ const loadRoutes = (
 
         // Log the loaded route with the base route if specified
         const displayPath = basePath ? `${basePath}${routePath}` : routePath;
-        logger.success(`✓ Loaded route: ${displayPath}`);
+        logger.debug(`Initialized ${displayPath}`);
         routeStats.loadedRoutes++;
 
         // Track the route for logging
@@ -248,12 +248,12 @@ export const run = (
 
   // Log route loading summary
   if (routeStats.loadedRoutes > 0) {
-    logger.success(`✓ Loaded ${routeStats.loadedRoutes} routes`);
+    logger.success(`Successfully loaded ${routeStats.loadedRoutes} routes`);
   }
   if (routeStats.skippedRoutes > 0) {
-    logger.warn(`⚠ Skipped ${routeStats.skippedRoutes} routes`);
+    logger.warn(`Skipped ${routeStats.skippedRoutes} routes`);
   }
-  logger.info(`Total files processed: ${routeStats.totalFiles}`);
+  logger.info(`Total routes processed: ${routeStats.totalFiles}`);
 
   // Log all registered routes with base route
   logRegisteredRoutes(baseRoute ? router : (app as any)._router, baseRoute);
