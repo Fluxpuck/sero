@@ -6,7 +6,6 @@ services:
       POSTGRES_USER: admin
       POSTGRES_PASSWORD: curlywire90
       POSTGRES_DB: sero_db
-      TZ: 'Europe/Paris'
     ports:
       - "5432:5432"
     volumes:
@@ -38,9 +37,9 @@ services:
   bot:
     container_name: sero-bot
     build:
-      context: ./packages/bot
+      context: ./packages/sero
     env_file:
-      - ./packages/bot/config/.env
+      - ./packages/sero/config/.env
     environment:
       NODE_ENV: production
     restart: unless-stopped

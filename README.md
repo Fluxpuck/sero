@@ -30,7 +30,7 @@ npm install
 ```
 
 ```
-docker-compose -f docker-compose-dev.yml up
+docker-compose -f docker-compose-local.yml up
 ```
 
 #### 2. Secrets
