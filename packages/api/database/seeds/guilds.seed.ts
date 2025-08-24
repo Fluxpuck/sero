@@ -1,4 +1,5 @@
 import { Guild } from "../../models";
+import { logger } from "../../utils/logger";
 
 export async function seedGuilds(): Promise<{
   success: boolean;
@@ -15,12 +16,12 @@ export async function seedGuilds(): Promise<{
 
   try {
     await Guild.bulkCreate(guilds as Guild[], { individualHooks: true });
-    console.log(`${guilds.length} guilds have been processed successfully.`);
+    logger.success(`${guilds.length} guilds have been processed successfully.`);
     return { success: true, count: guilds.length };
   } catch (error) {
     const errorMessage =
       error instanceof Error ? error.message : "Unknown error";
-    console.error(`Error seeding guilds: ${errorMessage}`);
+    logger.error(`Error seeding guilds: ${errorMessage}`);
     return { success: false, error };
   }
 }

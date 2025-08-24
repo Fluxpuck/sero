@@ -1,4 +1,5 @@
 import { JobMessages } from '../../models';
+import { logger } from '../../utils/logger';
 
 /**
  * Seed job messages with default job messages
@@ -363,12 +364,12 @@ export async function seedJobMessages() {
             }
         }
 
-        console.log(`${count} job messages have been seeded successfully.`);
+        logger.success(`${count} job messages have been seeded successfully.`);
         return { success: true };
 
     } catch (error) {
         const errorMessage = error instanceof Error ? error.message : 'Unknown error';
-        console.error(`Error seeding job messages: ${errorMessage}`);
+        logger.error(`Error seeding job messages: ${errorMessage}`);
         return { success: false, error };
     }
 }

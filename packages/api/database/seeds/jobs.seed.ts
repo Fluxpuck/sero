@@ -1,4 +1,5 @@
 import { Jobs } from "../../models";
+import { logger } from "../../utils/logger";
 
 export async function seedJobs(): Promise<{
   success: boolean;
@@ -310,12 +311,12 @@ export async function seedJobs(): Promise<{
       // Allow explicit IDs to be used
       fields: ['id', 'emoji', 'name', 'description', 'salary', 'raise']
     });
-    console.log(`${jobs.length} jobs have been processed successfully.`);
+    logger.success(`${jobs.length} jobs have been processed successfully.`);
     return { success: true, count: jobs.length };
   } catch (error) {
     const errorMessage =
       error instanceof Error ? error.message : "Unknown error";
-    console.error(`Error seeding jobs: ${errorMessage}`);
+    logger.error(`Error seeding jobs: ${errorMessage}`);
     return { success: false, error };
   }
 }

@@ -1,4 +1,5 @@
 import { sequelize } from "../sequelize";
+import { logger } from "../../utils/logger";
 
 import { seedJobs } from "./jobs.seed";
 import { seedLevels } from "./levels.seed";
@@ -10,110 +11,74 @@ import { seedTemplateMessages } from "./template-messages.seed";
 import { seedPrereasonMessages } from "./prereason-messages.seed";
 import { seedJobMessages } from "./job-messages.seed";
 
-// Enhanced console color codes
-const colors = {
-  reset: "\x1b[0m",
-  red: "\x1b[31m", // Error messages
-  green: "\x1b[32m", // Success messages
-  yellow: "\x1b[33m", // Warnings/cautions
-  blue: "\x1b[36m", // Changed to cyan for better visibility - Process information
-  magenta: "\x1b[35m", // Process termination
-  grey: "\x1b[90m", // Supplementary information
-  brightGreen: "\x1b[92m", // Specific success actions
-  brightYellow: "\x1b[93m", // Specific action notifications
-};
+// Colors are now handled by the logger utility
 
 async function seedManager() {
-  console.log(`${colors.blue}--- Seed Manager 2.0 ---${colors.reset}`);
+  logger.info(`--- Seed Manager 2.0 ---`);
 
   // Ensure database connection is established and models are synced
   try {
     await sequelize.authenticate();
-    console.log(
-      `${colors.brightGreen}✓ Database connection established successfully${colors.reset}`
-    );
+    logger.success(`✓ Database connection established successfully`);
   } catch (error) {
-    console.error(
-      `${colors.red}✗ Error establishing database connection:${colors.reset}`,
-      error
-    );
+    logger.error(`✗ Error establishing database connection:`, error);
     process.exit(1);
   }
 
   // Truncate all tables in the database
   try {
-    console.log(
-      `${colors.brightYellow}» Truncating all tables...${colors.reset}`
-    );
+    logger.info(`» Truncating all tables...`);
     for (const model of Object.values(sequelize.models)) {
       await model.destroy({ truncate: true, cascade: true, force: true });
-      console.log(
-        `${colors.grey}  Truncated table: ${
-          colors.green
-        }${model.getTableName()}${colors.reset}`
-      );
+      logger.info(`  Truncated table: ${model.getTableName()}`);
     }
-    console.log(
-      `${colors.brightGreen}✓ All models truncated successfully${colors.reset}`
-    );
+    logger.success(`✓ All models truncated successfully`);
   } catch (error) {
-    console.error(
-      `${colors.red}✗ Error truncating tables:${colors.reset}`,
-      error
-    );
+    logger.error(`✗ Error truncating tables:`, error);
     process.exit(1);
   }
 
   // Seed the database
   try {
-    console.log(
-      `${colors.blue}» Starting data seeding process...${colors.reset}`
-    );
+    logger.info(`» Starting data seeding process...`);
 
     await seedJobs();
-    console.log(`${colors.green}✓ Jobs seeded successfully${colors.reset}`);
+    logger.success(`✓ Jobs seeded successfully`);
 
     await seedLevels();
-    console.log(`${colors.green}✓ Levels seeded successfully${colors.reset}`);
+    logger.success(`✓ Levels seeded successfully`);
 
     await seedRanks();
-    console.log(`${colors.green}✓ Ranks seeded successfully${colors.reset}`);
+    logger.success(`✓ Ranks seeded successfully`);
 
     await seedGuilds();
-    console.log(`${colors.green}✓ Guilds seeded successfully${colors.reset}`);
+    logger.success(`✓ Guilds seeded successfully`);
 
     await seedUsers();
-    console.log(`${colors.green}✓ Users seeded successfully${colors.reset}`);
+    logger.success(`✓ Users seeded successfully`);
 
     await seedMessages(50);
-    console.log(`${colors.green}✓ Messages seeded successfully${colors.reset}`);
+    logger.success(`✓ Messages seeded successfully`);
 
     await seedTemplateMessages();
-    console.log(`${colors.green}✓ Template messages seeded successfully${colors.reset}`);
+    logger.success(`✓ Template messages seeded successfully`);
 
     await seedPrereasonMessages();
-    console.log(`${colors.green}✓ Prereason messages seeded successfully${colors.reset}`);
+    logger.success(`✓ Prereason messages seeded successfully`);
 
     await seedJobMessages();
-    console.log(`${colors.green}✓ Job messages seeded successfully${colors.reset}`);
+    logger.success(`✓ Job messages seeded successfully`);
   } catch (error) {
-    console.error(
-      `${colors.red}✗ Error seeding database:${colors.reset}`,
-      error
-    );
+    logger.error(`✗ Error seeding database:`, error);
     process.exit(1);
   } finally {
-    console.log(
-      `${colors.brightGreen}✓ Seeding completed successfully${colors.reset}`
-    );
+    logger.success(`✓ Seeding completed successfully`);
   }
 }
 
 seedManager(); // Run the seedManager function
 
 setTimeout(() => {
-  console.log(
-    `${colors.magenta}» Closing process after 10 seconds...${colors.reset}`
-  );
+  logger.info(`» Closing process after 10 seconds...`);
   process.exit(0); // Exit process with success code
 }, 10_000);

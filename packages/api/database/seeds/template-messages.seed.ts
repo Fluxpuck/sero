@@ -1,4 +1,5 @@
 import { TemplateMessages, TemplateMessagesType } from "../../models";
+import { logger } from "../../utils/logger";
 
 /**
  * Seed template messages with default welcome messages and away reasons
@@ -59,7 +60,7 @@ export async function seedTemplateMessages() {
     }
 
     // Log success message
-    console.log(
+    logger.success(
       `${
         welcomeMessages.length + awayMessages.length
       } template messages have been seeded successfully.`
@@ -68,7 +69,7 @@ export async function seedTemplateMessages() {
   } catch (error) {
     const errorMessage =
       error instanceof Error ? error.message : "Unknown error";
-    console.error(`Error seeding template messages: ${errorMessage}`);
+    logger.error(`Error seeding template messages: ${errorMessage}`);
     return { success: false, error };
   }
 }

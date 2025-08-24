@@ -1,4 +1,5 @@
 import { LevelRank } from '../../models';
+import { logger } from "../../utils/logger";
 
 export async function seedRanks(): Promise<{ success: boolean; error?: unknown; count?: number }> {
     const ranks = [
@@ -21,12 +22,12 @@ export async function seedRanks(): Promise<{ success: boolean; error?: unknown; 
 
     try {
         await LevelRank.bulkCreate(ranks as LevelRank[], { individualHooks: true });
-        console.log(`${ranks.length} ranks have been processed successfully.`);
+        logger.success(`${ranks.length} ranks have been processed successfully.`);
         return { success: true, count: ranks.length };
 
     } catch (error) {
         const errorMessage = error instanceof Error ? error.message : 'Unknown error';
-        console.error(`Error seeding ranks: ${errorMessage}`);
+        logger.error(`Error seeding ranks: ${errorMessage}`);
         return { success: false, error };
     }
 }

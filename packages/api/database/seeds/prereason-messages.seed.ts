@@ -1,4 +1,5 @@
 import { PrereasonMessages, ModerationType } from "../../models";
+import { logger } from "../../utils/logger";
 
 /**
  * Seed prereason messages with default moderation reason messages
@@ -89,7 +90,7 @@ export async function seedPrereasonMessages() {
       } as PrereasonMessages);
     }
 
-    console.log(
+    logger.success(
       `${
         kickReasons.length +
         muteReasons.length +
@@ -101,7 +102,7 @@ export async function seedPrereasonMessages() {
   } catch (error) {
     const errorMessage =
       error instanceof Error ? error.message : "Unknown error";
-    console.error(`Error seeding prereason messages: ${errorMessage}`);
+    logger.error(`Error seeding prereason messages: ${errorMessage}`);
     return { success: false, error };
   }
 }
