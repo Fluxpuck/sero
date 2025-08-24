@@ -14,7 +14,6 @@ import { Column, DataType, Model, Table } from "sequelize-typescript";
 export class Jobs extends Model<Jobs> {
   @Column({
     type: DataType.INTEGER,
-    autoIncrement: true,
     primaryKey: true,
   })
   declare id: number;

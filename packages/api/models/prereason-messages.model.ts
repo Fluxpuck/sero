@@ -6,6 +6,7 @@ export enum ModerationType {
   MUTE = "mute",
   UNBAN = "unban",
   UNMUTE = "unmute",
+  WARN = "warn",
 }
 
 @Table({

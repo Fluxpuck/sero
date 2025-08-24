@@ -6,6 +6,9 @@ import { seedRanks } from "./level-ranks.seed";
 import { seedGuilds } from "./guilds.seed";
 import { seedUsers } from "./users.seed";
 import { seedMessages } from "./messages.seed";
+import { seedTemplateMessages } from "./template-messages.seed";
+import { seedPrereasonMessages } from "./prereason-messages.seed";
+import { seedJobMessages } from "./job-messages.seed";
 
 // Enhanced console color codes
 const colors = {
@@ -84,6 +87,15 @@ async function seedManager() {
 
     await seedMessages(50);
     console.log(`${colors.green}✓ Messages seeded successfully${colors.reset}`);
+
+    await seedTemplateMessages();
+    console.log(`${colors.green}✓ Template messages seeded successfully${colors.reset}`);
+
+    await seedPrereasonMessages();
+    console.log(`${colors.green}✓ Prereason messages seeded successfully${colors.reset}`);
+
+    await seedJobMessages();
+    console.log(`${colors.green}✓ Job messages seeded successfully${colors.reset}`);
   } catch (error) {
     console.error(
       `${colors.red}✗ Error seeding database:${colors.reset}`,

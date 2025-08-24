@@ -7,6 +7,7 @@ export async function seedJobs(): Promise<{
 }> {
   const jobs = [
     {
+      id: 1,
       emoji: "💉",
       name: "Veterinarian",
       description: "Provides medical care to animals.",
@@ -14,6 +15,7 @@ export async function seedJobs(): Promise<{
       raise: 2.5,
     },
     {
+      id: 2,
       name: "Astronaut",
       emoji: "🚀",
       description: "Travels to space for scientific research or exploration.",
@@ -21,6 +23,7 @@ export async function seedJobs(): Promise<{
       raise: 1.5,
     },
     {
+      id: 3,
       name: "Lawyer",
       emoji: "⚖️",
       description: "Provides legal advice and representation.",
@@ -28,6 +31,7 @@ export async function seedJobs(): Promise<{
       raise: 2.0,
     },
     {
+      id: 4,
       name: "Accountant",
       emoji: "💼",
       description: "Manages financial records and prepares reports.",
@@ -35,6 +39,7 @@ export async function seedJobs(): Promise<{
       raise: 3.0,
     },
     {
+      id: 5,
       name: "Developer",
       emoji: "💻",
       description: "Creates software applications and systems.",
@@ -42,6 +47,7 @@ export async function seedJobs(): Promise<{
       raise: 2.0,
     },
     {
+      id: 6,
       name: "Teacher",
       emoji: "📏",
       description: "Educates students in various subjects.",
@@ -49,6 +55,7 @@ export async function seedJobs(): Promise<{
       raise: 4.0,
     },
     {
+      id: 7,
       name: "Police Officer",
       emoji: "🚓",
       description: "Enforces laws and maintains public order.",
@@ -56,6 +63,7 @@ export async function seedJobs(): Promise<{
       raise: 3.5,
     },
     {
+      id: 8,
       name: "Sales Person",
       emoji: "📈",
       description: "Sells products or services to customers.",
@@ -63,6 +71,7 @@ export async function seedJobs(): Promise<{
       raise: 5.0,
     },
     {
+      id: 9,
       name: "Travel Agent",
       emoji: "🗺️",
       description: "Assists clients in planning and booking trips.",
@@ -70,6 +79,7 @@ export async function seedJobs(): Promise<{
       raise: 5.0,
     },
     {
+      id: 10,
       name: "Athlete",
       emoji: "🏃‍♂️",
       description: "Competes in sports professionally.",
@@ -77,6 +87,7 @@ export async function seedJobs(): Promise<{
       raise: 4.5,
     },
     {
+      id: 11,
       name: "Youtuber",
       emoji: "📹",
       description: "Creates and publishes video content on YouTube.",
@@ -84,6 +95,7 @@ export async function seedJobs(): Promise<{
       raise: 1.5,
     },
     {
+      id: 12,
       name: "Model",
       emoji: "💄",
       description: "Poses for photoshoots or walks on runways.",
@@ -91,6 +103,7 @@ export async function seedJobs(): Promise<{
       raise: 4.5,
     },
     {
+      id: 13,
       name: "Doctor",
       emoji: "🩺",
       description: "Diagnoses and treats medical conditions.",
@@ -98,6 +111,7 @@ export async function seedJobs(): Promise<{
       raise: 1.0,
     },
     {
+      id: 14,
       name: "Artist",
       emoji: "🎨",
       description: "Creates visual or performing arts.",
@@ -105,6 +119,7 @@ export async function seedJobs(): Promise<{
       raise: 5.0,
     },
     {
+      id: 15,
       name: "Chef",
       emoji: "🍳",
       description: "Prepares and cooks food in restaurants.",
@@ -112,6 +127,7 @@ export async function seedJobs(): Promise<{
       raise: 4.0,
     },
     {
+      id: 16,
       name: "Pilot",
       emoji: "✈️",
       description: "Flies aircraft to transport passengers or cargo.",
@@ -119,6 +135,7 @@ export async function seedJobs(): Promise<{
       raise: 1.5,
     },
     {
+      id: 17,
       name: "Plumber",
       emoji: "🪠",
       description: "Installs and repairs plumbing systems.",
@@ -126,6 +143,7 @@ export async function seedJobs(): Promise<{
       raise: 4.0,
     },
     {
+      id: 18,
       name: "Electrician",
       emoji: "⚡",
       description: "Installs and repairs electrical systems.",
@@ -133,6 +151,7 @@ export async function seedJobs(): Promise<{
       raise: 4.0,
     },
     {
+      id: 19,
       name: "Firefighter",
       emoji: "🧑‍🚒",
       description: "Responds to fires and emergency situations.",
@@ -140,6 +159,7 @@ export async function seedJobs(): Promise<{
       raise: 3.5,
     },
     {
+      id: 20,
       name: "Nurse",
       emoji: "🏥",
       description: "Provides patient care in hospitals and clinics.",
@@ -147,6 +167,7 @@ export async function seedJobs(): Promise<{
       raise: 3.0,
     },
     {
+      id: 21,
       name: "Architect",
       emoji: "🏛️",
       description: "Designs buildings and structures.",
@@ -154,6 +175,7 @@ export async function seedJobs(): Promise<{
       raise: 2.0,
     },
     {
+      id: 22,
       name: "Journalist",
       emoji: "📰",
       description: "Reports news and current events.",
@@ -161,6 +183,7 @@ export async function seedJobs(): Promise<{
       raise: 4.0,
     },
     {
+      id: 23,
       name: "Photographer",
       emoji: "📸",
       description: "Takes and edits photographs professionally.",
@@ -168,6 +191,7 @@ export async function seedJobs(): Promise<{
       raise: 4.5,
     },
     {
+      id: 24,
       name: "Dentist",
       emoji: "🦷",
       description: "Diagnoses and treats dental issues.",
@@ -175,6 +199,7 @@ export async function seedJobs(): Promise<{
       raise: 1.5,
     },
     {
+      id: 25,
       name: "Psychologist",
       emoji: "🧠",
       description: "Studies and treats mental health disorders.",
@@ -182,6 +207,7 @@ export async function seedJobs(): Promise<{
       raise: 2.0,
     },
     {
+      id: 26,
       name: "Mechanic",
       emoji: "🔧",
       description: "Repairs and maintains vehicles.",
@@ -189,6 +215,7 @@ export async function seedJobs(): Promise<{
       raise: 4.0,
     },
     {
+      id: 27,
       name: "Farmer",
       emoji: "🚜",
       description: "Grows crops and raises livestock.",
@@ -196,6 +223,7 @@ export async function seedJobs(): Promise<{
       raise: 4.5,
     },
     {
+      id: 28,
       name: "Librarian",
       emoji: "📚",
       description: "Manages library resources and assists patrons.",
@@ -203,6 +231,7 @@ export async function seedJobs(): Promise<{
       raise: 4.5,
     },
     {
+      id: 29,
       name: "Pharmacist",
       emoji: "💊",
       description: "Dispenses medications and provides pharmaceutical advice.",
@@ -210,6 +239,7 @@ export async function seedJobs(): Promise<{
       raise: 1.5,
     },
     {
+      id: 30,
       name: "Flight Attendant",
       emoji: "🛩️",
       description: "Ensures passenger safety and comfort on flights.",
@@ -217,6 +247,7 @@ export async function seedJobs(): Promise<{
       raise: 4.0,
     },
     {
+      id: 31,
       name: "Graphic Designer",
       emoji: "🎭",
       description: "Creates visual content for various media.",
@@ -224,6 +255,7 @@ export async function seedJobs(): Promise<{
       raise: 3.5,
     },
     {
+      id: 32,
       name: "Social Worker",
       emoji: "🤝",
       description: "Helps people solve and cope with problems in their lives.",
@@ -231,6 +263,7 @@ export async function seedJobs(): Promise<{
       raise: 4.0,
     },
     {
+      id: 33,
       name: "Baker",
       emoji: "🍞",
       description: "Prepares bread, pastries, and desserts.",
@@ -238,6 +271,7 @@ export async function seedJobs(): Promise<{
       raise: 5.0,
     },
     {
+      id: 34,
       name: "Translator",
       emoji: "🗣️",
       description: "Converts text or speech from one language to another.",
@@ -245,6 +279,7 @@ export async function seedJobs(): Promise<{
       raise: 3.5,
     },
     {
+      id: 35,
       name: "Marine Biologist",
       emoji: "🐠",
       description: "Studies marine organisms and their ecosystems.",
@@ -252,6 +287,7 @@ export async function seedJobs(): Promise<{
       raise: 3.0,
     },
     {
+      id: 36,
       name: "Archaeologist",
       emoji: "🏺",
       description: "Studies human history through excavation of sites.",
@@ -259,6 +295,7 @@ export async function seedJobs(): Promise<{
       raise: 3.0,
     },
     {
+      id: 37,
       name: "Meteorologist",
       emoji: "🌤️",
       description: "Studies and forecasts weather conditions.",
@@ -268,7 +305,11 @@ export async function seedJobs(): Promise<{
   ];
 
   try {
-    await Jobs.bulkCreate(jobs as Jobs[], { individualHooks: true });
+    await Jobs.bulkCreate(jobs as Jobs[], { 
+      individualHooks: true,
+      // Allow explicit IDs to be used
+      fields: ['id', 'emoji', 'name', 'description', 'salary', 'raise']
+    });
     console.log(`${jobs.length} jobs have been processed successfully.`);
     return { success: true, count: jobs.length };
   } catch (error) {

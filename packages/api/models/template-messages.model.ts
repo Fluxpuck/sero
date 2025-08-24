@@ -8,6 +8,7 @@ export enum TemplateMessagesType {
   REWARD_DROP = "reward-drop",
   CLAIM_REWARD = "claim-reward",
   TREASURE = "treasure",
+  AWAY = "away",
 }
 
 @Table({
