@@ -8,22 +8,56 @@ import { logger } from "./utils/logger";
 
 dotenv.config({ path: path.join(__dirname, ".", "config", ".env") });
 
+/**
+ * Recursively find all TypeScript files in a directory
+ * @param dir Directory to search
+ * @param fileList Array to store found files
+ * @returns Array of file paths
+ */
+const findCommandFiles = (dir: string, fileList: string[] = []): string[] => {
+  const files = fs.readdirSync(dir);
+  
+  for (const file of files) {
+    const filePath = path.join(dir, file);
+    const stat = fs.statSync(filePath);
+    
+    if (stat.isDirectory()) {
+      // Recursively search subdirectories
+      findCommandFiles(filePath, fileList);
+    } else if (file.endsWith('.ts')) {
+      // Add TypeScript files to the list
+      fileList.push(filePath);
+    }
+  }
+  
+  return fileList;
+};
+
 const commands: any[] = [];
 const commandsPath: string = path.join(__dirname, "commands");
-const commandFiles: string[] = fs
-  .readdirSync(commandsPath)
-  .filter((file) => file.endsWith(".ts"));
 
-for (const file of commandFiles) {
-  const filePath: string = path.join(commandsPath, file);
-  const command: Command = require(filePath);
+// Find all command files recursively
+const commandFiles: string[] = findCommandFiles(commandsPath);
 
-  if ("data" in command) {
-    commands.push(command.data.toJSON());
-  } else {
-    logger.warn(
-      `The command at ${filePath} is missing a required "data" property.`
-    );
+logger.info(`Found ${commandFiles.length} command files in ${commandsPath} and its subdirectories`);
+
+for (const filePath of commandFiles) {
+  try {
+    // Get relative path for logging
+    const relativePath = path.relative(commandsPath, filePath);
+    const command: Command = require(filePath).default;
+
+    if ("data" in command) {
+      commands.push(command.data.toJSON());
+      logger.debug(`Registered command: ${command.data.name} (${relativePath})`);
+    } else {
+      logger.warn(
+        `The command at ${relativePath} is missing a required "data" property.`
+      );
+    }
+  } catch (error) {
+    const fileName = path.basename(filePath);
+    logger.error(`Error loading command ${fileName}:`, error);
   }
 }
 

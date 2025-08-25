@@ -71,7 +71,32 @@ export const loadEvents = (client: Client): void => {
 };
 
 /**
- * Load command handlers from the commands directory
+ * Recursively find all TypeScript files in a directory
+ * @param dir Directory to search
+ * @param fileList Array to store found files
+ * @returns Array of file paths
+ */
+const findCommandFiles = (dir: string, fileList: string[] = []): string[] => {
+  const files = fs.readdirSync(dir);
+  
+  for (const file of files) {
+    const filePath = path.join(dir, file);
+    const stat = fs.statSync(filePath);
+    
+    if (stat.isDirectory()) {
+      // Recursively search subdirectories
+      findCommandFiles(filePath, fileList);
+    } else if (file.endsWith('.ts')) {
+      // Add TypeScript files to the list
+      fileList.push(filePath);
+    }
+  }
+  
+  return fileList;
+};
+
+/**
+ * Load command handlers from the commands directory and its subdirectories
  * @param client Discord.js client instance
  * @returns void
  */
@@ -84,9 +109,8 @@ export const loadCommands = (client: Client): void => {
     return;
   }
   
-  const commandFiles: string[] = fs
-    .readdirSync(commandsPath)
-    .filter((file) => file.endsWith(".ts"));
+  // Find all command files recursively
+  const commandFiles = findCommandFiles(commandsPath);
     
   if (commandFiles.length === 0) {
     logger.warn("No command files found to load");
@@ -96,28 +120,33 @@ export const loadCommands = (client: Client): void => {
   const loadedCommands: string[] = [];
   const failedCommands: string[] = [];
   
-  for (const file of commandFiles) {
+  for (const filePath of commandFiles) {
     try {
-      const filePath: string = path.join(commandsPath, file);
+      // Get relative path for logging
+      const relativePath = path.relative(commandsPath, filePath);
+      
+      // Import the command module
       const command: Command = require(filePath).default;
       
       // Validate command object
       if (!command || !('data' in command) || !('execute' in command)) {
-        logger.error(`Invalid command export in ${file}`);
-        failedCommands.push(file);
+        logger.error(`Invalid command export in ${relativePath}`);
+        failedCommands.push(relativePath);
         continue;
       }
       
       // Register command
       client.commands.set(command.data.name, command);
-      loadedCommands.push(`${command.data.name} (${file})`);
+      loadedCommands.push(`${command.data.name} (${relativePath})`);
       
       if (process.env.NODE_ENV === "development") {
-        logger.debug(`Command loaded: ${command.data.name} (${file})`);
+        logger.debug(`Command loaded: ${command.data.name} (${relativePath})`);
       }
     } catch (error) {
-      logger.error(`Failed to load command ${file}:`, error);
-      failedCommands.push(file);
+      // Get file name for error logging
+      const fileName = path.basename(filePath);
+      logger.error(`Failed to load command ${fileName}:`, error);
+      failedCommands.push(fileName);
     }
   }
   
