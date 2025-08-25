@@ -5,7 +5,7 @@ import {
   EmbedBuilder,
 } from "discord.js";
 import { format } from "date-fns";
-import { Command } from "../types/client.types";
+import { Command } from "../../types/client.types";
 
 const command: Command = {
   data: new SlashCommandBuilder()
