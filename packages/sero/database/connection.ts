@@ -7,8 +7,8 @@ import {
 
 const baseURL =
   process.env.NODE_ENV === "production"
-    ? "http://api:3336/api/"
-    : "http://localhost:3336/api/";
+    ? "http://api:3338/api/"
+    : "http://localhost:3338/api/";
 
 const instance = axios.create({
   baseURL,
@@ -73,6 +73,14 @@ export async function deleteRequest<T = any>(
   } catch (error) {
     return handleRequestError(error);
   }
+}
+
+/**
+ * Make a GET request to the health endpoint
+ * @returns Promise with the API response
+ */
+export function healthCheck() {
+  return getRequest("/health") as Promise<any>;
 }
 
 /**

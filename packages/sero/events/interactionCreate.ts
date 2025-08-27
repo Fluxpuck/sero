@@ -52,15 +52,17 @@ const event: Event = {
       } catch (error) {
         logger.error(`Error executing ${interaction.commandName}:`, error);
 
-        const replyOptions = {
-          content: "There was an error while executing this command!",
-          ephemeral: true,
-        };
+        if (process.env.NODE_ENV === "development") {
+          const replyOptions = {
+            content: "There was an error while executing this command!",
+            ephemeral: true,
+          };
 
-        if (interaction.replied || interaction.deferred) {
-          await interaction.followUp(replyOptions);
-        } else {
-          await interaction.reply(replyOptions);
+          if (interaction.replied || interaction.deferred) {
+            await interaction.followUp(replyOptions);
+          } else {
+            await interaction.reply(replyOptions);
+          }
         }
       }
     }

@@ -1,6 +1,7 @@
 import { Request, Response, Router } from "express";
 import { testPostgresConnection } from "../database/sequelize";
 import { testRedisConnection } from "../redis/publisher";
+import { ResponseStatus } from "../utils/response.types";
 
 const router = Router();
 
@@ -10,16 +11,15 @@ const router = Router();
  */
 router.get("/", async (req: Request, res: Response) => {
   // Check database connection
-  const dbStatus = await testPostgresConnection();
+  const postgresStatus = await testPostgresConnection();
   const redisStatus = await testRedisConnection();
 
   res.status(200).json({
-    status: "ok",
+    status: ResponseStatus.SUCCESS,
     timestamp: new Date().toISOString(),
     services: {
-      api: true,
-      database: dbStatus,
-      redis: redisStatus,
+      postgres: postgresStatus ? ResponseStatus.SUCCESS : ResponseStatus.FAIL,
+      redis: redisStatus ? ResponseStatus.SUCCESS : ResponseStatus.FAIL,
     },
   });
 });
