@@ -3,7 +3,10 @@ import express from "express";
 import helmet from "helmet";
 import cors from "cors";
 import compression from "compression";
-import { testConnection } from "./redis/publisher";
+
+import { testPostgresConnection } from "./database/sequelize";
+import { testRedisConnection } from "./redis/publisher";
+
 import { initCronJobs } from "./cron";
 
 (async () => {
@@ -30,22 +33,15 @@ import { initCronJobs } from "./cron";
   app.use(notFoundHandler);
   app.use(errorHandler);
 
-  // → Sync Database Connection
-  const start = performance.now();
-  const { sequelize } = require("./database/sequelize");
-  await sequelize.sync();
-  const end = performance.now();
-
-  // → Test Redis Connection
-  const redisTest = await testConnection();
+  // → Test Database and Redis Connection
+  await testPostgresConnection(true);
+  await testRedisConnection(true);
 
   // → Start server
   app.listen(port, () => {
     console.log(`
     RESTFUL API - Startup details:
     > ${new Date().toUTCString()}
-    > Database Synced in ${Math.round(end - start)} milliseconds
-    > Redis Publisher ${redisTest ? "Connected" : "Disconnected"}
     > Running in ${process.env.NODE_ENV || "development"} mode
     > Ready on http://localhost:${port}
     `);

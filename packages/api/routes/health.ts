@@ -1,6 +1,6 @@
 import { Request, Response, Router } from "express";
-import { testConnection } from "../redis/publisher";
-import { sequelize } from "../database/sequelize";
+import { testPostgresConnection } from "../database/sequelize";
+import { testRedisConnection } from "../redis/publisher";
 
 const router = Router();
 
@@ -10,22 +10,8 @@ const router = Router();
  */
 router.get("/", async (req: Request, res: Response) => {
   // Check database connection
-  let dbStatus: boolean;
-  try {
-    await sequelize.authenticate();
-    dbStatus = true;
-  } catch (error) {
-    dbStatus = false;
-  }
-
-  // Check Redis connection
-  let redisStatus: boolean;
-  try {
-    await testConnection();
-    redisStatus = true;
-  } catch (error) {
-    redisStatus = false;
-  }
+  const dbStatus = await testPostgresConnection();
+  const redisStatus = await testRedisConnection();
 
   res.status(200).json({
     status: "ok",

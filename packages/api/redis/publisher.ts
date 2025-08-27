@@ -60,10 +60,22 @@ export async function publish<T = any>(
 /**
  * Test the connection to Redis
  */
-export async function testConnection(): Promise<boolean> {
+export async function testRedisConnection(
+  log: boolean = false
+): Promise<boolean> {
   try {
-    await publisher.ping();
-    return true;
+    const result = await publisher.ping();
+    if (result === "PONG") {
+      if (log) {
+        logger.success("Successfully connected to Redis");
+      }
+      return true;
+    } else {
+      if (log) {
+        logger.error("Failed to connect to Redis");
+      }
+      return false;
+    }
   } catch (err) {
     logger.error("Error connecting to Redis:", err);
     return false;
