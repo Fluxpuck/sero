@@ -41,6 +41,15 @@
       "runtimeArgs": ["-r", "ts-node/register"]
     },
     {
+      "name": "Sero Deploy",
+      "type": "node",
+      "request": "launch",
+      "program": "${workspaceFolder}/packages/sero/deploy-commands.ts",
+      "cwd": "${workspaceFolder}/packages/sero",
+      "runtimeExecutable": "node",
+      "runtimeArgs": ["-r", "ts-node/register"]
+    },
+    {
       "name": "Seeder",
       "type": "node",
       "request": "launch",
