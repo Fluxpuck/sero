@@ -9,7 +9,7 @@ import { Command } from "../../types/client.types";
 
 const command: Command = {
   data: new SlashCommandBuilder()
-    .setName("info")
+    .setName("bot")
     .setDescription("Provides information about the bot")
     .setDefaultMemberPermissions(PermissionFlagsBits.ManageGuild),
   cooldown: 60,
@@ -21,13 +21,9 @@ const command: Command = {
 
     // Setting up the embedded message
     const messageEmbed = new EmbedBuilder()
-      .setTitle(client.user?.username || "Bot")
-      .setThumbnail(client.user?.displayAvatarURL())
-      .setDescription(
-        `${
-          client.user?.username || "Bot"
-        } is a Discord bot written in TypeScript using the Discord.js library.`
-      )
+      .setTitle(client.user.username)
+      .setThumbnail(client.user.displayAvatarURL())
+      .setDescription(`Bot created by ${client.user.username}`)
       .addFields(
         { name: "Version", value: botVersion, inline: true },
         { name: "Discord.js", value: discordVersion, inline: true },

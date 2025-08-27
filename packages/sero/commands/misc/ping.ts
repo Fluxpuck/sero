@@ -3,7 +3,7 @@ import {
   ChatInputCommandInteraction,
   PermissionFlagsBits,
 } from "discord.js";
-import { Command } from "../types/client.types";
+import { Command } from "../../types/client.types";
 
 const command: Command = {
   data: new SlashCommandBuilder()
