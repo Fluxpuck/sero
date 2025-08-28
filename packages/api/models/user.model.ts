@@ -19,17 +19,12 @@ export enum UserType {
   tableName: "users",
   createdAt: "createdAt",
   updatedAt: "updatedAt",
-  deletedAt: "deletedAt",
-  paranoid: true,
   indexes: [
     {
       unique: true,
       fields: ["userId", "guildId"],
     },
   ],
-  defaultScope: {
-    attributes: { exclude: ["deletedAt"] },
-  },
 })
 export class User extends Model<User> {
   @Column({

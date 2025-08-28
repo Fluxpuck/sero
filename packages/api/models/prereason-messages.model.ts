@@ -19,9 +19,6 @@ export enum ModerationType {
       fields: ["id"],
     },
   ],
-  defaultScope: {
-    attributes: { exclude: ["deletedAt"] },
-  },
 })
 export class PrereasonMessages extends Model<PrereasonMessages> {
   @Column({

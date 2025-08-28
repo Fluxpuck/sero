@@ -10,9 +10,6 @@ import { Column, DataType, Model, Table } from "sequelize-typescript";
       fields: ["id"],
     },
   ],
-  defaultScope: {
-    attributes: { exclude: ["deletedAt"] },
-  },
 })
 export class JobMessages extends Model<JobMessages> {
   @Column({

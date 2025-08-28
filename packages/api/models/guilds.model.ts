@@ -12,17 +12,12 @@ import { Modifier } from "./modifiers.model";
   tableName: "guilds",
   createdAt: "createdAt",
   updatedAt: "updatedAt",
-  deletedAt: "deletedAt",
-  paranoid: true,
   indexes: [
     {
       unique: true,
       fields: ["guildId"],
     },
   ],
-  defaultScope: {
-    attributes: { exclude: ["deletedAt"] },
-  },
 })
 export class Guild extends Model<Guild> {
   public hasPremium(): boolean {

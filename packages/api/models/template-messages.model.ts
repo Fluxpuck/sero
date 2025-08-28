@@ -24,9 +24,6 @@ export enum TemplateMessagesType {
       fields: ["id"],
     },
   ],
-  defaultScope: {
-    attributes: { exclude: ["deletedAt"] },
-  },
 })
 export class TemplateMessages extends Model<TemplateMessages> {
   @Column({
