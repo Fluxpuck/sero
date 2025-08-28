@@ -101,12 +101,12 @@ export function cache(options: CacheOptions = {}) {
 
       if (cachedData) {
         // Return cached response
-        logger.debug(`Cache hit for ${cacheKey}`);
+        logger.debug(`Found cached response for ${cacheKey}`);
         return res.status(cachedData.status).json(cachedData.body);
       }
 
       // Cache miss - capture the response
-      logger.debug(`Cache miss for ${cacheKey}`);
+      logger.debug(`No cached response found for ${cacheKey}`);
 
       // Store original res.json method
       const originalJson = res.json;
