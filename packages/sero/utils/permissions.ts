@@ -1,7 +1,7 @@
 import { ChatInputCommandInteraction, GuildMember } from "discord.js";
 import { logger } from "./logger";
 
-type ModAction = "warn" | "kick" | "ban" | "mute" | "timeout" | "purge";
+type ModAction = "warn" | "kick" | "ban" | "disconnect" | "timeout" | "purge";
 
 type PermissionCheck = {
   success: boolean;
