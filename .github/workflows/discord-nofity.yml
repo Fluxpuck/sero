@@ -4,6 +4,8 @@ on:
   push: # Any commit to any branch
   pull_request: # PR events: open, close, merge
     types: [opened, closed, merged]
+  pull_request_review: # PR review events
+    types: [submitted]
 
 jobs:
   discord:
@@ -29,7 +31,8 @@ jobs:
           REPO="${{ github.repository }}"
           USER="${{ github.actor }}"
           BRANCH="${{ github.ref_name || github.head_ref }}"
-          PR_TITLE="${{ github.event.pull_request.title || '' }}"
+          PR_TITLE="${{ github.event.pull_request.title || github.event.pull_request_review.pull_request.title || '' }}"
+          REVIEW_STATE="${{ github.event.review.state || '' }}"
           URL="https://github.com/${{ github.repository }}"
 
           if [ "$EVENT_NAME" = "push" ]; then
@@ -80,6 +83,33 @@ jobs:
             TITLE="🛠 Pull Request $ACTION"
             DESCRIPTION="**${PR_TITLE}**"
             URL="${{ github.event.pull_request.html_url }}"
+          elif [ "$EVENT_NAME" = "pull_request_review" ]; then
+            PR_URL="${{ github.event.pull_request_review.pull_request.html_url }}"
+            REVIEW_BODY="${{ github.event.pull_request_review.body }}"
+            
+            if [ "$REVIEW_STATE" = "approved" ]; then
+              COLOR=3066993  # Green
+              TITLE="✅ Pull Request Approved"
+              DESCRIPTION="**${PR_TITLE}** was approved by $USER"
+              if [ ! -z "$REVIEW_BODY" ]; then
+                DESCRIPTION="$DESCRIPTION\n\n> $REVIEW_BODY"
+              fi
+            elif [ "$REVIEW_STATE" = "changes_requested" ]; then
+              COLOR=15158332  # Red
+              TITLE="🔄 Changes Requested"
+              DESCRIPTION="**${PR_TITLE}** needs changes according to $USER"
+              if [ ! -z "$REVIEW_BODY" ]; then
+                DESCRIPTION="$DESCRIPTION\n\n> $REVIEW_BODY"
+              fi
+            else
+              COLOR=10070709  # Gray
+              TITLE="💬 New Review Comment"
+              DESCRIPTION="**${PR_TITLE}** was reviewed by $USER"
+              if [ ! -z "$REVIEW_BODY" ]; then
+                DESCRIPTION="$DESCRIPTION\n\n> $REVIEW_BODY"
+              fi
+            fi
+            URL="$PR_URL"
           else
             COLOR=3066993  # Green
             TITLE="✅ Pull Request Merged"
