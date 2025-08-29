@@ -5,6 +5,7 @@ import {
   AuditLogEventType,
   CustomAuditLogEvent,
 } from "../../../../models/user-audit-logs.model";
+import { User } from "../../../../models/user.model";
 import { ResponseHandler } from "../../../../utils/response.utils";
 import { ResponseCode } from "../../../../utils/response.types";
 import { sequelize } from "../../../../database/sequelize";
@@ -51,6 +52,12 @@ const router = Router({ mergeParams: true });
  *         description: Filter by executor user ID
  *         schema:
  *           type: string
+ *       - in: query
+ *         name: includeUsers
+ *         description: Whether to include user data in the response
+ *         schema:
+ *           type: string
+ *           default: "true"
  *     responses:
  *       200:
  *         description: List of user audit logs
@@ -68,7 +75,14 @@ const router = Router({ mergeParams: true });
 router.get("/", async (req: Request, res: Response, next: NextFunction) => {
   try {
     const { guildId } = req.params;
-    const { limit = 50, offset = 0, action, targetId, executorId } = req.query;
+    const {
+      limit = 50,
+      offset = 0,
+      action,
+      targetId,
+      executorId,
+      includeUsers = "true",
+    } = req.query;
 
     const whereClause: any = { guildId };
 
@@ -77,12 +91,33 @@ router.get("/", async (req: Request, res: Response, next: NextFunction) => {
     if (targetId) whereClause.targetId = targetId;
     if (executorId) whereClause.executorId = executorId;
 
-    const auditLogs = await UserAuditLogs.findAndCountAll({
+    // Prepare find options with optional includes
+    const findOptions: any = {
       where: whereClause,
       limit: Number(limit),
       offset: Number(offset),
       order: [["createdAt", "DESC"]],
-    });
+    };
+
+    // If includeUsers is true, use Sequelize associations for both executor and target data
+    if (includeUsers === "true") {
+      findOptions.include = [
+        {
+          model: User,
+          as: "executor",
+          attributes: ["userId", "username", "userType", "premium"],
+          required: false,
+        },
+        {
+          model: User,
+          as: "target",
+          attributes: ["userId", "username", "userType", "premium"],
+          required: false,
+        },
+      ];
+    }
+
+    const auditLogs = await UserAuditLogs.findAll(findOptions);
 
     return ResponseHandler.sendSuccess(
       res,
@@ -109,9 +144,15 @@ router.get("/", async (req: Request, res: Response, next: NextFunction) => {
  *           type: string
  *       - in: path
  *         name: id
- *         description: The UUID of the audit log
+ *         description: The ID of the audit log
  *         schema:
  *           type: string
+ *       - in: query
+ *         name: includeUsers
+ *         description: Whether to include user data in the response
+ *         schema:
+ *           type: string
+ *           default: "true"
  *     responses:
  *       200:
  *         description: User audit log details
@@ -127,10 +168,32 @@ router.get("/", async (req: Request, res: Response, next: NextFunction) => {
 router.get("/:id", async (req: Request, res: Response, next: NextFunction) => {
   try {
     const { guildId, id } = req.params;
+    const { includeUsers = "true" } = req.query;
 
-    const auditLog = await UserAuditLogs.findOne({
+    // Prepare find options
+    const findOptions: any = {
       where: { id, guildId },
-    });
+    };
+
+    // If includeUsers is true, use Sequelize associations for both executor and target data
+    if (includeUsers === "true") {
+      findOptions.include = [
+        {
+          model: User,
+          as: "executor",
+          attributes: ["userId", "username", "userType", "premium"],
+          required: false,
+        },
+        {
+          model: User,
+          as: "target",
+          attributes: ["userId", "username", "userType", "premium"],
+          required: false,
+        },
+      ];
+    }
+
+    const auditLog = await UserAuditLogs.findOne(findOptions);
 
     if (!auditLog) {
       return ResponseHandler.sendError(
@@ -204,20 +267,47 @@ router.get(
   async (req: Request, res: Response, next: NextFunction) => {
     try {
       const { guildId, targetId } = req.params;
-      const { limit = 50, offset = 0, action } = req.query;
+      const {
+        limit = 50,
+        offset = 0,
+        action,
+        includeUsers = "true",
+      } = req.query;
 
       const whereClause: any = { guildId, targetId };
 
       // Add optional action filter
       if (action) whereClause.action = action;
 
-      const auditLogs = await UserAuditLogs.findAndCountAll({
+      // Get audit logs with included user data if requested
+      const findOptions: any = {
         where: whereClause,
         limit: Number(limit),
         offset: Number(offset),
         order: [["createdAt", "DESC"]],
-      });
+      };
 
+      // If includeUsers is true, use Sequelize associations for both executor and target data
+      if (includeUsers === "true") {
+        findOptions.include = [
+          {
+            model: User,
+            as: "executor",
+            attributes: ["userId", "username", "userType", "premium"],
+            required: false,
+          },
+          {
+            model: User,
+            as: "target",
+            attributes: ["userId", "username", "userType", "premium"],
+            required: false,
+          },
+        ];
+      }
+
+      const auditLogs = await UserAuditLogs.findAll(findOptions);
+
+      // Return the results with user data included
       return ResponseHandler.sendSuccess(
         res,
         auditLogs,
@@ -283,67 +373,51 @@ router.get(
   async (req: Request, res: Response, next: NextFunction) => {
     try {
       const { guildId, executorId } = req.params;
-      const { limit = 50, offset = 0, action } = req.query;
+      const {
+        limit = 50,
+        offset = 0,
+        action,
+        includeUsers = "true",
+      } = req.query;
 
       const whereClause: any = { guildId, executorId };
 
       // Add optional action filter
       if (action) whereClause.action = action;
 
-      const auditLogs = await UserAuditLogs.findAndCountAll({
+      // Get audit logs with included user data if requested
+      const findOptions: any = {
         where: whereClause,
         limit: Number(limit),
         offset: Number(offset),
         order: [["createdAt", "DESC"]],
-      });
+      };
 
+      // If includeUsers is true, use Sequelize associations for both executor and target data
+      if (includeUsers === "true") {
+        findOptions.include = [
+          {
+            model: User,
+            as: "executor",
+            attributes: ["userId", "username", "userType", "premium"],
+            required: false,
+          },
+          {
+            model: User,
+            as: "target",
+            attributes: ["userId", "username", "userType", "premium"],
+            required: false,
+          },
+        ];
+      }
+
+      const auditLogs = await UserAuditLogs.findAll(findOptions);
+
+      // Return the results with user data included
       return ResponseHandler.sendSuccess(
         res,
         auditLogs,
         "User audit logs retrieved successfully"
-      );
-    } catch (error) {
-      next(error);
-    }
-  }
-);
-
-/**
- * @swagger
- * /guild/{guildId}/logs/user/actions:
- *   get:
- *     summary: Get all available audit log action types
- *     tags:
- *       - Logs
- *     parameters:
- *       - in: path
- *         name: guildId
- *         description: The Discord ID of the guild
- *         schema:
- *           type: string
- *     responses:
- *       200:
- *         description: List of available audit log action types
- *         content:
- *           application/json:
- *             schema:
- *               type: array
- *               items:
- *                 type: string
- *       500:
- *         description: Server error
- */
-router.get(
-  "/actions",
-  async (req: Request, res: Response, next: NextFunction) => {
-    try {
-      // Combine Discord.js AuditLogEvent and CustomAuditLogEvent
-      const actionTypes = [...Object.keys(CustomAuditLogEvent)];
-
-      return ResponseHandler.sendSuccess(
-        res,
-        actionTypes,
-        "Audit log action types retrieved successfully"
       );
     } catch (error) {
       next(error);
