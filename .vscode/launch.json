@@ -15,14 +15,6 @@
       "outFiles": ["${workspaceFolder}/packages/api/**/*.js"]
     },
     {
-      "name": "Sero Bot",
-      "type": "node",
-      "request": "launch",
-      "program": "${workspaceFolder}/packages/bot/bot.js",
-      "cwd": "${workspaceFolder}",
-      "runtimeExecutable": "node"
-    },
-    {
       "name": "Sero Agent",
       "type": "node",
       "request": "launch",
@@ -32,7 +24,16 @@
       "runtimeArgs": ["-r", "ts-node/register"]
     },
     {
-      "name": "Sero Bot 2",
+      "name": "Sero Agent Deploy",
+      "type": "node",
+      "request": "launch",
+      "program": "${workspaceFolder}/packages/agent/deploy-commands.ts",
+      "cwd": "${workspaceFolder}/packages/agent",
+      "runtimeExecutable": "node",
+      "runtimeArgs": ["-r", "ts-node/register"]
+    },
+    {
+      "name": "Sero Bot",
       "type": "node",
       "request": "launch",
       "program": "${workspaceFolder}/packages/sero/index.ts",
