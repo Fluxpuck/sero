@@ -38,6 +38,8 @@ const initBot = async (): Promise<void> => {
       throw new Error("DISCORD_TOKEN is missing in the environment variables");
     }
 
+    logger.info("Initializing Bot...");
+
     // Load commands
     loadCommands(client);
 
