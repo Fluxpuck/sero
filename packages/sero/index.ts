@@ -38,11 +38,11 @@ const initBot = async (): Promise<void> => {
       throw new Error("DISCORD_TOKEN is missing in the environment variables");
     }
 
-    // Load events
-    loadEvents(client);
-
     // Load commands
     loadCommands(client);
+
+    // Load events
+    loadEvents(client);
 
     // Login to Discord
     await client.login(token);
