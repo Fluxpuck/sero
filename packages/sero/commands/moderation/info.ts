@@ -9,6 +9,7 @@ import {
 } from "discord.js";
 import { Command } from "../../types/client.types";
 import { safeReply, safeErrorReply } from "../../utils/message";
+import { getRequest } from "../../database/connection";
 
 const command: Command = {
   data: new SlashCommandBuilder()
@@ -21,7 +22,7 @@ const command: Command = {
         .setDescription("Select a user to get information about")
         .setRequired(true)
     ) as SlashCommandBuilder,
-  cooldown: 60,
+  cooldown: 3,
 
   async execute(interaction: ChatInputCommandInteraction) {
     await interaction.deferReply();
@@ -35,6 +36,19 @@ const command: Command = {
 
     try {
       const member = interaction.guild?.members.cache.get(user.id);
+
+      const source = interaction.user.id === user.id ? "executor" : "target";
+      const userLogs = await getRequest(
+        `guild/${interaction.guild!.id}/logs/user/${source}/${user.id}`
+      );
+
+      console.log("userLogs", { userLogs, source });
+
+      /* @TODO
+          1. Add database logs to Embed
+          2. Add Pagination (10 Logs per Page) - Refetch data per page using offset and limit
+          3. Add Quick Action buttons [Ban, Kick, Mute, Warn]      
+      */
 
       const embed = new EmbedBuilder()
         .setColor(0x0099ff)
