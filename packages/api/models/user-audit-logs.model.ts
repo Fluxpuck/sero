@@ -67,4 +67,13 @@ export class UserAuditLogs extends Model<UserAuditLogs> {
     },
   })
   declare executorId: string | null;
+
+  @Column({
+    type: DataType.INTEGER,
+    allowNull: true,
+    validate: {
+      isNumeric: true,
+    },
+  })
+  declare duration: number | null;
 }
