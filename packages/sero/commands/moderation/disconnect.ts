@@ -8,6 +8,7 @@ import {
 import { Command } from "../../types/client.types";
 import { getRequest } from "../../database/connection";
 import { checkPermissions } from "../../utils/permissions";
+import { safeReply, safeErrorReply } from "../../utils/message";
 
 const command: Command = {
   data: new SlashCommandBuilder()
@@ -53,45 +54,76 @@ const command: Command = {
   },
 
   async execute(interaction: ChatInputCommandInteraction) {
+    await interaction.deferReply({ ephemeral: true });
+    const isDeferred = interaction.deferred;
+
     const user = interaction.options.getUser("user");
     const reason = interaction.options.getString("reason");
     if (!user || !reason) {
-      interaction.reply({
-        content: "Please provide a user and a reason",
-        flags: MessageFlags.Ephemeral,
-      });
+      await safeReply(
+        interaction,
+        "Please provide a user and a reason",
+        isDeferred
+      );
       return;
     }
 
-    const member = interaction.guild?.members.cache.get(user.id);
+    if (!interaction.guild) {
+      await safeReply(
+        interaction,
+        "This command can only be used in a server",
+        isDeferred
+      );
+      return;
+    }
+
+    const member = interaction.guild.members.cache.get(user.id);
     if (!member) {
-      interaction.reply({
-        content: "User not found",
-        flags: MessageFlags.Ephemeral,
-      });
+      await safeReply(interaction, "User not found", isDeferred);
       return;
     }
 
-    const { success, message } = checkPermissions(interaction, member, "disconnect");
+    // Check if the user is in a voice channel
+    if (!member.voice.channel) {
+      await safeReply(
+        interaction,
+        `<@${member.user.id}> is not connected to any voice channel.`,
+        isDeferred
+      );
+      return;
+    }
+
+    const { success, message } = checkPermissions(
+      interaction,
+      member,
+      "disconnect"
+    );
     if (!success) {
-      interaction.reply({
-        content: message,
-        flags: MessageFlags.Ephemeral,
-      });
+      await safeReply(interaction, message, isDeferred);
       return;
     }
 
     try {
-      await member.voice.disconnect();
-      interaction.reply({
-        content: `You successfully disconnected <@${member.user.id}>`,
-        flags: MessageFlags.Ephemeral,
-      });
+      // Store the channel name for the success message
+      const channelName = member.voice.channel.name;
+
+      // Disconnect the user
+      await member.voice.disconnect(
+        `${reason} >> ${interaction.user.username}`
+      );
+
+      await safeReply(
+        interaction,
+        `You successfully disconnected <@${member.user.id}> from voice channel "${channelName}" with reason: ${reason}`,
+        isDeferred
+      );
     } catch (error) {
-      interaction.reply({
-        content: `Could not disconnect <@${member.user.id}>.`,
-        flags: MessageFlags.Ephemeral,
-      });
+      await safeErrorReply(
+        interaction,
+        error,
+        `Could not disconnect <@${member.user.id}>.`,
+        isDeferred
+      );
     }
 
     return;

@@ -8,6 +8,7 @@ import {
 import { Command } from "../../types/client.types";
 import { getRequest } from "../../database/connection";
 import { checkPermissions } from "../../utils/permissions";
+import { safeReply, safeErrorReply } from "../../utils/message";
 
 const command: Command = {
   data: new SlashCommandBuilder()
@@ -51,51 +52,74 @@ const command: Command = {
   },
 
   async execute(interaction: ChatInputCommandInteraction) {
+    await interaction.deferReply({ ephemeral: true });
+    const isDeferred = interaction.deferred;
+
     const user = interaction.options.getUser("user");
     const reason = interaction.options.getString("reason");
     if (!user || !reason) {
-      interaction.reply({
-        content: "Please provide a user and a reason",
-        flags: MessageFlags.Ephemeral,
-      });
+      await safeReply(
+        interaction,
+        "Please provide a user and a reason",
+        isDeferred
+      );
       return;
     }
 
-    const member = interaction.guild?.members.cache.get(user.id);
+    if (!interaction.guild) {
+      await safeReply(
+        interaction,
+        "This command can only be used in a server",
+        isDeferred
+      );
+      return;
+    }
+
+    const member = interaction.guild.members.cache.get(user.id);
     if (!member) {
-      interaction.reply({
-        content: "User not found",
-        flags: MessageFlags.Ephemeral,
-      });
+      await safeReply(interaction, "User not found", isDeferred);
       return;
     }
 
     const { success, message } = checkPermissions(interaction, member, "ban");
     if (!success) {
-      interaction.reply({
-        content: message,
-        flags: MessageFlags.Ephemeral,
-      });
+      await safeReply(interaction, message, isDeferred);
       return;
     }
 
     try {
+      // Check if user is already banned
+      const banList = await interaction.guild.bans.fetch();
+      const alreadyBanned = banList.find((ban) => ban.user.id === user.id);
+
+      if (alreadyBanned) {
+        await safeReply(
+          interaction,
+          `<@${user.id}> is already banned from this server.`,
+          isDeferred
+        );
+        return;
+      }
+
       // Ban the user
       await member.ban({
         reason: `${reason} >> ${interaction.user.username}`,
-        deleteMessageSeconds: 60 * 60, // Delete messages from the last hour
+        deleteMessageSeconds: 60 * 60 * 24, // Delete messages from the last day
       });
 
       // Send a success message to the author
-      interaction.reply({
-        content: `You successfully banned <@${member.user.id}> with the following message:\n> ${reason}`,
-        flags: MessageFlags.Ephemeral,
-      });
+      await safeReply(
+        interaction,
+        `You successfully banned <@${member.user.id}> with the following message:\n> ${reason}`,
+        isDeferred
+      );
     } catch (error) {
-      interaction.reply({
-        content: `Could not ban <@${member.user.id}>.`,
-        flags: MessageFlags.Ephemeral,
-      });
+      await safeErrorReply(
+        interaction,
+        error,
+        `Could not ban <@${member.user.id}>.`,
+        isDeferred
+      );
     }
 
     return;

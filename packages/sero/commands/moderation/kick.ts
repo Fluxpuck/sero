@@ -8,6 +8,7 @@ import {
 import { Command } from "../../types/client.types";
 import { getRequest } from "../../database/connection";
 import { checkPermissions } from "../../utils/permissions";
+import { safeReply, safeErrorReply } from "../../utils/message";
 
 const command: Command = {
   data: new SlashCommandBuilder()
@@ -51,31 +52,25 @@ const command: Command = {
   },
 
   async execute(interaction: ChatInputCommandInteraction) {
+    await interaction.deferReply({ ephemeral: true });
+    const isDeferred = interaction.deferred;
+
     const user = interaction.options.getUser("user");
     const reason = interaction.options.getString("reason");
     if (!user || !reason) {
-      interaction.reply({
-        content: "Please provide a user and a reason",
-        flags: MessageFlags.Ephemeral,
-      });
+      await safeReply(interaction, "Please provide a user and a reason", isDeferred);
       return;
     }
 
     const member = interaction.guild?.members.cache.get(user.id);
     if (!member) {
-      interaction.reply({
-        content: "User not found",
-        flags: MessageFlags.Ephemeral,
-      });
+      await safeReply(interaction, "User not found", isDeferred);
       return;
     }
 
     const { success, message } = checkPermissions(interaction, member, "kick");
     if (!success) {
-      interaction.reply({
-        content: message,
-        flags: MessageFlags.Ephemeral,
-      });
+      await safeReply(interaction, message, isDeferred);
       return;
     }
 
@@ -84,15 +79,18 @@ const command: Command = {
       await member.kick(`${reason} >> ${interaction.user.username}`);
 
       // Send a success message to the author
-      interaction.reply({
-        content: `You successfully kicked <@${member.user.id}> with the following message:\n> ${reason}`,
-        flags: MessageFlags.Ephemeral,
-      });
+      await safeReply(
+        interaction,
+        `You successfully kicked <@${member.user.id}> with the following message:\n> ${reason}`,
+        isDeferred
+      );
     } catch (error) {
-      interaction.reply({
-        content: `Could not kick <@${member.user.id}>.`,
-        flags: MessageFlags.Ephemeral,
-      });
+      await safeErrorReply(
+        interaction,
+        error,
+        `Could not kick <@${member.user.id}>.`,
+        isDeferred
+      );
     }
 
     return;
