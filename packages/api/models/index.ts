@@ -124,12 +124,20 @@ export const initModels = (sequelize: Sequelize): void => {
       guildId: { $col: "User.guildId" },
     },
   });
+  // Define executor relationship from User side
   User.hasMany(UserAuditLogs, {
     foreignKey: "executorId",
+    sourceKey: "userId",
+    as: "executedAuditLogs",
     constraints: false,
-    scope: {
-      guildId: { $col: "User.guildId" },
-    },
+  });
+  
+  // Define target relationship from User side
+  User.hasMany(UserAuditLogs, {
+    foreignKey: "targetId",
+    sourceKey: "userId",
+    as: "targetedAuditLogs",
+    constraints: false,
   });
   User.hasMany(UserActivityLogs, {
     foreignKey: "userId",
@@ -321,12 +329,20 @@ export const initModels = (sequelize: Sequelize): void => {
   UserCareers.belongsTo(Guild, { foreignKey: "guildId", constraints: false });
   UserCareers.belongsTo(Jobs, { foreignKey: "jobId", constraints: false });
 
+  // Define executor relationship
   UserAuditLogs.belongsTo(User, {
     foreignKey: "executorId",
+    targetKey: "userId",
+    as: "executor",
     constraints: false,
-    scope: {
-      guildId: { $col: "UserAuditLogs.guildId" },
-    },
+  });
+  
+  // Define target relationship
+  UserAuditLogs.belongsTo(User, {
+    foreignKey: "targetId",
+    targetKey: "userId",
+    as: "target",
+    constraints: false,
   });
   UserAuditLogs.belongsTo(Guild, { foreignKey: "guildId", constraints: false });
 
