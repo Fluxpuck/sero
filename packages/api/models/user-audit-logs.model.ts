@@ -2,6 +2,13 @@ import { Column, DataType, Default, Model, Table } from "sequelize-typescript";
 import { AuditLogEvent } from "discord.js";
 import { v4 as uuidv4 } from "uuid";
 
+export enum CustomAuditLogEvent {
+  MemberTimeoutAdd = "MemberTimeoutAdd",
+  MemberTimeoutRemove = "MemberTimeoutRemove",
+}
+
+export type AuditLogEventType = AuditLogEvent | CustomAuditLogEvent;
+
 @Table({
   tableName: "user_audit_logs",
   createdAt: "createdAt",
@@ -29,19 +36,17 @@ export class UserAuditLogs extends Model<UserAuditLogs> {
   @Column({
     type: DataType.STRING,
     allowNull: false,
-    validate: {
-      isNumeric: true,
-    },
   })
   declare guildId: string;
 
   @Column({
     type: DataType.ENUM(
-      ...Object.keys(AuditLogEvent).filter((k) => isNaN(Number(k)))
+      ...Object.keys(AuditLogEvent).filter((k) => isNaN(Number(k))),
+      ...Object.keys(CustomAuditLogEvent)
     ),
     allowNull: false,
   })
-  declare action: keyof typeof AuditLogEvent;
+  declare action: AuditLogEventType;
 
   @Default(null)
   @Column({
@@ -52,28 +57,19 @@ export class UserAuditLogs extends Model<UserAuditLogs> {
 
   @Column({
     type: DataType.STRING,
-    allowNull: true,
-    validate: {
-      isNumeric: true,
-    },
+    allowNull: false,
   })
-  declare targetId: string | null;
+  declare targetId: string;
+
+  @Column({
+    type: DataType.STRING,
+    allowNull: false,
+  })
+  declare executorId: string;
 
   @Column({
     type: DataType.INTEGER,
     allowNull: true,
-    validate: {
-      isNumeric: true,
-    },
-  })
-  declare executorId: string | null;
-
-  @Column({
-    type: DataType.INTEGER,
-    allowNull: true,
-    validate: {
-      isNumeric: true,
-    },
   })
   declare duration: number | null;
 }
