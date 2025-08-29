@@ -27,17 +27,25 @@ const command: Command = {
   cooldown: 60,
 
   async execute(interaction: ChatInputCommandInteraction) {
-    await interaction.deferReply({ ephemeral: true });
+    await interaction.deferReply({ flags: MessageFlags.Ephemeral });
     const isDeferred = interaction.deferred;
 
     const amount = interaction.options.getInteger("amount");
     if (!amount) {
-      await safeReply(interaction, "Please provide an amount of messages to clear", isDeferred);
+      await safeReply(
+        interaction,
+        "Please provide an amount of messages to clear",
+        isDeferred
+      );
       return;
     }
 
     if (!interaction.channel || !isBulkDeletable(interaction.channel)) {
-      await safeReply(interaction, "Cannot delete messages in this type of channel", isDeferred);
+      await safeReply(
+        interaction,
+        "Cannot delete messages in this type of channel",
+        isDeferred
+      );
       return;
     }
 
@@ -52,10 +60,14 @@ const command: Command = {
       const deletedCount = deletedMessages.size;
 
       if (deletedCount === 0) {
-        await safeReply(interaction, "No messages found to delete.", isDeferred);
+        await safeReply(
+          interaction,
+          "No messages found to delete.",
+          isDeferred
+        );
       } else {
         await safeReply(
-          interaction, 
+          interaction,
           `Successfully cleared ${deletedCount} messages.`,
           isDeferred
         );

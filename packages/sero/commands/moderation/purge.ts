@@ -9,7 +9,11 @@ import {
 } from "discord.js";
 import { Command } from "../../types/client.types";
 import { isBulkDeletable } from "../../utils/channel";
-import { fetchAndDeleteMessages, safeReply, safeErrorReply } from "../../utils/message";
+import {
+  fetchAndDeleteMessages,
+  safeReply,
+  safeErrorReply,
+} from "../../utils/message";
 
 const command: Command = {
   data: new SlashCommandBuilder()
@@ -33,13 +37,17 @@ const command: Command = {
   cooldown: 60,
 
   async execute(interaction: ChatInputCommandInteraction) {
-    await interaction.deferReply({ ephemeral: true });
+    await interaction.deferReply({ flags: MessageFlags.Ephemeral });
     const isDeferred = interaction.deferred;
 
     const user = interaction.options.getUser("user");
     const amount = interaction.options.getInteger("amount");
     if (!user || !amount) {
-      await safeReply(interaction, "Please provide a user and an amount", isDeferred);
+      await safeReply(
+        interaction,
+        "Please provide a user and an amount",
+        isDeferred
+      );
       return;
     }
 
@@ -52,7 +60,11 @@ const command: Command = {
     try {
       // Type guard to ensure channel supports bulk delete
       if (!interaction.channel || !isBulkDeletable(interaction.channel)) {
-        await safeReply(interaction, "Cannot delete messages in this type of channel", isDeferred);
+        await safeReply(
+          interaction,
+          "Cannot delete messages in this type of channel",
+          isDeferred
+        );
         return;
       }
 
@@ -67,7 +79,11 @@ const command: Command = {
       );
 
       if (deletedCount === 0) {
-        await safeReply(interaction, `No messages found from ${user.tag} to delete.`, isDeferred);
+        await safeReply(
+          interaction,
+          `No messages found from ${user.tag} to delete.`,
+          isDeferred
+        );
       } else {
         await safeReply(
           interaction,

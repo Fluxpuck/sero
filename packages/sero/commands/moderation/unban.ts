@@ -21,7 +21,7 @@ const command: Command = {
   cooldown: 60,
 
   async execute(interaction: ChatInputCommandInteraction) {
-    await interaction.deferReply({ ephemeral: true });
+    await interaction.deferReply({ flags: MessageFlags.Ephemeral });
     const isDeferred = interaction.deferred;
 
     const user = interaction.options.getUser("user");

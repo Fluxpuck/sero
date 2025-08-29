@@ -60,14 +60,18 @@ const command: Command = {
   },
 
   async execute(interaction: ChatInputCommandInteraction) {
-    await interaction.deferReply({ ephemeral: true });
+    await interaction.deferReply({ flags: MessageFlags.Ephemeral });
     const isDeferred = interaction.deferred;
 
     const user = interaction.options.getUser("user");
     const duration = interaction.options.getInteger("duration");
     const reason = interaction.options.getString("reason");
     if (!user || !duration || !reason) {
-      await safeReply(interaction, "Please provide a user, a duration and a reason", isDeferred);
+      await safeReply(
+        interaction,
+        "Please provide a user, a duration and a reason",
+        isDeferred
+      );
       return;
     }
 

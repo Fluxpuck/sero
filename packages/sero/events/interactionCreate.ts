@@ -53,15 +53,16 @@ const event: Event = {
         logger.error(`Error executing ${interaction.commandName}:`, error);
 
         if (process.env.NODE_ENV === "development") {
-          const replyOptions = {
-            content: "There was an error while executing this command!",
-            ephemeral: true,
-          };
-
           if (interaction.replied || interaction.deferred) {
-            await interaction.followUp(replyOptions);
+            await interaction.followUp({
+              content: "There was an error while executing this command!",
+              flags: MessageFlags.Ephemeral,
+            });
           } else {
-            await interaction.reply(replyOptions);
+            await interaction.reply({
+              content: "There was an error while executing this command!",
+              flags: MessageFlags.Ephemeral,
+            });
           }
         }
       }

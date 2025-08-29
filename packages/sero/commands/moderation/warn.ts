@@ -52,13 +52,17 @@ const command: Command = {
   },
 
   async execute(interaction: ChatInputCommandInteraction) {
-    await interaction.deferReply({ ephemeral: true });
+    await interaction.deferReply({ flags: MessageFlags.Ephemeral });
     const isDeferred = interaction.deferred;
 
     const user = interaction.options.getUser("user");
     const reason = interaction.options.getString("reason");
     if (!user || !reason) {
-      await safeReply(interaction, "Please provide a user and a reason", isDeferred);
+      await safeReply(
+        interaction,
+        "Please provide a user and a reason",
+        isDeferred
+      );
       return;
     }
 
