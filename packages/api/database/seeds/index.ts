@@ -10,6 +10,7 @@ import { seedMessages } from "./messages.seed";
 import { seedTemplateMessages } from "./template-messages.seed";
 import { seedPrereasonMessages } from "./prereason-messages.seed";
 import { seedJobMessages } from "./job-messages.seed";
+import { seedUserAuditLogs } from "./user-audit-logs.seed";
 
 // Colors are now handled by the logger utility
 
@@ -70,6 +71,9 @@ async function seedManager() {
 
     await seedJobMessages();
     logger.success(`✓ Job messages seeded successfully`);
+
+    await seedUserAuditLogs(22);
+    logger.success(`✓ User audit logs seeded successfully`);
   } catch (error) {
     logger.error(`✗ Error seeding database:`, error);
     process.exit(1);

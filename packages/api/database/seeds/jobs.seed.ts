@@ -306,10 +306,10 @@ export async function seedJobs(): Promise<{
   ];
 
   try {
-    await Jobs.bulkCreate(jobs as Jobs[], { 
+    await Jobs.bulkCreate(jobs as Jobs[], {
       individualHooks: true,
       // Allow explicit IDs to be used
-      fields: ['id', 'emoji', 'name', 'description', 'salary', 'raise']
+      fields: ["id", "emoji", "name", "description", "salary", "raise"],
     });
     logger.success(`${jobs.length} jobs have been processed successfully.`);
     return { success: true, count: jobs.length };
