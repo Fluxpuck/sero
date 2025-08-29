@@ -27,6 +27,8 @@ async function seedManager() {
 
   // Truncate all tables in the database
   try {
+    logger.info(`» Syncing models...`);
+    await sequelize.sync({ alter: true });
     logger.info(`» Truncating all tables...`);
     for (const model of Object.values(sequelize.models)) {
       await model.destroy({ truncate: true, cascade: true, force: true });
