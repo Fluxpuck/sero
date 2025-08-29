@@ -24,7 +24,7 @@ const command: Command = {
   cooldown: 60,
 
   async execute(interaction: ChatInputCommandInteraction) {
-    await interaction.deferReply({ ephemeral: true });
+    await interaction.deferReply();
     const isDeferred = interaction.deferred;
 
     const user = interaction.options.getUser("user");
@@ -35,37 +35,51 @@ const command: Command = {
 
     try {
       const member = interaction.guild?.members.cache.get(user.id);
-      
+
       const embed = new EmbedBuilder()
-        .setColor(0x0099FF)
+        .setColor(0x0099ff)
         .setTitle(`User Information: ${user.tag}`)
         .setThumbnail(user.displayAvatarURL({ size: 128 }))
         .addFields(
-          { name: 'User ID', value: user.id, inline: true },
-          { name: 'Account Created', value: `<t:${Math.floor(user.createdTimestamp / 1000)}:R>`, inline: true },
+          { name: "User ID", value: user.id, inline: true },
+          {
+            name: "Account Created",
+            value: `<t:${Math.floor(user.createdTimestamp / 1000)}:R>`,
+            inline: true,
+          }
         )
         .setTimestamp();
 
       // Add member-specific information if the user is in the guild
       if (member) {
         embed.addFields(
-          { name: 'Joined Server', value: `<t:${Math.floor(member.joinedTimestamp! / 1000)}:R>`, inline: true },
-          { name: 'Nickname', value: member.nickname || 'None', inline: true },
-          { name: 'Roles', value: member.roles.cache.size > 1 ? 
-            member.roles.cache.filter(role => role.id !== interaction.guild!.id).map(role => `<@&${role.id}>`).join(', ') : 
-            'None', inline: false }
+          {
+            name: "Joined Server",
+            value: `<t:${Math.floor(member.joinedTimestamp! / 1000)}:R>`,
+            inline: true,
+          },
+          { name: "Nickname", value: member.nickname || "None", inline: true },
+          {
+            name: "Roles",
+            value:
+              member.roles.cache.size > 1
+                ? member.roles.cache
+                    .filter((role) => role.id !== interaction.guild!.id)
+                    .map((role) => `<@&${role.id}>`)
+                    .join(", ")
+                : "None",
+            inline: false,
+          }
         );
       } else {
-        embed.addFields(
-          { name: 'Server Membership', value: 'User is not a member of this server', inline: false }
-        );
+        embed.addFields({
+          name: "Server Membership",
+          value: "User is not a member of this server",
+          inline: false,
+        });
       }
 
-      await safeReply(
-        interaction, 
-        { embeds: [embed], flags: MessageFlags.Ephemeral },
-        isDeferred
-      );
+      await safeReply(interaction, { embeds: [embed] }, isDeferred);
     } catch (error) {
       await safeErrorReply(
         interaction,
