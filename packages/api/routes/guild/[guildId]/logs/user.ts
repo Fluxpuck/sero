@@ -1,9 +1,7 @@
 import { Request, Response, Router, NextFunction } from "express";
-import { Op } from "sequelize";
 import {
   UserAuditLogs,
   AuditLogEventType,
-  CustomAuditLogEvent,
 } from "../../../../models/user-audit-logs.model";
 import { User } from "../../../../models/user.model";
 import { ResponseHandler } from "../../../../utils/response.utils";
@@ -305,12 +303,15 @@ router.get(
         ];
       }
 
-      const auditLogs = await UserAuditLogs.findAll(findOptions);
+      const auditLogs = await UserAuditLogs.findAndCountAll(findOptions);
 
       // Return the results with user data included
-      return ResponseHandler.sendSuccess(
+      return ResponseHandler.sendPaginatedSuccess(
         res,
-        auditLogs,
+        auditLogs.rows,
+        auditLogs.count,
+        Number(offset) + 1,
+        Number(limit),
         "User audit logs retrieved successfully"
       );
     } catch (error) {
@@ -411,12 +412,15 @@ router.get(
         ];
       }
 
-      const auditLogs = await UserAuditLogs.findAll(findOptions);
+      const auditLogs = await UserAuditLogs.findAndCountAll(findOptions);
 
       // Return the results with user data included
-      return ResponseHandler.sendSuccess(
+      return ResponseHandler.sendPaginatedSuccess(
         res,
-        auditLogs,
+        auditLogs.rows,
+        auditLogs.count,
+        Number(offset) + 1,
+        Number(limit),
         "User audit logs retrieved successfully"
       );
     } catch (error) {

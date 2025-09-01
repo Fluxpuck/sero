@@ -46,3 +46,12 @@ export interface ApiResponse<T = any> {
   size?: number;
   data?: T;
 }
+
+/**
+ * Interface for paginated API response
+ */
+export interface PaginatedApiResponse<T = any> extends ApiResponse<T> {
+  total?: number;
+  page?: number;
+  limit?: number;
+}
