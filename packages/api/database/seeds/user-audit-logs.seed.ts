@@ -59,7 +59,6 @@ export async function seedUserAuditLogs(count = 50) {
       AuditLogEvent.MemberPrune,
       AuditLogEvent.MemberBanAdd,
       AuditLogEvent.MemberBanRemove,
-      AuditLogEvent.MemberMove,
       AuditLogEvent.MemberDisconnect,
       CustomAuditLogEvent.MemberTimeoutAdd,
       CustomAuditLogEvent.MemberTimeoutRemove,
