@@ -38,6 +38,7 @@ function createUserLogsEmbed(
   source: "executor" | "target",
   baseEmbed: EmbedBuilder,
   logs: UserAuditLogWithUsers[],
+  totalLogs: number,
   currentPage: number,
   totalPages: number
 ): EmbedBuilder {
@@ -56,12 +57,16 @@ function createUserLogsEmbed(
     embed.addFields(userInfoFields);
   }
 
-  // Add title field
-  const title = `${source === "target" ? "Logs found:" : "Executed Logs:"}`;
+  // Add title field with log count
+  const title =
+    source === "target"
+      ? `(${totalLogs}) Logs found:`
+      : `(${totalLogs}) Executed Logs:`;
+
   if (logs.length === 0) {
     embed.addFields({
       name: "\u200B",
-      value: `**${title}**\nNo logs found for this user.`,
+      value: `No logs found for this user.`,
       inline: false,
     });
     return embed;
@@ -195,13 +200,13 @@ const command: Command = {
         });
       }
 
+      // Get initial user logs
       const initialUserLogs = await getUserLogs(
         interaction.guild!.id,
         user.id,
         source
       );
       const initialUserLogsData = initialUserLogs.data || [];
-
       const {
         page: currentPage = 1,
         limit: pageLimit = 5,
@@ -209,17 +214,12 @@ const command: Command = {
       } = initialUserLogs;
       const totalPages = Math.ceil(totalLogs / pageLimit) || 1;
 
-      console.log("initialUserLogsData", {
-        initialUserLogs,
-        initialUserLogsData,
-        currentPage,
-        totalPages,
-      });
-
+      // Create initial embed
       const userInfoEmbed = createUserLogsEmbed(
         source,
         embed,
         initialUserLogsData,
+        totalLogs,
         currentPage,
         totalPages
       );
@@ -245,11 +245,11 @@ const command: Command = {
           return logs.data || [];
         },
         createEmbed: (items, currentPage, totalPages) => {
-          // Pass the original embed as a template, but the function will create a new one
           return createUserLogsEmbed(
             source,
-            embed, // Pass the original embed as a template
+            embed,
             items,
+            totalLogs,
             currentPage,
             totalPages
           );
