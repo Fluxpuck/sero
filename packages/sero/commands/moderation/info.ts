@@ -3,8 +3,6 @@ import {
   ChatInputCommandInteraction,
   PermissionFlagsBits,
   EmbedBuilder,
-  EmbedField,
-  User,
 } from "discord.js";
 import { Command } from "../../types/client.types";
 import { safeReply, safeErrorReply } from "../../utils/message";
