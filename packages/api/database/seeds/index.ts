@@ -72,7 +72,7 @@ async function seedManager() {
     await seedJobMessages();
     logger.success(`✓ Job messages seeded successfully`);
 
-    await seedUserAuditLogs(22);
+    await seedUserAuditLogs(220);
     logger.success(`✓ User audit logs seeded successfully`);
   } catch (error) {
     logger.error(`✗ Error seeding database:`, error);

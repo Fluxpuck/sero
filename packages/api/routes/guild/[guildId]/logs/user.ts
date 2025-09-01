@@ -312,7 +312,7 @@ router.get(
         auditLogs.count,
         Number(offset) + 1,
         Number(limit),
-        "User audit logs retrieved successfully"
+        "Target audit logs retrieved successfully"
       );
     } catch (error) {
       next(error);
@@ -421,7 +421,7 @@ router.get(
         auditLogs.count,
         Number(offset) + 1,
         Number(limit),
-        "User audit logs retrieved successfully"
+        "Executor audit logs retrieved successfully"
       );
     } catch (error) {
       next(error);
