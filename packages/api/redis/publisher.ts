@@ -10,6 +10,7 @@ export enum RedisChannel {
   GUILD_MEMBER_ROLE = "guildMemberRole",
   GUILD_MEMBER_BIRTHDAY = "guildMemberBirthday",
   GUILD_DROP_REWARD = "guildRewardDrops",
+  REVOKE_TEMPORARY_BAN = "revokeTemporaryBan",
 
   ERROR = "error",
 }
