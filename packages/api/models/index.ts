@@ -142,6 +142,12 @@ export const initModels = (sequelize: Sequelize): void => {
     as: "targetedAuditLogs",
     constraints: false,
   });
+  
+  // Define relationship between UserAuditLogs and TemporaryBan
+  UserAuditLogs.hasOne(TemporaryBan, {
+    foreignKey: "auditLogId",
+    constraints: false,
+  });
   User.hasMany(UserActivityLogs, {
     foreignKey: "userId",
     constraints: false,
@@ -422,6 +428,7 @@ export const initModels = (sequelize: Sequelize): void => {
     },
   });
   TemporaryBan.belongsTo(Guild, { foreignKey: "guildId", constraints: false });
+  TemporaryBan.belongsTo(UserAuditLogs, { foreignKey: "auditLogId", constraints: false });
 
   CommandLogs.belongsTo(User, {
     foreignKey: "executorId",

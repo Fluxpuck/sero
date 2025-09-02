@@ -7,6 +7,7 @@ import {
   Model,
   Table,
 } from "sequelize-typescript";
+import { v4 as uuidv4 } from "uuid";
 
 @Table({
   tableName: "temporary_bans",
@@ -17,6 +18,10 @@ import {
   indexes: [
     {
       unique: true,
+      fields: ["id"],
+    },
+    {
+      unique: true,
       fields: ["userId", "guildId"],
     },
   ],
@@ -25,12 +30,19 @@ import {
   },
 })
 export class TemporaryBan extends Model<TemporaryBan> {
+  @Default(() => uuidv4())
   @Column({
-    type: DataType.INTEGER,
-    autoIncrement: true,
+    type: DataType.UUID,
+    allowNull: false,
     primaryKey: true,
   })
-  declare id: number;
+  declare id: string;
+
+  @Column({
+    type: DataType.UUID,
+    allowNull: true,
+  })
+  declare auditLogId: string;
 
   @Column({
     type: DataType.STRING,
@@ -54,11 +66,6 @@ export class TemporaryBan extends Model<TemporaryBan> {
   @Column({
     type: DataType.INTEGER,
     allowNull: false,
-    validate: {
-      isInt: true,
-      min: 1440,
-      max: 525600,
-    },
   })
   declare duration: number;
 

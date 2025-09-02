@@ -1,4 +1,11 @@
-import { Column, DataType, Default, Model, Table } from "sequelize-typescript";
+import {
+  AfterCreate,
+  Column,
+  DataType,
+  Default,
+  Model,
+  Table,
+} from "sequelize-typescript";
 import { AuditLogEvent } from "discord.js";
 import { v4 as uuidv4 } from "uuid";
 
@@ -72,4 +79,20 @@ export class UserAuditLogs extends Model<UserAuditLogs> {
     allowNull: true,
   })
   declare duration: number | null;
+
+  @AfterCreate
+  static async createTemporaryBanIfNeeded(
+    instance: UserAuditLogs
+  ): Promise<void> {
+    if (instance.action === AuditLogEvent.MemberBanAdd) {
+      const TemporaryBan = instance.sequelize.models.TemporaryBan;
+      await TemporaryBan.create({
+        userId: instance.targetId,
+        guildId: instance.guildId,
+        reason: instance.reason || "No reason provided",
+        duration: instance.duration || 525600,
+        auditLogId: instance.id,
+      });
+    }
+  }
 }
