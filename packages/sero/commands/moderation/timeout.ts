@@ -26,6 +26,7 @@ const command: Command = {
         .setName("duration")
         .setDescription("Type the duration in minutes to timeout the user")
         .setRequired(true)
+        .setAutocomplete(true)
         .setMinValue(1)
         .setMaxValue(1440)
     )
@@ -40,23 +41,35 @@ const command: Command = {
   cooldown: 60,
 
   async autocomplete(interaction: AutocompleteInteraction) {
-    const focusedReason = interaction.options
-      .getFocused()
-      .toString()
-      .toLowerCase();
+    const focusedOption = interaction.options.getFocused(true);
 
-    const result = await getRequest("/assets/prereason-messages?type=mute");
-    const reasons = result?.data || [];
+    if (focusedOption.name === "reason") {
+      const focusedReason = focusedOption.value.toString().toLowerCase();
 
-    const filteredReasons = reasons
-      .filter((item: any) => item.message.toLowerCase().includes(focusedReason))
-      .map((item: any) => ({
-        name: item.message,
-        value: item.message,
-      }))
-      .slice(0, 25);
+      const result = await getRequest("/assets/prereason-messages?type=mute");
+      const reasons = result?.data || [];
 
-    await interaction.respond(filteredReasons);
+      const filteredReasons = reasons
+        .filter((item: any) =>
+          item.message.toLowerCase().includes(focusedReason)
+        )
+        .map((item: any) => ({
+          name: item.message,
+          value: item.message,
+        }))
+        .slice(0, 25);
+
+      await interaction.respond(filteredReasons);
+    } else if (focusedOption.name === "duration") {
+      const durationOptions = [
+        { name: "5 minutes", value: 5 },
+        { name: "10 minutes", value: 10 },
+        { name: "20 minutes", value: 20 },
+        { name: "1 hour", value: 60 },
+      ];
+
+      await interaction.respond(durationOptions);
+    }
   },
 
   async execute(interaction: ChatInputCommandInteraction) {

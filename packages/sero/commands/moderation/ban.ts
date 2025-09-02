@@ -28,27 +28,46 @@ const command: Command = {
         .setRequired(true)
         .setMaxLength(250)
         .setAutocomplete(true)
+    )
+    .addIntegerOption((option) =>
+      option
+        .setName("duration")
+        .setDescription("Type the duration in days to ban the user")
+        .setRequired(false)
+        .setAutocomplete(true)
     ) as SlashCommandBuilder,
   cooldown: 60,
 
   async autocomplete(interaction: AutocompleteInteraction) {
-    const focusedReason = interaction.options
-      .getFocused()
-      .toString()
-      .toLowerCase();
+    const focusedOption = interaction.options.getFocused(true);
 
-    const result = await getRequest("/assets/prereason-messages?type=ban");
-    const reasons = result?.data || [];
+    if (focusedOption.name === "reason") {
+      const focusedReason = focusedOption.value.toString().toLowerCase();
 
-    const filteredReasons = reasons
-      .filter((item: any) => item.message.toLowerCase().includes(focusedReason))
-      .map((item: any) => ({
-        name: item.message,
-        value: item.message,
-      }))
-      .slice(0, 25);
+      const result = await getRequest("/assets/prereason-messages?type=ban");
+      const reasons = result?.data || [];
 
-    await interaction.respond(filteredReasons);
+      const filteredReasons = reasons
+        .filter((item: any) =>
+          item.message.toLowerCase().includes(focusedReason)
+        )
+        .map((item: any) => ({
+          name: item.message,
+          value: item.message,
+        }))
+        .slice(0, 25);
+
+      await interaction.respond(filteredReasons);
+    } else if (focusedOption.name === "duration") {
+      const durationOptions = [
+        { name: "1 year", value: 365 },
+        { name: "6 months", value: 180 },
+        { name: "1 month", value: 30 },
+        { name: "1 week", value: 7 },
+      ];
+
+      await interaction.respond(durationOptions);
+    }
   },
 
   async execute(interaction: ChatInputCommandInteraction) {
@@ -57,10 +76,11 @@ const command: Command = {
 
     const user = interaction.options.getUser("user");
     const reason = interaction.options.getString("reason");
-    if (!user || !reason) {
+    const duration = interaction.options.getInteger("duration");
+    if (!user || !reason || !duration) {
       await safeReply(
         interaction,
-        "Please provide a user and a reason",
+        "Please provide a user, a reason and a duration",
         isDeferred
       );
       return;
