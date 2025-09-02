@@ -7,10 +7,10 @@ import { logger } from "../utils/logger";
  */
 export enum RedisChannel {
   GUILD_MEMBER_LEVEL = "guildMemberLevel",
-  GUILD_MEMBER_ROLE = "guildMemberRole",
+  GUILD_MEMBER_TEMPORARY_ROLE = "guildMemberTemporaryRole",
   GUILD_MEMBER_BIRTHDAY = "guildMemberBirthday",
   GUILD_DROP_REWARD = "guildRewardDrops",
-  REVOKE_TEMPORARY_BAN = "revokeTemporaryBan",
+  GUILD_REVOKE_TEMPORARY_BAN = "guildRevokeTemporaryBan",
 
   ERROR = "error",
 }

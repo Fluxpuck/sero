@@ -2,13 +2,23 @@ import Redis from "ioredis";
 import { Client } from "discord.js";
 import { logger } from "../utils/logger";
 
-export enum RedisChannels {
-  LEVEL = "guildMemberLevel",
-  ROLE = "guildMemberRole",
-  REWARD_DROP = "guildRewardDrops",
-  BIRTHDAY = "guildMemberBirthday",
+/**
+ * Redis Channels
+ * These correspond to Discord events
+ */
+export enum RedisChannel {
+  GUILD_MEMBER_LEVEL = "guildMemberLevel",
+  GUILD_MEMBER_TEMPORARY_ROLE = "guildMemberTemporaryRole",
+  GUILD_MEMBER_BIRTHDAY = "guildMemberBirthday",
+  GUILD_DROP_REWARD = "guildRewardDrops",
+  GUILD_REVOKE_TEMPORARY_BAN = "guildRevokeTemporaryBan",
+
+  ERROR = "error",
 }
 
+/**
+ * Redis client
+ */
 export const redis = new Redis({
   host: process.env.NODE_ENV === "production" ? "redis" : "localhost",
   reconnectOnError: () => true,
@@ -38,7 +48,7 @@ export interface RedisPayload<T = any> {
  */
 export function subscribe(client: Client): () => void {
   // Subscribe to channels
-  const channels = Object.values(RedisChannels);
+  const channels = Object.values(RedisChannel);
 
   // Track subscription status
   const subscriptionStatus = new Map<string, boolean>();
