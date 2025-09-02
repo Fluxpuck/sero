@@ -1,6 +1,7 @@
 import { Events, Interaction, MessageFlags } from "discord.js";
 import { Event } from "../types/client.types";
 import { logger } from "../utils/logger";
+import { postRequest } from "../database/connection";
 
 const event: Event = {
   name: Events.InteractionCreate,
@@ -48,7 +49,20 @@ const event: Event = {
       }
 
       try {
+        // Execute the command
         await command.execute(interaction);
+
+        // Log the command execution
+        const commandLog = await postRequest(
+          `/logs/${interaction.guildId}/command`,
+          {
+            commandName: interaction.commandName,
+            executorId: interaction.user.id,
+            commandOptions: interaction.options.data,
+          }
+        );
+
+        logger.debug("Command logged successfully", commandLog);
       } catch (error) {
         logger.error(`Error executing ${interaction.commandName}:`, error);
 

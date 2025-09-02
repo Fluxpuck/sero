@@ -2,6 +2,7 @@ import { Request, Response, Router, NextFunction } from "express";
 import { Messages } from "../../../../models";
 import { ResponseHandler } from "../../../../utils/response.utils";
 import { sequelize } from "../../../../database/sequelize";
+import { ResponseCode } from "../../../../utils/response.types";
 
 const router = Router({ mergeParams: true });
 
@@ -145,38 +146,38 @@ router.get("/", async (req: Request, res: Response, next: NextFunction) => {
 router.post("/", async (req: Request, res: Response, next: NextFunction) => {
   try {
     await sequelize.transaction(async (transaction) => {
-    const { guildId } = req.params;
-    const { channelId, userId, messageId, content = "" } = req.body;
+      const { guildId } = req.params;
+      const { channelId, userId, messageId, content = "" } = req.body;
 
-    // Validate required fields
-    if (!channelId || !userId || !messageId) {
-      return ResponseHandler.sendValidationFail(
+      // Validate required fields
+      if (!channelId || !userId || !messageId) {
+        return ResponseHandler.sendValidationFail(
+          res,
+          "Missing required fields",
+          ["channelId, userId, and messageId are required fields"]
+        );
+      }
+
+      // Create the message object as a plain object with explicit types
+      const messageData = {
+        guildId: guildId,
+        channelId: channelId,
+        userId: userId,
+        content: content,
+        messageId: messageId,
+      } as Messages;
+
+      // Create the message in the database
+      const message = await Messages.create(messageData, { transaction });
+
+      // Send standardized successful response
+      ResponseHandler.sendSuccess(
         res,
-        "Missing required fields",
-        ["channelId, userId, and messageId are required fields"]
+        message,
+        "Message created successfully",
+        ResponseCode.CREATED
       );
-    }
-
-    // Create the message object as a plain object with explicit types
-    const messageData = {
-      guildId: guildId,
-      channelId: channelId,
-      userId: userId,
-      content: content,
-      messageId: messageId,
-    } as Messages;
-
-    // Create the message in the database
-    const message = await Messages.create(messageData, { transaction });
-
-    // Send standardized successful response
-    ResponseHandler.sendSuccess(
-      res,
-      message,
-      "Message created successfully",
-      201
-    );
-  });
+    });
   } catch (error) {
     next(error);
   }

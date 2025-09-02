@@ -1,9 +1,9 @@
 import { Request, Response, Router, NextFunction } from "express";
-import { sequelize } from "../../../database/sequelize";
 import { ResponseHandler } from "../../../utils/response.utils";
 import { ResponseCode } from "../../../utils/response.types";
 import { CommandLogs } from "../../../models";
 import { Op } from "sequelize";
+import { logger } from "../../../utils/logger";
 
 const router = Router({ mergeParams: true });
 
@@ -99,65 +99,74 @@ const router = Router({ mergeParams: true });
 router.get("/", async (req: Request, res: Response, next: NextFunction) => {
   try {
     const { guildId } = req.params;
-    const { 
-      commandName, 
-      executorId, 
-      limit = 50, 
+    const {
+      commandName,
+      executorId,
+      limit = 50,
       offset = 0,
       startDate,
       endDate,
       sortBy = "createdAt",
-      sortOrder = "DESC"
+      sortOrder = "DESC",
     } = req.query;
 
     // Build query conditions
     const whereConditions: any = { guildId };
-    
+
     if (commandName) {
       whereConditions.commandName = commandName;
     }
-    
+
     if (executorId) {
       whereConditions.executorId = executorId;
     }
-    
+
     // Date range filtering
     if (startDate || endDate) {
       whereConditions.createdAt = {};
-      
+
       if (startDate) {
         whereConditions.createdAt[Op.gte] = new Date(startDate as string);
       }
-      
+
       if (endDate) {
         whereConditions.createdAt[Op.lte] = new Date(endDate as string);
       }
     }
 
     // Validate sort parameters
-    const validSortColumns = ["id", "commandName", "executorId", "createdAt", "updatedAt"];
+    const validSortColumns = [
+      "id",
+      "commandName",
+      "executorId",
+      "createdAt",
+      "updatedAt",
+    ];
     const validSortOrders = ["ASC", "DESC"];
-    
-    const sortColumn = validSortColumns.includes(sortBy as string) ? sortBy : "createdAt";
-    const order = validSortOrders.includes((sortOrder as string).toUpperCase()) ? 
-      (sortOrder as string).toUpperCase() : "DESC";
+
+    const sortColumn = validSortColumns.includes(sortBy as string)
+      ? sortBy
+      : "createdAt";
+    const order = validSortOrders.includes((sortOrder as string).toUpperCase())
+      ? (sortOrder as string).toUpperCase()
+      : "DESC";
 
     // Get total count for pagination
     const count = await CommandLogs.count({ where: whereConditions });
-    
+
     // Get logs with pagination and sorting
     const logs = await CommandLogs.findAll({
       where: whereConditions,
       limit: Number(limit),
       offset: Number(offset),
-      order: [[sortColumn as string, order]]
+      order: [[sortColumn as string, order]],
     });
 
     return ResponseHandler.sendSuccess(res, {
       total: count,
       limit: Number(limit),
       offset: Number(offset),
-      data: logs
+      data: logs,
     });
   } catch (error) {
     next(error);
@@ -219,25 +228,37 @@ router.post("/", async (req: Request, res: Response, next: NextFunction) => {
   try {
     const { guildId } = req.params;
     const { commandName, executorId, commandOptions } = req.body;
-    
+
     // Validate required fields
     if (!guildId) {
-      return ResponseHandler.sendError(
+      return ResponseHandler.sendValidationFail(
         res,
-        "Guild ID is required",
-        ResponseCode.BAD_REQUEST
+        "Missing required fields",
+        ["guildId is required"]
       );
     }
+
+    logger.debug("Command log details", {
+      guildId,
+      commandName,
+      executorId,
+      commandOptions,
+    });
 
     // Create new command log
     const newLog = await CommandLogs.create({
       guildId,
       commandName: commandName || null,
       executorId: executorId || null,
-      commandOptions: commandOptions || null
+      commandOptions: commandOptions || null,
     } as any);
 
-    return ResponseHandler.sendSuccess(res, newLog, "Command log created successfully", ResponseCode.CREATED);
+    return ResponseHandler.sendSuccess(
+      res,
+      newLog,
+      "Command log created successfully",
+      ResponseCode.CREATED
+    );
   } catch (error) {
     next(error);
   }

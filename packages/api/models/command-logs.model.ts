@@ -6,19 +6,19 @@ import { Column, DataType, Model, Table } from "sequelize-typescript";
   updatedAt: "updatedAt",
   indexes: [
     {
-      fields: ["commandName"],
+      fields: ["command_name"],
     },
     {
-      fields: ["commandName", "guildId"],
+      fields: ["command_name", "guildId"],
     },
     {
-      fields: ["commandName", "executorId"],
+      fields: ["command_name", "executorId"],
     },
     {
       fields: ["guildId", "executorId"],
     },
     {
-      fields: ["guildId", "executorId", "commandName"],
+      fields: ["guildId", "executorId", "command_name"],
     },
   ],
 })
@@ -33,6 +33,7 @@ export class CommandLogs extends Model<CommandLogs> {
   @Column({
     type: DataType.STRING,
     allowNull: true,
+    field: "command_name"
   })
   declare commandName: string;
 

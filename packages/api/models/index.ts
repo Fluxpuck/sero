@@ -134,7 +134,7 @@ export const initModels = (sequelize: Sequelize): void => {
     as: "executedAuditLogs",
     constraints: false,
   });
-  
+
   // Define target relationship from User side
   User.hasMany(UserAuditLogs, {
     foreignKey: "targetId",
@@ -142,7 +142,7 @@ export const initModels = (sequelize: Sequelize): void => {
     as: "targetedAuditLogs",
     constraints: false,
   });
-  
+
   // Define relationship between UserAuditLogs and TemporaryBan
   UserAuditLogs.hasOne(TemporaryBan, {
     foreignKey: "auditLogId",
@@ -303,7 +303,8 @@ export const initModels = (sequelize: Sequelize): void => {
 
   // Command relationships
   Commands.hasMany(CommandLogs, {
-    foreignKey: "commandId",
+    foreignKey: "commandName",
+    sourceKey: "name",
     constraints: false,
   });
 
@@ -329,6 +330,13 @@ export const initModels = (sequelize: Sequelize): void => {
     },
   });
   UserBirthdays.belongsTo(Guild, { foreignKey: "guildId", constraints: false });
+
+  // CommandLogs relationships
+  CommandLogs.belongsTo(Commands, {
+    foreignKey: "commandName",
+    targetKey: "name",
+    constraints: false,
+  });
 
   UserBalances.belongsTo(User, {
     foreignKey: "userId",
@@ -356,7 +364,7 @@ export const initModels = (sequelize: Sequelize): void => {
     as: "executor",
     constraints: false,
   });
-  
+
   // Define target relationship
   UserAuditLogs.belongsTo(User, {
     foreignKey: "targetId",
@@ -428,7 +436,10 @@ export const initModels = (sequelize: Sequelize): void => {
     },
   });
   TemporaryBan.belongsTo(Guild, { foreignKey: "guildId", constraints: false });
-  TemporaryBan.belongsTo(UserAuditLogs, { foreignKey: "auditLogId", constraints: false });
+  TemporaryBan.belongsTo(UserAuditLogs, {
+    foreignKey: "auditLogId",
+    constraints: false,
+  });
 
   CommandLogs.belongsTo(User, {
     foreignKey: "executorId",
@@ -439,7 +450,8 @@ export const initModels = (sequelize: Sequelize): void => {
   });
   CommandLogs.belongsTo(Guild, { foreignKey: "guildId", constraints: false });
   CommandLogs.belongsTo(Commands, {
-    foreignKey: "commandId",
+    foreignKey: "commandName",
+    targetKey: "name",
     constraints: false,
   });
 
