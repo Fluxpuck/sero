@@ -52,9 +52,7 @@ export function subscribe(client: Client): () => void {
           subscriptionStatus.set(channel, false);
         } else {
           subscriptionStatus.set(channel, true);
-          if (process.env.NODE_ENV === "development") {
-            logger.debug(`Redis: Subscribed to ${channel}`);
-          }
+          logger.debug(`Redis: Subscribed to ${channel}`);
         }
         resolve();
       });
@@ -80,9 +78,7 @@ export function subscribe(client: Client): () => void {
       // Emit the Discord Client Event
       client.emit(channel, payload.data);
 
-      if (process.env.NODE_ENV === "development") {
-        logger.debug(`Redis: Received event ${channel}`, payload);
-      }
+      logger.debug(`Redis: Received event ${channel}`, payload);
     } catch (error) {
       logger.error(`Redis: Failed to process message from ${channel}:`, error);
     }
