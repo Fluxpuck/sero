@@ -116,7 +116,10 @@ export async function seedUserAuditLogs(count = 50) {
       };
     });
 
-    await UserAuditLogs.bulkCreate(randomAuditLogs as UserAuditLogs[]);
+    // Use individualHooks: true to ensure AfterCreate hooks are triggered
+    await UserAuditLogs.bulkCreate(randomAuditLogs as UserAuditLogs[], {
+      individualHooks: true
+    });
     logger.success(`${count} user audit logs have been seeded successfully.`);
     return { success: true };
   } catch (error) {

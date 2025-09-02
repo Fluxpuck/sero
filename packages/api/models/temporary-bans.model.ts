@@ -1,4 +1,6 @@
 import {
+  BeforeBulkCreate,
+  BeforeBulkUpdate,
   BeforeCreate,
   BeforeUpdate,
   Column,
@@ -18,10 +20,10 @@ import { v4 as uuidv4 } from "uuid";
   indexes: [
     {
       unique: true,
-      fields: ["id"],
+      fields: ["auditLogId"],
     },
     {
-      unique: true,
+      unique: false,
       fields: ["userId", "guildId"],
     },
   ],
@@ -62,7 +64,7 @@ export class TemporaryBan extends Model<TemporaryBan> {
   })
   declare reason: string;
 
-  @Default(() => 525600) // 1 year in minutes
+  @Default(() => 31536000) // 1 year in seconds (60*60*24*365)
   @Column({
     type: DataType.INTEGER,
     allowNull: false,
@@ -80,7 +82,7 @@ export class TemporaryBan extends Model<TemporaryBan> {
   static calculateExpireAt(instance: TemporaryBan): void {
     instance.setDataValue(
       "expireAt",
-      new Date(Date.now() + instance.duration * 60 * 1000)
+      new Date(Date.now() + instance.duration * 1000)
     );
   }
 }

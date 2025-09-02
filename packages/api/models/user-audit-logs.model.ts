@@ -1,5 +1,6 @@
 import {
   AfterCreate,
+  AfterUpdate,
   Column,
   DataType,
   Default,
@@ -81,6 +82,7 @@ export class UserAuditLogs extends Model<UserAuditLogs> {
   declare duration: number | null;
 
   @AfterCreate
+  @AfterUpdate
   static async createTemporaryBanIfNeeded(
     instance: UserAuditLogs
   ): Promise<void> {
@@ -90,8 +92,23 @@ export class UserAuditLogs extends Model<UserAuditLogs> {
         userId: instance.targetId,
         guildId: instance.guildId,
         reason: instance.reason || "No reason provided",
-        duration: instance.duration || 525600,
+        duration: instance.duration || 31536000, // Default to 1 year in seconds if no duration specified
         auditLogId: instance.id,
+      });
+    }
+  }
+
+  @AfterCreate
+  @AfterUpdate
+  static async deleteTemporaryBanIfNeeded(
+    instance: UserAuditLogs
+  ): Promise<void> {
+    if (instance.action === AuditLogEvent.MemberBanRemove) {
+      const TemporaryBan = instance.sequelize.models.TemporaryBan;
+      await TemporaryBan.destroy({
+        where: {
+          auditLogId: instance.id,
+        },
       });
     }
   }
