@@ -15,6 +15,7 @@ import { UserEconomyLogs } from "./user-economy-logs.model";
 import { UserExperienceLogs } from "./user-experience-logs.model";
 import { UserVoiceLogs } from "./user-voice-logs.model"; // This filename should be fixed
 import { TemporaryRole } from "./temporary-roles.model";
+import { TemporaryBan } from "./temporary-bans.model";
 import { Level } from "./levels.model";
 import { LevelRank } from "./level-ranks.model";
 import { Commands } from "./commands.model";
@@ -46,6 +47,7 @@ export {
   UserExperienceLogs,
   UserVoiceLogs,
   TemporaryRole,
+  TemporaryBan,
   Level,
   LevelRank,
   Commands,
@@ -82,6 +84,7 @@ export const initModels = (sequelize: Sequelize): void => {
     UserExperienceLogs,
     UserVoiceLogs,
     TemporaryRole,
+    TemporaryBan,
     Level,
     LevelRank,
     Commands,
@@ -174,6 +177,13 @@ export const initModels = (sequelize: Sequelize): void => {
       guildId: { $col: "User.guildId" },
     },
   });
+  User.hasMany(TemporaryBan, {
+    foreignKey: "userId",
+    constraints: false,
+    scope: {
+      guildId: { $col: "User.guildId" },
+    },
+  });
   User.hasMany(CommandLogs, {
     foreignKey: "executorId",
     constraints: false,
@@ -246,6 +256,10 @@ export const initModels = (sequelize: Sequelize): void => {
     constraints: false,
   });
   Guild.hasMany(TemporaryRole, {
+    foreignKey: "guildId",
+    constraints: false,
+  });
+  Guild.hasMany(TemporaryBan, {
     foreignKey: "guildId",
     constraints: false,
   });
@@ -399,6 +413,15 @@ export const initModels = (sequelize: Sequelize): void => {
     },
   });
   TemporaryRole.belongsTo(Guild, { foreignKey: "guildId", constraints: false });
+
+  TemporaryBan.belongsTo(User, {
+    foreignKey: "userId",
+    constraints: false,
+    scope: {
+      guildId: { $col: "TemporaryBan.guildId" },
+    },
+  });
+  TemporaryBan.belongsTo(Guild, { foreignKey: "guildId", constraints: false });
 
   CommandLogs.belongsTo(User, {
     foreignKey: "executorId",

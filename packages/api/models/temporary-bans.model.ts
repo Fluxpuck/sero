@@ -3,12 +3,13 @@ import {
   BeforeUpdate,
   Column,
   DataType,
+  Default,
   Model,
   Table,
 } from "sequelize-typescript";
 
 @Table({
-  tableName: "temporary_roles",
+  tableName: "temporary_bans",
   createdAt: "createdAt",
   updatedAt: "updatedAt",
   deletedAt: "deletedAt",
@@ -16,14 +17,14 @@ import {
   indexes: [
     {
       unique: true,
-      fields: ["userId", "guildId", "roleId"],
+      fields: ["userId", "guildId"],
     },
   ],
   defaultScope: {
     attributes: { exclude: ["deletedAt"] },
   },
 })
-export class TemporaryRole extends Model<TemporaryRole> {
+export class TemporaryBan extends Model<TemporaryBan> {
   @Column({
     type: DataType.INTEGER,
     autoIncrement: true,
@@ -47,32 +48,32 @@ export class TemporaryRole extends Model<TemporaryRole> {
     type: DataType.STRING,
     allowNull: false,
   })
-  declare roleId: string;
+  declare reason: string;
 
+  @Default(() => 525600) // 1 year in minutes
   @Column({
     type: DataType.INTEGER,
-    allowNull: true,
+    allowNull: false,
     validate: {
       isInt: true,
-      min: 0,
+      min: 1440,
+      max: 525600,
     },
   })
-  declare duration: number | null;
+  declare duration: number;
 
   @Column({
     type: DataType.DATE,
-    allowNull: true,
+    allowNull: false,
   })
-  declare expireAt: Date | null;
+  declare expireAt: Date;
 
   @BeforeCreate
   @BeforeUpdate
-  static calculateExpireAt(instance: TemporaryRole): void {
-    if (instance.duration) {
-      instance.setDataValue(
-        "expireAt",
-        new Date(Date.now() + instance.duration * 60 * 1000)
-      );
-    }
+  static calculateExpireAt(instance: TemporaryBan): void {
+    instance.setDataValue(
+      "expireAt",
+      new Date(Date.now() + instance.duration * 60 * 1000)
+    );
   }
 }
