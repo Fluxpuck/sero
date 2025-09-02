@@ -6,7 +6,19 @@ import { Column, DataType, Model, Table } from "sequelize-typescript";
   updatedAt: "updatedAt",
   indexes: [
     {
-      fields: ["id", "guildId"],
+      fields: ["commandName"],
+    },
+    {
+      fields: ["commandName", "guildId"],
+    },
+    {
+      fields: ["commandName", "executorId"],
+    },
+    {
+      fields: ["guildId", "executorId"],
+    },
+    {
+      fields: ["guildId", "executorId", "commandName"],
     },
   ],
 })
@@ -20,6 +32,12 @@ export class CommandLogs extends Model<CommandLogs> {
 
   @Column({
     type: DataType.STRING,
+    allowNull: true,
+  })
+  declare commandName: string;
+
+  @Column({
+    type: DataType.STRING,
     allowNull: false,
     validate: {
       isNumeric: true,
@@ -29,23 +47,16 @@ export class CommandLogs extends Model<CommandLogs> {
 
   @Column({
     type: DataType.STRING,
-    allowNull: false,
-    unique: true,
-  })
-  declare commandId: string;
-
-  @Column({
-    type: DataType.STRING,
-    allowNull: true,
-  })
-  declare name: string;
-
-  @Column({
-    type: DataType.STRING,
     allowNull: true,
     validate: {
       isNumeric: true,
     },
   })
   declare executorId: string | null;
+
+  @Column({
+    type: DataType.JSONB,
+    allowNull: true,
+  })
+  declare commandOptions: Record<string, any> | null;
 }

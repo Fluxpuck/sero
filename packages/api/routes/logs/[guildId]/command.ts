@@ -3,6 +3,7 @@ import { sequelize } from "../../../database/sequelize";
 import { ResponseHandler } from "../../../utils/response.utils";
 import { ResponseCode } from "../../../utils/response.types";
 import { CommandLogs } from "../../../models";
+import { Op } from "sequelize";
 
 const router = Router({ mergeParams: true });
 
@@ -10,19 +11,67 @@ const router = Router({ mergeParams: true });
  * @swagger
  * /logs/{guildId}/command:
  *   get:
- *     summary: Get all command logs for a guild
+ *     summary: Get command logs for a specific guild with optional filtering
  *     tags:
- *       - Command Logs
+ *       - Logs
  *     parameters:
- *       - name: guildId
- *         in: path
+ *       - in: path
+ *         name: guildId
  *         required: true
  *         description: The Discord ID of the guild
  *         schema:
  *           type: string
+ *       - in: query
+ *         name: commandName
+ *         description: Filter by command name
+ *         schema:
+ *           type: string
+ *       - in: query
+ *         name: executorId
+ *         description: Filter by executor ID
+ *         schema:
+ *           type: string
+ *       - in: query
+ *         name: limit
+ *         description: Number of records to return
+ *         schema:
+ *           type: integer
+ *           default: 50
+ *       - in: query
+ *         name: offset
+ *         description: Number of records to skip
+ *         schema:
+ *           type: integer
+ *           default: 0
+ *       - in: query
+ *         name: startDate
+ *         description: Filter by start date (ISO format)
+ *         schema:
+ *           type: string
+ *           format: date-time
+ *       - in: query
+ *         name: endDate
+ *         description: Filter by end date (ISO format)
+ *         schema:
+ *           type: string
+ *           format: date-time
+ *       - in: query
+ *         name: sortBy
+ *         description: Field to sort by
+ *         schema:
+ *           type: string
+ *           enum: [id, commandName, executorId, createdAt, updatedAt]
+ *           default: createdAt
+ *       - in: query
+ *         name: sortOrder
+ *         description: Sort direction
+ *         schema:
+ *           type: string
+ *           enum: [ASC, DESC]
+ *           default: DESC
  *     responses:
  *       200:
- *         description: Successful operation
+ *         description: Command logs retrieved successfully
  *         content:
  *           application/json:
  *             schema:
@@ -30,42 +79,86 @@ const router = Router({ mergeParams: true });
  *               properties:
  *                 status:
  *                   type: string
- *                   enum: [success]
  *                 code:
  *                   type: integer
- *                   example: 200
  *                 message:
  *                   type: string
+ *                 total:
+ *                   type: integer
+ *                 limit:
+ *                   type: integer
+ *                 offset:
+ *                   type: integer
  *                 data:
  *                   type: array
  *                   items:
  *                     $ref: '#/components/schemas/CommandLogs'
- *       404:
- *         description: No command logs found for this guild
  *       500:
  *         description: Server error
  */
 router.get("/", async (req: Request, res: Response, next: NextFunction) => {
   try {
     const { guildId } = req.params;
+    const { 
+      commandName, 
+      executorId, 
+      limit = 50, 
+      offset = 0,
+      startDate,
+      endDate,
+      sortBy = "createdAt",
+      sortOrder = "DESC"
+    } = req.query;
 
-    const commandLogs = await CommandLogs.findAll({
-      where: { guildId },
-    });
-
-    if (!commandLogs.length) {
-      return ResponseHandler.sendError(
-        res,
-        "No command logs found for this guild",
-        ResponseCode.NOT_FOUND
-      );
+    // Build query conditions
+    const whereConditions: any = { guildId };
+    
+    if (commandName) {
+      whereConditions.commandName = commandName;
+    }
+    
+    if (executorId) {
+      whereConditions.executorId = executorId;
+    }
+    
+    // Date range filtering
+    if (startDate || endDate) {
+      whereConditions.createdAt = {};
+      
+      if (startDate) {
+        whereConditions.createdAt[Op.gte] = new Date(startDate as string);
+      }
+      
+      if (endDate) {
+        whereConditions.createdAt[Op.lte] = new Date(endDate as string);
+      }
     }
 
-    ResponseHandler.sendSuccess(
-      res,
-      commandLogs,
-      "Command logs retrieved successfully"
-    );
+    // Validate sort parameters
+    const validSortColumns = ["id", "commandName", "executorId", "createdAt", "updatedAt"];
+    const validSortOrders = ["ASC", "DESC"];
+    
+    const sortColumn = validSortColumns.includes(sortBy as string) ? sortBy : "createdAt";
+    const order = validSortOrders.includes((sortOrder as string).toUpperCase()) ? 
+      (sortOrder as string).toUpperCase() : "DESC";
+
+    // Get total count for pagination
+    const count = await CommandLogs.count({ where: whereConditions });
+    
+    // Get logs with pagination and sorting
+    const logs = await CommandLogs.findAll({
+      where: whereConditions,
+      limit: Number(limit),
+      offset: Number(offset),
+      order: [[sortColumn as string, order]]
+    });
+
+    return ResponseHandler.sendSuccess(res, {
+      total: count,
+      limit: Number(limit),
+      offset: Number(offset),
+      data: logs
+    });
   } catch (error) {
     next(error);
   }
@@ -73,89 +166,14 @@ router.get("/", async (req: Request, res: Response, next: NextFunction) => {
 
 /**
  * @swagger
- * /logs/{guildId}/command/{commandId}:
- *   get:
- *     summary: Get a specific command log by ID
- *     tags:
- *       - Command Logs
- *     parameters:
- *       - name: guildId
- *         in: path
- *         required: true
- *         description: The Discord ID of the guild
- *         schema:
- *           type: string
- *       - name: commandId
- *         in: path
- *         required: true
- *         description: The ID of the command
- *         schema:
- *           type: string
- *     responses:
- *       200:
- *         description: Successful operation
- *         content:
- *           application/json:
- *             schema:
- *               type: object
- *               properties:
- *                 status:
- *                   type: string
- *                   enum: [success]
- *                 code:
- *                   type: integer
- *                   example: 200
- *                 message:
- *                   type: string
- *                 data:
- *                   $ref: '#/components/schemas/CommandLogs'
- *       404:
- *         description: Command log not found
- *       500:
- *         description: Server error
- */
-router.get(
-  "/:commandId",
-  async (req: Request, res: Response, next: NextFunction) => {
-    try {
-      const { guildId, commandId } = req.params;
-
-      const commandLog = await CommandLogs.findOne({
-        where: {
-          guildId,
-          commandId,
-        },
-      });
-
-      if (!commandLog) {
-        return ResponseHandler.sendError(
-          res,
-          "Command log not found",
-          ResponseCode.NOT_FOUND
-        );
-      }
-
-      ResponseHandler.sendSuccess(
-        res,
-        commandLog,
-        "Command log retrieved successfully"
-      );
-    } catch (error) {
-      next(error);
-    }
-  }
-);
-
-/**
- * @swagger
  * /logs/{guildId}/command:
  *   post:
- *     summary: Create a command log
+ *     summary: Create a new command log entry
  *     tags:
- *       - Command Logs
+ *       - Logs
  *     parameters:
- *       - name: guildId
- *         in: path
+ *       - in: path
+ *         name: guildId
  *         required: true
  *         description: The Discord ID of the guild
  *         schema:
@@ -166,57 +184,60 @@ router.get(
  *         application/json:
  *           schema:
  *             type: object
- *             required:
- *               - commandId
- *               - name
  *             properties:
- *               commandId:
+ *               commandName:
  *                 type: string
- *                 description: Unique identifier for the command
- *               name:
- *                 type: string
- *                 description: Name of the command
+ *                 description: Name of the command executed
  *               executorId:
  *                 type: string
- *                 description: ID of the user who executed the command
+ *                 description: Discord ID of the user who executed the command
+ *               commandOptions:
+ *                 type: object
+ *                 description: Options provided with the command
  *     responses:
  *       201:
  *         description: Command log created successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 status:
+ *                   type: string
+ *                 code:
+ *                   type: integer
+ *                 message:
+ *                   type: string
+ *                 data:
+ *                   $ref: '#/components/schemas/CommandLogs'
  *       400:
- *         description: Invalid request body
+ *         description: Bad request - missing required fields
  *       500:
  *         description: Server error
  */
 router.post("/", async (req: Request, res: Response, next: NextFunction) => {
   try {
-    await sequelize.transaction(async (transaction) => {
-      const { guildId } = req.params;
-      const { commandId, name, executorId } = req.body;
-
-      // Validate required fields
-      if (!commandId || !name) {
-        return ResponseHandler.sendValidationFail(
-          res,
-          "Missing required fields",
-          ["commandId and name are required fields"]
-        );
-      }
-
-      // Create the command log
-      const commandLog = await CommandLogs.create({
-        guildId,
-        commandId,
-        name,
-        executorId: executorId || null,
-      } as CommandLogs, { transaction });
-
-      ResponseHandler.sendSuccess(
+    const { guildId } = req.params;
+    const { commandName, executorId, commandOptions } = req.body;
+    
+    // Validate required fields
+    if (!guildId) {
+      return ResponseHandler.sendError(
         res,
-        commandLog,
-        "Command log created successfully",
-        ResponseCode.CREATED
+        "Guild ID is required",
+        ResponseCode.BAD_REQUEST
       );
-    });
+    }
+
+    // Create new command log
+    const newLog = await CommandLogs.create({
+      guildId,
+      commandName: commandName || null,
+      executorId: executorId || null,
+      commandOptions: commandOptions || null
+    } as any);
+
+    return ResponseHandler.sendSuccess(res, newLog, "Command log created successfully", ResponseCode.CREATED);
   } catch (error) {
     next(error);
   }
