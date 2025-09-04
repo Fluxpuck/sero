@@ -33,7 +33,6 @@ async function getUserLogs(
  * Utilizing the EmbedBuilder and EmbedField
  */
 function createUserLogsEmbed(
-  source: "executor" | "target",
   baseEmbed: EmbedBuilder,
   logs: UserAuditLogWithUsers[],
   totalLogs: number,
@@ -55,12 +54,6 @@ function createUserLogsEmbed(
     embed.addFields(userInfoFields);
   }
 
-  // Add title field with log count
-  const title =
-    source === "target"
-      ? `(${totalLogs}) Logs found:`
-      : `(${totalLogs}) Executed Logs:`;
-
   if (logs.length === 0) {
     embed.addFields({
       name: "\u200B",
@@ -71,7 +64,7 @@ function createUserLogsEmbed(
   } else {
     embed.addFields({
       name: "\u200B",
-      value: `**${title}**`,
+      value: `**(${totalLogs}) Logs found:**`,
       inline: false,
     });
   }
@@ -101,12 +94,8 @@ function createUserLogsEmbed(
       fieldValue += `**Duration:** ${durationText}\n`;
     }
 
-    if (source === "target" && log.executor) {
+    if (log.executor) {
       fieldValue += `**Executor:** <@${log.executor.userId}> (${log.executor.username})\n`;
-    }
-
-    if (source === "executor" && log.target) {
-      fieldValue += `**Target:** <@${log.target.userId}> (${log.target.username})\n`;
     }
 
     if (log.createdAt) {
@@ -152,8 +141,7 @@ const command: Command = {
     }
 
     try {
-      // Get source of the user (executor or target) and get the member
-      const source = interaction.user.id === user.id ? "executor" : "target";
+      // Get the member
       const member = interaction.guild?.members.cache.get(user.id);
 
       // Create user info embed
@@ -202,7 +190,7 @@ const command: Command = {
       const initialUserLogs = await getUserLogs(
         interaction.guild!.id,
         user.id,
-        source
+        "target"
       );
       const initialUserLogsData = initialUserLogs.data || [];
       const {
@@ -214,7 +202,6 @@ const command: Command = {
 
       // Create initial embed
       const userInfoEmbed = createUserLogsEmbed(
-        source,
         embed,
         initialUserLogsData,
         totalLogs,
@@ -236,7 +223,7 @@ const command: Command = {
           const logs = await getUserLogs(
             interaction.guild!.id,
             user.id,
-            source,
+            "target",
             page,
             itemsPerPage
           );
@@ -244,7 +231,6 @@ const command: Command = {
         },
         createEmbed: (items, currentPage, totalPages) => {
           return createUserLogsEmbed(
-            source,
             embed,
             items,
             totalLogs,
