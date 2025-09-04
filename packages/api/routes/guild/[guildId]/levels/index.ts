@@ -1,13 +1,31 @@
 import { Request, Response, Router, NextFunction } from "express";
-import { Op } from "sequelize";
+import { Op, Transaction } from "sequelize";
 import { Guild, UserLevel, LevelRank, Modifier } from "../../../../models";
 import { ResponseHandler } from "../../../../utils/response.utils";
-import { getOrCreateUserLevel } from "./gain";
 import { logUserExperience } from "../../../../utils/log.utils";
 import { UserExperienceLogType } from "../../../../models/user-experience-logs.model";
 import { sequelize } from "../../../../database/sequelize";
 
 const router = Router({ mergeParams: true });
+
+/**
+ * Helper function to get or create a user's level record
+ */
+export async function getOrCreateUserLevel(
+  guildId: string,
+  userId: string,
+  transaction: Transaction
+) {
+  const [userLevel] = await UserLevel.findOrCreate({
+    where: { guildId, userId },
+    defaults: {
+      guildId,
+      userId,
+    } as UserLevel,
+    transaction,
+  });
+  return [userLevel];
+}
 
 /**
  * @swagger

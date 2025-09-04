@@ -36,9 +36,18 @@ const router = Router({ mergeParams: true });
  *           schema:
  *             type: object
  *             properties:
- *               userId:
+ *               amount:
+ *                 type: integer
+ *                 description: Optional specific amount to give. If not provided, a random amount within minAmount and maxAmount will be used
+ *               minAmount:
+ *                 type: integer
+ *                 description: Minimum amount for random reward (default 200)
+ *               maxAmount:
+ *                 type: integer
+ *                 description: Maximum amount for random reward (default 500)
+ *               originId:
  *                 type: string
- *                 description: The Discord ID of the user
+ *                 description: Optional ID of the origin of the reward (e.g. bot ID)
  *     responses:
  *       200:
  *         description: User level updated successfully
@@ -66,14 +75,35 @@ router.post(
         );
       }
 
-      // Get Guild and User modifiers
+      // Get amount from request body or generate random amount
+      const { amount, minAmount = 200, maxAmount = 500, originId } = req.body;
+
+      // Calculate the reward amount
+      let rewardAmount: number;
+
+      if (amount !== undefined) {
+        // Use specific amount if provided
+        rewardAmount = Number(amount);
+      } else {
+        // Generate random amount between min and max
+        const min = Number(minAmount);
+        const max = Number(maxAmount);
+        rewardAmount = Math.floor(Math.random() * (max - min + 1)) + min;
+      }
+
+      // Apply modifiers if needed
       const guild_modifier = await Modifier.findOne({ where: { guildId } });
       const user_modifier = await Modifier.findOne({
         where: { guildId, userId },
       });
 
-      // Calculate gain based on modifiers
-      const gain = calculateXp(guild_modifier?.amount, user_modifier?.amount);
+      // Apply modifiers to the reward amount if needed
+      if (guild_modifier?.amount || user_modifier?.amount) {
+        // Apply modifiers as multipliers to the base reward amount
+        const guildMod = guild_modifier?.amount || 1;
+        const userMod = user_modifier?.amount || 1;
+        rewardAmount = Math.ceil(rewardAmount * guildMod * userMod);
+      }
 
       // Get or create user level
       const [userLevel] = await getOrCreateUserLevel(
@@ -83,7 +113,7 @@ router.post(
       );
 
       // Update user level
-      userLevel.experience += gain;
+      userLevel.experience += rewardAmount;
       await userLevel.save({ transaction });
 
       await transaction.commit();
@@ -91,11 +121,16 @@ router.post(
       ResponseHandler.sendSuccess(
         res,
         userLevel,
-        `User given ${gain} experience`
+        `User rewarded ${rewardAmount} experience`
       );
 
       // Log the user experience gain
-      logUserExperience(guildId, userId, UserExperienceLogType.GAIN, gain);
+      logUserExperience(
+        guildId,
+        userId,
+        UserExperienceLogType.CLAIM,
+        rewardAmount
+      );
     } catch (error) {
       transaction.rollback();
       next(error);
