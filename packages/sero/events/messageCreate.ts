@@ -5,9 +5,7 @@ import { logger } from "../utils/logger";
 const event: Event = {
   name: Events.MessageCreate,
   once: false,
-  async execute(message: Message): Promise<any> {
-    const client = message.client as Client;
-
+  async execute(message: Message, client: Client): Promise<any> {
     // Skip empty messages or messages from bots
     if (!message || !message.content || message.author.bot) return;
 

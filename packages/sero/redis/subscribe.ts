@@ -86,7 +86,7 @@ export function subscribe(client: Client): () => void {
       const payload = JSON.parse(message) as RedisPayload;
 
       // Emit the Discord Client Event
-      client.emit(channel, payload.data);
+      client.emit(channel, payload.data, client);
 
       logger.debug(`Redis: Received event ${channel}`, payload);
     } catch (error) {

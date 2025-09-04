@@ -7,6 +7,8 @@ const event: Event = {
   name: RedisChannel.GUILD_MEMBER_BIRTHDAY,
   once: false,
   async execute(message: string, client: Client): Promise<any> {
+    logger.debug(`Birthday event received: ${message}`);
+
     // Skip empty messages
     if (!message) return;
 
@@ -16,6 +18,12 @@ const event: Event = {
 
       // Handle birthday event
       // TODO: Implement birthday handling logic
+
+      // fetch the birthday role from guild settings
+      // check the message payload to see who deserve the birthday role
+      // compare with who already has the role
+      // if the user deserves the role, give it to them
+      // if the user doesn't deserve the role, remove it
     } catch (error) {
       logger.error(`Error processing birthday message: ${error}`);
     }
