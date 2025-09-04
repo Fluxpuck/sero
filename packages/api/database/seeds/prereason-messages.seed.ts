@@ -91,12 +91,7 @@ export async function seedPrereasonMessages() {
     }
 
     logger.success(
-      `${
-        kickReasons.length +
-        muteReasons.length +
-        banReasons.length +
-        warnReasons.length
-      } prereason messages have been seeded successfully.`
+      `Seeded ${kickReasons.length} kick reason messages, ${muteReasons.length} mute reason messages, ${banReasons.length} ban reason messages, and ${warnReasons.length} warn reason messages.`
     );
     return { success: true };
   } catch (error) {

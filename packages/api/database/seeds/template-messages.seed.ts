@@ -7,7 +7,7 @@ import { logger } from "../../utils/logger";
  */
 export async function seedTemplateMessages() {
   try {
-    // Define welcome message templates (no guild ID for default templates)
+    // Define welcome message templates
     const welcomeMessages = [
       "{name}! We are happy to have you here!",
       "Hello {name}, glad to see you!",
@@ -27,7 +27,7 @@ export async function seedTemplateMessages() {
       "WOW! It's {name}, glad to see you!",
     ];
 
-    // Define away reason templates (no guild ID for default templates)
+    // Define away reason templates
     const awayMessages = [
       "{name} is away for a while. They will be back soon!",
       "{name} is currently unavailable. Please try again later.",
@@ -39,6 +39,35 @@ export async function seedTemplateMessages() {
       "{name} had to step out for a moment. They'll be back soon!",
       "{name} is currently on a break. Please be patient.",
       "{name} is away from their desk. They'll check messages later.",
+    ];
+
+    // Define reward drop templates
+    const rewardDropMessages = [
+      "✨ A mysterious reward drop appears out of nowhere!",
+      "Woohoo! A shiny reward drop just spawned!",
+      "🌟 A reward chest has been discovered!",
+      "Sero has gifted you a reward drop 🎁",
+      "👀 Is that... a reward drop?",
+      "☔ It’s raining rewards again!",
+      "🔥 A reward drop landed right in front of you!",
+      "💫 A glowing aura surrounds a new reward drop!",
+      "🎲 A random reward drop has spawned. Feeling lucky?",
+      "📦 A secret package has dropped from the sky!",
+      "🎉 A reward drop just spawned—who’s grabbing it first?",
+    ];
+
+    // Define claim reward templates
+    const claimRewardMessages = [
+      "🎉 Congrats {{USER}}, you grabbed **{{AMOUNT}}** experience!",
+      "⚡ {{USER}} was the fastest and snatched **{{AMOUNT}}** experience!",
+      "🚀 Quick as lightning, {{USER}} claimed **{{AMOUNT}}** experience.",
+      "🔥 {{USER}} secured **{{AMOUNT}}** experience before anyone else could!",
+      "🎊 Boom! {{USER}} just earned **{{AMOUNT}}** experience.",
+      "✨ {{USER}} claimed a shiny reward worth **{{AMOUNT}}** experience!",
+      "🏆 {{USER}} is the winner this time with **{{AMOUNT}}** experience!",
+      "💎 {{USER}} grabbed the loot and got **{{AMOUNT}}** experience.",
+      "🥇 First place goes to {{USER}} with **{{AMOUNT}}** experience!",
+      "⚔️ {{USER}} fought off the competition and claimed **{{AMOUNT}}** experience!",
     ];
 
     // Create welcome template messages
@@ -59,11 +88,27 @@ export async function seedTemplateMessages() {
       } as TemplateMessages);
     }
 
+    // Create reward drop template messages
+    for (const message of rewardDropMessages) {
+      await TemplateMessages.create({
+        guildId: null, // null for default templates
+        type: TemplateMessagesType.REWARD_DROP,
+        message,
+      } as TemplateMessages);
+    }
+
+    // Create claim reward template messages
+    for (const message of claimRewardMessages) {
+      await TemplateMessages.create({
+        guildId: null, // null for default templates
+        type: TemplateMessagesType.CLAIM_REWARD,
+        message,
+      } as TemplateMessages);
+    }
+
     // Log success message
     logger.success(
-      `${
-        welcomeMessages.length + awayMessages.length
-      } template messages have been seeded successfully.`
+      `Seeded ${welcomeMessages.length} welcome messages, ${awayMessages.length} away messages, ${rewardDropMessages.length} reward drop messages, and ${claimRewardMessages.length} claim reward messages.`
     );
     return { success: true };
   } catch (error) {
