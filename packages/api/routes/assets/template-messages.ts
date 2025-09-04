@@ -31,6 +31,12 @@ const router = Router();
  *         schema:
  *           type: string
  *           enum: [welcome, birthday, job, levelup, reward-drop, claim-reward, treasure]
+ *       - name: random
+ *         in: query
+ *         required: false
+ *         description: Return a single random message from the results
+ *         schema:
+ *           type: boolean
  *     responses:
  *       200:
  *         description: Successful operation
@@ -39,7 +45,7 @@ const router = Router();
  */
 router.get("/", cache({ ttl: 60 * 10 }), async (req: Request, res: Response, next: NextFunction) => {
   try {
-    const { guildId, type } = req.query;
+    const { guildId, type, random } = req.query;
     const where: any = {};
 
     if (guildId) {
@@ -56,10 +62,18 @@ router.get("/", cache({ ttl: 60 * 10 }), async (req: Request, res: Response, nex
     const templateMessages = await TemplateMessages.findAll({
       where,
     });
+    
+    // If random parameter is true, return a single random message
+    let result = templateMessages;
+    if (random === 'true' && templateMessages.length > 0) {
+      // Select a random message from the array
+      const randomIndex = Math.floor(Math.random() * templateMessages.length);
+      result = [templateMessages[randomIndex]];
+    }
 
     ResponseHandler.sendSuccess(
       res,
-      templateMessages,
+      result,
       "Template messages retrieved successfully"
     );
   } catch (error) {
