@@ -8,6 +8,38 @@ import {
   InteractionReplyOptions,
   InteractionEditReplyOptions,
 } from "discord.js";
+import { subMinutes } from "date-fns";
+import { isAfter } from "date-fns";
+
+/**
+ * Get unique authors from the last X minutes of messages in a channel
+ * @param channel The channel to fetch messages from
+ * @param time The time in minutes to look back
+ * @returns An array of unique author IDs
+ */
+export const getUniqueAuthorsFromMessages = async (
+  channel: TextChannel | NewsChannel | ThreadChannel,
+  time: number = 5
+) => {
+  // Fetch the last 100 messages in the channel
+  const messages = await channel.messages.fetch({ limit: 100 });
+
+  // Calculate the time 5 minutes ago
+  const timeAgo = subMinutes(new Date(), time);
+
+  // Filter messages from the last 5 minutes
+  const recentMessages = messages.filter((msg) =>
+    isAfter(msg.createdTimestamp, timeAgo)
+  );
+
+  // Create an array with all unique message.author.id's
+  const uniqueAuthorIds = [
+    ...new Set(recentMessages.map((msg) => msg.author.id)),
+  ];
+
+  // Return the array of unique author IDs (will be empty if no messages match the criteria)
+  return uniqueAuthorIds;
+};
 
 /**
  * Recursively fetches and deletes messages from a specific user
