@@ -17,6 +17,7 @@ import { RedisChannel } from "../redis/subscribe";
 import { logger } from "../utils/logger";
 import { getUniqueAuthorsFromMessages, safeReply } from "../utils/message";
 import { getRequest, postRequest } from "../database/connection";
+import { ResponseStatus } from "../types/response.types";
 
 type DropEventPayload = {
   guildId: string;
@@ -92,13 +93,13 @@ const event: Event = {
         createRewardDropEmbed(rewardDropMessage);
 
       // Send message with button
-      const sentMessage = await channel.send({
+      const rewardDrop = await channel.send({
         embeds: [rewardEmbed],
         components: [actionRow],
       });
 
       // Collect interaction
-      const collector = sentMessage.createMessageComponentCollector({
+      const collector = rewardDrop.createMessageComponentCollector({
         componentType: ComponentType.Button,
         time: 10000, // 10 seconds
       });
@@ -143,31 +144,37 @@ const event: Event = {
           .replace("{{USER}}", `<@${interaction.user.id}>`)
           .replace("{{AMOUNT}}", targetAmount);
 
-        // Send the success message to the user
-        await safeReply(
-          interaction,
-          claimRewardMessageReplaced,
-          false,
-          false
-        );
+        // Update the message to show who claimed the reward
+        await rewardDrop.edit({
+          content: claimRewardMessageReplaced,
+          embeds: [],
+          components: [],
+        });
 
         // Record the claim in the database
-        try {
-          await postRequest(`/guild/${guild.id}/levels/give/${userId}`, {
-            amount: targetAmount,
+        const claimResponse = await postRequest(
+          `/guild/${guild.id}/levels/claim/${userId}`,
+          {
             originId: client.user?.id,
-          });
+          }
+        );
+
+        if (claimResponse.status == ResponseStatus.SUCCESS) {
           logger.debug(`User ${userId} claimed reward in guild ${guild.id}`);
-        } catch (error) {
-          logger.error("Failed to record reward claim:", error);
+        } else {
+          logger.error(
+            `Failed to claim reward for user ${userId} in guild ${guild.id}`,
+            claimResponse.message
+          );
         }
       });
 
       // Handle collector end (timeout or manual stop)
       collector.on("end", async (collected) => {
         try {
-          // Just delete the message when expired
-          await sentMessage.delete();
+          if (!claimed) {
+            await rewardDrop.delete(); // Just delete the message when expired
+          }
         } catch (error) {
           logger.error("Error deleting expired reward message:", error);
         }
