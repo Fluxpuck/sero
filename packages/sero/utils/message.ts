@@ -7,6 +7,7 @@ import {
   MessageFlags,
   InteractionReplyOptions,
   InteractionEditReplyOptions,
+  ButtonInteraction,
 } from "discord.js";
 import { subMinutes } from "date-fns";
 import { isAfter } from "date-fns";
@@ -106,17 +107,25 @@ export const fetchAndDeleteMessages = async (
  * @param interaction The interaction to reply to
  * @param options The reply options
  * @param isDeferred Whether the interaction has been deferred
+ * @param ephemeral Whether the message should be ephemeral (only visible to the user who triggered it)
  */
 export const safeReply = async (
-  interaction: ChatInputCommandInteraction,
+  interaction: ChatInputCommandInteraction | ButtonInteraction,
   options: InteractionReplyOptions | string,
-  isDeferred = false
+  isDeferred = false,
+  ephemeral = true
 ): Promise<void> => {
   // Convert string to options object if needed
   const replyOptions: InteractionReplyOptions =
     typeof options === "string"
-      ? { content: options, flags: MessageFlags.Ephemeral }
-      : options;
+      ? {
+          content: options,
+          flags: ephemeral ? MessageFlags.Ephemeral : undefined,
+        }
+      : {
+          ...options,
+          flags: ephemeral ? MessageFlags.Ephemeral : options.flags,
+        };
 
   try {
     if (isDeferred) {

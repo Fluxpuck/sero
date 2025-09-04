@@ -15,7 +15,7 @@ import {
 import { Event } from "../types/client.types";
 import { RedisChannel } from "../redis/subscribe";
 import { logger } from "../utils/logger";
-import { getUniqueAuthorsFromMessages } from "../utils/message";
+import { getUniqueAuthorsFromMessages, safeReply } from "../utils/message";
 import { getRequest, postRequest } from "../database/connection";
 
 type DropEventPayload = {
@@ -111,21 +111,23 @@ const event: Event = {
         // Check if the user is in the activeMemberCollection
         if (!activeMemberIds.includes(userId)) {
           // User is not eligible
-          await interaction.reply({
-            content:
-              "Sorry, you are not eligible for this reward. Only members who were active in this channel recently can claim it.",
-            ephemeral: true,
-          });
+          await safeReply(
+            interaction,
+            "Sorry, you are not eligible for this reward. Only members who were active in this channel recently can claim it.",
+            false,
+            true
+          );
           return;
         }
 
         // Check if reward has already been claimed
         if (claimed) {
-          await interaction.reply({
-            content:
-              "Sorry, this reward has already been claimed by someone else!",
-            ephemeral: true,
-          });
+          await safeReply(
+            interaction,
+            "Sorry, this reward has already been claimed by someone else!",
+            false,
+            true
+          );
           return;
         }
 
@@ -142,9 +144,12 @@ const event: Event = {
           .replace("{{AMOUNT}}", targetAmount);
 
         // Send the success message to the user
-        interaction.followUp({
-          content: `${claimRewardMessageReplaced}`,
-        });
+        await safeReply(
+          interaction,
+          claimRewardMessageReplaced,
+          false,
+          false
+        );
 
         // Record the claim in the database
         try {
@@ -160,14 +165,11 @@ const event: Event = {
 
       // Handle collector end (timeout or manual stop)
       collector.on("end", async (collected) => {
-        // If nobody claimed the reward and the message is still there
-        if (!claimed) {
-          try {
-            // Just delete the message when expired
-            await sentMessage.delete();
-          } catch (error) {
-            logger.error("Error deleting expired reward message:", error);
-          }
+        try {
+          // Just delete the message when expired
+          await sentMessage.delete();
+        } catch (error) {
+          logger.error("Error deleting expired reward message:", error);
         }
       });
     } catch (error) {
