@@ -6,13 +6,14 @@ import { logger } from "../utils/logger";
 const event: Event = {
   name: RedisChannel.GUILD_MEMBER_LEVEL,
   once: false,
-  async execute(message: string, client: Client): Promise<any> {
+  async execute(message: any[], client: Client): Promise<any> {
+    logger.debug(`Level event received: ${message}`);
+
     // Skip empty messages
     if (!message) return;
 
     try {
-      const levelData = JSON.parse(message);
-      logger.debug(`Level event received: ${JSON.stringify(levelData)}`);
+      logger.debug("Level event received", message);
 
       // Handle level event
       // TODO: Implement level handling logic

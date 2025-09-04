@@ -7,6 +7,8 @@ const event: Event = {
   name: RedisChannel.GUILD_REVOKE_TEMPORARY_BAN,
   once: false,
   async execute(message: string, client: Client): Promise<any> {
+    logger.debug(`Revoke temporary ban event received: ${message}`);
+
     // Skip empty messages
     if (!message) return;
 

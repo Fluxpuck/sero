@@ -7,6 +7,8 @@ const event: Event = {
   name: RedisChannel.GUILD_MEMBER_TEMPORARY_ROLE,
   once: false,
   async execute(message: string, client: Client): Promise<any> {
+    logger.debug(`Temporary role event received: ${message}`);
+
     // Skip empty messages
     if (!message) return;
 
