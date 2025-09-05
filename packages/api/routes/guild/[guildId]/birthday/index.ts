@@ -398,7 +398,7 @@ router.post(
       });
 
       // If birthday exists and has been updated before (using the hasUpdatedBefore getter)
-      if (existingBirthday && existingBirthday.hasUpdatedBefore) {
+      if (existingBirthday && existingBirthday.locked) {
         await transaction.rollback();
         return ResponseHandler.sendError(
           res,

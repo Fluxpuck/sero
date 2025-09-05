@@ -13,11 +13,6 @@ import { differenceInYears } from "date-fns";
   ],
 })
 export class UserBirthdays extends Model<UserBirthdays> {
-  // Check if birthday has been updated
-  get hasUpdatedBefore(): boolean {
-    return this.createdAt.getTime() !== this.updatedAt.getTime();
-  }
-
   @Column({
     type: DataType.INTEGER,
     autoIncrement: true,
@@ -89,6 +84,11 @@ export class UserBirthdays extends Model<UserBirthdays> {
     return age !== null && age >= 13;
   }
 
+  // Check if birthday has been updated, if so, lock it
+  get locked(): boolean {
+    return this.createdAt.getTime() !== this.updatedAt.getTime();
+  }
+
   // Override toJSON to include virtual fields
   toJSON() {
     const values = super.toJSON();
@@ -96,6 +96,7 @@ export class UserBirthdays extends Model<UserBirthdays> {
       ...values,
       age: this.age,
       isPG: this.isPG,
+      locked: this.locked,
     };
   }
 }
