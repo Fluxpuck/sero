@@ -70,6 +70,32 @@ export async function seedTemplateMessages() {
       "⚔️ {{USER}} fought off the competition and claimed **{{AMOUNT}}** experience!",
     ];
 
+    const birthdayMessages = [
+      "Happy birthday, {NAME}! Have fun! 🎉",
+      "Enjoy your day, {NAME}! 🎂",
+      "It’s your day, {NAME}! Celebrate big! 🎈",
+      "Happy birthday, {NAME}! Party time! 🎉",
+      "Best wishes, {NAME}! Have a great day! 🎁",
+      "Cheers, {NAME}! Happy birthday! 🍰",
+      "Smile bright, {NAME}! Happy birthday! 😊",
+      "Enjoy, {NAME}! Happy birthday! 🎉",
+      "Happy birthday, {NAME}! Adventure time! 🎈",
+  
+  ]
+  
+  const birthdayWithAgeMessages = [
+      "Happy {AGE}th, {NAME}! Enjoy! 🎉",
+      "Congrats on {AGE}, {NAME}! 🎂",
+      "{NAME}, you rock at {AGE}! Happy birthday! 🎈",
+      "Happy birthday, {NAME}, you cool {AGE}-year-old! 🎉",
+      "{AGE} cheers, {NAME}! Have fun! 🎁",
+      "Awesome {AGE}th, {NAME}! Enjoy! 🍰",
+      "Happy Birthday, {NAME}! Have {AGE} times the fun! 😊",
+      "{NAME}, {AGE} is just the start! Happy birthday! 🎉",
+      "{NAME}, {AGE} wishes come true! Happy birthday! 🎈",
+      "Happy birthday, {NAME}! {AGE} looks great on you! 🎁"
+  ]
+
     // Create welcome template messages
     for (const message of welcomeMessages) {
       await TemplateMessages.create({
@@ -102,6 +128,24 @@ export async function seedTemplateMessages() {
       await TemplateMessages.create({
         guildId: null, // null for default templates
         type: TemplateMessagesType.CLAIM_REWARD,
+        message,
+      } as TemplateMessages);
+    }
+
+    // Create birthday template messages
+    for (const message of birthdayMessages) {
+      await TemplateMessages.create({
+        guildId: null, // null for default templates
+        type: TemplateMessagesType.BIRTHDAY,
+        message,
+      } as TemplateMessages);
+    }
+
+    // Create birthday age template messages
+    for (const message of birthdayWithAgeMessages) {
+      await TemplateMessages.create({
+        guildId: null, // null for default templates
+        type: TemplateMessagesType.BIRTHDAY_WITH_AGE,
         message,
       } as TemplateMessages);
     }
