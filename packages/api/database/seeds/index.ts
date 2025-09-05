@@ -5,6 +5,7 @@ import { seedJobs } from "./jobs.seed";
 import { seedLevels } from "./levels.seed";
 import { seedRanks } from "./level-ranks.seed";
 import { seedGuilds } from "./guilds.seed";
+import { seedGuildSettings } from "./guild-settings.seed";
 import { seedUsers } from "./users.seed";
 import { seedMessages } from "./messages.seed";
 import { seedTemplateMessages } from "./template-messages.seed";
@@ -56,6 +57,9 @@ async function seedManager() {
 
     await seedGuilds();
     logger.success(`✓ Guilds seeded successfully`);
+
+    await seedGuildSettings();
+    logger.success(`✓ Guilds-settings seeded successfully`);
 
     await seedUsers();
     logger.success(`✓ Users seeded successfully`);
