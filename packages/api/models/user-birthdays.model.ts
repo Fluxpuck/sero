@@ -5,19 +5,19 @@ import { differenceInYears } from "date-fns";
   tableName: "user_birthdays",
   createdAt: "createdAt",
   updatedAt: "updatedAt",
-  deletedAt: "deletedAt",
-  paranoid: true,
   indexes: [
     {
       unique: true,
       fields: ["userId", "guildId"],
     },
   ],
-  defaultScope: {
-    attributes: { exclude: ["deletedAt"] },
-  },
 })
 export class UserBirthdays extends Model<UserBirthdays> {
+  // Check if birthday has been updated
+  get hasUpdatedBefore(): boolean {
+    return this.createdAt.getTime() !== this.updatedAt.getTime();
+  }
+
   @Column({
     type: DataType.INTEGER,
     autoIncrement: true,
@@ -95,7 +95,7 @@ export class UserBirthdays extends Model<UserBirthdays> {
     return {
       ...values,
       age: this.age,
-      isPG: this.isPG
+      isPG: this.isPG,
     };
   }
 }

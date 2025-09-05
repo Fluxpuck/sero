@@ -391,6 +391,22 @@ router.post(
         ]);
       }
 
+      // Check if the birthday already exists and has been updated before
+      const existingBirthday = await UserBirthdays.findOne({
+        where: { guildId, userId },
+        transaction,
+      });
+
+      // If birthday exists and has been updated before (using the hasUpdatedBefore getter)
+      if (existingBirthday && existingBirthday.hasUpdatedBefore) {
+        await transaction.rollback();
+        return ResponseHandler.sendError(
+          res,
+          "Birthday can only be updated once",
+          ResponseCode.FORBIDDEN
+        );
+      }
+
       // Prepare birthday data for upsert
       const birthdayData = {
         guildId,
