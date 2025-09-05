@@ -73,8 +73,9 @@ module.exports.run = async (client, interaction) => {
     const timeInMinutes = timeOption ?? 5; // Default to 5 minutes
     const messageOption = interaction.options.get("message")?.value;
 
-    // Give the user the experience
-    const result = await postRequest(`/guilds/${interaction.guildId}/away`, { userId: interaction.user.id, duration: timeInMinutes, message: messageOption });
+    // Set the user's away status
+    // Missing Route: API route for setting user away status needs to be implemented
+    const result = await postRequest(`/guild/${interaction.guildId}/away`, { userId: interaction.user.id, duration: timeInMinutes, message: messageOption });
 
     // If the request was not successful, return an error
     if (result?.status !== 200) {

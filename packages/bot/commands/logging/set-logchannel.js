@@ -74,7 +74,8 @@ module.exports.run = async (client, interaction) => {
     }
 
     // Create or update the log channel for the logTypeCategory
-    const result = await postRequest(`/logchannels/${interaction.guild.id}/${targetLogCategory}`, {
+    // Missing Route: API route for setting log channels needs to be implemented
+    const result = await postRequest(`/guild/${interaction.guild.id}/logchannels/${targetLogCategory}`, {
         targetId: targetChannel.id
     });
 

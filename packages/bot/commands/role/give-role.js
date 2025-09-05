@@ -57,7 +57,8 @@ module.exports.run = async (client, interaction) => {
 
     // Store the temporary role in the database
     if (isTemporary) {
-        const result = await postRequest(`/guilds/${interaction.guildId}/roles/add`, { userId: targetUser.id, roleId: targetRole.id, duration: duration });
+        // Missing Route: API route for adding temporary roles needs to be implemented
+        const result = await postRequest(`/guild/${interaction.guildId}/roles/add`, { userId: targetUser.id, roleId: targetRole.id, duration: duration });
         // If the request was not successful, return an error
         if (result?.status !== 201) {
             return await replyInteraction(interaction, {

@@ -1,6 +1,6 @@
 const { MessageFlags } = require('discord.js');
 const { getRequest } = require("../../database/connection");
-const { createRankCard } = require("../../lib/canvas/rank");
+const { createRankCard } = require("../../lib/image/rank");
 const { deferInteraction, replyInteraction, followUpInteraction } = require("../../utils/InteractionManager");
 
 module.exports.props = {
@@ -35,7 +35,8 @@ module.exports.run = async (client, interaction) => {
     }
 
     // Get the user experience
-    const result = await getRequest(`/guilds/${interaction.guildId}/levels/${targetUser.id}`);
+    // Missing Route: API route for fetching user level needs to be implemented
+    const result = await getRequest(`/guild/${interaction.guildId}/levels/${targetUser.id}`);
 
     // If status code is 404, return an error saying the user is not ranked yet
     if (result?.status === 404) {

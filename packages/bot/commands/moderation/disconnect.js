@@ -31,7 +31,8 @@ module.exports.run = async (client, interaction) => {
     if (member?.voice.channel) {
 
         // Store the activity in the database
-        postRequest(`/guilds/${interaction.guild.id}/activities`, {
+        // Missing Route: API route for storing voice disconnect activities needs to be implemented
+        postRequest(`/guild/${interaction.guild.id}/activities`, {
             guildId: interaction.guild.id,
             userId: targetUser.id,
             type: "voice-disconnect",

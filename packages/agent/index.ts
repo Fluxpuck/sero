@@ -1,30 +1,30 @@
 // index.ts - Main bot file
-import dotenv from 'dotenv';
-import fs from 'fs';
-import path from 'path';
-import { Client, Collection, GatewayIntentBits } from 'discord.js';
-import NodeCache from 'node-cache';
-import { Command, Event } from './types/client.types';
+import dotenv from "dotenv";
+import fs from "fs";
+import path from "path";
+import { Client, Collection, GatewayIntentBits } from "discord.js";
+import NodeCache from "node-cache";
+import { Command, Event } from "./types/client.types";
 
-dotenv.config({ path: path.join(__dirname, '.', 'config', '.env') });
+dotenv.config({ path: path.join(__dirname, ".", "config", ".env") });
 
 // Create client instance with necessary intents
 const client = new Client({
-    intents: [
-        GatewayIntentBits.Guilds,
-        GatewayIntentBits.GuildMessages,
-        GatewayIntentBits.MessageContent,
-        GatewayIntentBits.GuildMembers,
-    ]
+  intents: [
+    GatewayIntentBits.Guilds,
+    GatewayIntentBits.GuildMessages,
+    GatewayIntentBits.MessageContent,
+    GatewayIntentBits.GuildMembers,
+  ],
 });
 
 // Extend the Client interface to include commands
-declare module 'discord.js' {
-    export interface Client {
-        commands: Collection<string, Command>;
-        cooldowns: NodeCache;
-        ownerId: string;
-    }
+declare module "discord.js" {
+  export interface Client {
+    commands: Collection<string, Command>;
+    cooldowns: NodeCache;
+    ownerId: string;
+  }
 }
 
 // Initialize additional client collections
@@ -32,69 +32,73 @@ client.commands = new Collection<string, Command>();
 client.cooldowns = new NodeCache();
 
 // Set the owner ID from environment variables or default to '0'
-client.ownerId = process.env.OWNER_ID || '0';
+client.ownerId = process.env.OWNER_ID || "0";
 
 // Load events
 const loadEvents = (): void => {
-    const eventsPath: string = path.join(__dirname, 'events');
-    const eventFiles: string[] = fs.readdirSync(eventsPath).filter(file => file.endsWith('.ts') || file.endsWith('.js'));
+  const eventsPath: string = path.join(__dirname, "events");
+  const eventFiles: string[] = fs
+    .readdirSync(eventsPath)
+    .filter((file) => file.endsWith(".ts") || file.endsWith(".js"));
 
-    for (const file of eventFiles) {
-        const filePath: string = path.join(eventsPath, file);
-        const event: Event = require(filePath);
+  for (const file of eventFiles) {
+    const filePath: string = path.join(eventsPath, file);
+    const event: Event = require(filePath);
 
-        if (event.once) {
-            client.once(event.name, (...args) => event.execute(...args));
-        } else {
-            client.on(event.name, (...args) => event.execute(...args));
-        }
-
-        if (process.env.NODE_ENV !== 'production') {
-            console.log(`Loaded event: ${event.name}`);
-        }
+    if (event.once) {
+      client.once(event.name, (...args) => event.execute(...args));
+    } else {
+      client.on(event.name, (...args) => event.execute(...args));
     }
+
+    if (process.env.NODE_ENV !== "production") {
+      console.log(`✓ Loaded event: ${event.name}`);
+    }
+  }
 };
 
 // Load commands
 const loadCommands = (): void => {
-    const commandsPath: string = path.join(__dirname, 'commands');
-    const commandFiles: string[] = fs.readdirSync(commandsPath).filter(file => file.endsWith('.ts') || file.endsWith('.js'));
+  const commandsPath: string = path.join(__dirname, "commands");
+  const commandFiles: string[] = fs
+    .readdirSync(commandsPath)
+    .filter((file) => file.endsWith(".ts") || file.endsWith(".js"));
 
-    for (const file of commandFiles) {
-        const filePath: string = path.join(commandsPath, file);
-        const command: Command = require(filePath);
+  for (const file of commandFiles) {
+    const filePath: string = path.join(commandsPath, file);
+    const command: Command = require(filePath);
 
-        // Set a new item in the Collection with the key as the command name and the value as the exported module
-        if ('data' in command && 'execute' in command) {
-            client.commands.set(command.data.name, command);
+    // Set a new item in the Collection with the key as the command name and the value as the exported module
+    if ("data" in command && "execute" in command) {
+      client.commands.set(command.data.name, command);
 
-            if (process.env.NODE_ENV !== 'production') {
-                console.log(`Loaded command: ${command.data.name}`);
-            };
-        }
+      if (process.env.NODE_ENV !== "production") {
+        console.log(`Loaded command: ${command.data.name}`);
+      }
     }
+  }
 };
 
 // Initialize bot
 const initBot = async (): Promise<void> => {
-    try {
-        // Load events and commands
-        loadEvents();
-        loadCommands();
+  try {
+    // Load events and commands
+    loadEvents();
+    loadCommands();
 
-        // Check for Discord token
-        const token = process.env.DISCORD_TOKEN;
-        if (!token) {
-            throw new Error('DISCORD_TOKEN is missing in the environment variables');
-        }
-
-        // Login to Discord with token from .env
-        await client.login(token);
-        console.log(`Logged in as ${client.user?.tag || 'unknown'}`);
-    } catch (error) {
-        console.error('Error initializing bot:', error);
-        process.exit(1);
+    // Check for Discord token
+    const token = process.env.DISCORD_TOKEN;
+    if (!token) {
+      throw new Error("DISCORD_TOKEN is missing in the environment variables");
     }
+
+    // Login to Discord with token from .env
+    await client.login(token);
+    console.log(`Logged in as ${client.user?.tag || "unknown"}`);
+  } catch (error) {
+    console.error("Error initializing bot:", error);
+    process.exit(1);
+  }
 };
 
 // Start the bot

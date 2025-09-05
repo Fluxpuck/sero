@@ -15,12 +15,22 @@ async function getCachedLeaderboardData(guildId, type) {
 
     // If not in cache, fetch from API
     try {
-        const balanceResult = await getRequest(`/guilds/${guildId}/economy/balance?limit=100&type=${encodeURIComponent(type)}`);
-        if (balanceResult?.status !== 200) {
+        // Map wallet/bank type to the corresponding field name in the API
+        const sortBy = type === 'wallet' ? 'wallet_balance' : 'bank_balance';
+        
+        // Use the new API route structure
+        const balanceResult = await getRequest(`/guild/${guildId}/economy/balance?sortBy=${sortBy}&order=DESC`);
+        
+        if (!balanceResult?.data) {
             throw new Error('Failed to fetch leaderboard data');
         }
 
-        const data = balanceResult?.data ?? [];
+        // Process the data to match the expected format
+        const data = balanceResult.data.map(user => ({
+            userId: user.userId,
+            userName: user.userId, // We'll need to fetch usernames separately
+            balance: user[sortBy]
+        }));
 
         // Cache the result
         await RedisCache.set(cacheKey, data, CACHE_TTL);

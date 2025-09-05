@@ -1,0 +1,135 @@
+name: Discord Notifications
+
+on:
+  push: # Any commit to any branch
+  pull_request: # PR events: open, close, merge
+    types: [opened, closed, merged]
+  pull_request_review: # PR review events
+    types: [submitted]
+
+jobs:
+  discord:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Notify Discord
+        env:
+          DISCORD_WEBHOOK: ${{ secrets.DISCORD_WEBHOOK }}
+        run: |
+          echo "Preparing embed..."
+
+          # Check if jq is installed
+          if ! command -v jq &> /dev/null; then
+            echo "jq is not installed, installing..."
+            sudo apt-get update && sudo apt-get install -y jq
+          fi
+
+          EVENT_NAME="${{ github.event_name }}"
+          ACTION="${{ github.event.action || 'push' }}"
+          REPO="${{ github.repository }}"
+          USER="${{ github.actor }}"
+          BRANCH="${{ github.ref_name || github.head_ref }}"
+          PR_TITLE="${{ github.event.pull_request.title || github.event.pull_request_review.pull_request.title || '' }}"
+          REVIEW_STATE="${{ github.event.review.state || '' }}"
+          URL="https://github.com/${{ github.repository }}"
+
+          if [ "$EVENT_NAME" = "push" ]; then
+            COLOR=3447003  # Blue
+            TITLE="📦 New Push to $BRANCH"
+            
+            # Process multiple commits
+            COMMIT_COUNT=$(jq '.commits | length' "$GITHUB_EVENT_PATH")
+            
+            if [ "$COMMIT_COUNT" -eq "0" ]; then
+              # Fallback for single commit
+              COMMIT_MSG="${{ github.event.head_commit.message || '' }}"
+              DESCRIPTION="**Message:** $COMMIT_MSG"
+            else
+              # Format multiple commits
+              DESCRIPTION="**$COMMIT_COUNT commits pushed:**\n"
+              
+              # Limit to 10 commits to avoid hitting Discord character limits
+              MAX_COMMITS=10
+              if [ "$COMMIT_COUNT" -gt "$MAX_COMMITS" ]; then
+                DISPLAY_COUNT=$MAX_COMMITS
+                REMAINING=$((COMMIT_COUNT - MAX_COMMITS))
+              else
+                DISPLAY_COUNT=$COMMIT_COUNT
+                REMAINING=0
+              fi
+              
+              for i in $(seq 0 $((DISPLAY_COUNT-1))); do
+                COMMIT_MSG=$(jq -r ".commits[$i].message" "$GITHUB_EVENT_PATH" | head -n 1)
+                COMMIT_ID=$(jq -r ".commits[$i].id" "$GITHUB_EVENT_PATH" | cut -c 1-7)
+                COMMIT_URL=$(jq -r ".commits[$i].url" "$GITHUB_EVENT_PATH")
+                COMMIT_AUTHOR=$(jq -r ".commits[$i].author.name" "$GITHUB_EVENT_PATH")
+                
+                # Truncate long commit messages
+                if [ ${#COMMIT_MSG} -gt 50 ]; then
+                  COMMIT_MSG="${COMMIT_MSG:0:47}..."
+                fi
+                
+                DESCRIPTION="$DESCRIPTION• [\`$COMMIT_ID\`]($COMMIT_URL) $COMMIT_MSG ($COMMIT_AUTHOR)\n"
+              done
+              
+              if [ "$REMAINING" -gt "0" ]; then
+                DESCRIPTION="$DESCRIPTION\n*...and $REMAINING more commits*"
+              fi
+            fi
+          elif [ "$ACTION" = "opened" ] || [ "$ACTION" = "reopened" ] || [ "$ACTION" = "synchronize" ]; then
+            COLOR=15844367  # Yellow
+            TITLE="🛠 Pull Request $ACTION"
+            DESCRIPTION="**${PR_TITLE}**"
+            URL="${{ github.event.pull_request.html_url }}"
+          elif [ "$EVENT_NAME" = "pull_request_review" ]; then
+            PR_URL="${{ github.event.pull_request_review.pull_request.html_url }}"
+            REVIEW_BODY="${{ github.event.pull_request_review.body }}"
+            
+            if [ "$REVIEW_STATE" = "approved" ]; then
+              COLOR=3066993  # Green
+              TITLE="✅ Pull Request Approved"
+              DESCRIPTION="**${PR_TITLE}** was approved by $USER"
+              if [ ! -z "$REVIEW_BODY" ]; then
+                DESCRIPTION="$DESCRIPTION\n\n> $REVIEW_BODY"
+              fi
+            elif [ "$REVIEW_STATE" = "changes_requested" ]; then
+              COLOR=15158332  # Red
+              TITLE="🔄 Changes Requested"
+              DESCRIPTION="**${PR_TITLE}** needs changes according to $USER"
+              if [ ! -z "$REVIEW_BODY" ]; then
+                DESCRIPTION="$DESCRIPTION\n\n> $REVIEW_BODY"
+              fi
+            else
+              COLOR=10070709  # Gray
+              TITLE="💬 New Review Comment"
+              DESCRIPTION="**${PR_TITLE}** was reviewed by $USER"
+              if [ ! -z "$REVIEW_BODY" ]; then
+                DESCRIPTION="$DESCRIPTION\n\n> $REVIEW_BODY"
+              fi
+            fi
+            URL="$PR_URL"
+          else
+            COLOR=3066993  # Green
+            TITLE="✅ Pull Request Merged"
+            DESCRIPTION="**${PR_TITLE}**"
+            URL="${{ github.event.pull_request.html_url }}"
+          fi
+
+          curl -X POST "$DISCORD_WEBHOOK" \
+            -H "Content-Type: application/json" \
+            -d "{
+              \"embeds\": [{
+                \"title\": \"$TITLE\",
+                \"description\": \"$DESCRIPTION\",
+                \"url\": \"$URL\",
+                \"color\": $COLOR,
+                \"fields\": [
+                  { \"name\": \"Repository\", \"value\": \"$REPO\", \"inline\": true },
+                  { \"name\": \"User\", \"value\": \"$USER\", \"inline\": true },
+                  { \"name\": \"Branch\", \"value\": \"$BRANCH\", \"inline\": true }
+                ],
+                \"timestamp\": \"$(date -u +"%Y-%m-%dT%H:%M:%SZ")\"
+              }]
+            }"

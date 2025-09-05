@@ -64,11 +64,13 @@ module.exports.run = async (client, interaction) => {
     }
 
     // Check if the target logTypeCategory is set in the database
-    const logChannelResult = await getRequest(`/logchannels/${interaction.guild.id}/${targetLogCategory}`);
+    // Missing Route: API route for fetching log channel settings needs to be implemented
+    const logChannelResult = await getRequest(`/guild/${interaction.guild.id}/logchannels/${targetLogCategory}`);
     if (logChannelResult.status == 200) {
 
         // Remove the log channel for the logTypeCategory
-        const deleteResponse = await deleteRequest(`/logchannels/${interaction.guild.id}/${targetLogCategory}`);
+        // Missing Route: API route for removing log channel settings needs to be implemented
+        const deleteResponse = await deleteRequest(`/guild/${interaction.guild.id}/logchannels/${targetLogCategory}`);
         if (deleteResponse.status !== 200) {
             return interaction.editReply({
                 content: `Something went wrong while removing the log-channel \`${targetLogCategory}\`.`,

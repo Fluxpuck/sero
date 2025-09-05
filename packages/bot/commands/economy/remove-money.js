@@ -50,7 +50,8 @@ module.exports.run = async (client, interaction) => {
     switch (targetType) {
         case "bank":
 
-            const bankWithdraw = await postRequest(`/guilds/${interaction.guildId}/economy/bank/${targetUser.id}`, { amount: -targetAmount });
+            // Missing Route: API route for bank withdrawal needs to be implemented
+            const bankWithdraw = await postRequest(`/guild/${interaction.guildId}/economy/balance/${targetUser.id}`, { amount: -targetAmount, type: 'bank' });
 
             // Set the true amount of the transaction
             transactionAmount = bankWithdraw?.data?.transaction?.trueAmount ?? targetAmount;
@@ -77,7 +78,8 @@ module.exports.run = async (client, interaction) => {
             break;
         default:
 
-            const walletWithdraw = await postRequest(`/guilds/${interaction.guildId}/economy/wallet/${targetUser.id}`, { amount: -targetAmount, allowReset: false });
+            // Missing Route: API route for wallet withdrawal needs to be implemented
+            const walletWithdraw = await postRequest(`/guild/${interaction.guildId}/economy/balance/${targetUser.id}`, { amount: -targetAmount, type: 'wallet', allowNegative: false });
 
             // Get the true amount of the transaction
             transactionAmount = walletWithdraw?.data?.transaction?.trueAmount ?? targetAmount;

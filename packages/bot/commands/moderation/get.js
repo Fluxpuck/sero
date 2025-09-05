@@ -84,7 +84,8 @@ module.exports.run = async (client, interaction) => {
     // let userActivities = userActivityData.status == 200 ? userActivityData.data : [];
 
     // Fetch the Audit Logs for the user
-    const userLogData = await getRequest(`/guilds/${interaction.guildId}/logs/${targetUser.id}`);
+    // Missing Route: API route for fetching user logs needs to be implemented
+    const userLogData = await getRequest(`/guild/${interaction.guildId}/logs/${targetUser.id}`);
     let userLogs = userLogData.status == 200 ? userLogData.data : [];
 
     // Setup the Logs Button || Disable if no logs

@@ -43,7 +43,8 @@ module.exports.run = async (client, interaction) => {
     switch (transferType) {
         case "toWallet":
 
-            const walletTransfer = await postRequest(`/guilds/${interaction.guildId}/economy/transfer/bank-to-wallet/${interaction.user.id}`, { amount: transferAmount });
+            // Missing Route: API route for bank-to-wallet transfer needs to be implemented
+            const walletTransfer = await postRequest(`/guild/${interaction.guildId}/economy/balance/${interaction.user.id}/transfer`, { amount: transferAmount, from: 'bank', to: 'wallet' });
 
             const walletTransaction = walletTransfer?.data?.transaction;
             if (!walletTransaction) {
@@ -69,7 +70,8 @@ module.exports.run = async (client, interaction) => {
 
         case "toBank":
 
-            const bankTransfer = await postRequest(`/guilds/${interaction.guildId}/economy/transfer/wallet-to-bank/${interaction.user.id}`, { amount: transferAmount });
+            // Missing Route: API route for wallet-to-bank transfer needs to be implemented
+            const bankTransfer = await postRequest(`/guild/${interaction.guildId}/economy/balance/${interaction.user.id}/transfer`, { amount: transferAmount, from: 'wallet', to: 'bank' });
 
             const bankTransaction = bankTransfer?.data?.transaction;
             if (!bankTransaction) {
