@@ -72,17 +72,17 @@ const event: Event = {
       // Get active members from the last 5 minutes
       const activeMemberIds = await getUniqueAuthorsFromMessages(channel, 5);
 
-      // Get randomized template messages
+      // Get randomized template messages using the dedicated random routes
       const [rewardDropData, claimRewardData] = await Promise.all([
-        getRequest("/assets/template-messages?type=reward-drop&random=true"),
-        getRequest("/assets/template-messages?type=claim-reward&random=true"),
+        getRequest("/assets/template-messages/random/reward-drop"),
+        getRequest("/assets/template-messages/random/claim-reward"),
       ]);
 
       const rewardDropMessage =
-        rewardDropData?.data?.[0]?.message ||
+        rewardDropData?.data?.message ||
         "A random reward drop has been dropped!";
       const claimRewardMessage =
-        claimRewardData?.data?.[0]?.message ||
+        claimRewardData?.data?.message ||
         "{{USER}} has successfully claimed {{AMOUNT}} exp!";
 
       // Track if the reward has been claimed

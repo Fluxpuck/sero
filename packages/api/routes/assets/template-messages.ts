@@ -31,21 +31,15 @@ const router = Router();
  *         schema:
  *           type: string
  *           enum: [welcome, birthday, job, levelup, reward-drop, claim-reward, treasure]
- *       - name: random
- *         in: query
- *         required: false
- *         description: Return a single random message from the results
- *         schema:
- *           type: boolean
  *     responses:
  *       200:
  *         description: Successful operation
  *       500:
  *         description: Server error
  */
-router.get("/", cache({ ttl: 60 * 10 }), async (req: Request, res: Response, next: NextFunction) => {
+router.get("/", cache({ ttl: 60 * 1 }), async (req: Request, res: Response, next: NextFunction) => {
   try {
-    const { guildId, type, random } = req.query;
+    const { guildId, type } = req.query;
     const where: any = {};
 
     if (guildId) {
@@ -63,13 +57,7 @@ router.get("/", cache({ ttl: 60 * 10 }), async (req: Request, res: Response, nex
       where,
     });
     
-    // If random parameter is true, return a single random message
-    let result = templateMessages;
-    if (random === 'true' && templateMessages.length > 0) {
-      // Select a random message from the array
-      const randomIndex = Math.floor(Math.random() * templateMessages.length);
-      result = [templateMessages[randomIndex]];
-    }
+    const result = templateMessages;
 
     ResponseHandler.sendSuccess(
       res,
@@ -156,6 +144,91 @@ router.get("/:id", cache({ ttl: 60 * 15 }), async (req: Request, res: Response, 
  *       500:
  *         description: Server error
  */
+/**
+ * @swagger
+ * /assets/template-messages/random/{type}:
+ *   get:
+ *     summary: Get a random template message of a specific type
+ *     tags:
+ *       - Template Messages
+ *     parameters:
+ *       - name: type
+ *         in: path
+ *         required: true
+ *         description: Message type
+ *         schema:
+ *           type: string
+ *           enum: [welcome, birthday, job, levelup, reward-drop, claim-reward, treasure]
+ *       - name: guildId
+ *         in: query
+ *         required: false
+ *         description: Filter by guild ID
+ *         schema:
+ *           type: string
+ *     responses:
+ *       200:
+ *         description: Successful operation
+ *       404:
+ *         description: No template messages found for the specified type
+ *       500:
+ *         description: Server error
+ */
+router.get(
+  "/random/:type",
+  cache({
+    ttl: 60 * 1,
+    keyGenerator: (req) => `template-messages-random-${req.params.type}-${req.query.guildId || 'global'}`
+  }),
+  async (req: Request, res: Response, next: NextFunction) => {
+    try {
+      const { type } = req.params;
+      const { guildId } = req.query;
+      
+      if (
+        !Object.values(TemplateMessagesType).includes(
+          type as TemplateMessagesType
+        )
+      ) {
+        return ResponseHandler.sendValidationFail(
+          res,
+          "Invalid template message type",
+          [`Valid types are: ${Object.values(TemplateMessagesType).join(", ")}`]
+        );
+      }
+      
+      const where: any = { type };
+      
+      if (guildId) {
+        where.guildId = guildId;
+      }
+      
+      const templateMessages = await TemplateMessages.findAll({
+        where,
+      });
+      
+      if (!templateMessages || templateMessages.length === 0) {
+        return ResponseHandler.sendError(
+          res,
+          "No template messages found for the specified type",
+          ResponseCode.NOT_FOUND
+        );
+      }
+      
+      // Select a random message from the array
+      const randomIndex = Math.floor(Math.random() * templateMessages.length);
+      const randomMessage = templateMessages[randomIndex];
+      
+      ResponseHandler.sendSuccess(
+        res,
+        randomMessage,
+        "Random template message retrieved successfully"
+      );
+    } catch (error) {
+      next(error);
+    }
+  }
+);
+
 router.get(
   "/guild/:guildId/type/:type",
   cache({
