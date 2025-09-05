@@ -4,37 +4,9 @@ import { ResponseHandler } from "../../../../utils/response.utils";
 import { ResponseCode } from "../../../../utils/response.types";
 import { sequelize } from "../../../../database/sequelize";
 import { Op } from "sequelize";
-import {
-  format,
-  addDays,
-  getMonth,
-  getDate,
-  differenceInYears,
-} from "date-fns";
+import { format, addDays, getMonth, getDate } from "date-fns";
 
 const router = Router({ mergeParams: true });
-
-// Helper function to calculate age and isPG
-const calculateAgeAndPG = (birthdayData: any) => {
-  let age = null;
-  let isPG = false;
-
-  if (birthdayData.year) {
-    const birthDate = new Date(
-      birthdayData.year,
-      birthdayData.month - 1,
-      birthdayData.day
-    );
-    age = differenceInYears(new Date(), birthDate);
-    isPG = age >= 13;
-  }
-
-  return {
-    ...birthdayData,
-    age,
-    isPG,
-  };
-};
 
 /**
  * @swagger
@@ -81,14 +53,9 @@ router.get("/", async (req: Request, res: Response, next: NextFunction) => {
       where: { guildId },
     });
 
-    // Apply age and isPG calculation to each birthday
-    const birthdaysWithAge = birthdays.map((birthday) =>
-      calculateAgeAndPG(birthday.toJSON())
-    );
-
     ResponseHandler.sendSuccess(
       res,
-      birthdaysWithAge,
+      birthdays,
       "Birthdays retrieved successfully"
     );
   } catch (error) {
@@ -157,14 +124,9 @@ router.get(
         },
       });
 
-      // Apply age and isPG calculation to each birthday
-      const birthdaysWithAge = birthdays.map((birthday) =>
-        calculateAgeAndPG(birthday.toJSON())
-      );
-
       ResponseHandler.sendSuccess(
         res,
-        birthdaysWithAge,
+        birthdays,
         "Today's birthdays retrieved successfully"
       );
     } catch (error) {
@@ -177,7 +139,7 @@ router.get(
  * @swagger
  * /guild/{guildId}/birthday/upcoming:
  *   get:
- *     summary: Get upcoming birthdays for a guild within the next specified days
+ *     summary: Get upcoming birthdays for a guild within a specified range of days
  *     tags:
  *       - Birthdays
  *     parameters:
@@ -187,10 +149,10 @@ router.get(
  *         description: The Discord ID of the guild
  *         schema:
  *           type: string
- *       - name: days
+ *       - name: range
  *         in: query
  *         required: false
- *         description: Number of days to look ahead (default: 7)
+ *         description: Number of days to look ahead (default: 1)
  *         schema:
  *           type: integer
  *     responses:
@@ -204,36 +166,35 @@ router.get(
   async (req: Request, res: Response, next: NextFunction) => {
     try {
       const { guildId } = req.params;
-      const days = parseInt(req.query.days as string) || 7;
+      const range = parseInt(req.query.range as string) || 1;
 
       // Get current date using date-fns
       const today = new Date();
 
-      // Define the type for date entries
+      // Define interface for date entries
       interface DateEntry {
         month: number;
         day: number;
-        formattedDate: string;
+        date: Date;
       }
 
-      // Calculate dates for the next 'days' days using date-fns
-      const upcomingDates: DateEntry[] = [];
-      for (let i = 0; i < days; i++) {
+      // Create an array of dates for the specified range
+      const dates: DateEntry[] = [];
+      for (let i = 0; i < range; i++) {
         const date = addDays(today, i);
-        upcomingDates.push({
+        dates.push({
           month: getMonth(date) + 1, // date-fns months are 0-indexed
           day: getDate(date),
-          formattedDate: format(date, "MMM d"), // For debugging/logging
+          date: date, // Store the full date for later use
         });
       }
 
-      // No special handling for leap years - just use the dates as they are
-
-      // Create query conditions for each upcoming date
-      const dateConditions = upcomingDates.map((date) => ({
+      // Create query conditions for the dates
+      const dateConditions = dates.map((date) => ({
         [Op.and]: [{ month: date.month }, { day: date.day }],
       }));
 
+      // Find birthdays matching the date conditions
       const birthdays = await UserBirthdays.findAll({
         where: {
           guildId,
@@ -241,31 +202,35 @@ router.get(
         },
       });
 
-      // Add calculated fields for upcoming date, age, and isPG
-      const birthdaysWithExtras = birthdays.map((birthday) => {
+      // Add the upcoming date information to each birthday
+      const birthdaysWithDate = birthdays.map((birthday) => {
         const birthdayData = birthday.toJSON();
-        const birthdayDate = upcomingDates.find(
-          (date) => date.month === birthday.month && date.day === birthday.day
+
+        // Find which date this birthday matches
+        const matchingDate = dates.find(
+          (d) => d.month === birthday.month && d.day === birthday.day
         );
 
-        // Add age and isPG, then add upcomingDate
-        const withAgeAndPG = calculateAgeAndPG(birthdayData);
-
         return {
-          ...withAgeAndPG,
-          upcomingDate:
-            birthdayDate?.formattedDate ||
-            format(
-              new Date(today.getFullYear(), birthday.month - 1, birthday.day),
-              "MMM d"
-            ),
+          ...birthdayData,
+          upcomingDate: matchingDate
+            ? format(matchingDate.date, "MMM d")
+            : null,
+          daysUntil: matchingDate
+            ? Math.floor(
+                (matchingDate.date.getTime() - today.getTime()) /
+                  (1000 * 60 * 60 * 24)
+              )
+            : null,
         };
       });
 
       ResponseHandler.sendSuccess(
         res,
-        birthdaysWithExtras,
-        `Upcoming birthdays for the next ${days} days retrieved successfully`
+        birthdaysWithDate,
+        `Upcoming birthdays for the next ${range} day${
+          range !== 1 ? "s" : ""
+        } retrieved successfully`
       );
     } catch (error) {
       next(error);
@@ -322,12 +287,9 @@ router.get(
         );
       }
 
-      // Apply age and isPG calculation
-      const birthdayWithAge = calculateAgeAndPG(birthday.toJSON());
-
       ResponseHandler.sendSuccess(
         res,
-        birthdayWithAge,
+        birthday,
         "Birthday retrieved successfully"
       );
     } catch (error) {

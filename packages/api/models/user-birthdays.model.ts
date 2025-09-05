@@ -1,4 +1,5 @@
 import { Column, DataType, Model, Table } from "sequelize-typescript";
+import { differenceInYears } from "date-fns";
 
 @Table({
   tableName: "user_birthdays",
@@ -74,4 +75,27 @@ export class UserBirthdays extends Model<UserBirthdays> {
     },
   })
   declare day: number;
+
+  // Virtual field for age
+  get age(): number | null {
+    if (!this.year) return null;
+    const birthDate = new Date(this.year, this.month - 1, this.day);
+    return differenceInYears(new Date(), birthDate);
+  }
+
+  // Virtual field for isPG
+  get isPG(): boolean {
+    const age = this.age;
+    return age !== null && age >= 13;
+  }
+
+  // Override toJSON to include virtual fields
+  toJSON() {
+    const values = super.toJSON();
+    return {
+      ...values,
+      age: this.age,
+      isPG: this.isPG
+    };
+  }
 }
