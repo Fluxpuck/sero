@@ -3,6 +3,7 @@ import { Column, DataType, Model, Table } from "sequelize-typescript";
 export enum TemplateMessagesType {
   WELCOME = "welcome",
   BIRTHDAY = "birthday",
+  BIRTHDAY_WITH_AGE = "birthday-with-age",
   JOB = "job",
   LEVELUP = "levelup",
   REWARD_DROP = "reward-drop",

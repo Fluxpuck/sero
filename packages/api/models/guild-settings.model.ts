@@ -9,7 +9,7 @@ export enum GuildSettingType {
   EXP_REWARD_DROP_CHANNEL = "exp-reward-drop-channel",
 
   BIRTHDAY_ROLE = "birthday-role",
-  BIRTHDAY_MESSAGE_CHANNEL = "birthday-message-channel",
+  BIRTHDAY_CHANNEL = "birthday-channel",
 
   MEMBER_LOGS_CHANNEL = "member-logs-channel",
   BAN_LOGS_CHANNEL = "ban-logs-channel",
