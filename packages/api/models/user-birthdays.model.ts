@@ -1,6 +1,8 @@
 import { Column, DataType, Model, Table } from "sequelize-typescript";
 import { differenceInYears } from "date-fns";
 
+const PG_AGE = 13; // Age for PG content
+
 @Table({
   tableName: "user_birthdays",
   createdAt: "createdAt",
@@ -81,7 +83,7 @@ export class UserBirthdays extends Model<UserBirthdays> {
   // Virtual field for isPG
   get isPG(): boolean {
     const age = this.age;
-    return age !== null && age >= 13;
+    return age !== null && age >= PG_AGE;
   }
 
   // Check if birthday has been updated, if so, lock it
