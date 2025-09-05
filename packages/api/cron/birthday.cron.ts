@@ -10,8 +10,7 @@ import { UserBirthdays } from "../models/user-birthdays.model";
 import { publish, RedisChannel } from "../redis/publisher";
 
 export const PublishBirthday = new CronJob(
-  "*/2 * * * *", // Cron expression: Every 2 minutes
-  // "0 15 * * *", // Cron expression: At 15:00 (3 PM) UTC every day
+  "0 14 * * *", // Cron expression: At 14:00 (2 PM) UTC every day
 
   async function () {
     try {
