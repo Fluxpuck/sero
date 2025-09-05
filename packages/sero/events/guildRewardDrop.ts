@@ -57,7 +57,7 @@ const event: Event = {
   once: false,
   async execute(message: DropEventPayload, client: Client): Promise<any> {
     if (!message || !client) return; // Skip empty messages
-    logger.debug("Processing drop message", message);
+    logger.debug("Processing reward drop message", message);
 
     try {
       const guild = client.guilds.cache.get(message.guildId) as Guild;

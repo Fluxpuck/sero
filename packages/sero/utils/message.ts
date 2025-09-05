@@ -11,6 +11,7 @@ import {
 } from "discord.js";
 import { subMinutes } from "date-fns";
 import { isAfter } from "date-fns";
+import { logger } from "../utils/logger";
 
 /**
  * Get unique authors from the last X minutes of messages in a channel
@@ -144,7 +145,7 @@ export const safeReply = async (
       }
       await interaction.reply(replyOptions);
     } catch (fallbackError) {
-      console.error("Failed to reply to interaction:", fallbackError);
+      logger.error("Failed to reply to interaction:", fallbackError);
     }
   }
 };
@@ -170,5 +171,5 @@ export const safeErrorReply = async (
     { content: errorMessage, flags: MessageFlags.Ephemeral },
     isDeferred
   );
-  console.error("Error in command execution:", error);
+  logger.error("Error in command execution:", error);
 };
