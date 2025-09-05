@@ -166,7 +166,7 @@ router.get(
   async (req: Request, res: Response, next: NextFunction) => {
     try {
       const { guildId } = req.params;
-      const range = parseInt(req.query.range as string) || 1;
+      const dayRange = parseInt(req.query.range as string) || 1;
 
       // Get current date using date-fns
       const today = new Date();
@@ -180,7 +180,7 @@ router.get(
 
       // Create an array of dates for the specified range
       const dates: DateEntry[] = [];
-      for (let i = 0; i < range; i++) {
+      for (let i = 0; i < dayRange; i++) {
         const date = addDays(today, i);
         dates.push({
           month: getMonth(date) + 1, // date-fns months are 0-indexed
@@ -228,8 +228,8 @@ router.get(
       ResponseHandler.sendSuccess(
         res,
         birthdaysWithDate,
-        `Upcoming birthdays for the next ${range} day${
-          range !== 1 ? "s" : ""
+        `Upcoming birthdays for the next ${dayRange} day${
+          dayRange !== 1 ? "s" : ""
         } retrieved successfully`
       );
     } catch (error) {
