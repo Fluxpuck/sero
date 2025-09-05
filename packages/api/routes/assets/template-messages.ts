@@ -37,37 +37,43 @@ const router = Router();
  *       500:
  *         description: Server error
  */
-router.get("/", cache({ ttl: 60 * 1 }), async (req: Request, res: Response, next: NextFunction) => {
-  try {
-    const { guildId, type } = req.query;
-    const where: any = {};
+router.get(
+  "/",
+  cache({ ttl: 60 * 1 }),
+  async (req: Request, res: Response, next: NextFunction) => {
+    try {
+      const { guildId, type } = req.query;
+      const where: any = {};
 
-    if (guildId) {
-      where.guildId = guildId;
+      if (guildId) {
+        where.guildId = guildId;
+      }
+
+      if (
+        type &&
+        Object.values(TemplateMessagesType).includes(
+          type as TemplateMessagesType
+        )
+      ) {
+        where.type = type;
+      }
+
+      const templateMessages = await TemplateMessages.findAll({
+        where,
+      });
+
+      const result = templateMessages;
+
+      ResponseHandler.sendSuccess(
+        res,
+        result,
+        "Template messages retrieved successfully"
+      );
+    } catch (error) {
+      next(error);
     }
-
-    if (
-      type &&
-      Object.values(TemplateMessagesType).includes(type as TemplateMessagesType)
-    ) {
-      where.type = type;
-    }
-
-    const templateMessages = await TemplateMessages.findAll({
-      where,
-    });
-    
-    const result = templateMessages;
-
-    ResponseHandler.sendSuccess(
-      res,
-      result,
-      "Template messages retrieved successfully"
-    );
-  } catch (error) {
-    next(error);
   }
-});
+);
 
 /**
  * @swagger
@@ -91,29 +97,33 @@ router.get("/", cache({ ttl: 60 * 1 }), async (req: Request, res: Response, next
  *       500:
  *         description: Server error
  */
-router.get("/:id", cache({ ttl: 60 * 15 }), async (req: Request, res: Response, next: NextFunction) => {
-  try {
-    const { id } = req.params;
+router.get(
+  "/:id",
+  cache({ ttl: 60 * 15 }),
+  async (req: Request, res: Response, next: NextFunction) => {
+    try {
+      const { id } = req.params;
 
-    const templateMessage = await TemplateMessages.findByPk(id);
+      const templateMessage = await TemplateMessages.findByPk(id);
 
-    if (!templateMessage) {
-      return ResponseHandler.sendError(
+      if (!templateMessage) {
+        return ResponseHandler.sendError(
+          res,
+          "Template message not found",
+          ResponseCode.NOT_FOUND
+        );
+      }
+
+      ResponseHandler.sendSuccess(
         res,
-        "Template message not found",
-        ResponseCode.NOT_FOUND
+        templateMessage,
+        "Template message retrieved successfully"
       );
+    } catch (error) {
+      next(error);
     }
-
-    ResponseHandler.sendSuccess(
-      res,
-      templateMessage,
-      "Template message retrieved successfully"
-    );
-  } catch (error) {
-    next(error);
   }
-});
+);
 
 /**
  * @swagger
@@ -175,15 +185,11 @@ router.get("/:id", cache({ ttl: 60 * 15 }), async (req: Request, res: Response, 
  */
 router.get(
   "/random/:type",
-  cache({
-    ttl: 60 * 1,
-    keyGenerator: (req) => `template-messages-random-${req.params.type}-${req.query.guildId || 'global'}`
-  }),
   async (req: Request, res: Response, next: NextFunction) => {
     try {
       const { type } = req.params;
       const { guildId } = req.query;
-      
+
       if (
         !Object.values(TemplateMessagesType).includes(
           type as TemplateMessagesType
@@ -195,17 +201,17 @@ router.get(
           [`Valid types are: ${Object.values(TemplateMessagesType).join(", ")}`]
         );
       }
-      
+
       const where: any = { type };
-      
+
       if (guildId) {
         where.guildId = guildId;
       }
-      
+
       const templateMessages = await TemplateMessages.findAll({
         where,
       });
-      
+
       if (!templateMessages || templateMessages.length === 0) {
         return ResponseHandler.sendError(
           res,
@@ -213,11 +219,11 @@ router.get(
           ResponseCode.NOT_FOUND
         );
       }
-      
+
       // Select a random message from the array
       const randomIndex = Math.floor(Math.random() * templateMessages.length);
       const randomMessage = templateMessages[randomIndex];
-      
+
       ResponseHandler.sendSuccess(
         res,
         randomMessage,
@@ -233,7 +239,8 @@ router.get(
   "/guild/:guildId/type/:type",
   cache({
     ttl: 60 * 15,
-    keyGenerator: (req) => `template-messages-guild-${req.params.guildId}-type-${req.params.type}`
+    keyGenerator: (req) =>
+      `template-messages-guild-${req.params.guildId}-type-${req.params.type}`,
   }),
   async (req: Request, res: Response, next: NextFunction) => {
     try {
@@ -311,79 +318,83 @@ router.get(
  *       500:
  *         description: Server error
  */
-router.post("/", invalidateCache("api-cache:"), async (req: Request, res: Response, next: NextFunction) => {
-  const transaction = await sequelize.transaction();
+router.post(
+  "/",
+  invalidateCache("api-cache:"),
+  async (req: Request, res: Response, next: NextFunction) => {
+    const transaction = await sequelize.transaction();
 
-  try {
-    const { guildId, type, message } = req.body;
+    try {
+      const { guildId, type, message } = req.body;
 
-    // Validate required fields
-    if (!type || !message) {
-      await transaction.rollback();
-      return ResponseHandler.sendValidationFail(
-        res,
-        "Missing required fields",
-        ["type and message are required fields"]
-      );
-    }
+      // Validate required fields
+      if (!type || !message) {
+        await transaction.rollback();
+        return ResponseHandler.sendValidationFail(
+          res,
+          "Missing required fields",
+          ["type and message are required fields"]
+        );
+      }
 
-    // Validate type
-    if (!Object.values(TemplateMessagesType).includes(type)) {
-      await transaction.rollback();
-      return ResponseHandler.sendValidationFail(
-        res,
-        "Invalid template message type",
-        [`Valid types are: ${Object.values(TemplateMessagesType).join(", ")}`]
-      );
-    }
+      // Validate type
+      if (!Object.values(TemplateMessagesType).includes(type)) {
+        await transaction.rollback();
+        return ResponseHandler.sendValidationFail(
+          res,
+          "Invalid template message type",
+          [`Valid types are: ${Object.values(TemplateMessagesType).join(", ")}`]
+        );
+      }
 
-    // Prepare template message data for upsert
-    const templateMessageData = {
-      guildId: guildId || null,
-      type,
-      message,
-    } as any; // Using 'any' to bypass TypeScript's strict checking
-
-    // Find existing record to determine if this is an update or create
-    const existingMessage = await TemplateMessages.findOne({
-      where: {
+      // Prepare template message data for upsert
+      const templateMessageData = {
         guildId: guildId || null,
         type,
-      },
-      transaction,
-    });
+        message,
+      } as any; // Using 'any' to bypass TypeScript's strict checking
 
-    let result;
-    let created = false;
-
-    if (existingMessage) {
-      // Update existing record
-      existingMessage.message = message;
-      result = await existingMessage.save({ transaction });
-    } else {
-      // Create new record
-      result = await TemplateMessages.create(templateMessageData, {
+      // Find existing record to determine if this is an update or create
+      const existingMessage = await TemplateMessages.findOne({
+        where: {
+          guildId: guildId || null,
+          type,
+        },
         transaction,
       });
-      created = true;
+
+      let result;
+      let created = false;
+
+      if (existingMessage) {
+        // Update existing record
+        existingMessage.message = message;
+        result = await existingMessage.save({ transaction });
+      } else {
+        // Create new record
+        result = await TemplateMessages.create(templateMessageData, {
+          transaction,
+        });
+        created = true;
+      }
+
+      await transaction.commit();
+
+      ResponseHandler.sendSuccess(
+        res,
+        result,
+        created
+          ? "Template message created successfully"
+          : "Template message updated successfully",
+        created ? ResponseCode.CREATED : ResponseCode.SUCCESS
+      );
+    } catch (error) {
+      console.error("Error creating or updating template message:", error);
+      await transaction.rollback();
+      next(error);
     }
-
-    await transaction.commit();
-
-    ResponseHandler.sendSuccess(
-      res,
-      result,
-      created
-        ? "Template message created successfully"
-        : "Template message updated successfully",
-      created ? ResponseCode.CREATED : ResponseCode.SUCCESS
-    );
-  } catch (error) {
-    console.error("Error creating or updating template message:", error);
-    await transaction.rollback();
-    next(error);
   }
-});
+);
 
 /**
  * @swagger
