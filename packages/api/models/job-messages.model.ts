@@ -9,6 +9,9 @@ import { Column, DataType, Model, Table } from "sequelize-typescript";
       unique: true,
       fields: ["id"],
     },
+    {
+      fields: ["jobId"],
+    },
   ],
 })
 export class JobMessages extends Model<JobMessages> {

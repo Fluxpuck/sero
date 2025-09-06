@@ -12,6 +12,15 @@ import { BeforeCreate, BeforeUpdate, Column, DataType, Default, Model, Table } f
             unique: true,
             fields: ["guildId", "userId"]
         },
+        {
+            fields: ["expireAt"]
+        },
+        {
+            fields: ["active"]
+        },
+        {
+            fields: ["active", "expireAt"]
+        }
     ]
 })
 export class Modifier extends Model<Modifier> {

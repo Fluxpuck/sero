@@ -8,6 +8,9 @@ import { Column, DataType, Default, Model, Table } from "sequelize-typescript";
         {
             unique: true,
             fields: ["userId", "guildId"]
+        },
+        {
+            fields: ["jobId"]
         }
     ]
 })

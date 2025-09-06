@@ -16,6 +16,12 @@ export enum UserExperienceLogType {
     indexes: [
         {
             fields: ["userId", "guildId"]
+        },
+        {
+            fields: ["type"]
+        },
+        {
+            fields: ["guildId"]
         }
     ]
 })

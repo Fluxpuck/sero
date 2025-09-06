@@ -24,6 +24,12 @@ export enum TemplateMessagesType {
     {
       fields: ["id"],
     },
+    {
+      fields: ["type"],
+    },
+    {
+      fields: ["guildId"],
+    },
   ],
 })
 export class TemplateMessages extends Model<TemplateMessages> {

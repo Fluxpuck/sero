@@ -8,6 +8,12 @@ import { BeforeCreate, BeforeUpdate, Column, DataType, Model, Table } from "sequ
         {
             unique: true,
             fields: ["guildId", "userId"]
+        },
+        {
+            fields: ["expireAt"]
+        },
+        {
+            fields: ["guildId"]
         }
     ]
 })

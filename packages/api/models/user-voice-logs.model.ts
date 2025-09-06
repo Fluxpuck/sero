@@ -14,6 +14,15 @@ export enum UserVoiceLogType {
         {
             unique: true,
             fields: ["userId", "guildId"]
+        },
+        {
+            fields: ["channelId"]
+        },
+        {
+            fields: ["type"]
+        },
+        {
+            fields: ["guildId"]
         }
     ]
 })

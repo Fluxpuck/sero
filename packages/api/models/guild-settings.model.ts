@@ -24,6 +24,18 @@ export enum GuildSettingType {
     {
       fields: ["guildId"],
     },
+    {
+      unique: true,
+      fields: ["guildId", "type"],
+    },
+    {
+      unique: true,
+      fields: ["guildId", "targetId"],
+    },
+    {
+      unique: true,
+      fields: ["guildId", "type", "targetId"],
+    },
   ],
 })
 export class GuildSettings extends Model<GuildSettings> {
