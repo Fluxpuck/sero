@@ -16,55 +16,47 @@ export const PublishBirthday = new CronJob(
     try {
       logger.info("Initializing Birthday Message Distribution");
 
-      // Find all guilds with birthday channel setup
-      const dropGuilds = await GuildSettings.findAll({
-        where: {
-          type: GuildSettingType.BIRTHDAY_CHANNEL,
-        },
+      const [birthdayChannels, birthdayRoles] = await Promise.all([
+        GuildSettings.findAll({
+          where: {
+            type: GuildSettingType.BIRTHDAY_CHANNEL,
+          },
+        }),
+        GuildSettings.findAll({
+          where: {
+            type: GuildSettingType.BIRTHDAY_ROLE,
+          },
+        }),
+      ]);
+
+      const birthdayPromises = birthdayChannels.map(async (channel) => {
+        const roleId = birthdayRoles.find(
+          (role) => role.guildId === channel.guildId
+        )?.targetId;
+        if (!roleId) return;
+
+        const birthdays = await UserBirthdays.findAll({
+          where: {
+            guildId: channel.guildId,
+            month: getMonth(new Date()) + 1,
+            day: getDate(new Date()),
+          },
+        });
+        if (birthdays.length <= 0) return;
+
+        publish(RedisChannel.GUILD_MEMBER_BIRTHDAY, {
+          guildId: channel.guildId,
+          channelId: channel.targetId,
+          roleId,
+          birthdays,
+        });
+
+        logger.debug(
+          `Published birthday messages for guild ${channel.guildId}`
+        );
       });
 
-      // Distribute birthday messages to guilds
-      if (dropGuilds.length > 0) {
-        await Promise.all(
-          dropGuilds.map(async (record) => {
-            // Get birthday channel and all today's birthdays
-            const [birthdayRole, birthdayUsers] = await Promise.all([
-              GuildSettings.findOne({
-                where: {
-                  guildId: record.guildId,
-                  type: GuildSettingType.BIRTHDAY_ROLE,
-                },
-              }),
-              UserBirthdays.findAll({
-                where: {
-                  guildId: record.guildId,
-                  month: getMonth(new Date()) + 1,
-                  day: getDate(new Date()),
-                },
-              }),
-            ]);
-            if (!birthdayRole || birthdayUsers.length <= 0) return;
-
-            // Publish birthday messages to Redis
-            publish(RedisChannel.GUILD_MEMBER_BIRTHDAY, {
-              guildId: record.guildId,
-              channelId: record.targetId,
-              roleId: birthdayRole.targetId,
-              birthdays: birthdayUsers,
-            });
-
-            logger.debug(
-              `Published birthday messages for guild ${record.guildId}`
-            );
-
-            return Promise.resolve();
-          })
-        );
-      }
-
-      logger.info(
-        `Birthday Messages Distributed successfully to ${dropGuilds.length} guilds`
-      );
+      await Promise.all(birthdayPromises);
     } catch (error) {
       logger.error("Error in Birthday cron-job:", error);
     }
