@@ -18,34 +18,30 @@ export const PublishRewardDrop = new CronJob(
     try {
       logger.info("Initializing Reward Drops Distribution");
 
-      // Find all guilds with exp reward drop channel setup
       const dropGuilds = await GuildSettings.findAll({
         where: {
           type: GuildSettingType.EXP_REWARD_DROP_CHANNEL,
         },
       });
 
-      // Distribute reward drops to guilds
       if (dropGuilds.length > 0) {
-        await Promise.all(
-          dropGuilds.map(async (record) => {
-            const randomDelay =
-              MIN_DELAY + Math.random() * (MAX_DELAY - MIN_DELAY);
+        const publishDrops = dropGuilds.map(async (record) => {
+          const randomDelay =
+            MIN_DELAY + Math.random() * (MAX_DELAY - MIN_DELAY);
 
-            return new Promise<void>((resolve) => {
-              setTimeout(() => {
-                publish(RedisChannel.GUILD_DROP_REWARD, {
-                  guildId: record.guildId,
-                  channelId: record.targetId,
-                });
-                logger.debug(
-                  `Published reward drop for guild ${record.guildId}`
-                );
-                resolve();
-              }, randomDelay);
-            });
-          })
-        );
+          await new Promise<void>((resolve) =>
+            setTimeout(resolve, randomDelay)
+          );
+
+          publish(RedisChannel.GUILD_DROP_REWARD, {
+            guildId: record.guildId,
+            channelId: record.targetId,
+          });
+
+          logger.debug(`Published reward drop for guild ${record.guildId}`);
+        });
+
+        await Promise.all(publishDrops);
       }
 
       logger.info(
