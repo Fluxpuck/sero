@@ -29,11 +29,9 @@ export enum GuildSettingType {
       fields: ["guildId", "type"],
     },
     {
-      unique: true,
       fields: ["guildId", "targetId"],
     },
     {
-      unique: true,
       fields: ["guildId", "type", "targetId"],
     },
   ],

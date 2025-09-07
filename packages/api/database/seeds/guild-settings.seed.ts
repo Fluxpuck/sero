@@ -33,7 +33,7 @@ export async function seedGuildSettings(): Promise<{
   } catch (error) {
     const errorMessage =
       error instanceof Error ? error.message : "Unknown error";
-    logger.error(`Error seeding guilds-settings: ${errorMessage}`);
+    logger.error(`Error seeding guilds-settings: ${errorMessage}`, error);
     return { success: false, error };
   }
 }
