@@ -118,7 +118,7 @@ const command: Command = {
         }
       }
 
-      embed.setFooter({ text: `Use \`/birthday\` to set your own birthday!` });
+      embed.setFooter({ text: `Use /birthday to set your own birthday!` });
 
       safeReply(interaction, { embeds: [embed] }, false, false);
     } else {
