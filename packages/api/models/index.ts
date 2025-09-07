@@ -106,19 +106,10 @@ export const initModels = (sequelize: Sequelize): void => {
       guildId: { $col: "User.guildId" },
     },
   });
-  User.hasOne(UserBirthdays, {
+  UserBirthdays.belongsTo(User, {
     foreignKey: "userId",
+    targetKey: "userId",
     constraints: false,
-    scope: {
-      guildId: { $col: "User.guildId" },
-    },
-  });
-  User.hasOne(UserBalances, {
-    foreignKey: "userId",
-    constraints: false,
-    scope: {
-      guildId: { $col: "User.guildId" },
-    },
   });
   User.hasMany(UserCareers, {
     foreignKey: "userId",
@@ -324,10 +315,8 @@ export const initModels = (sequelize: Sequelize): void => {
 
   UserBirthdays.belongsTo(User, {
     foreignKey: "userId",
+    targetKey: "userId",
     constraints: false,
-    scope: {
-      guildId: { $col: "UserBirthdays.guildId" },
-    },
   });
   UserBirthdays.belongsTo(Guild, { foreignKey: "guildId", constraints: false });
 
