@@ -1,4 +1,5 @@
 import { Request, Response, Router, NextFunction } from "express";
+import { cache, invalidateCachePerGuild } from "../../../../middleware/cache";
 import { User, UserBirthdays } from "../../../../models";
 import { ResponseHandler } from "../../../../utils/response.utils";
 import { ResponseCode } from "../../../../utils/response.types";
@@ -45,30 +46,37 @@ const router = Router({ mergeParams: true });
  *       500:
  *         description: Server error
  */
-router.get("/", async (req: Request, res: Response, next: NextFunction) => {
-  try {
-    const { guildId } = req.params;
+router.get(
+  "/",
+  cache({
+    ttl: 60 * 5,
+    keyGenerator: (req) => `GET:/guild/${req.params.guildId}/birthday`,
+  }),
+  async (req: Request, res: Response, next: NextFunction) => {
+    try {
+      const { guildId } = req.params;
 
-    const birthdays = await UserBirthdays.findAll({
-      where: { guildId: String(guildId) },
-      include: [
-        {
-          model: User,
-          attributes: ["username"],
-          required: false,
-        },
-      ],
-    });
+      const birthdays = await UserBirthdays.findAll({
+        where: { guildId: String(guildId) },
+        include: [
+          {
+            model: User,
+            attributes: ["username"],
+            required: false,
+          },
+        ],
+      });
 
-    ResponseHandler.sendSuccess(
-      res,
-      birthdays,
-      "Birthdays retrieved successfully"
-    );
-  } catch (error) {
-    next(error);
+      ResponseHandler.sendSuccess(
+        res,
+        birthdays,
+        "Birthdays retrieved successfully"
+      );
+    } catch (error) {
+      next(error);
+    }
   }
-});
+);
 
 /**
  * @swagger
@@ -109,6 +117,10 @@ router.get("/", async (req: Request, res: Response, next: NextFunction) => {
  */
 router.get(
   "/today",
+  cache({
+    ttl: 60 * 5,
+    keyGenerator: (req) => `GET:/guild/${req.params.guildId}/birthday/today`,
+  }),
   async (req: Request, res: Response, next: NextFunction) => {
     try {
       const { guildId } = req.params;
@@ -177,6 +189,10 @@ router.get(
  */
 router.get(
   "/upcoming",
+  cache({
+    ttl: 60 * 5,
+    keyGenerator: (req) => `GET:/guild/${req.params.guildId}/birthday/upcoming`,
+  }),
   async (req: Request, res: Response, next: NextFunction) => {
     try {
       const { guildId } = req.params;
@@ -290,6 +306,11 @@ router.get(
  */
 router.get(
   "/:userId",
+  cache({
+    ttl: 60 * 5,
+    keyGenerator: (req) =>
+      `GET:/guild/${req.params.guildId}/birthday/${req.params.userId}`,
+  }),
   async (req: Request, res: Response, next: NextFunction) => {
     try {
       const { guildId, userId } = req.params;
@@ -400,6 +421,7 @@ router.get(
  */
 router.post(
   "/:userId",
+  invalidateCachePerGuild("birthday"),
   async (req: Request, res: Response, next: NextFunction) => {
     const transaction = await sequelize.transaction();
 
@@ -522,6 +544,7 @@ router.post(
  */
 router.delete(
   "/:userId",
+  invalidateCachePerGuild("birthday"),
   async (req: Request, res: Response, next: NextFunction) => {
     try {
       const { guildId, userId } = req.params;

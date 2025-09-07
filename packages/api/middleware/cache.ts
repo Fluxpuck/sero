@@ -159,13 +159,41 @@ export async function clearCache(prefix: string): Promise<number> {
  * @returns Express middleware function
  */
 export function invalidateCache(prefix: string) {
-  return async (_req: Request, _res: Response, next: NextFunction) => {
+  return async (_req: Request, res: Response, next: NextFunction) => {
     try {
       await clearCache(prefix);
       next();
     } catch (error) {
       logger.error(`Cache invalidation error:`, error);
+      next(error);
+    }
+  };
+}
+
+/**
+ * Cache invalidation middleware for guild-specific routes
+ * Creates a middleware that invalidates cache based on the guildId
+ *
+ * @param basePath - The base path of the route (e.g., 'birthday')
+ * @returns Express middleware function
+ */
+export function invalidateCachePerGuild(basePath: string) {
+  return async (req: Request, res: Response, next: NextFunction) => {
+    try {
+      const { guildId } = req.params;
+      if (!guildId) {
+        logger.warn(
+          "invalidateCachePerGuild middleware called without guildId param"
+        );
+        return next();
+      }
+
+      const prefix = `${defaultOptions.prefix}GET:/guild/${guildId}/${basePath}`;
+      await clearCache(prefix);
       next();
+    } catch (error) {
+      logger.error(`Guild cache invalidation error:`, error);
+      next(error);
     }
   };
 }
