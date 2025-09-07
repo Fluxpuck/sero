@@ -6,8 +6,8 @@ import compression from "compression";
 
 import { testPostgresConnection } from "./database/sequelize";
 import { testRedisConnection } from "./redis/publisher";
-
 import { initCronJobs } from "./cron";
+import { logger } from "./utils/logger";
 
 (async () => {
   // → Setup server
@@ -34,8 +34,12 @@ import { initCronJobs } from "./cron";
   app.use(errorHandler);
 
   // → Test Database and Redis Connection
-  await testPostgresConnection(true);
-  await testRedisConnection(true);
+  const dbTest = await testPostgresConnection(true);
+  const redisTest = await testRedisConnection(true);
+  if (!dbTest || !redisTest) {
+    logger.error("Failed to connect to database or Redis. Exiting...");
+    process.exit(1);
+  }
 
   // → Start server
   app.listen(port, () => {
