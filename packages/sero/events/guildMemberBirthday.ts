@@ -11,13 +11,13 @@ import { Event } from "../types/client.types";
 import { RedisChannel } from "../redis/subscribe";
 import { logger } from "../utils/logger";
 import { getRequest, postRequest } from "../database/connection";
-import { UserBirthday } from "../types/models/user-birthday.types";
+import { UserBirthdayData } from "../types/models/user-birthday.types";
 import { ResponseStatus } from "../types/response.types";
 
 type BirthdayData = {
   guildId: string;
   channelId: string;
-  birthdays: UserBirthday[];
+  birthdays: UserBirthdayData[];
   roleId: string;
 };
 

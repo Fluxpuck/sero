@@ -1,7 +1,9 @@
+import { UserData } from "./user.types";
+
 /**
  * User Birthday type
  */
-export interface UserBirthday {
+export interface UserBirthdayData {
   id: number;
   guildId: string;
   userId: string;
@@ -13,12 +15,7 @@ export interface UserBirthday {
   age?: number;
   isPG?: boolean;
   locked?: boolean;
-}
-
-/**
- * Upcoming User Birthday type
- */
-export interface UpcomingUserBirthday extends UserBirthday {
-  upcomingDate: string;
-  daysUntil: number;
+  upcomingDate?: string;
+  daysUntil?: number;
+  User?: UserData 
 }
