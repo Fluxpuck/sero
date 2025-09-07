@@ -73,6 +73,13 @@ router.post(
       //   );
       // }
 
+      // Get or create user level
+      const [userLevel, created] = await getOrCreateUserLevel(
+        guildId,
+        userId,
+        transaction
+      );
+
       // Get Guild and User modifiers
       const guild_modifier = await Modifier.findOne({ where: { guildId } });
       const user_modifier = await Modifier.findOne({
@@ -81,13 +88,6 @@ router.post(
 
       // Calculate gain based on modifiers
       const gain = calculateXp(guild_modifier?.amount, user_modifier?.amount);
-
-      // Get or create user level
-      const [userLevel, created] = await getOrCreateUserLevel(
-        guildId,
-        userId,
-        transaction
-      );
 
       // Update user level
       userLevel.experience += gain;

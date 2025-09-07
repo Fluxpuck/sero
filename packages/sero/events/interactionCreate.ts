@@ -2,6 +2,7 @@ import { Events, Interaction, MessageFlags } from "discord.js";
 import { Event } from "../types/client.types";
 import { logger } from "../utils/logger";
 import { postRequest } from "../database/connection";
+import { useCooldown } from "../utils/cooldown";
 
 const event: Event = {
   name: Events.InteractionCreate,
@@ -25,13 +26,17 @@ const event: Event = {
       }
 
       if (command.cooldown) {
-        // Create cooldown key
-        const cooldown_key = `${interaction.user.id}_${interaction.guildId}_${command.data.name}`;
-        if (interaction.client.cooldowns.has(cooldown_key)) {
-          const expireTime = interaction.client.cooldowns.get(
-            cooldown_key
-          ) as number;
-          const remainingTime = Math.ceil((expireTime - Date.now()) / 1000);
+        // Use the cooldown hook for this command
+        const commandCooldown = useCooldown(
+          interaction.client,
+          interaction.guildId!,
+          interaction.user.id,
+          command.data.name
+        );
+
+        // Check if the user is on cooldown
+        if (commandCooldown.onCooldown()) {
+          const remainingTime = commandCooldown.timeLeft();
 
           return interaction.reply({
             content: `This command is on a cooldown! Please wait ${remainingTime} more seconds.`,
@@ -39,13 +44,8 @@ const event: Event = {
           });
         }
 
-        // Add the user to a cooldown - store the expiration timestamp
-        const expirationTime = Date.now() + command.cooldown * 1000;
-        interaction.client.cooldowns.set(
-          cooldown_key,
-          expirationTime,
-          command.cooldown
-        );
+        // Set the cooldown before executing the command
+        commandCooldown.setCooldown(command.cooldown);
       }
 
       try {
