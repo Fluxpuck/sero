@@ -1,19 +1,26 @@
 import { Request, Response, Router, NextFunction } from "express";
-import { Modifier, Guild } from "../../../../models";
+import { Modifier, Guild, User } from "../../../../models";
 import { ResponseHandler } from "../../../../utils/response.utils";
 import { calculateXp } from "../../../../utils/levels.utils";
 import { logUserExperience } from "../../../../utils/log.utils";
 import { UserExperienceLogType } from "../../../../models/user-experience-logs.model";
 import { sequelize } from "../../../../database/sequelize";
 import { getOrCreateUserLevel } from "./index";
+import { ResponseCode } from "../../../../utils/response.types";
 
 const router = Router({ mergeParams: true });
+
+/*
+This route is for naturally increasing a user's level
+by the default 15-25 experience per message
+including the personal and guild modifiers
+*/
 
 /**
  * @swagger
  * /guild/{guildId}/levels/gain/{userId}:
  *   post:
- *     summary: Increase a user's level by the guild's level gain modifier
+ *     summary: Increase a user's level by default amount (15-25) including modifiers
  *     tags:
  *       - Levels
  *     parameters:
@@ -36,9 +43,9 @@ const router = Router({ mergeParams: true });
  *           schema:
  *             type: object
  *             properties:
- *               userId:
+ *               username:
  *                 type: string
- *                 description: The Discord ID of the user
+ *                 description: The username of the user
  *     responses:
  *       200:
  *         description: User level updated successfully
@@ -55,16 +62,16 @@ router.post(
     try {
       const { guildId, userId } = req.params;
 
-      // Check if guild has premium
-      const guild = await Guild.findOne({ where: { guildId } });
-      if (!guild || !guild.hasPremium()) {
-        await transaction.rollback();
-        return ResponseHandler.sendError(
-          res,
-          "This guild does not have premium. Level updates are disabled.",
-          403
-        );
-      }
+      // // Check if guild has premium
+      // const guild = await Guild.findOne({ where: { guildId } });
+      // if (!guild || !guild.hasPremium()) {
+      //   await transaction.rollback();
+      //   return ResponseHandler.sendError(
+      //     res,
+      //     "This guild does not have premium. Level updates are disabled.",
+      //     403
+      //   );
+      // }
 
       // Get Guild and User modifiers
       const guild_modifier = await Modifier.findOne({ where: { guildId } });
@@ -76,7 +83,7 @@ router.post(
       const gain = calculateXp(guild_modifier?.amount, user_modifier?.amount);
 
       // Get or create user level
-      const [userLevel] = await getOrCreateUserLevel(
+      const [userLevel, created] = await getOrCreateUserLevel(
         guildId,
         userId,
         transaction

@@ -1,6 +1,7 @@
 import { Request, Response, Router, NextFunction } from "express";
 import { Op, Transaction } from "sequelize";
-import { Guild, UserLevel, LevelRank, Modifier } from "../../../../models";
+import { Guild, UserLevel, LevelRank, Modifier, User } from "../../../../models";
+import { fetchUsername, fetchGuildName } from "../../../../utils/discord-api";
 import { ResponseHandler } from "../../../../utils/response.utils";
 import { logUserExperience } from "../../../../utils/log.utils";
 import { UserExperienceLogType } from "../../../../models/user-experience-logs.model";
@@ -16,7 +17,37 @@ export async function getOrCreateUserLevel(
   userId: string,
   transaction: Transaction
 ) {
-  const [userLevel] = await UserLevel.findOrCreate({
+  // Check if guild exists, if not create it
+  const guild = await Guild.findOne({ where: { guildId }, transaction });
+  if (!guild) {
+    // Fetch guild name from Discord API
+    const guildName = await fetchGuildName(guildId);
+    if (guildName) {
+      await Guild.create({
+        guildId,
+        guildName,
+        premium: false, // Default value, can be updated later
+      } as Guild, { transaction });
+    }
+  }
+
+  // Check if user exists, if not create it
+  const user = await User.findOne({ where: { userId, guildId }, transaction });
+  if (!user) {
+    // Fetch username from Discord API
+    const username = await fetchUsername(userId);
+    if (username) {
+      await User.create({
+        userId,
+        guildId,
+        username,
+        premium: false, // Default value, can be updated later
+      } as User, { transaction });
+    }
+  }
+
+  // Now get or create the user level
+  return UserLevel.findOrCreate({
     where: { guildId, userId },
     defaults: {
       guildId,
@@ -24,7 +55,6 @@ export async function getOrCreateUserLevel(
     } as UserLevel,
     transaction,
   });
-  return [userLevel];
 }
 
 /**
@@ -232,7 +262,7 @@ router.post(
         }
 
         // Get or create user level
-        const [userLevel] = await getOrCreateUserLevel(
+        const [userLevel, created] = await getOrCreateUserLevel(
           guildId,
           userId,
           transaction
@@ -343,7 +373,7 @@ router.post(
         }
 
         // Get or create user level
-        const [userLevel] = await getOrCreateUserLevel(
+        const [userLevel, created] = await getOrCreateUserLevel(
           guildId,
           userId,
           transaction

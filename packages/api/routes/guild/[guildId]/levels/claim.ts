@@ -1,7 +1,6 @@
 import { Request, Response, Router, NextFunction } from "express";
-import { Modifier, Guild } from "../../../../models";
+import { Modifier, Guild, User } from "../../../../models";
 import { ResponseHandler } from "../../../../utils/response.utils";
-import { calculateXp } from "../../../../utils/levels.utils";
 import { logUserExperience } from "../../../../utils/log.utils";
 import { UserExperienceLogType } from "../../../../models/user-experience-logs.model";
 import { sequelize } from "../../../../database/sequelize";
@@ -9,11 +8,15 @@ import { getOrCreateUserLevel } from "./index";
 
 const router = Router({ mergeParams: true });
 
+/*
+This route is for claiming the Reward Drop!!
+*/
+
 /**
  * @swagger
- * /guild/{guildId}/levels/gain/{userId}:
+ * /guild/{guildId}/levels/claim/{userId}:
  *   post:
- *     summary: Increase a user's level by the guild's level gain modifier
+ *     summary: Claim the reward drop for a user
  *     tags:
  *       - Levels
  *     parameters:
@@ -106,7 +109,7 @@ router.post(
       }
 
       // Get or create user level
-      const [userLevel] = await getOrCreateUserLevel(
+      const [userLevel, created] = await getOrCreateUserLevel(
         guildId,
         userId,
         transaction
