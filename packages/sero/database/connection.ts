@@ -44,7 +44,7 @@ export async function getRequest<T = any>(
  */
 export async function postRequest<T = any, D = any>(
   endpoint: string,
-  data: D
+  data?: D
 ): Promise<ApiResponse<T>> {
   try {
     const response: AxiosResponse<ApiResponse<T>> = await instance.post(

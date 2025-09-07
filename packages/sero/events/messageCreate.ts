@@ -1,13 +1,13 @@
-import { Message, Events, Client } from "discord.js";
+import { Message, Events } from "discord.js";
 import { Event } from "../types/client.types";
 import { logger } from "../utils/logger";
-import { getRequest } from "../database/connection";
+import { postRequest } from "../database/connection";
 import { useCooldown } from "../utils/cooldown";
 
 const event: Event = {
   name: Events.MessageCreate,
   once: false,
-  async execute(message: Message, client: Client): Promise<any> {
+  async execute(message: Message): Promise<any> {
     // Skip empty messages or messages from bots
     if (!message || !message.content || message.author.bot) return;
 
@@ -16,7 +16,7 @@ const event: Event = {
 
     // Create a cooldown hook for XP gain with a 60-second cooldown per user
     const xpCooldown = useCooldown(
-      client,
+      message.client,
       message.guildId!,
       message.author.id,
       "xp-gain"
@@ -28,10 +28,13 @@ const event: Event = {
       xpCooldown.setCooldown(60);
 
       // Execute the request to gain XP
-      const result = await getRequest(
+      const result = await postRequest(
         `/guild/${message.guildId}/levels/gain/${message.author.id}`
       );
-      logger.debug(`XP gained for ${message.author.tag}`, result);
+      logger.debug(
+        `${message.author.tag} gained ${result.data.fluctuation} XP`,
+        result
+      );
     }
   },
 };

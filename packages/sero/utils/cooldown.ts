@@ -1,10 +1,14 @@
-
-import { Client } from 'discord.js';
+import { Client } from "discord.js";
 
 /**
  * Cooldown hook utility for managing user cooldowns
  */
-export const useCooldown = (client: Client, guildId: string, userId: string, tag: string) => {
+export const useCooldown = (
+  client: Client,
+  guildId: string,
+  userId: string,
+  tag: string
+) => {
   // Create a unique key for this cooldown
   const cooldownKey = `${userId}_${guildId}_${tag}`;
 
@@ -22,10 +26,10 @@ export const useCooldown = (client: Client, guildId: string, userId: string, tag
    */
   const timeLeft = (): number => {
     if (!onCooldown()) return 0;
-    
+
     const expirationTime = client.cooldowns.get<number>(cooldownKey);
     if (!expirationTime) return 0;
-    
+
     const timeRemaining = Math.ceil((expirationTime - Date.now()) / 1000);
     return timeRemaining > 0 ? timeRemaining : 0;
   };
@@ -38,14 +42,14 @@ export const useCooldown = (client: Client, guildId: string, userId: string, tag
    */
   const executable = <T>(fn: () => T, cooldownDuration: number): T | null => {
     if (onCooldown()) return null;
-    
+
     // Execute the function
     const result = fn();
-    
+
     // Set the cooldown
     const expirationTime = Date.now() + cooldownDuration * 1000;
     client.cooldowns.set(cooldownKey, expirationTime, cooldownDuration);
-    
+
     return result;
   };
 
@@ -59,7 +63,7 @@ export const useCooldown = (client: Client, guildId: string, userId: string, tag
     if (onCooldown()) {
       return false;
     }
-    
+
     // Set the cooldown
     const expirationTime = Date.now() + cooldownDuration * 1000;
     client.cooldowns.set(cooldownKey, expirationTime, cooldownDuration);
@@ -80,7 +84,6 @@ export const useCooldown = (client: Client, guildId: string, userId: string, tag
     timeLeft,
     executable,
     setCooldown,
-    clearCooldown
+    clearCooldown,
   };
 };
-

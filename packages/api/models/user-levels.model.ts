@@ -21,6 +21,9 @@ import { publish, RedisChannel } from "../redis/publisher";
   ],
 })
 export class UserLevel extends Model<UserLevel> {
+  // Store the fluctuation value for the current save operation
+  private _currentFluctuation: number = 0;
+
   @Column({
     type: DataType.INTEGER,
     autoIncrement: true,
@@ -88,8 +91,28 @@ export class UserLevel extends Model<UserLevel> {
   })
   declare remainingExp: number;
 
+  get fluctuation(): number {
+    return this._currentFluctuation || 0;
+  }
+
+  // Override toJSON to include virtual fields
+  toJSON() {
+    const values = super.toJSON();
+    return {
+      ...values,
+      fluctuation: this.fluctuation,
+    };
+  }
+
   @BeforeSave
-  static async levelCalculations(userLevel: UserLevel): Promise<void> {
+  static async beforeSaveHook(userLevel: UserLevel): Promise<void> {
+    // Calculate fluctuation if experience has changed
+    if (userLevel.changed("experience")) {
+      const currentExp = userLevel.getDataValue("experience") || 0;
+      const previousExp = userLevel.previous("experience") || 0;
+      userLevel._currentFluctuation = currentExp - previousExp;
+    }
+
     // Store previous Level record
     const previousLevel = userLevel.level;
 
