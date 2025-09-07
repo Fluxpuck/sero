@@ -1,5 +1,5 @@
 import { Request, Response, Router, NextFunction } from "express";
-import { UserBirthdays } from "../../../../models";
+import { User, UserBirthdays } from "../../../../models";
 import { ResponseHandler } from "../../../../utils/response.utils";
 import { ResponseCode } from "../../../../utils/response.types";
 import { sequelize } from "../../../../database/sequelize";
@@ -50,7 +50,14 @@ router.get("/", async (req: Request, res: Response, next: NextFunction) => {
     const { guildId } = req.params;
 
     const birthdays = await UserBirthdays.findAll({
-      where: { guildId },
+      where: { guildId: String(guildId) },
+      include: [
+        {
+          model: User,
+          attributes: ["username"],
+          required: false,
+        },
+      ],
     });
 
     ResponseHandler.sendSuccess(
@@ -119,9 +126,16 @@ router.get(
 
       const birthdays = await UserBirthdays.findAll({
         where: {
-          guildId,
+          guildId: String(guildId),
           ...dateConditions,
         },
+        include: [
+          {
+            model: User,
+            attributes: ["username"],
+            required: false,
+          },
+        ],
       });
 
       ResponseHandler.sendSuccess(
@@ -168,60 +182,68 @@ router.get(
       const { guildId } = req.params;
       const dayRange = parseInt(req.query.range as string) || 1;
 
-      // Get current date using date-fns
+      // Get the current date and the end date for the range
       const today = new Date();
+      const currentYear = today.getFullYear();
+      const endDate = addDays(today, dayRange);
 
-      // Define interface for date entries
-      interface DateEntry {
-        month: number;
-        day: number;
-        date: Date;
-      }
+      // Create date conditions for the query
+      const dateConditions = [];
 
-      // Create an array of dates for the specified range
-      const dates: DateEntry[] = [];
-      for (let i = 0; i < dayRange; i++) {
-        const date = addDays(today, i);
-        dates.push({
-          month: getMonth(date) + 1, // date-fns months are 0-indexed
-          day: getDate(date),
-          date: date, // Store the full date for later use
+      // Loop through each day in the range
+      let currentDate = today;
+      while (currentDate <= endDate) {
+        dateConditions.push({
+          [Op.and]: [
+            { month: getMonth(currentDate) + 1 }, // +1 because getMonth is 0-based
+            { day: getDate(currentDate) },
+          ],
         });
+        currentDate = addDays(currentDate, 1);
       }
-
-      // Create query conditions for the dates
-      const dateConditions = dates.map((date) => ({
-        [Op.and]: [{ month: date.month }, { day: date.day }],
-      }));
 
       // Find birthdays matching the date conditions
       const birthdays = await UserBirthdays.findAll({
         where: {
-          guildId,
+          guildId: String(guildId),
           [Op.or]: dateConditions,
         },
+        include: [
+          {
+            model: User,
+            attributes: ["username"],
+            required: false,
+          },
+        ],
       });
 
       // Add the upcoming date information to each birthday
       const birthdaysWithDate = birthdays.map((birthday) => {
-        const birthdayData = birthday.toJSON();
+        // Create date for this year's birthday
+        let upcomingDate = new Date(
+          currentYear,
+          birthday.month - 1,
+          birthday.day
+        );
 
-        // Find which date this birthday matches
-        const matchingDate = dates.find(
-          (d) => d.month === birthday.month && d.day === birthday.day
+        // If the birthday has already passed this year, use next year's date
+        if (upcomingDate < today) {
+          upcomingDate = new Date(
+            currentYear + 1,
+            birthday.month - 1,
+            birthday.day
+          );
+        }
+
+        // Calculate days until birthday
+        const daysUntil = Math.ceil(
+          (upcomingDate.getTime() - today.getTime()) / (1000 * 60 * 60 * 24)
         );
 
         return {
-          ...birthdayData,
-          upcomingDate: matchingDate
-            ? format(matchingDate.date, "MMM d")
-            : null,
-          daysUntil: matchingDate
-            ? Math.floor(
-                (matchingDate.date.getTime() - today.getTime()) /
-                  (1000 * 60 * 60 * 24)
-              )
-            : null,
+          ...birthday.toJSON(),
+          upcomingDate,
+          daysUntil,
         };
       });
 
@@ -274,9 +296,16 @@ router.get(
 
       const birthday = await UserBirthdays.findOne({
         where: {
-          guildId,
-          userId,
+          guildId: String(guildId),
+          userId: String(userId),
         },
+        include: [
+          {
+            model: User,
+            attributes: ["username"],
+            required: false,
+          },
+        ],
       });
 
       if (!birthday) {
@@ -287,9 +316,34 @@ router.get(
         );
       }
 
+      // Get current date
+      const today = new Date();
+      const currentYear = today.getFullYear();
+
+      // Create date for this year's birthday
+      let upcomingDate = new Date(
+        currentYear,
+        birthday.month - 1,
+        birthday.day
+      );
+
+      // If the birthday has already passed this year, use next year's date
+      if (upcomingDate < today) {
+        upcomingDate = new Date(
+          currentYear + 1,
+          birthday.month - 1,
+          birthday.day
+        );
+      }
+
+      // Calculate days until birthday
+      const daysUntil = Math.ceil(
+        (upcomingDate.getTime() - today.getTime()) / (1000 * 60 * 60 * 24)
+      );
+
       ResponseHandler.sendSuccess(
         res,
-        birthday,
+        { ...birthday.toJSON(), upcomingDate, daysUntil },
         "Birthday retrieved successfully"
       );
     } catch (error) {
@@ -393,7 +447,7 @@ router.post(
 
       // Check if the birthday already exists and has been updated before
       const existingBirthday = await UserBirthdays.findOne({
-        where: { guildId, userId },
+        where: { guildId: String(guildId), userId: String(userId) },
         transaction,
       });
 
@@ -474,8 +528,8 @@ router.delete(
 
       const deleted = await UserBirthdays.destroy({
         where: {
-          guildId,
-          userId,
+          guildId: String(guildId),
+          userId: String(userId),
         },
       });
 
