@@ -1,12 +1,4 @@
-import {
-  Client,
-  Guild,
-  GuildMember,
-  NewsChannel,
-  Role,
-  TextChannel,
-  ThreadChannel,
-} from "discord.js";
+import { Client, NewsChannel, TextChannel, ThreadChannel } from "discord.js";
 import { Event } from "../types/client.types";
 import { RedisChannel } from "../redis/subscribe";
 import { logger } from "../utils/logger";
@@ -29,28 +21,23 @@ const event: Event = {
     logger.debug("Processing birthday message", message);
 
     try {
-      const guild = client.guilds.cache.get(message.guildId) as Guild;
+      const guild = await client.guilds.fetch(message.guildId);
       if (!guild) return;
 
-      const channel = guild.channels.cache.get(message.channelId) as
-        | TextChannel
-        | NewsChannel
-        | ThreadChannel;
-      if (!channel) return;
+      const channel = await client.channels.fetch(message.channelId);
+      const textChannel = channel as TextChannel | NewsChannel | ThreadChannel;
+      if (!channel || !textChannel) return;
 
-      const birthdayRole = guild.roles.cache.get(message.roleId) as Role;
+      const birthdayRole = guild.roles.cache.get(message.roleId);
       if (!birthdayRole) return;
 
       // Loop through each birthday
       for (const birthday of message.birthdays) {
-        const member = guild.members.cache.get(birthday.userId) as GuildMember;
+        const member = await guild.members.fetch(birthday.userId);
         if (!member) continue;
 
         if (birthdayRole) {
           if (!member.roles.cache.has(birthdayRole.id)) {
-            // Gift the birthday role to the member
-            await member.roles.add(birthdayRole);
-
             const [birthdayMessageData, tempRoleResponse] = await Promise.all([
               getRequest(
                 `/guild/${guild.id}/assets/template-messages/random/${
@@ -77,12 +64,14 @@ const event: Event = {
             // Send birthday message
             const birthdayMessage =
               birthdayMessageData?.data?.message || "Happy Birthday {{USER}}!";
-            await channel.send(
+            await textChannel.send(
               birthdayMessage
                 .replace("{{USER}}", `<@${member.id}>`)
                 .replace("{{AGE}}", birthday.age?.toString() || "")
             );
 
+            // Gift the birthday role to the member
+            await member.roles.add(birthdayRole);
             logger.debug(`Added birthday role to ${member.user.username}`);
           }
         }

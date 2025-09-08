@@ -1,6 +1,5 @@
 import {
   Client,
-  Guild,
   TextChannel,
   NewsChannel,
   ThreadChannel,
@@ -60,17 +59,18 @@ const event: Event = {
     logger.debug("Processing reward drop message", message);
 
     try {
-      const guild = client.guilds.cache.get(message.guildId) as Guild;
+      const guild = await client.guilds.fetch(message.guildId);
       if (!guild) return;
 
-      const channel = guild.channels.cache.get(message.channelId) as
-        | TextChannel
-        | NewsChannel
-        | ThreadChannel;
-      if (!channel || !channel.isTextBased()) return;
+      const channel = await client.channels.fetch(message.channelId);
+      const textChannel = channel as TextChannel | NewsChannel | ThreadChannel;
+      if (!channel || !textChannel || !textChannel.isTextBased()) return;
 
       // Get active members from the last 5 minutes
-      const activeMemberIds = await getUniqueAuthorsFromMessages(channel, 5);
+      const activeMemberIds = await getUniqueAuthorsFromMessages(
+        textChannel,
+        5
+      );
 
       // Get randomized template messages using the dedicated random routes
       const [rewardDropData, claimRewardData] = await Promise.all([
@@ -93,7 +93,7 @@ const event: Event = {
         createRewardDropEmbed(rewardDropMessage);
 
       // Send message with button
-      const rewardDrop = await channel.send({
+      const rewardDrop = await textChannel.send({
         embeds: [rewardEmbed],
         components: [actionRow],
       });
