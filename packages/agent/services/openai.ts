@@ -109,7 +109,7 @@ export class OpenAIService {
         image: file,
         prompt,
         size: this.DEFAULT_IMAGE_SIZE,
-        quality: this.DEFAULT_IMAGE_QUALITY,
+        quality: "medium",
         background: "opaque",
       });
 
