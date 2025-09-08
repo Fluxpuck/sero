@@ -88,7 +88,7 @@ const event: Event = {
         }
       }
     } catch (error) {
-      logger.error(`Error processing birthday message: ${error}`);
+      logger.error(`Error processing birthday message`, error);
     }
   },
 };

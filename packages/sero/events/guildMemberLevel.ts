@@ -7,14 +7,10 @@ const event: Event = {
   name: RedisChannel.GUILD_MEMBER_LEVEL,
   once: false,
   async execute(message: any[], client: Client): Promise<any> {
-    logger.debug(`Level event received: ${message}`);
-
-    // Skip empty messages
-    if (!message) return;
+    if (!message || !client) return; // Skip empty messages
+    logger.debug(`Processing level message`, message);
 
     try {
-      logger.debug("Level event received", message);
-
       // Handle level event
       // TODO: Implement level handling logic
     } catch (error) {
