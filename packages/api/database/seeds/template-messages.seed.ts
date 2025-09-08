@@ -80,10 +80,9 @@ export async function seedTemplateMessages() {
       "Smile bright, {NAME}! Happy birthday! 😊",
       "Enjoy, {NAME}! Happy birthday! 🎉",
       "Happy birthday, {NAME}! Adventure time! 🎈",
-  
-  ]
-  
-  const birthdayWithAgeMessages = [
+    ];
+
+    const birthdayWithAgeMessages = [
       "Happy {AGE}th, {NAME}! Enjoy! 🎉",
       "Congrats on {AGE}, {NAME}! 🎂",
       "{NAME}, you rock at {AGE}! Happy birthday! 🎈",
@@ -93,8 +92,26 @@ export async function seedTemplateMessages() {
       "Happy Birthday, {NAME}! Have {AGE} times the fun! 😊",
       "{NAME}, {AGE} is just the start! Happy birthday! 🎉",
       "{NAME}, {AGE} wishes come true! Happy birthday! 🎈",
-      "Happy birthday, {NAME}! {AGE} looks great on you! 🎁"
-  ]
+      "Happy birthday, {NAME}! {AGE} looks great on you! 🎁",
+    ];
+
+    const levelupMessages = [
+      "Your journey to greatness continues! {{USER}} has leveled up to **level {{LEVEL}}**! 🎉",
+      "Congratulations! {{USER}} has just unlocked a new level of awesomeness at **level {{LEVEL}}**! 🌟",
+      "Level up! {{USER}}'s typing-skills is reaching new heights at **level {{LEVEL}}**! 🚀",
+      "{{USER}}'s fast fingers helped them reach **level {{LEVEL}}**! 👈",
+      "You've made your presence known! {{USER}} has reached **level {{LEVEL}}**! ",
+      "Level up! {{USER}}'s typing-skills is reaching legendary status at **level {{LEVEL}}**! 🏆",
+      "{{USER}} has reached **level {{LEVEL}}**! The sky's the limit! 🌌",
+      "{{USER}} has reached **level {{LEVEL}}**. Keep up the amazing work! 💪",
+      "{{USER}} has just leveled up to **level {{LEVEL}}**! The adventure only gets more exciting from here! 🗺️",
+      "Level up achieved! {{USER}}'s dedication is paying off at **level {{LEVEL}}**! 🏆",
+      "Milestone achieved! {{USER}} has advanced to **level {{LEVEL}}**! 🏅",
+      "{{USER}} just reached **level {{LEVEL}}**! That's what we call progress! ⚡",
+      "Look who's climbing the ranks! {{USER}} is now at **level {{LEVEL}}**! 🧗",
+      "{{USER}} leveled up to **level {{LEVEL}}**! New skills unlocked! 🔓",
+      "The grind pays off! {{USER}} has reached **level {{LEVEL}}**! 💯",
+    ];
 
     // Create welcome template messages
     for (const message of welcomeMessages) {
@@ -146,6 +163,15 @@ export async function seedTemplateMessages() {
       await TemplateMessages.create({
         guildId: null, // null for default templates
         type: TemplateMessagesType.BIRTHDAY_WITH_AGE,
+        message,
+      } as TemplateMessages);
+    }
+
+    // Create levelup template messages
+    for (const message of levelupMessages) {
+      await TemplateMessages.create({
+        guildId: null, // null for default templates
+        type: TemplateMessagesType.LEVELUP,
         message,
       } as TemplateMessages);
     }

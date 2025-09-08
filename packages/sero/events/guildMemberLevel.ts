@@ -54,7 +54,9 @@ const event: Event = {
 
       // Send levelup message
       await textChannel.send(
-        levelupMessage.replace("{{USER}}", `<@${member.id}>`)
+        levelupMessage
+          .replace("{{USER}}", `<@${member.id}>`)
+          .replace("{{LEVEL}}", message.level.toString())
       );
 
       logger.debug(`Sent levelup message to ${member.user.username}`);
