@@ -29,7 +29,7 @@ const event: Event = {
 
       // Get levelup channel and levelup message data
       const [targetChannel, levelupMessageData] = await Promise.all([
-        getRequest(`/guild/${message.guildId}/settings/levelup-channel`),
+        getRequest(`/guild/${message.guildId}/settings/level-up-channel`),
         getRequest(
           `/guild/${message.guildId}/assets/template-messages/random/levelup`
         ),
@@ -37,7 +37,7 @@ const event: Event = {
 
       if (targetChannel.status !== ResponseStatus.SUCCESS) {
         logger.error(
-          `Failed to find levelup-channel for guild ${guild.id}`,
+          `Failed to find level-up-channel for guild ${guild.id}`,
           targetChannel.message
         );
         return;
@@ -46,7 +46,8 @@ const event: Event = {
       // Get levelup channel and levelup message
       const targetChannelId = targetChannel.data.targetId;
       const levelupMessage =
-        levelupMessageData?.data?.message || "Happy Birthday {{USER}}!";
+        levelupMessageData?.data?.message ||
+        "{{USER}} has reached level {{LEVEL}}!";
 
       const channel = await client.channels.fetch(targetChannelId);
       const textChannel = channel as TextChannel | NewsChannel | ThreadChannel;
@@ -59,7 +60,7 @@ const event: Event = {
           .replace("{{LEVEL}}", message.level.toString())
       );
 
-      logger.debug(`Sent levelup message to ${member.user.username}`);
+      logger.debug(`Sent level-up message to ${member.user.username}`);
     } catch (error) {
       logger.error(`Error processing level message: ${error}`);
     }
