@@ -3,6 +3,9 @@ import {
   ChatInputCommandInteraction,
   PermissionFlagsBits,
   EmbedBuilder,
+  ActionRowBuilder,
+  ButtonBuilder,
+  ButtonStyle,
 } from "discord.js";
 import { format } from "date-fns";
 import { Command } from "../../types/client.types";
@@ -34,8 +37,18 @@ const command: Command = {
         }
       );
 
-    // Sending the message
-    await interaction.reply({ embeds: [messageEmbed] });
+    // Creating support button
+    const supportButton = new ButtonBuilder()
+      .setLabel("Support on Patreon")
+      .setURL("https://www.patreon.com/c/fluxpuck")
+      .setStyle(ButtonStyle.Link);
+
+    const row = new ActionRowBuilder<ButtonBuilder>().addComponents(
+      supportButton
+    );
+
+    // Sending the message with support button
+    await interaction.reply({ embeds: [messageEmbed], components: [row] });
   },
 };
 
