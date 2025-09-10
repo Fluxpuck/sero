@@ -18,20 +18,20 @@ const log = logger("deploy-commands");
  */
 const findCommandFiles = (dir: string, fileList: string[] = []): string[] => {
   const files = fs.readdirSync(dir);
-  
+
   for (const file of files) {
     const filePath = path.join(dir, file);
     const stat = fs.statSync(filePath);
-    
+
     if (stat.isDirectory()) {
       // Recursively search subdirectories
       findCommandFiles(filePath, fileList);
-    } else if (file.endsWith('.ts')) {
+    } else if (file.endsWith(".ts")) {
       // Add TypeScript files to the list
       fileList.push(filePath);
     }
   }
-  
+
   return fileList;
 };
 
@@ -41,7 +41,9 @@ const commandsPath: string = path.join(__dirname, "commands");
 // Find all command files recursively
 const commandFiles: string[] = findCommandFiles(commandsPath);
 
-log.info(`Found ${commandFiles.length} command files in ${commandsPath} and its subdirectories`);
+log.info(
+  `Found ${commandFiles.length} command files in ${commandsPath} and its subdirectories`
+);
 
 for (const filePath of commandFiles) {
   try {
@@ -51,7 +53,7 @@ for (const filePath of commandFiles) {
 
     if ("data" in command) {
       commands.push(command.data.toJSON());
-      log.debug(`Registered command: ${command.data.name} (${relativePath})`);
+      log.debug(`Registered ${command.data.name} (${relativePath})`);
     } else {
       log.warn(
         `The command at ${relativePath} is missing a required "data" property.`
