@@ -50,26 +50,9 @@ The Sero Bot package is the core Discord bot implementation that provides modera
 - `npm run watch`: Watch for file changes and rebuild
 - `npm run deploy`: Register slash commands with Discord
 
-## Command Categories
+## Commands
 
-### Moderation Commands
-- `/ban`: Temporarily ban a user
-- `/perm-ban`: Permanently ban a user
-- `/kick`: Remove a user from the server
-- `/timeout`: Temporarily mute a user
-- `/warn`: Issue a warning to a user
-- `/clear`: Delete messages in bulk
-- `/purge`: Remove all messages from a user
-- `/info`: Get information about a user
-
-### Birthday Commands
-- `/birthday`: Set or update your birthday
-- `/my-birthday`: View your registered birthday
-- `/upcoming-birthday`: List upcoming birthdays in the server
-
-### Miscellaneous Commands
-- `/ping`: Check bot latency
-- `/bot`: View bot information and statistics
+For a comprehensive list of all available commands with detailed descriptions and options, please refer to the [Commands Documentation](/docs/commands.md).
 
 ## Event Handling
 

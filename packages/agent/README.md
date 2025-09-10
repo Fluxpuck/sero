@@ -58,26 +58,6 @@ The Sero Agent package is a Discord bot framework built with Discord.js and Type
 - `/types`: TypeScript type definitions
 - `/utils`: Utility functions and helpers
 
-## Creating New Commands
-
-Create a new file in the `commands` directory:
-
-```typescript
-import { SlashCommandBuilder } from 'discord.js';
-import { Command } from '../types/client.types';
-
-const command: Command = {
-  data: new SlashCommandBuilder()
-    .setName('command-name')
-    .setDescription('Command description'),
-  async execute(interaction) {
-    await interaction.reply('Response');
-  },
-};
-
-export = command;
-```
-
 ## Creating New Tools
 
 Tools extend the AI assistant's capabilities:
