@@ -13,6 +13,8 @@ import { subMinutes } from "date-fns";
 import { isAfter } from "date-fns";
 import { logger } from "../utils/logger";
 
+const log = logger("message-utils");
+
 /**
  * Get unique authors from the last X minutes of messages in a channel
  * @param channel The channel to fetch messages from
@@ -145,7 +147,7 @@ export const safeReply = async (
       }
       await interaction.reply(replyOptions);
     } catch (fallbackError) {
-      logger.error("Failed to reply to interaction:", fallbackError);
+      log.error("Failed to reply to interaction:", fallbackError);
     }
   }
 };
@@ -171,5 +173,5 @@ export const safeErrorReply = async (
     { content: errorMessage, flags: MessageFlags.Ephemeral },
     isDeferred
   );
-  logger.error("Error in command execution:", error);
+  log.error("Error in command execution:", error);
 };

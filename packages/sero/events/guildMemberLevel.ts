@@ -1,11 +1,4 @@
-import {
-  Client,
-  Guild,
-  TextChannel,
-  NewsChannel,
-  ThreadChannel,
-  GuildMember,
-} from "discord.js";
+import { Client, TextChannel, NewsChannel, ThreadChannel } from "discord.js";
 import { Event } from "../types/client.types";
 import { RedisChannel } from "../redis/subscribe";
 import { logger } from "../utils/logger";
@@ -13,12 +6,14 @@ import { UserLevelData } from "../types/models/user-levels.types";
 import { getRequest } from "../database/connection";
 import { ResponseStatus } from "../types/response.types";
 
+const log = logger("guild-member-level");
+
 const event: Event = {
   name: RedisChannel.GUILD_MEMBER_LEVEL,
   once: false,
   async execute(message: UserLevelData, client: Client): Promise<any> {
     if (!message || !client) return; // Skip empty messages
-    logger.debug(`Processing level message`, message);
+    log.debug(`Processing level message`, message);
 
     try {
       const guild = await client.guilds.fetch(message.guildId);
@@ -36,7 +31,7 @@ const event: Event = {
       ]);
 
       if (targetChannel.status !== ResponseStatus.SUCCESS) {
-        logger.error(
+        log.error(
           `Failed to find level-up-channel for guild ${guild.id}`,
           targetChannel.message
         );
@@ -60,9 +55,9 @@ const event: Event = {
           .replace("{{LEVEL}}", message.level.toString())
       );
 
-      logger.debug(`Sent level-up message to ${member.user.username}`);
+      log.debug(`Sent level-up message to ${member.user.username}`);
     } catch (error) {
-      logger.error(`Error processing level message: ${error}`);
+      log.error(`Error processing level message: ${error}`);
     }
   },
 };

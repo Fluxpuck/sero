@@ -6,6 +6,8 @@ import { getRequest, postRequest } from "../database/connection";
 import { UserBirthdayData } from "../types/models/user-birthday.types";
 import { ResponseStatus } from "../types/response.types";
 
+const log = logger("guild-member-birthday");
+
 type BirthdayData = {
   guildId: string;
   channelId: string;
@@ -18,7 +20,7 @@ const event: Event = {
   once: false,
   async execute(message: BirthdayData, client: Client): Promise<any> {
     if (!message || !client) return; // Skip empty messages
-    logger.debug("Processing birthday message", message);
+    log.debug("Processing birthday message", message);
 
     try {
       const guild = await client.guilds.fetch(message.guildId);
@@ -51,11 +53,11 @@ const event: Event = {
             ]);
 
             if (tempRoleResponse.status == ResponseStatus.SUCCESS) {
-              logger.debug(
+              log.debug(
                 `User ${member.id} claimed reward in guild ${guild.id}`
               );
             } else {
-              logger.error(
+              log.error(
                 `Failed to claim reward for user ${member.id} in guild ${guild.id}`,
                 tempRoleResponse.message
               );
@@ -72,12 +74,12 @@ const event: Event = {
 
             // Gift the birthday role to the member
             await member.roles.add(birthdayRole);
-            logger.debug(`Added birthday role to ${member.user.username}`);
+            log.debug(`Added birthday role to ${member.user.username}`);
           }
         }
       }
     } catch (error) {
-      logger.error(`Error processing birthday message`, error);
+      log.error(`Error processing birthday message`, error);
     }
   },
 };

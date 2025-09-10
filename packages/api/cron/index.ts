@@ -4,8 +4,10 @@ import { PublishBirthday } from "./birthday.cron";
 import { PublishRevokeTemporaryBan } from "./revoke-temporary-ban.cron";
 import { logger } from "../utils/logger";
 
+const log = logger("cron-job-manager");
+
 export const initCronJobs = (delay: number = 0): void => {
-  logger.info("Initializing cron jobs...");
+  log.info("Initializing cron jobs...");
 
   // Register all cron jobs here
   const jobs = [PublishRewardDrop, PublishBirthday, PublishRevokeTemporaryBan];
@@ -14,9 +16,9 @@ export const initCronJobs = (delay: number = 0): void => {
   jobs.forEach((job) => {
     if (job && job.start) {
       job.start();
-      logger.debug(`Started ${job.name || "unnamed"}`);
+      log.debug(`Started ${job.name || "unnamed"}`);
     }
   });
 
-  logger.info(`Total cron-jobs started: ${jobs.length}`);
+  log.info(`Total cron-jobs started: ${jobs.length}`);
 };

@@ -1,6 +1,8 @@
 import axios from "axios";
 import { logger } from "./logger";
 
+const log = logger("discord-api");
+
 /**
  * Fetches a user's username from Discord API
  * @param userId The Discord user ID
@@ -19,7 +21,7 @@ export async function fetchUsername(userId: string): Promise<string | null> {
 
     return response.data.username;
   } catch (error) {
-    logger.error(`Error fetching username for user ${userId}:`, error);
+    log.error(`Error fetching username for user ${userId}:`, error);
     return null;
   }
 }
@@ -42,7 +44,7 @@ export async function fetchGuildName(guildId: string): Promise<string | null> {
 
     return response.data.name;
   } catch (error) {
-    logger.error(`Error fetching guild name for guild ${guildId}:`, error);
+    log.error(`Error fetching guild name for guild ${guildId}:`, error);
     return null;
   }
 }

@@ -2,6 +2,8 @@ import { User } from "../../models";
 import { UserType } from "../../models/user.model";
 import { logger } from "../../utils/logger";
 
+const log = logger("users-seed");
+
 export async function seedUsers(): Promise<{
   success: boolean;
   error?: unknown;
@@ -39,12 +41,12 @@ export async function seedUsers(): Promise<{
 
   try {
     await User.bulkCreate(users as User[], { individualHooks: true });
-    logger.success(`${users.length} users have been seeded successfully.`);
+    log.success(`${users.length} users have been seeded successfully.`);
     return { success: true };
   } catch (error) {
     const errorMessage =
       error instanceof Error ? error.message : "Unknown error";
-    logger.error(`Error seeding users: ${errorMessage}`);
+    log.error(`Error seeding users: ${errorMessage}`);
     return { success: false, error };
   }
 }

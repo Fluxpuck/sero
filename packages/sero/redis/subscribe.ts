@@ -2,6 +2,8 @@ import Redis from "ioredis";
 import { Client } from "discord.js";
 import { logger } from "../utils/logger";
 
+const log = logger("redis-subscribe");
+
 /**
  * Redis Channels
  * These correspond to Discord events
@@ -24,9 +26,7 @@ export const redis = new Redis({
   reconnectOnError: () => true,
   retryStrategy: (times) => {
     const delay = Math.min(times * 1000, 5000);
-    logger.warn(
-      `Redis: Retrying connection in ${delay / 1000}s (attempt ${times})`
-    );
+    log.warn(`Retrying connection in ${delay / 1000}s (attempt ${times})`);
     return delay;
   },
 });
@@ -58,11 +58,11 @@ export function subscribe(client: Client): () => void {
     return new Promise<void>((resolve) => {
       redis.subscribe(channel, (err) => {
         if (err) {
-          logger.error(`Redis: Failed to subscribe to ${channel}:`, err);
+          log.error(`Failed to subscribe to ${channel}:`, err);
           subscriptionStatus.set(channel, false);
         } else {
           subscriptionStatus.set(channel, true);
-          logger.debug(`Redis: Subscribed to ${channel}`);
+          log.debug(`Subscribed to ${channel}`);
         }
         resolve();
       });
@@ -74,8 +74,8 @@ export function subscribe(client: Client): () => void {
     const successCount = Array.from(subscriptionStatus.values()).filter(
       Boolean
     ).length;
-    logger.info(
-      `Redis: Successfully subscribed to ${successCount}/${channels.length} channels`
+    log.info(
+      `Successfully subscribed to ${successCount}/${channels.length} channels`
     );
   });
 
@@ -88,15 +88,15 @@ export function subscribe(client: Client): () => void {
       // Emit the Discord Client Event
       client.emit(channel, payload.data, client);
 
-      logger.debug(`Redis: Received event ${channel}`, payload);
+      log.debug(`Received event ${channel}`, payload);
     } catch (error) {
-      logger.error(`Redis: Failed to process message from ${channel}:`, error);
+      log.error(`Failed to process message from ${channel}:`, error);
     }
   });
 
   // Return cleanup function
   return () => {
     channels.forEach((channel) => redis.unsubscribe(channel));
-    logger.info("Redis: Unsubscribed from all channels");
+    log.info("Unsubscribed from all channels");
   };
 }

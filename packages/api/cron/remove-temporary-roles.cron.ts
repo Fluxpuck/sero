@@ -5,12 +5,14 @@ import { logger } from "../utils/logger";
 import { TemporaryRole } from "../models/temporary-roles.model";
 import { publish, RedisChannel } from "../redis/publisher";
 
+const log = logger("remove-temporary-roles");
+
 export const PublishRevokeTemporaryBan = new CronJob(
   "0 0 * * *", // Cron expression: At midnight (00:00) UTC every day
 
   async function () {
     try {
-      logger.info("Checking for expired Temporary Roles");
+      log.info("Checking for expired Temporary Roles");
 
       // Find all expired temporary roles
       const expired = await TemporaryRole.findAll({
@@ -30,7 +32,7 @@ export const PublishRevokeTemporaryBan = new CronJob(
               userId: record.userId,
               roleId: record.roleId,
             });
-            logger.debug(
+            log.debug(
               `Published revoke temporary role message for ${record.userId} in ${record.guildId}`
             );
             return Promise.resolve();
@@ -38,9 +40,9 @@ export const PublishRevokeTemporaryBan = new CronJob(
         );
       }
 
-      logger.info(`Revoked temporary role for ${expired.length} users`);
+      log.info(`Revoked temporary role for ${expired.length} users`);
     } catch (error) {
-      logger.error("Error in Revoke Temporary Role cron-job:", error);
+      log.error("Error in Revoke Temporary Role cron-job:", error);
     }
   },
 

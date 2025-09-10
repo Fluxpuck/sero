@@ -5,6 +5,8 @@ import { CommandLogs } from "../../../models";
 import { Op } from "sequelize";
 import { logger } from "../../../utils/logger";
 
+const log = logger("command-logs");
+
 const router = Router({ mergeParams: true });
 
 /**
@@ -238,7 +240,7 @@ router.post("/", async (req: Request, res: Response, next: NextFunction) => {
       );
     }
 
-    logger.debug("Command log details", {
+    log.debug("Command log details", {
       guildId,
       commandName,
       executorId,

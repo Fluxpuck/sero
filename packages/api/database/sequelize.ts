@@ -30,6 +30,8 @@ import {
 
 config({ path: path.resolve(__dirname, "../config/.env") });
 
+const log = logger("sequelize");
+
 // Setup the environment variables
 const postgres_host: string = process.env.POSTGRES_HOST || "localhost";
 const postgres_user: string = process.env.POSTGRES_USER || "postgres";
@@ -87,14 +89,14 @@ export const sequelize = new Sequelize(
  * Test the connection to the Postgres database
  */
 export async function testPostgresConnection(
-  log: boolean = false
+  logging: boolean = false
 ): Promise<boolean> {
   try {
     const start = performance.now();
     await sequelize.authenticate();
     const end = performance.now();
-    if (log) {
-      logger.success(
+    if (logging) {
+      log.success(
         `Successfully connected to Postgres in ${Math.round(
           end - start
         )} milliseconds`
@@ -102,7 +104,7 @@ export async function testPostgresConnection(
     }
     return true;
   } catch (err) {
-    logger.error("Error connecting to Postgres:", err);
+    log.error("Error connecting to Postgres:", err);
     return false;
   }
 }

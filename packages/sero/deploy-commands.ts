@@ -8,6 +8,8 @@ import { logger } from "./utils/logger";
 
 dotenv.config({ path: path.join(__dirname, ".", "config", ".env") });
 
+const log = logger("deploy-commands");
+
 /**
  * Recursively find all TypeScript files in a directory
  * @param dir Directory to search
@@ -39,7 +41,7 @@ const commandsPath: string = path.join(__dirname, "commands");
 // Find all command files recursively
 const commandFiles: string[] = findCommandFiles(commandsPath);
 
-logger.info(`Found ${commandFiles.length} command files in ${commandsPath} and its subdirectories`);
+log.info(`Found ${commandFiles.length} command files in ${commandsPath} and its subdirectories`);
 
 for (const filePath of commandFiles) {
   try {
@@ -49,15 +51,15 @@ for (const filePath of commandFiles) {
 
     if ("data" in command) {
       commands.push(command.data.toJSON());
-      logger.debug(`Registered command: ${command.data.name} (${relativePath})`);
+      log.debug(`Registered command: ${command.data.name} (${relativePath})`);
     } else {
-      logger.warn(
+      log.warn(
         `The command at ${relativePath} is missing a required "data" property.`
       );
     }
   } catch (error) {
     const fileName = path.basename(filePath);
-    logger.error(`Error loading command ${fileName}:`, error);
+    log.error(`Error loading command ${fileName}:`, error);
   }
 }
 
@@ -74,12 +76,12 @@ const rest = new REST().setToken(process.env.DISCORD_TOKEN);
 (async () => {
   try {
     // First, get the existing commands to check what needs to be deleted
-    logger.info("Fetching existing commands...");
+    log.info("Fetching existing commands...");
     const existingCommands = (await rest.get(
       Routes.applicationCommands(process.env.CLIENT_ID!)
     )) as any[];
 
-    logger.info(
+    log.info(
       `Started refreshing ${commands.length} application (/) commands globally.`
     );
 
@@ -90,7 +92,7 @@ const rest = new REST().setToken(process.env.DISCORD_TOKEN);
       { body: commands }
     );
 
-    logger.success(
+    log.success(
       `Successfully reloaded ${
         Array.isArray(data) ? data.length : 0
       } global application (/) commands.`
@@ -104,7 +106,7 @@ const rest = new REST().setToken(process.env.DISCORD_TOKEN);
       );
 
       if (removedCommands.length > 0) {
-        logger.info(
+        log.info(
           `Detected ${
             removedCommands.length
           } removed command(s): ${removedCommands
@@ -114,10 +116,10 @@ const rest = new REST().setToken(process.env.DISCORD_TOKEN);
       }
     }
 
-    logger.info(
+    log.info(
       "Note: Global commands can take up to 1 hour to update across all servers."
     );
   } catch (error) {
-    logger.error("Error deploying commands:", error);
+    log.error("Error deploying commands:", error);
   }
 })();

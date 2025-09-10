@@ -1,6 +1,8 @@
 import { TemplateMessages, TemplateMessagesType } from "../../models";
 import { logger } from "../../utils/logger";
 
+const log = logger("template-messages-seed");
+
 /**
  * Seed template messages with default welcome messages and away reasons
  * Migrated from SQL migration file: messages.sql
@@ -177,14 +179,14 @@ export async function seedTemplateMessages() {
     }
 
     // Log success message
-    logger.success(
+    log.success(
       `Seeded ${welcomeMessages.length} welcome messages, ${awayMessages.length} away messages, ${rewardDropMessages.length} reward drop messages, and ${claimRewardMessages.length} claim reward messages.`
     );
     return { success: true };
   } catch (error) {
     const errorMessage =
       error instanceof Error ? error.message : "Unknown error";
-    logger.error(`Error seeding template messages: ${errorMessage}`);
+    log.error(`Error seeding template messages: ${errorMessage}`);
     return { success: false, error };
   }
 }

@@ -10,6 +10,8 @@ import { logger } from "./utils/logger";
 
 dotenv.config({ path: path.join(__dirname, ".", "config", ".env") });
 
+const log = logger("sero");
+
 const client = new Client({
   intents: [
     GatewayIntentBits.Guilds,
@@ -38,7 +40,7 @@ const initBot = async (): Promise<void> => {
       throw new Error("DISCORD_TOKEN is missing in the environment variables");
     }
 
-    logger.info("Initializing Bot...");
+    log.info("Initializing Bot...");
 
     // Load commands
     loadCommands(client);
@@ -49,7 +51,7 @@ const initBot = async (): Promise<void> => {
     // Login to Discord
     await client.login(token);
   } catch (error) {
-    logger.error("Error initializing bot:", error);
+    log.error("Error initializing bot:", error);
     process.exit(1);
   }
 };

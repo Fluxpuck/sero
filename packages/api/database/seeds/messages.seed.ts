@@ -2,6 +2,8 @@ import { Messages, User } from "../../models";
 import { faker } from "@faker-js/faker";
 import { logger } from "../../utils/logger";
 
+const log = logger("messages-seed");
+
 /**
  * Seed messages with faker to generate realistic content
  */
@@ -44,12 +46,12 @@ export async function seedMessages(count = 100) {
     });
 
     await Messages.bulkCreate(randomMessages as Messages[]);
-    logger.success(`${count} messages have been seeded successfully.`);
+    log.success(`${count} messages have been seeded successfully.`);
     return { success: true };
   } catch (error) {
     const errorMessage =
       error instanceof Error ? error.message : "Unknown error";
-    logger.error(`Error seeding messages: ${errorMessage}`);
+    log.error(`Error seeding messages: ${errorMessage}`);
     return { success: false, error };
   }
 }

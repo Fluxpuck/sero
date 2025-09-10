@@ -9,6 +9,8 @@ import { testRedisConnection } from "./redis/publisher";
 import { initCronJobs } from "./cron";
 import { logger } from "./utils/logger";
 
+const log = logger("api");
+
 (async () => {
   // → Setup server
   const app = express();
@@ -37,7 +39,7 @@ import { logger } from "./utils/logger";
   const dbTest = await testPostgresConnection(true);
   const redisTest = await testRedisConnection(true);
   if (!dbTest || !redisTest) {
-    logger.error("Failed to connect to database or Redis. Exiting...");
+    log.error("Failed to connect to database or Redis. Exiting...");
     process.exit(1);
   }
 

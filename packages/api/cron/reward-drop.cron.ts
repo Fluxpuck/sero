@@ -1,12 +1,12 @@
 import { CronJob } from "cron";
 import { logger } from "../utils/logger";
-
 import {
   GuildSettings,
   GuildSettingType,
 } from "../models/guild-settings.model";
-
 import { publish, RedisChannel } from "../redis/publisher";
+
+const log = logger("reward-drop");
 
 const MIN_DELAY = 2 * 60 * 1000; // 2 minutes in milliseconds
 const MAX_DELAY = 30 * 60 * 1000; // 30 minutes in milliseconds
@@ -16,7 +16,7 @@ export const PublishRewardDrop = new CronJob(
 
   async function () {
     try {
-      logger.info("Initializing Reward Drops Distribution");
+      log.info("Initializing Reward Drops Distribution");
 
       const dropGuilds = await GuildSettings.findAll({
         where: {
@@ -38,17 +38,17 @@ export const PublishRewardDrop = new CronJob(
             channelId: record.targetId,
           });
 
-          logger.debug(`Published reward drop for guild ${record.guildId}`);
+          log.debug(`Published reward drop for guild ${record.guildId}`);
         });
 
         await Promise.all(publishDrops);
       }
 
-      logger.info(
+      log.info(
         `Reward Drops Distributed successfully to ${dropGuilds.length} guilds`
       );
     } catch (error) {
-      logger.error("Error in Reward Drops cron-job", error);
+      log.error("Error in Reward Drops cron-job", error);
     }
   },
 

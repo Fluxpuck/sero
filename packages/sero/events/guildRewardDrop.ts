@@ -18,6 +18,8 @@ import { getUniqueAuthorsFromMessages, safeReply } from "../utils/message";
 import { getRequest, postRequest } from "../database/connection";
 import { ResponseStatus } from "../types/response.types";
 
+const log = logger("guild-reward-drop");
+
 type DropEventPayload = {
   guildId: string;
   channelId: string;
@@ -56,7 +58,7 @@ const event: Event = {
   once: false,
   async execute(message: DropEventPayload, client: Client): Promise<any> {
     if (!message || !client) return; // Skip empty messages
-    logger.debug("Processing reward drop message", message);
+    log.debug("Processing reward drop message", message);
 
     try {
       const guild = await client.guilds.fetch(message.guildId);
@@ -160,9 +162,9 @@ const event: Event = {
         );
 
         if (claimResponse.status == ResponseStatus.SUCCESS) {
-          logger.debug(`User ${userId} claimed reward in guild ${guild.id}`);
+          log.debug(`User ${userId} claimed reward in guild ${guild.id}`);
         } else {
-          logger.error(
+          log.error(
             `Failed to claim reward for user ${userId} in guild ${guild.id}`,
             claimResponse.message
           );
@@ -176,11 +178,11 @@ const event: Event = {
             await rewardDrop.delete(); // Just delete the message when expired
           }
         } catch (error) {
-          logger.error("Error deleting expired reward message:", error);
+          log.error("Error deleting expired reward message:", error);
         }
       });
     } catch (error) {
-      logger.error(`Error processing drop message`, error);
+      log.error(`Error processing drop message`, error);
     }
   },
 };

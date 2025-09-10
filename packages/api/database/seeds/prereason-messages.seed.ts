@@ -1,6 +1,8 @@
 import { PrereasonMessages, ModerationType } from "../../models";
 import { logger } from "../../utils/logger";
 
+const log = logger("prereason-messages-seed");
+
 /**
  * Seed prereason messages with default moderation reason messages
  * Migrated from SQL migration file: messages.sql and reason-messages.js
@@ -90,14 +92,14 @@ export async function seedPrereasonMessages() {
       } as PrereasonMessages);
     }
 
-    logger.success(
+    log.success(
       `Seeded ${kickReasons.length} kick reason messages, ${muteReasons.length} mute reason messages, ${banReasons.length} ban reason messages, and ${warnReasons.length} warn reason messages.`
     );
     return { success: true };
   } catch (error) {
     const errorMessage =
       error instanceof Error ? error.message : "Unknown error";
-    logger.error(`Error seeding prereason messages: ${errorMessage}`);
+    log.error(`Error seeding prereason messages: ${errorMessage}`);
     return { success: false, error };
   }
 }

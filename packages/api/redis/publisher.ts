@@ -1,6 +1,8 @@
 import Redis from "ioredis";
 import { logger } from "../utils/logger";
 
+const log = logger("redis-publisher");
+
 /**
  * Redis Channels
  * These correspond to Discord events
@@ -50,10 +52,10 @@ export async function publish<T = any>(
       return await publisher.publish(channel, JSON.stringify(payload));
     }
 
-    logger.warn(`Invalid Redis channel: ${channel}`);
+    log.warn(`Invalid Redis channel: ${channel}`);
     return Promise.resolve();
   } catch (error) {
-    logger.error(`Error publishing to Redis channel ${channel}:`, error);
+    log.error(`Error publishing to Redis channel ${channel}:`, error);
     throw error; // Re-throw to allow caller to handle
   }
 }
@@ -62,23 +64,23 @@ export async function publish<T = any>(
  * Test the connection to Redis
  */
 export async function testRedisConnection(
-  log: boolean = false
+  logging: boolean = false
 ): Promise<boolean> {
   try {
     const result = await publisher.ping();
     if (result === "PONG") {
-      if (log) {
-        logger.success("Successfully connected to Redis");
+      if (logging) {
+        log.success("Successfully connected to Redis");
       }
       return true;
     } else {
-      if (log) {
-        logger.error("Failed to connect to Redis");
+      if (logging) {
+        log.error("Failed to connect to Redis");
       }
       return false;
     }
   } catch (err) {
-    logger.error("Error connecting to Redis:", err);
+    log.error("Error connecting to Redis:", err);
     return false;
   }
 }

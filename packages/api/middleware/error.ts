@@ -3,6 +3,8 @@ import { ResponseHandler } from "../utils/response.utils";
 import { ResponseCode } from "../utils/response.types";
 import { logger } from "../utils/logger";
 
+const log = logger("error-handler");
+
 interface AppError extends Error {
   statusCode?: number;
 }
@@ -30,13 +32,10 @@ export const errorHandler = (
   const stackTraceArray = err.stack.split("\n").map((line) => line.trim());
 
   // Log the error details
-  logger.error(`Error occurred: ${err.message}`);
-  if (process.env.NODE_ENV === "development") {
-    logger.error("An error occurred:", {
-      message: err.message,
-      stackTrace: stackTraceArray,
-    });
-  }
+  log.error("An error occurred:", {
+    message: err.message,
+    stackTrace: stackTraceArray,
+  });
 
   // Use ResponseHandler to send a standardized error response
   ResponseHandler.sendError(res, "Oops, something went wrong", statusCode);

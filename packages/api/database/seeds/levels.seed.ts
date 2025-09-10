@@ -1,6 +1,8 @@
 import { Level } from "../../models";
 import { logger } from "../../utils/logger";
 
+const log = logger("levels-seed");
+
 // Define the total number of levels and experience points for the first and last levels
 const TOTAL_LEVELS = 100;
 const FIRST_LEVEL_EXP = 100;
@@ -28,12 +30,12 @@ export async function seedLevels(): Promise<{
 
   try {
     await Level.bulkCreate(levels as Level[]);
-    logger.success(`${levels.length} levels have been seeded successfully.`);
+    log.success(`${levels.length} levels have been seeded successfully.`);
     return { success: true };
   } catch (error) {
     const errorMessage =
       error instanceof Error ? error.message : "Unknown error";
-    logger.error(`Error seeding levels: ${errorMessage}`);
+    log.error(`Error seeding levels: ${errorMessage}`);
     return { success: false, error };
   }
 }

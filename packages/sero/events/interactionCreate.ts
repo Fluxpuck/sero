@@ -4,6 +4,8 @@ import { logger } from "../utils/logger";
 import { postRequest } from "../database/connection";
 import { useCooldown } from "../utils/cooldown";
 
+const log = logger("interaction-create");
+
 const event: Event = {
   name: Events.InteractionCreate,
   once: false,
@@ -19,9 +21,7 @@ const event: Event = {
       const command = interaction.client.commands.get(interaction.commandName);
 
       if (!command) {
-        logger.error(
-          `No command matching ${interaction.commandName} was found.`
-        );
+        log.error(`No command matching ${interaction.commandName} was found.`);
         return;
       }
 
@@ -62,11 +62,11 @@ const event: Event = {
           }
         );
 
-        logger.debug("Command logged successfully", commandLog);
+        log.debug("Command logged successfully", commandLog);
       } catch (error) {
-        logger.error(`Error executing ${interaction.commandName}:`, error);
+        log.error(`Error executing ${interaction.commandName}:`, error);
 
-        if (process.env.NODE_ENV === "development") {
+        if (process.env.DEBUG === "true") {
           if (interaction.replied || interaction.deferred) {
             await interaction.followUp({
               content: "There was an error while executing this command!",
@@ -85,13 +85,13 @@ const event: Event = {
     // Handle message component interactions (buttons, select menus)
     else if (interaction.isMessageComponent()) {
       // You can add custom handling for buttons/select menus here
-      logger.debug(`Received component interaction: ${interaction.customId}`);
+      log.debug(`Received component interaction: ${interaction.customId}`);
     }
 
     // Handle modal submissions
     else if (interaction.isModalSubmit()) {
       // You can add custom handling for modal submissions here
-      logger.debug(`Received modal submission: ${interaction.customId}`);
+      log.debug(`Received modal submission: ${interaction.customId}`);
     }
 
     // Handle autocomplete interactions
@@ -99,7 +99,7 @@ const event: Event = {
       const command = interaction.client.commands.get(interaction.commandName);
 
       if (!command || !("autocomplete" in command)) {
-        logger.error(
+        log.error(
           `No autocomplete handler for ${interaction.commandName} was found.`
         );
         return;
@@ -112,7 +112,7 @@ const event: Event = {
           await command.autocomplete(interaction);
         }
       } catch (error) {
-        logger.error(
+        log.error(
           `Error handling autocomplete for ${interaction.commandName}:`,
           error
         );

@@ -1,6 +1,8 @@
 import { GuildSettings } from "../../models";
 import { logger } from "../../utils/logger";
 
+const log = logger("guild-settings-seed");
+
 export async function seedGuildSettings(): Promise<{
   success: boolean;
   error?: unknown;
@@ -26,14 +28,14 @@ export async function seedGuildSettings(): Promise<{
 
   try {
     await GuildSettings.bulkCreate(guildSettings as GuildSettings[]);
-    logger.success(
+    log.success(
       `${guildSettings.length} guilds-settings have been processed successfully.`
     );
     return { success: true, count: guildSettings.length };
   } catch (error) {
     const errorMessage =
       error instanceof Error ? error.message : "Unknown error";
-    logger.error(`Error seeding guilds-settings: ${errorMessage}`, error);
+    log.error(`Error seeding guilds-settings: ${errorMessage}`, error);
     return { success: false, error };
   }
 }

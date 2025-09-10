@@ -4,6 +4,8 @@ import { logger } from "../utils/logger";
 import { postRequest } from "../database/connection";
 import { useCooldown } from "../utils/cooldown";
 
+const log = logger("message-create");
+
 const event: Event = {
   name: Events.MessageCreate,
   once: false,
@@ -31,7 +33,7 @@ const event: Event = {
       const result = await postRequest(
         `/guild/${message.guildId}/levels/gain/${message.author.id}`
       );
-      logger.debug(
+      log.debug(
         `${message.author.tag} gained ${result.data.fluctuation} XP`,
         result
       );

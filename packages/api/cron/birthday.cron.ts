@@ -9,12 +9,14 @@ import {
 import { UserBirthdays } from "../models/user-birthdays.model";
 import { publish, RedisChannel } from "../redis/publisher";
 
+const log = logger("birthday");
+
 export const PublishBirthday = new CronJob(
   "0 14 * * *", // Cron expression: At 14:00 (2 PM) UTC every day
 
   async function () {
     try {
-      logger.info("Initializing Birthday Message Distribution");
+      log.info("Initializing Birthday Message Distribution");
 
       const [birthdayChannels, birthdayRoles] = await Promise.all([
         GuildSettings.findAll({
@@ -51,14 +53,12 @@ export const PublishBirthday = new CronJob(
           birthdays,
         });
 
-        logger.debug(
-          `Published birthday messages for guild ${channel.guildId}`
-        );
+        log.debug(`Published birthday messages for guild ${channel.guildId}`);
       });
 
       await Promise.all(birthdayPromises);
     } catch (error) {
-      logger.error("Error in Birthday cron-job:", error);
+      log.error("Error in Birthday cron-job:", error);
     }
   },
 

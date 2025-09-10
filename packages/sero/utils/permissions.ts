@@ -1,6 +1,8 @@
 import { ChatInputCommandInteraction, GuildMember } from "discord.js";
 import { logger } from "./logger";
 
+const log = logger("permissions");
+
 type ModAction = "warn" | "kick" | "ban" | "disconnect" | "timeout" | "purge";
 
 type PermissionCheck = {
@@ -54,7 +56,7 @@ export const checkPermissions = (
       isModeratable,
     };
   } catch (error) {
-    logger.error(`Error checking permissions for ${action}:`, error);
+    log.error(`Error checking permissions for ${action}:`, error);
     return {
       success: false,
       message: "An error occurred while checking permissions",

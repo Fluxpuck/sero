@@ -1,6 +1,8 @@
 import Redis from "ioredis";
 import { logger } from "../utils/logger";
 
+const log = logger("cache");
+
 const redisUrl = process.env.REDIS_URL || "redis://localhost:6379";
 const cacheClient = new Redis(redisUrl);
 
@@ -19,7 +21,7 @@ export class RedisCache {
       const data = await cacheClient.get(key);
       return data ? JSON.parse(data) : null;
     } catch (error) {
-      logger.error(`Error getting cache for key ${key}:`, error);
+      log.error(`Error getting cache for key ${key}:`, error);
       return null;
     }
   }
@@ -43,7 +45,7 @@ export class RedisCache {
       
       return true;
     } catch (error) {
-      logger.error(`Error setting cache for key ${key}:`, error);
+      log.error(`Error setting cache for key ${key}:`, error);
       return false;
     }
   }
@@ -58,7 +60,7 @@ export class RedisCache {
       await cacheClient.del(key);
       return true;
     } catch (error) {
-      logger.error(`Error deleting cache for key ${key}:`, error);
+      log.error(`Error deleting cache for key ${key}:`, error);
       return false;
     }
   }
@@ -76,7 +78,7 @@ export class RedisCache {
       }
       return 0;
     } catch (error) {
-      logger.error(`Error clearing cache with prefix ${prefix}:`, error);
+      log.error(`Error clearing cache with prefix ${prefix}:`, error);
       return 0;
     }
   }
@@ -90,7 +92,7 @@ export class RedisCache {
       await cacheClient.ping();
       return true;
     } catch (error) {
-      logger.error("Error connecting to Redis cache:", error);
+      log.error("Error connecting to Redis cache:", error);
       return false;
     }
   }

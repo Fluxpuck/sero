@@ -5,13 +5,15 @@ import { subscribe } from "../redis/subscribe";
 import { healthCheck } from "../database/connection";
 import { ResponseStatus } from "../types/response.types";
 
+const log = logger("ready");
+
 const event: Event = {
   name: Events.ClientReady,
   once: true,
   async execute(client: Client) {
-    logger.success(`Logged in as ${client.user?.tag}`);
-    logger.info(`Serving in ${client.guilds.cache.size} guilds`);
-    logger.info(`Started at ${new Date().toLocaleString()}`);
+    log.success(`Logged in as ${client.user?.tag}`);
+    log.info(`Serving in ${client.guilds.cache.size} guilds`);
+    log.info(`Started at ${new Date().toLocaleString()}`);
 
     client.user?.setPresence({
       activities: [{ name: "🤖", type: 4 }],
@@ -24,15 +26,15 @@ const event: Event = {
       const { postgres, redis } = result.services;
 
       if (postgres === ResponseStatus.SUCCESS) {
-        logger.success(`Postgress connected successfully`);
+        log.success(`Postgress connected successfully`);
       } else {
-        logger.error(`Postgress connection failed`);
+        log.error(`Postgress connection failed`);
       }
 
       if (redis === ResponseStatus.SUCCESS) {
-        logger.success(`Redis connected successfully`);
+        log.success(`Redis connected successfully`);
       } else {
-        logger.error(`Redis connection failed`);
+        log.error(`Redis connection failed`);
       }
     }
 

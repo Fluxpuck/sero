@@ -2,6 +2,8 @@ import { Request, Response, NextFunction } from "express";
 import { RedisCache } from "../redis/cache";
 import { logger } from "../utils/logger";
 
+const log = logger("cache");
+
 /**
  * Cache options interface
  */
@@ -101,12 +103,12 @@ export function cache(options: CacheOptions = {}) {
 
       if (cachedData) {
         // Return cached response
-        logger.debug(`Found cached response for ${cacheKey}`);
+        log.debug(`Found cached response for ${cacheKey}`);
         return res.status(cachedData.status).json(cachedData.body);
       }
 
       // Cache miss - capture the response
-      logger.debug(`No cached response found for ${cacheKey}`);
+      log.debug(`No cached response found for ${cacheKey}`);
 
       // Store original res.json method
       const originalJson = res.json;
@@ -125,7 +127,7 @@ export function cache(options: CacheOptions = {}) {
           };
 
           RedisCache.set(cacheKey, dataToCache, mergedOptions.ttl).catch(
-            (err) => logger.error(`Error setting cache for ${cacheKey}:`, err)
+            (err) => log.error(`Error setting cache for ${cacheKey}:`, err)
           );
         }
 
@@ -135,7 +137,7 @@ export function cache(options: CacheOptions = {}) {
 
       next();
     } catch (error) {
-      logger.error(`Cache middleware error:`, error);
+      log.error(`Cache middleware error:`, error);
       next();
     }
   };
@@ -164,7 +166,7 @@ export function invalidateCache(prefix: string) {
       await clearCache(prefix);
       next();
     } catch (error) {
-      logger.error(`Cache invalidation error:`, error);
+      log.error(`Cache invalidation error:`, error);
       next(error);
     }
   };
@@ -182,7 +184,7 @@ export function invalidateCachePerGuild(basePath: string) {
     try {
       const { guildId } = req.params;
       if (!guildId) {
-        logger.warn(
+        log.warn(
           "invalidateCachePerGuild middleware called without guildId param"
         );
         return next();
@@ -192,7 +194,7 @@ export function invalidateCachePerGuild(basePath: string) {
       await clearCache(prefix);
       next();
     } catch (error) {
-      logger.error(`Guild cache invalidation error:`, error);
+      log.error(`Guild cache invalidation error:`, error);
       next(error);
     }
   };

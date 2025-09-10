@@ -8,6 +8,8 @@ import {
   AuditLogEventType,
 } from "../../models/user-audit-logs.model";
 
+const log = logger("user-audit-logs-seed");
+
 /**
  * Seed user audit logs with realistic audit events
  */
@@ -120,12 +122,12 @@ export async function seedUserAuditLogs(count = 50) {
     await UserAuditLogs.bulkCreate(randomAuditLogs as UserAuditLogs[], {
       individualHooks: true
     });
-    logger.success(`${count} user audit logs have been seeded successfully.`);
+    log.success(`${count} user audit logs have been seeded successfully.`);
     return { success: true };
   } catch (error) {
     const errorMessage =
       error instanceof Error ? error.message : "Unknown error";
-    logger.error(`Error seeding user audit logs: ${errorMessage}`);
+    log.error(`Error seeding user audit logs: ${errorMessage}`);
     return { success: false, error };
   }
 }

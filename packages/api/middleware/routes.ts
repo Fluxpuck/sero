@@ -3,6 +3,8 @@ import { readdirSync, statSync, existsSync } from "fs";
 import { join, relative } from "path";
 import { logger } from "../utils/logger";
 
+const log = logger("routes");
+
 // Route types and interfaces
 interface RouteModule {
   default: Router;
@@ -97,11 +99,11 @@ const logRegisteredRoutes = (router: Router, basePath: string = "") => {
 
   // Log all routes
   if (routes.length > 0) {
-    logger.info("\nRegistered Routes:");
+    log.info("\nRegistered Routes:");
     routes.forEach((route) => {
-      logger.info(`[${route.method}] ${route.path}`);
+      log.info(`[${route.method}] ${route.path}`);
     });
-    logger.info("");
+    log.info("");
   }
 };
 
@@ -115,7 +117,7 @@ const loadRoutes = (
   routeStats: RouteStats
 ): void => {
   if (!existsSync(dir)) {
-    logger.error(`Error: Directory not found: ${dir}`);
+    log.error(`Error: Directory not found: ${dir}`);
     return;
   }
 
@@ -148,7 +150,7 @@ const loadRoutes = (
           file.endsWith(".d.ts")
         ) {
           routeStats.skippedRoutes++;
-          logger.debug(
+          log.debug(
             `- Skipped test/definition file: ${relative(
               process.cwd(),
               fullPath
@@ -160,7 +162,7 @@ const loadRoutes = (
         // Only process TypeScript files in route directories
         if (!file.endsWith(".ts")) {
           routeStats.skippedRoutes++;
-          logger.debug(
+          log.debug(
             `- Skipped non-TypeScript file: ${relative(
               process.cwd(),
               fullPath
@@ -175,7 +177,7 @@ const loadRoutes = (
         // Skip if no default export or explicitly disabled
         if (!routeModule.default || routeModule.disabled) {
           routeStats.skippedRoutes++;
-          logger.warn(
+          log.warn(
             `- Skipped (disabled or no default export): ${relative(
               process.cwd(),
               fullPath
@@ -198,7 +200,7 @@ const loadRoutes = (
 
         // Log the loaded route with the base route if specified
         const displayPath = basePath ? `${basePath}${routePath}` : routePath;
-        logger.debug(`Initialized ${displayPath}`);
+        log.debug(`Initialized ${displayPath}`);
         routeStats.loadedRoutes++;
 
         // Track the route for logging
@@ -208,7 +210,7 @@ const loadRoutes = (
           file: relative(process.cwd(), fullPath),
         });
       } catch (error) {
-        logger.error(`Error loading route ${file}:`, error);
+        log.error(`Error loading route ${file}:`, error);
       }
     }
   }
@@ -234,7 +236,7 @@ export const run = (
 
   // Load all routes from the routes directory
   const routesDir = join(__dirname, "../routes");
-  logger.info("Starting route initialization...");
+  log.info("Starting route initialization...");
 
   // Create a router for the base route if specified
   const router = Router();
@@ -248,12 +250,12 @@ export const run = (
 
   // Log route loading summary
   if (routeStats.loadedRoutes > 0) {
-    logger.success(`Successfully loaded ${routeStats.loadedRoutes} routes`);
+    log.success(`Successfully loaded ${routeStats.loadedRoutes} routes`);
   }
   if (routeStats.skippedRoutes > 0) {
-    logger.warn(`Skipped ${routeStats.skippedRoutes} routes`);
+    log.warn(`Skipped ${routeStats.skippedRoutes} routes`);
   }
-  logger.info(`Total routes processed: ${routeStats.totalFiles}`);
+  log.info(`Total routes processed: ${routeStats.totalFiles}`);
 
   // Log all registered routes with base route
   logRegisteredRoutes(baseRoute ? router : (app as any)._router, baseRoute);

@@ -11,11 +11,13 @@ import { RedisChannel } from "../redis/subscribe";
  * @returns void
  */
 export const loadEvents = (client: Client): void => {
+  const log = logger("event-loader");
+
   const eventsPath: string = path.join(__dirname, "..", "events");
 
   // Check if events directory exists
   if (!fs.existsSync(eventsPath)) {
-    logger.error(`Events directory not found at ${eventsPath}`);
+    log.error(`Events directory not found at ${eventsPath}`);
     return;
   }
 
@@ -24,7 +26,7 @@ export const loadEvents = (client: Client): void => {
     .filter((file) => file.endsWith(".ts"));
 
   if (eventFiles.length === 0) {
-    logger.warn("No event files found to load");
+    log.warn("No event files found to load");
     return;
   }
 
@@ -38,7 +40,7 @@ export const loadEvents = (client: Client): void => {
 
       // Validate event object
       if (!event || !event.name || typeof event.execute !== "function") {
-        logger.error(`Invalid event export in ${file}`);
+        log.error(`Invalid event export in ${file}`);
         failedEvents.push(file);
         continue;
       }
@@ -71,25 +73,22 @@ export const loadEvents = (client: Client): void => {
       }
 
       loadedEvents.push(file);
-
-      if (process.env.NODE_ENV === "development") {
-        logger.debug(`Event loaded: ${event.name} (${file})`);
-      }
+      log.debug(`Loaded ${event.name} (${file})`);
     } catch (error) {
-      logger.error(`Failed to load event ${file}:`, error);
+      log.error(`Failed to load event ${file}:`, error);
       failedEvents.push(file);
     }
   }
 
   // Log summary
   if (loadedEvents.length > 0) {
-    logger.info(
+    log.info(
       `Events: Successfully loaded ${loadedEvents.length}/${eventFiles.length} events`
     );
   }
 
   if (failedEvents.length > 0) {
-    logger.warn(
+    log.warn(
       `Events: Failed to load ${
         failedEvents.length
       } events: ${failedEvents.join(", ")}`
@@ -128,11 +127,13 @@ const findCommandFiles = (dir: string, fileList: string[] = []): string[] => {
  * @returns void
  */
 export const loadCommands = (client: Client): void => {
+  const log = logger("command-loader");
+
   const commandsPath: string = path.join(__dirname, "..", "commands");
 
   // Check if commands directory exists
   if (!fs.existsSync(commandsPath)) {
-    logger.error(`Commands directory not found at ${commandsPath}`);
+    log.error(`Commands directory not found at ${commandsPath}`);
     return;
   }
 
@@ -140,7 +141,7 @@ export const loadCommands = (client: Client): void => {
   const commandFiles = findCommandFiles(commandsPath);
 
   if (commandFiles.length === 0) {
-    logger.warn("No command files found to load");
+    log.warn("No command files found to load");
     return;
   }
 
@@ -157,7 +158,7 @@ export const loadCommands = (client: Client): void => {
 
       // Validate command object
       if (!command || !("data" in command) || !("execute" in command)) {
-        logger.error(`Invalid command export in ${relativePath}`);
+        log.error(`Invalid command export in ${relativePath}`);
         failedCommands.push(relativePath);
         continue;
       }
@@ -166,29 +167,25 @@ export const loadCommands = (client: Client): void => {
       client.commands.set(command.data.name, command);
       loadedCommands.push(`${command.data.name} (${relativePath})`);
 
-      if (process.env.NODE_ENV === "development") {
-        logger.debug(`Command loaded: ${command.data.name} (${relativePath})`);
-      }
+      log.debug(`Loaded ${command.data.name} (${relativePath})`);
     } catch (error) {
       // Get file name for error logging
       const fileName = path.basename(filePath);
-      logger.error(`Failed to load command ${fileName}:`, error);
+      log.error(`Failed to load command ${fileName}:`, error);
       failedCommands.push(fileName);
     }
   }
 
   // Log summary
   if (loadedCommands.length > 0) {
-    logger.info(
-      `Commands: Successfully loaded ${loadedCommands.length}/${commandFiles.length} commands`
-    );
+    log.info(`Loaded ${loadedCommands.length}/${commandFiles.length} commands`);
   }
 
   if (failedCommands.length > 0) {
-    logger.warn(
-      `Commands: Failed to load ${
-        failedCommands.length
-      } commands: ${failedCommands.join(", ")}`
+    log.warn(
+      `Failed to load ${failedCommands.length} commands: ${failedCommands.join(
+        ", "
+      )}`
     );
   }
 };

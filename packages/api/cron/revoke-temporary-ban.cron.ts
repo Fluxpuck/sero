@@ -1,17 +1,17 @@
 import { CronJob } from "cron";
 import { Op } from "sequelize";
 import { logger } from "../utils/logger";
-
 import { TemporaryBan } from "../models/temporary-bans.model";
-
 import { publish, RedisChannel } from "../redis/publisher";
+
+const log = logger("revoke-temporary-ban");
 
 export const PublishRevokeTemporaryBan = new CronJob(
   "0 0 * * *", // Cron expression: At midnight (00:00) UTC every day
 
   async function () {
     try {
-      logger.info("Checking for expired Temporary Bans");
+      log.info("Checking for expired Temporary Bans");
 
       // Find all expired temporary bans
       const expired = await TemporaryBan.findAll({
@@ -30,7 +30,7 @@ export const PublishRevokeTemporaryBan = new CronJob(
               guildId: record.guildId,
               userId: record.userId,
             });
-            logger.debug(
+            log.debug(
               `Published revoke temporary ban message for ${record.userId} in ${record.guildId}`
             );
             return Promise.resolve();
@@ -38,9 +38,9 @@ export const PublishRevokeTemporaryBan = new CronJob(
         );
       }
 
-      logger.info(`Revoked temporary ban for ${expired.length} users`);
+      log.info(`Revoked temporary ban for ${expired.length} users`);
     } catch (error) {
-      logger.error("Error in Revoke Temporary Ban cron-job:", error);
+      log.error("Error in Revoke Temporary Ban cron-job:", error);
     }
   },
 
