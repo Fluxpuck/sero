@@ -86,7 +86,14 @@ export const createRankCard = async (
     // Create SVG for the progress bar
     const progressBarSvg = `
             <svg width="${barWidth}" height="${barHeight}">
-                <rect width="${progressBarWidth}" height="${barHeight}" fill="${RankCardColors.YELLOW}" />
+                <!-- Black background for the entire bar -->
+                <rect width="${barWidth}" height="${barHeight}" fill="${
+      RankCardColors.BLACK
+    }" rx="${barHeight / 2}" ry="${barHeight / 2}" />
+                <!-- Yellow progress indicator -->
+                <rect width="${progressBarWidth}" height="${barHeight}" fill="${
+      RankCardColors.YELLOW
+    }" rx="${barHeight / 2}" ry="${barHeight / 2}" />
             </svg>
         `;
 
