@@ -25,6 +25,7 @@ const event: Event = {
       const member = guild.members.cache.get(message.userId);
       if (!member) return;
 
+      // Unban the user
       await guild.members.unban(message.userId);
 
       logger.debug(`Revoked temporary ban for ${member.user.username}`);

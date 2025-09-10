@@ -3,16 +3,33 @@ import { Event } from "../types/client.types";
 import { RedisChannel } from "../redis/subscribe";
 import { logger } from "../utils/logger";
 
+type GuildMemberTemporaryRoleData = {
+  guildId: string;
+  userId: string;
+  roleId: string;
+};
+
 const event: Event = {
   name: RedisChannel.GUILD_MEMBER_TEMPORARY_ROLE,
   once: false,
-  async execute(message: string, client: Client): Promise<any> {
+  async execute(
+    message: GuildMemberTemporaryRoleData,
+    client: Client
+  ): Promise<any> {
     if (!message || !client) return; // Skip empty messages
     logger.debug("Processing temporary role message", message);
 
     try {
-      // Handle temporary role event
-      // TODO: Implement temporary role handling logic
+      const guild = client.guilds.cache.get(message.guildId);
+      if (!guild) return;
+
+      const member = guild.members.cache.get(message.userId);
+      if (!member) return;
+
+      // Remove the temporary role
+      await member.roles.remove(message.roleId);
+
+      logger.debug(`Revoked temporary role for ${member.user.username}`);
     } catch (error) {
       logger.error(`Error processing temporary role message`, error);
     }
