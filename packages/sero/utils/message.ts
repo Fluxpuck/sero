@@ -116,7 +116,7 @@ export const safeReply = async (
   interaction: ChatInputCommandInteraction | ButtonInteraction,
   options: InteractionReplyOptions | string,
   isDeferred = false,
-  ephemeral = true
+  ephemeral = false
 ): Promise<void> => {
   // Convert string to options object if needed
   const replyOptions: InteractionReplyOptions =

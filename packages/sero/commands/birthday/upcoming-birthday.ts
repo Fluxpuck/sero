@@ -33,8 +33,6 @@ const command: Command = {
       `/guild/${interaction.guildId}/birthday/upcoming?range=${days}`
     );
 
-    console.log("upcomingBirthdays", upcomingBirthday);
-
     if (upcomingBirthday.code === ResponseCode.SUCCESS) {
       const birthdays = upcomingBirthday.data;
 

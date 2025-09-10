@@ -30,32 +30,31 @@ const event: Event = {
         ),
       ]);
 
-      if (targetChannel.status !== ResponseStatus.SUCCESS) {
-        log.error(
-          `Failed to find level-up-channel for guild ${guild.id}`,
-          targetChannel.message
+      if (targetChannel.status === ResponseStatus.SUCCESS) {
+        // Get levelup channel and levelup message
+        const targetChannelId = targetChannel.data.targetId;
+        const levelupMessage =
+          levelupMessageData?.data?.message ||
+          "{{USER}} has reached level {{LEVEL}}!";
+
+        const channel = await client.channels.fetch(targetChannelId);
+        const textChannel = channel as
+          | TextChannel
+          | NewsChannel
+          | ThreadChannel;
+        if (!channel || !textChannel) return;
+
+        // Send levelup message
+        await textChannel.send(
+          levelupMessage
+            .replace("{{USER}}", `<@${member.id}>`)
+            .replace("{{LEVEL}}", message.level.toString())
         );
-        return;
+
+        log.debug(`Sent level-up message to ${member.user.username}`);
       }
 
-      // Get levelup channel and levelup message
-      const targetChannelId = targetChannel.data.targetId;
-      const levelupMessage =
-        levelupMessageData?.data?.message ||
-        "{{USER}} has reached level {{LEVEL}}!";
-
-      const channel = await client.channels.fetch(targetChannelId);
-      const textChannel = channel as TextChannel | NewsChannel | ThreadChannel;
-      if (!channel || !textChannel) return;
-
-      // Send levelup message
-      await textChannel.send(
-        levelupMessage
-          .replace("{{USER}}", `<@${member.id}>`)
-          .replace("{{LEVEL}}", message.level.toString())
-      );
-
-      log.debug(`Sent level-up message to ${member.user.username}`);
+      return;
     } catch (error) {
       log.error(`Error processing level message: ${error}`);
     }
