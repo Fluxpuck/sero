@@ -1,7 +1,7 @@
 import Redis from "ioredis";
 import { logger } from "../utils/logger";
 
-const log = logger("cache");
+const log = logger("redis-cache");
 
 const redisUrl = process.env.REDIS_URL || "redis://localhost:6379";
 const cacheClient = new Redis(redisUrl);
@@ -36,13 +36,13 @@ export class RedisCache {
   static async set(key: string, value: any, ttl?: number): Promise<boolean> {
     try {
       const serialized = JSON.stringify(value);
-      
+
       if (ttl) {
         await cacheClient.setex(key, ttl, serialized);
       } else {
         await cacheClient.set(key, serialized);
       }
-      
+
       return true;
     } catch (error) {
       log.error(`Error setting cache for key ${key}:`, error);
