@@ -44,64 +44,11 @@ The project uses a microservices architecture with the following components:
 
 ### Development Setup
 
-All the required external services are configured in the Docker Compose file. This contains the **PostgreSQL** database and the **Redis** message broker.
-
-#### 1. Installation
-
-Install dependencies and create Docker containers:
-
-```bash
-# Install dependencies
-npm install
-
-# Start Docker containers
-docker-compose -f docker-compose-local.yml up -d
-```
-
-#### 2. Environment Configuration
-
-Create `.env` files in the config directory of each package:
-
-- API Package: `packages/api/config/.env`
-- Sero Bot Package: `packages/sero/config/.env`
-- Agent Package: `packages/agent/config/.env`
-
-Refer to each package's README for the required environment variables.
-
-#### 3. Database Seeding
-
-Seed the database with initial data:
-
-```bash
-npm run seedmanager
-```
-
-#### 4. Running the Services
-
-Start each service in separate terminals:
-
-```bash
-# Start API service
-npm run start-api
-
-# Start Sero bot
-npm run start-sero
-
-# Start Agent bot
-npm run start-agent
-```
-
-_VSCode users can utilize the built-in [Debugger](https://code.visualstudio.com/docs/editor/debugging) to run different applications more easily._
+For detailed instructions on setting up the development environment, please refer to the [Development Setup Guide](/docs/development-setup.md).
 
 ## Development Guidelines
 
-### Code Format
-
-When using VSCode, configure automatic code formatting:
-
-1. Open `File → Preferences → Settings (CTRL + ,)`
-2. Go to `Text Editor → Formatting`
-3. Enable `Format On Paste` & `Format On Save`
+For detailed development setup instructions and coding standards, please refer to the [Development Setup Guide](/docs/development-setup.md).
 
 ### Package Documentation
 
@@ -110,15 +57,6 @@ Each package has its own detailed README:
 - [Sero Bot Documentation](/packages/sero/README.md)
 - [Sero API Documentation](/packages/api/README.md)
 - [Sero Agent Documentation](/packages/agent/README.md)
-
-### Troubleshooting
-
-Most issues can be resolved by:
-
-- Reinstalling dependencies: `npm install`
-- Restarting Docker containers: `docker-compose -f docker-compose-local.yml restart`
-- Rerunning the database seeder: `npm run seedmanager`
-- Checking environment variables in each package's `.env` file
 
 ## Contributing
 
@@ -152,7 +90,9 @@ Created with ❤ by
 
 Code Contributors:
 [ZakariaX1](https://github.com/ZakariaX1),
-[ZEUSGMJ](https://github.com/ZEUSGMJ),
+[ZEUSGMJ](https://github.com/ZEUSGMJ)
+
+Special Thanks:
 [TheFallenShade](https://github.com/TheFallenShade)
 
 ## License
