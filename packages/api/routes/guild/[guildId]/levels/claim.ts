@@ -1,5 +1,5 @@
 import { Request, Response, Router, NextFunction } from "express";
-import { Modifier, Guild, User } from "../../../../models";
+import { Modifier } from "../../../../models";
 import { ResponseHandler } from "../../../../utils/response.utils";
 import { logUserExperience } from "../../../../utils/log.utils";
 import { UserExperienceLogType } from "../../../../models/user-experience-logs.model";
@@ -67,17 +67,6 @@ router.post(
     try {
       const { guildId, userId } = req.params;
 
-      // Check if guild has premium
-      const guild = await Guild.findOne({ where: { guildId } });
-      if (!guild || !guild.hasPremium()) {
-        await transaction.rollback();
-        return ResponseHandler.sendError(
-          res,
-          "This guild does not have premium. Level updates are disabled.",
-          403
-        );
-      }
-
       // Get amount from request body or generate random amount
       const { amount, minAmount = 200, maxAmount = 500, originId } = req.body;
 
@@ -132,7 +121,8 @@ router.post(
         guildId,
         userId,
         UserExperienceLogType.CLAIM,
-        rewardAmount
+        rewardAmount,
+        originId
       );
     } catch (error) {
       transaction.rollback();

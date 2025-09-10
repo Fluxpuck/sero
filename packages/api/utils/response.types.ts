@@ -25,6 +25,9 @@ export enum ResponseCode {
   NOT_IMPLEMENTED = 501,
   BAD_GATEWAY = 502,
   SERVICE_UNAVAILABLE = 503,
+
+  // Premium codes
+  PREMIUM_REQUIRED = 1000,
 }
 
 /**

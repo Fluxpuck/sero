@@ -232,17 +232,7 @@ router.post(
         allowNegative = false,
       } = req.body as BalanceUpdateBody;
 
-      // Check if guild has premium
-      const guild = await Guild.findOne({ where: { guildId } });
-      if (!guild || !guild.hasPremium()) {
-        await transaction.rollback();
-        return ResponseHandler.sendError(
-          res,
-          "This guild does not have premium. Level updates are disabled.",
-          403
-        );
-      }
-
+ 
       // Input validation
       if (!validateAmount(amount) || !validateBalanceType(type)) {
         await transaction.rollback();
@@ -367,17 +357,6 @@ router.post(
       const { amount, from, to, toUserId } = req.body;
       const targetUserId = toUserId || userId;
       const isSameUser = targetUserId === userId;
-
-      // Check if guild has premium
-      const guild = await Guild.findOne({ where: { guildId } });
-      if (!guild || !guild.hasPremium()) {
-        await transaction.rollback();
-        return ResponseHandler.sendError(
-          res,
-          "This guild does not have premium. Level updates are disabled.",
-          403
-        );
-      }
 
       // Input validation
       const amountValidation = validateAmount(amount);

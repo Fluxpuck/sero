@@ -1,12 +1,11 @@
 import { Request, Response, Router, NextFunction } from "express";
-import { Modifier, Guild, User } from "../../../../models";
+import { Modifier } from "../../../../models";
 import { ResponseHandler } from "../../../../utils/response.utils";
 import { calculateXp } from "../../../../utils/levels.utils";
 import { logUserExperience } from "../../../../utils/log.utils";
 import { UserExperienceLogType } from "../../../../models/user-experience-logs.model";
 import { sequelize } from "../../../../database/sequelize";
 import { getOrCreateUserLevel } from "./index";
-import { ResponseCode } from "../../../../utils/response.types";
 
 const router = Router({ mergeParams: true });
 
@@ -61,17 +60,6 @@ router.post(
 
     try {
       const { guildId, userId } = req.params;
-
-      // // Check if guild has premium
-      // const guild = await Guild.findOne({ where: { guildId } });
-      // if (!guild || !guild.hasPremium()) {
-      //   await transaction.rollback();
-      //   return ResponseHandler.sendError(
-      //     res,
-      //     "This guild does not have premium. Level updates are disabled.",
-      //     403
-      //   );
-      // }
 
       // Get or create user level
       const [userLevel, created] = await getOrCreateUserLevel(

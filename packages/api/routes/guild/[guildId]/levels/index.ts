@@ -1,6 +1,12 @@
 import { Request, Response, Router, NextFunction } from "express";
 import { Op, Transaction } from "sequelize";
-import { Guild, UserLevel, LevelRank, Modifier, User } from "../../../../models";
+import {
+  Guild,
+  UserLevel,
+  LevelRank,
+  Modifier,
+  User,
+} from "../../../../models";
 import { fetchUsername, fetchGuildName } from "../../../../utils/discord-api";
 import { ResponseHandler } from "../../../../utils/response.utils";
 import { logUserExperience } from "../../../../utils/log.utils";
@@ -23,11 +29,14 @@ export async function getOrCreateUserLevel(
     // Fetch guild name from Discord API
     const guildName = await fetchGuildName(guildId);
     if (guildName) {
-      await Guild.create({
-        guildId,
-        guildName,
-        premium: false, // Default value, can be updated later
-      } as Guild, { transaction });
+      await Guild.create(
+        {
+          guildId,
+          guildName,
+          premium: false, // Default value, can be updated later
+        } as Guild,
+        { transaction }
+      );
     }
   }
 
@@ -37,12 +46,15 @@ export async function getOrCreateUserLevel(
     // Fetch username from Discord API
     const username = await fetchUsername(userId);
     if (username) {
-      await User.create({
-        userId,
-        guildId,
-        username,
-        premium: false, // Default value, can be updated later
-      } as User, { transaction });
+      await User.create(
+        {
+          userId,
+          guildId,
+          username,
+          premium: false, // Default value, can be updated later
+        } as User,
+        { transaction }
+      );
     }
   }
 
@@ -230,64 +242,56 @@ router.get(
 router.post(
   "/give/:userId",
   async (req: Request, res: Response, next: NextFunction) => {
+    const transaction = await sequelize.transaction();
+
     try {
-      await sequelize.transaction(async (transaction) => {
-        const { guildId, userId } = req.params;
-        const { amount = 0, originId } = req.body;
+      const { guildId, userId } = req.params;
+      const { amount = 0, originId } = req.body;
 
-        // Check if guild has premium
-        const guild = await Guild.findOne({ where: { guildId } });
-        if (!guild || !guild.hasPremium()) {
-          await transaction.rollback();
-          return ResponseHandler.sendError(
-            res,
-            "This guild does not have premium. Level updates are disabled.",
-            403
-          );
-        }
-
-        // Validate required fields
-        if (!amount) {
-          return ResponseHandler.sendValidationFail(
-            res,
-            "Missing required fields",
-            ["Amount is a required field"]
-          );
-        }
-
-        if (amount !== Number(amount)) {
-          return ResponseHandler.sendValidationFail(res, "Invalid amount", [
-            "Amount must be a number",
-          ]);
-        }
-
-        // Get or create user level
-        const [userLevel, created] = await getOrCreateUserLevel(
-          guildId,
-          userId,
-          transaction
-        );
-
-        // Update user level
-        userLevel.experience += amount;
-        await userLevel.save({ transaction });
-
-        ResponseHandler.sendSuccess(
+      // Validate required fields
+      if (!amount) {
+        return ResponseHandler.sendValidationFail(
           res,
-          userLevel,
-          `Gave ${amount} experience to user`
+          "Missing required fields",
+          ["Amount is a required field"]
         );
+      }
 
-        // Log the user experience increase
-        logUserExperience(
-          guildId,
-          userId,
-          UserExperienceLogType.GIVE,
-          amount,
-          originId
-        );
-      });
+      if (amount !== Number(amount)) {
+        return ResponseHandler.sendValidationFail(res, "Invalid amount", [
+          "Amount must be a number",
+        ]);
+      }
+
+      // Get or create user level
+      const [userLevel, created] = await getOrCreateUserLevel(
+        guildId,
+        userId,
+        transaction
+      );
+
+      // Update user level
+      userLevel.experience += amount;
+      await userLevel.save({ transaction });
+
+      await transaction.commit();
+
+      ResponseHandler.sendSuccess(
+        res,
+        userLevel,
+        `Gave ${amount} experience to user`
+      );
+
+      // Log the user experience increase
+      logUserExperience(
+        guildId,
+        userId,
+        UserExperienceLogType.GIVE,
+        amount,
+        originId
+      );
     } catch (error) {
+      transaction.rollback();
       next(error);
     }
   }
@@ -345,17 +349,6 @@ router.post(
       await sequelize.transaction(async (transaction) => {
         const { guildId, userId } = req.params;
         const { amount = 0, originId } = req.body;
-
-        // Check if guild has premium
-        const guild = await Guild.findOne({ where: { guildId } });
-        if (!guild || !guild.hasPremium()) {
-          await transaction.rollback();
-          return ResponseHandler.sendError(
-            res,
-            "This guild does not have premium. Level updates are disabled.",
-            403
-          );
-        }
 
         // Validate required fields
         if (!amount) {
