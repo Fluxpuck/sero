@@ -42,13 +42,9 @@ The project uses a microservices architecture with the following components:
 - NPM
 - Docker and Docker Compose
 
-### Development Setup
+### Getting Started
 
 For detailed instructions on setting up the development environment, please refer to the [Development Setup Guide](/docs/development-setup.md).
-
-## Development Guidelines
-
-For detailed development setup instructions and coding standards, please refer to the [Development Setup Guide](/docs/development-setup.md).
 
 ### Package Documentation
 
