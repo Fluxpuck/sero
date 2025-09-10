@@ -1,82 +1,149 @@
-# Sero
+# Sero Bot
 
 <img align="right" alt="PNG" height="92px" src="https://cdn.discordapp.com/avatars/553561246339956766/1fdbd18451a72220ab43ec3165b7e69c.png" />
-<p>Welcome to the Sero GitHub Repository. Sero is a cool multifunctional Discord bot written in Javascript using the <a href="https://discord.js.org/">DiscordJS</a> library. The bot is meant to help servers with moderator and to add cool and helpful functionality for its members.</p>
+<p>Welcome to the Sero GitHub Repository. Sero is a comprehensive Discord bot ecosystem built with TypeScript using the <a href="https://discord.js.org/">Discord.js</a> library. The project features a modular architecture with multiple packages that work together to provide moderation tools, user management, AI-powered interactions, and other helpful functionality for Discord servers.</p>
+
+## Project Overview
+
+Sero Bot is structured as a monorepo with three main packages:
+
+### Packages
+
+- **[Sero Bot](/packages/sero)**: Core Discord bot implementation with moderation tools, user management, and event handling
+- **[Sero API](/packages/api)**: Backend service providing RESTful endpoints, database management, and scheduled tasks
+- **[Sero Agent](/packages/agent)**: AI-powered Discord bot framework with OpenAI and Claude integration
+
+## Features
+
+- **Moderation System**: Ban, kick, timeout, warn, and other moderation tools
+- **User Management**: Track user data, experience, economy, and more
+- **Birthday System**: Track and celebrate user birthdays with automated messages
+- **AI Integration**: Connect with OpenAI and Claude for intelligent responses
+- **Image Generation**: Create and edit images using DALL-E models
+- **Scheduled Tasks**: Automated actions like birthday messages and reward drops
+- **Database Integration**: Persistent storage of user data and server settings
+- **Redis Integration**: Caching and pub/sub messaging between services
+
+## Architecture
+
+The project uses a microservices architecture with the following components:
+
+- **Discord Bot (Sero)**: Handles Discord interactions and commands
+- **API Service**: Manages data persistence and business logic
+- **Agent Service**: Provides AI-powered features and tools
+- **PostgreSQL**: Database for persistent storage
+- **Redis**: Message broker and caching layer
 
 ## Getting Started
 
-### Requirements:
+### Requirements
 
-- NodeJS
+- Node.js 18.20.0 or higher
 - NPM
-- Docker
+- Docker and Docker Compose
 
-### Modules
+### Development Setup
 
-- [Sero API](https://github.com/Fluxpuck/sero/tree/development/packages/api)
-- [Sero Agent](https://github.com/Fluxpuck/sero/tree/development/packages/agent)
-- [Sero Bot](https://github.com/Fluxpuck/sero/tree/development/packages/sero)
-
-### Development
-
-All the required external services are configured in the [Docker Compose](https://github.com/Fluxpuck/sero/blob/development/docker-compose-dev.yml) file. This contains the **Postgres** database and the **Redis** message-broker. Follow the next steps to setup the development environment.
+All the required external services are configured in the Docker Compose file. This contains the **PostgreSQL** database and the **Redis** message broker.
 
 #### 1. Installation
 
-Install the `node_modules` and create the docker containers using the following commands.
+Install dependencies and create Docker containers:
 
-```
+```bash
+# Install dependencies
 npm install
+
+# Start Docker containers
+docker-compose -f docker-compose-local.yml up -d
 ```
 
-```
-docker-compose -f docker-compose-local.yml up
-```
+#### 2. Environment Configuration
 
-#### 2. Secrets
+Create `.env` files in the config directory of each package:
 
-Before we can run anything, we need to make sure to add a `.env` file in `\packages\api\config\`. The API secret should include a `NODE_ENV=development`.
+- API Package: `packages/api/config/.env`
+- Sero Bot Package: `packages/sero/config/.env`
+- Agent Package: `packages/agent/config/.env`
 
-#### 3. Seeding
+Refer to each package's README for the required environment variables.
 
-Running development with an empty database is very difficult to work with! Always make sure to run the **SeedManager**. This will truncate the database and seed the database with example data.
+#### 3. Database Seeding
 
-When you add new models/tables and routes in the API, make sure you add some dummy data. that is useful during development.
+Seed the database with initial data:
 
-```
+```bash
 npm run seedmanager
 ```
 
-#### 4. Running
+#### 4. Running the Services
 
-Run the following script to start the API.
+Start each service in separate terminals:
 
-```
+```bash
+# Start API service
 npm run start-api
+
+# Start Sero bot
+npm run start-sero
+
+# Start Agent bot
+npm run start-agent
 ```
 
-_Additionally, **VSCode** has a great build-in [Debugger](https://code.visualstudio.com/docs/editor/debugging) to make it easier to run the different applications._
+_VSCode users can utilize the built-in [Debugger](https://code.visualstudio.com/docs/editor/debugging) to run different applications more easily._
+
+## Development Guidelines
 
 ### Code Format
 
-When using **VSCode** code can be formatted automatically
+When using VSCode, configure automatic code formatting:
 
 1. Open `File → Preferences → Settings (CTRL + ,)`
 2. Go to `Text Editor → Formatting`
 3. Enable `Format On Paste` & `Format On Save`
 
+### Package Documentation
+
+Each package has its own detailed README:
+
+- [Sero Bot Documentation](/packages/sero/README.md)
+- [Sero API Documentation](/packages/api/README.md)
+- [Sero Agent Documentation](/packages/agent/README.md)
+
 ### Troubleshooting
 
-Most issues can be resolved by
+Most issues can be resolved by:
 
-- (re)installing the `node_modules`
-- (re)running the **SeedManager**
+- Reinstalling dependencies: `npm install`
+- Restarting Docker containers: `docker-compose -f docker-compose-local.yml restart`
+- Rerunning the database seeder: `npm run seedmanager`
+- Checking environment variables in each package's `.env` file
 
-## GitHub
+## Contributing
 
-This project is ticket-based and managed using [Linear](https://linear.app/sero-bot). Development goes per ticket and branches are to be created from the main `development` branch, using the `issue-id` from the ticket. Please read the [Git Guide](https://github.com/Fluxpuck/sero/blob/development/docs/git-guide.md) for all information on managing the code.
+This project is ticket-based and managed using [Linear](https://linear.app/sero-bot). Development goes per ticket and branches are to be created from the main `development` branch, using the `issue-id` from the ticket.
 
-Also, make sure to read this documentation on [Semantic Commit Messages](https://gist.github.com/joshbuchea/6f47e86d2510bce28f8e7f42ae84c716).
+### Development Workflow
+
+1. Check out the `development` branch
+2. Create a new branch using the ticket ID: `git checkout -b issue-123`
+3. Make your changes following the project guidelines
+4. Submit a pull request to the `development` branch
+
+Please read the [Git Guide](/docs/git-guide.md) for detailed information on managing the code and the [Interactions Guide](/docs/interactions.md) for information on implementing Discord interactions.
+
+### Commit Messages
+
+We follow the [Semantic Commit Messages](https://gist.github.com/joshbuchea/6f47e86d2510bce28f8e7f42ae84c716) convention:
+
+- `feat`: new feature
+- `fix`: bug fix
+- `docs`: documentation changes
+- `style`: formatting, missing semicolons, etc.
+- `refactor`: code change that neither fixes a bug nor adds a feature
+- `test`: adding tests
+- `chore`: updating build tasks, package manager configs, etc.
 
 ## Contributors
 
@@ -87,3 +154,7 @@ Code Contributors:
 [ZakariaX1](https://github.com/ZakariaX1),
 [ZEUSGMJ](https://github.com/ZEUSGMJ),
 [TheFallenShade](https://github.com/TheFallenShade)
+
+## License
+
+MIT
