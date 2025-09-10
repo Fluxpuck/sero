@@ -43,7 +43,8 @@ module.exports.run = async (client, interaction) => {
         /**
          * If no options are provided, we should show the current modifier and duration
          */
-        const result = await getRequest(`/guilds/${interaction.guildId}`);
+        // Missing Route: API route for fetching guild information needs to be implemented
+        const result = await getRequest(`/guild/${interaction.guildId}`);
         // If the request was not successful, return an error
         if (result?.status === 200) {
 
@@ -91,7 +92,8 @@ module.exports.run = async (client, interaction) => {
         const duration = targetDuration ?? 1;
 
         // Give the user the experience
-        const result = await postRequest(`/guilds/boost`, { guildId: interaction.guildId, modifier: targetModifier, duration: duration });
+        // Missing Route: API route for setting guild experience modifier needs to be implemented
+        const result = await postRequest(`/guild/boost`, { guildId: interaction.guildId, modifier: targetModifier, duration: duration });
 
         // If the request was not successful, return an error
         if (result?.status !== 201) {

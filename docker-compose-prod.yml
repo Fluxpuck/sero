@@ -5,8 +5,7 @@ services:
     environment:
       POSTGRES_USER: admin
       POSTGRES_PASSWORD: curlywire90
-      POSTGRES_DB: sero_database
-      TZ: 'Europe/Paris'
+      POSTGRES_DB: sero_db
     ports:
       - "5432:5432"
     volumes:
@@ -38,9 +37,9 @@ services:
   bot:
     container_name: sero-bot
     build:
-      context: ./packages/bot
+      context: ./packages/sero
     env_file:
-      - ./packages/bot/config/.env
+      - ./packages/sero/config/.env
     environment:
       NODE_ENV: production
     restart: unless-stopped
@@ -68,14 +67,17 @@ services:
       - "3000:3000"
     environment:
       MB_DB_TYPE: postgres
-      MB_DB_DBNAME: sero_database
+      MB_DB_DBNAME: metabase_db
       MB_DB_PORT: 5432
       MB_DB_USER: admin
       MB_DB_PASS: curlywire90
       MB_DB_HOST: postgres
     depends_on:
       - postgres
+    volumes:
+      - metabase-data:/metabase-data
 
 volumes:
   postgres_data:
   redis-data:
+  metabase-data:

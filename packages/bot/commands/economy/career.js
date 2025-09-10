@@ -36,10 +36,11 @@ module.exports.run = async (client, interaction) => {
     }
 
     // Get the user's career && career snapshots
+    // Missing Route: API routes for career, activities/sum, and activities/streak need to be implemented
     const [userCareer, careerIncome, careerStreak] = await Promise.all([
-        getRequest(`/guilds/${interaction.guildId}/economy/career/${targetUser.id}`),
-        getRequest(`/guilds/${interaction.guildId}/activities/sum/${targetUser.id}/daily-work?totalType=income`),
-        getRequest(`/guilds/${interaction.guildId}/activities/streak/${targetUser.id}/daily-work`)
+        getRequest(`/guild/${interaction.guildId}/economy/career/${targetUser.id}`),
+        getRequest(`/guild/${interaction.guildId}/activities/sum/${targetUser.id}/daily-work?totalType=income`),
+        getRequest(`/guild/${interaction.guildId}/activities/streak/${targetUser.id}/daily-work`)
     ]);
 
     // If the (required) request was not successful, return an error

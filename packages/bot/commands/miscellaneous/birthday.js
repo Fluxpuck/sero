@@ -51,7 +51,8 @@ module.exports.run = async (client, interaction) => {
     const yearValue = interaction.options.get("year")?.value || null;
 
     // Set the birthday in the database
-    const setBirthdayResponse = await postRequest(`/guilds/${interaction.guildId}/birthday`, {
+    // Missing Route: API route for setting user birthday needs to be implemented
+    const setBirthdayResponse = await postRequest(`/guild/${interaction.guildId}/birthday`, {
         userId: interaction.user.id,
         day: dayValue,
         month: monthValue,

@@ -86,7 +86,8 @@ module.exports.run = async (client, interaction) => {
         });
 
     // Store the warn in the database
-    await postRequest(`/guilds/${interaction.guild.id}/logs`, {
+    // Missing Route: API route for storing moderation logs needs to be implemented
+    await postRequest(`/guild/${interaction.guild.id}/logs`, {
         id: generateSnowflake(),
         auditAction: 19,
         auditType: "MemberWarn",

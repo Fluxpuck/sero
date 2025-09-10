@@ -33,7 +33,8 @@ module.exports.run = async (client, interaction) => {
         // We set the experience to a negative value to reset it
         // This will trigger the updateRank function in the API
         // And will also remove the rank roles from the user
-        const result = await postRequest(`/guilds/${interaction.guildId}/levels/exp/${targetUser.id}`, { experience: -10_000_000 })
+        // Missing Route: API route for resetting user experience needs to be implemented
+        const result = await postRequest(`/guild/${interaction.guildId}/levels/exp/${targetUser.id}`, { experience: -10_000_000 })
 
         // If the request was not successful, return an error
         if (result?.status !== 200) {
@@ -78,7 +79,8 @@ module.exports.run = async (client, interaction) => {
             if (selectedButton === "yes") {
 
                 // Reset the experience for all users in the guild
-                const result = await postRequest(`/guilds/${interaction.guildId}/levels/reset`);
+                // Missing Route: API route for resetting all users' experience needs to be implemented
+                const result = await postRequest(`/guild/${interaction.guildId}/levels/reset`);
 
                 // If the request was not successful, return an error
                 if (result?.status !== 200) {
