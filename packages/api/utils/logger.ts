@@ -15,33 +15,33 @@ const colors = {
  * @param name The name to be included in log messages
  */
 export const logger = (name?: string) => {
-  const logPrefix = name ? ` [${name}]` : "";
+  const logPrefix = name ? `[${name}]` : "";
 
   return {
     info: (message: string, ...args: any[]) => {
       console.log(
-        `${colors.blue}[INFO]${logPrefix} ${message}${colors.reset}`,
+        `${colors.blue}[INFO]${logPrefix} ${message} ${colors.reset}`,
         ...args
       );
     },
 
     warn: (message: string, ...args: any[]) => {
       console.log(
-        `${colors.yellow}[WARN]${logPrefix} ${message}${colors.reset}`,
+        `${colors.yellow}[WARN]${logPrefix}${colors.reset} ${message}`,
         ...args
       );
     },
 
     error: (message: string, ...args: any[]) => {
       console.error(
-        `${colors.red}[ERROR]${logPrefix} ${message}${colors.reset}`,
+        `${colors.red}[ERROR]${logPrefix} ${message} ${colors.reset}`,
         ...args
       );
     },
 
     success: (message: string, ...args: any[]) => {
       console.log(
-        `${colors.green}[SUCCESS]${logPrefix} ${message}${colors.reset}`,
+        `${colors.green}[SUCCESS]${logPrefix}${colors.reset} ${message}`,
         ...args
       );
     },
@@ -49,7 +49,7 @@ export const logger = (name?: string) => {
     debug: (message: string, ...args: any[]) => {
       if (process.env.DEBUG === "true") {
         console.log(
-          `${colors.gray}[DEBUG]${logPrefix} ${message}${colors.reset}`,
+          `${colors.gray}[DEBUG]${logPrefix}${colors.reset} ${message}`,
           ...args
         );
       }
