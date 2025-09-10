@@ -120,19 +120,25 @@ export const checkDailyTransferLimit = async (
     0
   );
 
-  // Check if this transfer would exceed the daily limit
-  if (totalTransferredToday + amount > DAILY_TRANSFER_LIMIT) {
-    const remainingLimit = Math.max(
-      0,
-      DAILY_TRANSFER_LIMIT - totalTransferredToday
-    );
+  // Calculate remaining limit for today
+  const remainingLimit = Math.max(
+    0,
+    DAILY_TRANSFER_LIMIT - totalTransferredToday
+  );
 
-    if (remainingLimit <= 0) {
-      return { canTransfer: false, availableAmount: 0 };
-    }
+  // Determine actual transfer amount (capped by remaining limit)
+  const actualTransferAmount = Math.min(amount, remainingLimit);
 
-    return { canTransfer: true, availableAmount: remainingLimit };
-  }
+  // Calculate remaining limit after this transfer
+  const remainingTransferLimit = remainingLimit - actualTransferAmount;
 
-  return { canTransfer: true, availableAmount: amount };
+  // Check if transfer is possible
+  const canTransfer = actualTransferAmount > 0;
+
+  return {
+    dailyTransferLimit: DAILY_TRANSFER_LIMIT,
+    actualTransferAmount,
+    remainingTransferLimit,
+    canTransfer,
+  };
 };

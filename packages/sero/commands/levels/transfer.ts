@@ -25,8 +25,6 @@ const command: Command = {
   cooldown: 60,
 
   async execute(interaction: ChatInputCommandInteraction): Promise<void> {
-    await interaction.deferReply({ ephemeral: true });
-
     const targetUser = interaction.options.getUser("user");
     const amount = interaction.options.getInteger("amount");
 
@@ -34,6 +32,7 @@ const command: Command = {
       await safeReply(
         interaction,
         "You must specify a user to transfer experience to.",
+        false,
         true
       );
       return;
@@ -43,6 +42,7 @@ const command: Command = {
       await safeReply(
         interaction,
         "You cannot transfer experience to yourself.",
+        false,
         true
       );
       return;
@@ -55,27 +55,28 @@ const command: Command = {
     );
 
     if (response.code === ResponseCode.SUCCESS) {
-      const { transferredAmount, originUserLevel, targetUserLevel } =
-        response.data;
+      const {
+        dailyTransferLimit,
+        actualTransferAmount,
+        remainingTransferLimit,
+      } = response.data;
 
       // Create a simple success message
-      let successMessage = `Successfully transferred **${transferredAmount} XP** to ${targetUser}!`;
+      let successMessage = `Successfully transferred **${actualTransferAmount} XP** to ${targetUser}!`;
 
-      // Add information about remaining XP
-      successMessage += `\nYou now have ${originUserLevel.experience} XP remaining.`;
+      // Add information about daily transfer limit remaining
+      successMessage += `\n-# You can transfer **${remainingTransferLimit} XP** more today.`;
 
       // Check if the amount was adjusted due to limits
-      if (amount !== null && transferredAmount < amount) {
+      if (amount !== null && actualTransferAmount < amount) {
         if (response.message.includes("daily limit")) {
-          successMessage +=
-            "\n-# Note: Transfer was limited by your daily transfer limit of 2000 XP.";
+          successMessage += `\n-# PS: Transfer was limited by your daily transfer limit of ${dailyTransferLimit} XP.`;
         } else {
-          successMessage +=
-            "\n-# Note: Transfer was limited to your available experience.";
+          successMessage += `\n-# PS: Transfer was limited to your available experience.`;
         }
       }
 
-      await safeReply(interaction, successMessage, true);
+      await safeReply(interaction, successMessage);
     } else {
       // Handle specific error cases
       let errorMessage = `Failed to transfer experience to ${targetUser.username}.`;

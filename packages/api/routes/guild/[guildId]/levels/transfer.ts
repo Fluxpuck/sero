@@ -1,5 +1,4 @@
 import { Request, Response, Router, NextFunction } from "express";
-import { Op } from "sequelize";
 import { ResponseHandler } from "../../../../utils/response.utils";
 import { logUserExperience } from "../../../../utils/log.utils";
 import { UserExperienceLogType } from "../../../../models/user-experience-logs.model";
@@ -146,7 +145,12 @@ router.post(
       const transferAmount = Math.min(targetAmount, originUserLevel.experience);
 
       // Check daily transfer limit
-      const { canTransfer, availableAmount } = await checkDailyTransferLimit(
+      const {
+        dailyTransferLimit,
+        canTransfer,
+        actualTransferAmount,
+        remainingTransferLimit,
+      } = await checkDailyTransferLimit(
         guildId,
         originId,
         transferAmount,
@@ -169,22 +173,21 @@ router.post(
       );
 
       // Update both users' experience
-      originUserLevel.experience -= availableAmount;
+      originUserLevel.experience -= actualTransferAmount;
       await originUserLevel.save({ transaction });
 
-      targetUserLevel.experience += availableAmount;
+      targetUserLevel.experience += actualTransferAmount;
       await targetUserLevel.save({ transaction });
 
       await transaction.commit();
 
       // Prepare response message
-      let message = `Transferred ${availableAmount} experience from ${originId} to ${targetId}`;
-
-      if (availableAmount < targetAmount) {
-        if (availableAmount < originUserLevel.experience + availableAmount) {
+      let message = `Transferred ${actualTransferAmount} experience from ${originId} to ${targetId}`;
+      if (actualTransferAmount < targetAmount) {
+        if (remainingTransferLimit <= 0) {
           message += " (daily limit reached)";
         } else {
-          message += " (rounded to maximum available)";
+          message += " (limited by available experience)";
         }
       }
 
@@ -193,7 +196,9 @@ router.post(
         {
           originUserLevel,
           targetUserLevel,
-          transferredAmount: availableAmount,
+          dailyTransferLimit,
+          actualTransferAmount,
+          remainingTransferLimit,
         },
         message
       );
@@ -203,7 +208,7 @@ router.post(
         guildId,
         originId,
         UserExperienceLogType.TRANSFER,
-        availableAmount,
+        actualTransferAmount,
         targetId
       );
 
@@ -211,7 +216,7 @@ router.post(
         guildId,
         targetId,
         UserExperienceLogType.GIVE,
-        availableAmount,
+        actualTransferAmount,
         originId
       );
     } catch (error) {
