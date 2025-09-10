@@ -1,9 +1,5 @@
-import {
-  SlashCommandBuilder,
-  ChatInputCommandInteraction,
-  PermissionFlagsBits,
-  EmbedBuilder,
-} from "discord.js";
+import { SlashCommandBuilder, ChatInputCommandInteraction } from "discord.js";
+import { safeReply, safeErrorReply } from "../../utils/message";
 import { Command } from "../../types/client.types";
 import { postRequest } from "../../database/connection";
 import { ResponseCode } from "../../types/response.types";
@@ -35,16 +31,20 @@ const command: Command = {
     const amount = interaction.options.getInteger("amount");
 
     if (!targetUser) {
-      await interaction.editReply({
-        content: "You must specify a user to transfer experience to.",
-      });
+      await safeReply(
+        interaction,
+        "You must specify a user to transfer experience to.",
+        true
+      );
       return;
     }
 
     if (targetUser.id === interaction.user.id) {
-      await interaction.editReply({
-        content: "You cannot transfer experience to yourself.",
-      });
+      await safeReply(
+        interaction,
+        "You cannot transfer experience to yourself.",
+        true
+      );
       return;
     }
 
@@ -58,50 +58,29 @@ const command: Command = {
       const { transferredAmount, originUserLevel, targetUserLevel } =
         response.data;
 
-      // Create an embed for a nicer response
-      const embed = new EmbedBuilder()
-        .setTitle("Experience Transfer")
-        .setColor("#00FF00")
-        .setDescription(`Successfully transferred experience to ${targetUser}!`)
-        .addFields(
-          {
-            name: "Amount Transferred",
-            value: `${transferredAmount} XP`,
-            inline: true,
-          },
-          {
-            name: "Your Remaining XP",
-            value: `${originUserLevel.experience} XP`,
-            inline: true,
-          },
-          {
-            name: `${targetUser.username}'s New XP`,
-            value: `${targetUserLevel.experience} XP`,
-            inline: true,
-          }
-        )
-        .setTimestamp();
+      // Create a simple success message
+      let successMessage = `Successfully transferred **${transferredAmount} XP** to ${targetUser}!`;
+
+      // Add information about remaining XP
+      successMessage += `\nYou now have ${originUserLevel.experience} XP remaining.`;
 
       // Check if the amount was adjusted due to limits
       if (amount !== null && transferredAmount < amount) {
         if (response.message.includes("daily limit")) {
-          embed.setFooter({
-            text: "Note: Transfer was limited by your daily transfer limit of 2000 XP",
-          });
+          successMessage +=
+            "\n-# Note: Transfer was limited by your daily transfer limit of 2000 XP.";
         } else {
-          embed.setFooter({
-            text: "Note: Transfer was limited to your available experience",
-          });
+          successMessage +=
+            "\n-# Note: Transfer was limited to your available experience.";
         }
       }
 
-      await interaction.editReply({
-        embeds: [embed],
-      });
+      await safeReply(interaction, successMessage, true);
     } else {
-      let errorMessage = `Failed to transfer experience to ${targetUser.username}.`;
-
       // Handle specific error cases
+      let errorMessage = `Failed to transfer experience to ${targetUser.username}.`;
+      let error = new Error(response.message || "Unknown error");
+
       switch (response.code) {
         case ResponseCode.BAD_REQUEST:
           if (response.message.includes("daily transfer limit")) {
@@ -117,9 +96,7 @@ const command: Command = {
           break;
       }
 
-      await interaction.editReply({
-        content: errorMessage,
-      });
+      await safeErrorReply(interaction, error, errorMessage, true);
     }
   },
 };
