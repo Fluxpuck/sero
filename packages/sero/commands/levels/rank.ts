@@ -24,33 +24,33 @@ const command: Command = {
     try {
       const targetUser =
         interaction.options.getUser("user") || interaction.user;
+      const username = targetUser.globalName || targetUser.username;
 
       const response = await getRequest(
         `/guild/${interaction.guildId}/levels/${targetUser.id}`
       );
 
-      console.log("response", response);
-
       if (response.status === ResponseStatus.FAIL) {
-        return safeReply(
+        safeReply(
           interaction,
           {
-            content: `${targetUser.username} doesn't have any rank data yet! They need to send some messages first.`,
+            content: `${username} doesn't have any rank data yet! They need to send some messages first.`,
           },
           isDeferred,
           false
         );
+        return;
       }
 
       if (response.status !== ResponseStatus.SUCCESS) {
         let error = new Error(response.message || "Unknown error");
-
-        return safeErrorReply(
+        safeErrorReply(
           interaction,
           error,
           "Oops! Something went wrong while trying to fetch the rank data.",
           isDeferred
         );
+        return;
       }
 
       // Get request details
@@ -65,7 +65,7 @@ const command: Command = {
 
       const rankCard = await createRankCard(
         targetUser.id,
-        targetUser.username,
+        username,
         targetUser.displayAvatarURL({
           forceStatic: true,
           extension: "png",
@@ -97,22 +97,19 @@ const command: Command = {
         {
           content: isOwnRank
             ? "Here's your rank card!"
-            : `Here's ${targetUser.username}'s rank card!`,
+            : `Here's ${username}'s rank card!`,
           files: [rankCard],
         },
         isDeferred
       );
     } catch (error) {
-      console.error(
-        "Error in rank command:",
-        error instanceof Error ? error.message : String(error)
-      );
-      return safeErrorReply(
+      safeErrorReply(
         interaction,
         error,
         "An unexpected error occurred. Please try again later.",
         isDeferred
       );
+      return;
     }
   },
 };

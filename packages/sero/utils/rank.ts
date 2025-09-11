@@ -3,7 +3,7 @@ import sharp from "sharp";
 import { logger } from "./logger";
 
 // Initialize logger
-const log = logger("RankCard");
+const log = logger("generate-rank-card");
 
 /**
  * Color constants used for rank card generation
@@ -40,7 +40,9 @@ export const createRankCard = async (
   remainingExp: number
 ): Promise<AttachmentBuilder | undefined> => {
   try {
-    log.debug(`Generating rank card for user: ${userId} (${userName}), level: ${level}, position: #${position}, exp: ${experience}/${nextLevelExp}`);
+    log.debug(
+      `Generating rank card for user: ${userId} (${userName}), level: ${level}, position: #${position}, exp: ${experience}/${nextLevelExp} (${remainingExp} remaining)`
+    );
     // Define dimensions
     const width = 400;
     const height = 100;
@@ -75,7 +77,9 @@ export const createRankCard = async (
     });
 
     // Download and process avatar
-    log.debug(`Downloading avatar for rank card: ${avatarURL.substring(0, 60)}...`);
+    log.debug(
+      `Downloading avatar for rank card: ${avatarURL.substring(0, 60)}...`
+    );
     const avatarBuffer = await downloadImage(avatarURL);
     const circleAvatar = await sharp(avatarBuffer)
       .resize(avatarSize, avatarSize)
@@ -114,14 +118,14 @@ export const createRankCard = async (
     const textSvg = `
             <svg width="${width}" height="${height}">
                 <!-- Username -->
-                <text x="105" y="55" font-family="sans-serif" font-size="24" font-weight="500" fill="${
+                <text x="105" y="55" font-family="'Segoe UI', 'Roboto', 'Arial', sans-serif" font-size="24" font-weight="600" fill="${
                   RankCardColors.WHITE
                 }">${displayName}</text>
                 
                 <!-- Experience Text -->
                 <text x="${
                   width - 14
-                }" y="55" font-family="sans-serif" font-size="14" font-weight="500" text-anchor="end">
+                }" y="55" font-family="'Segoe UI', 'Roboto', 'Arial', sans-serif" font-size="14" font-weight="500" text-anchor="end">
                     <tspan fill="${
                       RankCardColors.WHITE
                     }">${formatNumberWithSuffix(experience)}</tspan>
@@ -133,20 +137,20 @@ export const createRankCard = async (
                 
                 <!-- Level Text -->
                 <text x="${width - 12}" y="30" text-anchor="end">
-                    <tspan font-family="sans-serif" font-size="16" font-weight="500" fill="${
+                    <tspan font-family="'Segoe UI', 'Roboto', 'Arial', sans-serif" font-size="16" font-weight="500" fill="${
                       RankCardColors.WHITE
                     }">Level</tspan>
-                    <tspan font-family="sans-serif" font-size="24" font-weight="700" fill="${
+                    <tspan font-family="'Segoe UI', 'Roboto', 'Arial', sans-serif" font-size="24" font-weight="700" fill="${
                       RankCardColors.YELLOW
                     }" dx="5">${level}</tspan>
                 </text>
                 
                 <!-- Rank Text -->
                 <text x="${width - 120}" y="30">
-                    <tspan font-family="sans-serif" font-size="16" font-weight="500" fill="${
+                    <tspan font-family="'Segoe UI', 'Roboto', 'Arial', sans-serif" font-size="16" font-weight="500" fill="${
                       RankCardColors.WHITE
                     }">#</tspan>
-                    <tspan font-family="sans-serif" font-size="24" font-weight="700" fill="${
+                    <tspan font-family="'Segoe UI', 'Roboto', 'Arial', sans-serif" font-size="24" font-weight="700" fill="${
                       RankCardColors.YELLOW
                     }" dx="5">${position}</tspan>
                 </text>
@@ -154,7 +158,12 @@ export const createRankCard = async (
         `;
 
     // Composite all elements together
-    log.debug(`Compositing rank card elements with progress: ${Math.round((experience - currentLevelExp) / (nextLevelExp - currentLevelExp) * 100)}%`);
+    log.debug(
+      `Compositing rank card elements with progress: ${Math.round(
+        ((experience - currentLevelExp) / (nextLevelExp - currentLevelExp)) *
+          100
+      )}%`
+    );
     const finalImage = await baseImage
       .composite([
         {
@@ -183,7 +192,9 @@ export const createRankCard = async (
       description: `Rank card for ${userName}`,
     });
 
-    log.success(`Rank card successfully generated for user: ${userId} (${userName}) at level ${level}`);
+    log.success(
+      `Rank card successfully generated for user: ${userId} (${userName}) at level ${level}`
+    );
     return attachment;
   } catch (error) {
     log.error(
@@ -221,11 +232,17 @@ export const downloadImage = async (url: string): Promise<Buffer> => {
     }
 
     const buffer = Buffer.from(arrayBuffer);
-    log.debug(`Avatar image downloaded successfully: ${url.substring(0, 40)}... (${buffer.length / 1024} KB)`);
+    log.debug(
+      `Avatar image downloaded successfully: ${url.substring(0, 40)}... (${
+        buffer.length / 1024
+      } KB)`
+    );
     return buffer;
   } catch (error) {
     log.error(
-      `Failed to download avatar image (${url ? url.substring(0, 30) + '...' : 'undefined URL'}):`,
+      `Failed to download avatar image (${
+        url ? url.substring(0, 30) + "..." : "undefined URL"
+      }):`,
       error instanceof Error ? error.message : String(error)
     );
     // Re-throw the error so the calling function can handle it appropriately
@@ -239,7 +256,7 @@ export const downloadImage = async (url: string): Promise<Buffer> => {
  * @returns The formatted number as a string
  */
 const formatNumberWithSuffix = (num: number): string => {
-  if (isNaN(num)) return '0';
+  if (isNaN(num)) return "0";
 
   if (num < 10000) {
     return num.toString();
