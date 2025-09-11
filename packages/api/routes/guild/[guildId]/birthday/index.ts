@@ -242,6 +242,20 @@ router.get(
           birthday.day
         );
 
+        // Check if today is the birthday (compare only month and day)
+        const isBirthdayToday = 
+          getMonth(today) + 1 === birthday.month && 
+          getDate(today) === birthday.day;
+
+        // If today is the birthday, set daysUntil to 0
+        if (isBirthdayToday) {
+          return {
+            ...birthday.toJSON(),
+            upcomingDate,
+            daysUntil: 0
+          };
+        }
+
         // If the birthday has already passed this year, use next year's date
         if (upcomingDate < today) {
           upcomingDate = new Date(
@@ -348,19 +362,29 @@ router.get(
         birthday.day
       );
 
-      // If the birthday has already passed this year, use next year's date
-      if (upcomingDate < today) {
-        upcomingDate = new Date(
-          currentYear + 1,
-          birthday.month - 1,
-          birthday.day
+      // Check if today is the birthday (compare only month and day)
+      const isBirthdayToday = 
+        getMonth(today) + 1 === birthday.month && 
+        getDate(today) === birthday.day;
+
+      // If today is the birthday, set daysUntil to 0
+      let daysUntil = 0;
+      
+      if (!isBirthdayToday) {
+        // If the birthday has already passed this year, use next year's date
+        if (upcomingDate < today) {
+          upcomingDate = new Date(
+            currentYear + 1,
+            birthday.month - 1,
+            birthday.day
+          );
+        }
+
+        // Calculate days until birthday
+        daysUntil = Math.ceil(
+          (upcomingDate.getTime() - today.getTime()) / (1000 * 60 * 60 * 24)
         );
       }
-
-      // Calculate days until birthday
-      const daysUntil = Math.ceil(
-        (upcomingDate.getTime() - today.getTime()) / (1000 * 60 * 60 * 24)
-      );
 
       ResponseHandler.sendSuccess(
         res,
