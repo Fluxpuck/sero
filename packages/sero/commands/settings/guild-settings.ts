@@ -8,6 +8,7 @@ import { Command } from "../../types/client.types";
 import { GuildSettingType } from "../../types/models/guild-settings.types";
 import { safeReply, safeErrorReply } from "../../utils/message";
 import { postRequest } from "../../database/connection";
+import { ResponseStatus } from "../../types/response.types";
 
 const command: Command = {
   data: new SlashCommandBuilder()
@@ -137,16 +138,9 @@ const command: Command = {
       return;
     }
 
-    console.log("guild-settings", {
-      guildId: interaction.guild!.id,
-      type,
-      targetId,
-      targetName,
-    });
-
     try {
       // Make API call to update the guild settings using the proper utility
-      const response = await postRequest<any>(
+      const response = await postRequest(
         `guild/${interaction.guild!.id}/settings`,
         {
           type,
@@ -154,7 +148,7 @@ const command: Command = {
         }
       );
 
-      if (response.status === "error") {
+      if (response.status === ResponseStatus.ERROR) {
         throw new Error(`Failed to update guild settings: ${response.message}`);
       }
 
