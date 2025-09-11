@@ -30,53 +30,55 @@ const event: Event = {
       const textChannel = channel as TextChannel | NewsChannel | ThreadChannel;
       if (!channel || !textChannel) return;
 
-      const birthdayRole = guild.roles.cache.get(message.roleId);
+      const birthdayRole = await guild.roles.fetch(message.roleId);
       if (!birthdayRole) return;
 
       // Loop through each birthday
       for (const birthday of message.birthdays) {
+        // Fetch the member
         const member = await guild.members.fetch(birthday.userId);
         if (!member) continue;
 
-        if (birthdayRole) {
-          if (!member.roles.cache.has(birthdayRole.id)) {
-            const [birthdayMessageData, tempRoleResponse] = await Promise.all([
-              getRequest(
-                `/assets/template-messages/random/${
-                  birthday.age ? "birthday-with-age" : "birthday"
-                }`
-              ),
-              postRequest(`/guild/${guild.id}/temp-role/${member.id}`, {
-                roleId: birthdayRole.id,
-                duration: 86400, // 1 day
-              }),
-            ]);
+        // Fetch the template birthday message and store temporary role data
+        const [birthdayMessageData, tempRoleResponse] = await Promise.all([
+          getRequest(
+            `/assets/template-messages/random/${
+              birthday.age ? "birthday-with-age" : "birthday"
+            }`
+          ),
+          postRequest(`/guild/${guild.id}/temp-role/${member.id}`, {
+            roleId: birthdayRole.id,
+            duration: 86400, // 1 day
+          }),
+        ]);
 
-            if (tempRoleResponse.status == ResponseStatus.SUCCESS) {
-              log.debug(
-                `Stored temporary role for ${member.id} in guild ${guild.id}`
-              );
-            } else {
-              log.error(
-                `Failed to store temporary role for ${member.id} in guild ${guild.id}`,
-                tempRoleResponse.message
-              );
-            }
-
-            // Send birthday message
-            const birthdayMessage =
-              birthdayMessageData?.data?.message || "Happy Birthday {{USER}}!";
-            await textChannel.send(
-              birthdayMessage
-                .replace("{{USER}}", `<@${member.id}>`)
-                .replace("{{AGE}}", birthday.age?.toString() || "")
-            );
-
-            // Gift the birthday role to the member
-            await member.roles.add(birthdayRole);
-            log.debug(`Added birthday role to ${member.user.username}`);
-          }
+        if (tempRoleResponse.status == ResponseStatus.SUCCESS) {
+          log.debug(
+            `Stored temporary role for ${member.id} in guild ${guild.id}`,
+            tempRoleResponse.data
+          );
+        } else {
+          log.error(
+            `Failed to store temporary role for ${member.id} in guild ${guild.id}`,
+            tempRoleResponse.message
+          );
         }
+
+        // Send birthday message
+        const birthdayMessage = birthdayMessageData?.data?.message;
+        // Get birthday message with placeholders replaced
+        const birthdayMessageReplaced = birthdayMessage
+          ? birthdayMessage
+              .replace(/{NAME}/g, `<@${member.id}>`)
+              .replace(/{AGE}/g, birthday.age?.toString() || "")
+          : `Happy Birthday <@${member.id}>! 🎉`;
+
+        // Send birthday message
+        await textChannel.send(birthdayMessageReplaced);
+
+        // Gift the birthday role to the member
+        await member.roles.add(birthdayRole);
+        log.debug(`Added birthday role to ${member.user.username}`);
       }
     } catch (error) {
       log.error(`Error processing birthday message`, error);
