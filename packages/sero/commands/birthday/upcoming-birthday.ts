@@ -79,8 +79,6 @@ const command: Command = {
           }
         });
 
-        console.log(birthdaysByDate);
-
         // Add a field for each date group
         for (const date in birthdaysByDate) {
           const usersOnThisDate = birthdaysByDate[date];

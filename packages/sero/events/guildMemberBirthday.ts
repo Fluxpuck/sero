@@ -42,7 +42,7 @@ const event: Event = {
           if (!member.roles.cache.has(birthdayRole.id)) {
             const [birthdayMessageData, tempRoleResponse] = await Promise.all([
               getRequest(
-                `/guild/${guild.id}/assets/template-messages/random/${
+                `/assets/template-messages/random/${
                   birthday.age ? "birthday-with-age" : "birthday"
                 }`
               ),
@@ -54,11 +54,11 @@ const event: Event = {
 
             if (tempRoleResponse.status == ResponseStatus.SUCCESS) {
               log.debug(
-                `User ${member.id} claimed reward in guild ${guild.id}`
+                `Stored temporary role for ${member.id} in guild ${guild.id}`
               );
             } else {
               log.error(
-                `Failed to claim reward for user ${member.id} in guild ${guild.id}`,
+                `Failed to store temporary role for ${member.id} in guild ${guild.id}`,
                 tempRoleResponse.message
               );
             }

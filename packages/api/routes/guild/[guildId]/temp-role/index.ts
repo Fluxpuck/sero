@@ -82,29 +82,29 @@ router.get("/", async (req: Request, res: Response, next: NextFunction) => {
  *       500:
  *         description: Server error
  */
-router.get("/active", async (req: Request, res: Response, next: NextFunction) => {
-  try {
-    const { guildId } = req.params;
+router.get(
+  "/active",
+  async (req: Request, res: Response, next: NextFunction) => {
+    try {
+      const { guildId } = req.params;
 
-    const tempRoles = await TemporaryRole.findAll({
-      where: {
-        guildId,
-        [Op.or]: [
-          { expireAt: { [Op.gt]: new Date() } },
-          { expireAt: null }
-        ]
-      },
-    });
+      const tempRoles = await TemporaryRole.findAll({
+        where: {
+          guildId,
+          [Op.or]: [{ expireAt: { [Op.gt]: new Date() } }, { expireAt: null }],
+        },
+      });
 
-    ResponseHandler.sendSuccess(
-      res,
-      tempRoles,
-      "Active temporary roles retrieved successfully"
-    );
-  } catch (error) {
-    next(error);
+      ResponseHandler.sendSuccess(
+        res,
+        tempRoles,
+        "Active temporary roles retrieved successfully"
+      );
+    } catch (error) {
+      next(error);
+    }
   }
-});
+);
 
 /**
  * @swagger
@@ -126,26 +126,29 @@ router.get("/active", async (req: Request, res: Response, next: NextFunction) =>
  *       500:
  *         description: Server error
  */
-router.get("/expired", async (req: Request, res: Response, next: NextFunction) => {
-  try {
-    const { guildId } = req.params;
+router.get(
+  "/expired",
+  async (req: Request, res: Response, next: NextFunction) => {
+    try {
+      const { guildId } = req.params;
 
-    const tempRoles = await TemporaryRole.findAll({
-      where: {
-        guildId,
-        expireAt: { [Op.lt]: new Date() }
-      },
-    });
+      const tempRoles = await TemporaryRole.findAll({
+        where: {
+          guildId,
+          expireAt: { [Op.lt]: new Date() },
+        },
+      });
 
-    ResponseHandler.sendSuccess(
-      res,
-      tempRoles,
-      "Expired temporary roles retrieved successfully"
-    );
-  } catch (error) {
-    next(error);
+      ResponseHandler.sendSuccess(
+        res,
+        tempRoles,
+        "Expired temporary roles retrieved successfully"
+      );
+    } catch (error) {
+      next(error);
+    }
   }
-});
+);
 
 /**
  * @swagger
@@ -173,26 +176,29 @@ router.get("/expired", async (req: Request, res: Response, next: NextFunction) =
  *       500:
  *         description: Server error
  */
-router.get("/user/:userId", async (req: Request, res: Response, next: NextFunction) => {
-  try {
-    const { guildId, userId } = req.params;
+router.get(
+  "/user/:userId",
+  async (req: Request, res: Response, next: NextFunction) => {
+    try {
+      const { guildId, userId } = req.params;
 
-    const tempRoles = await TemporaryRole.findAll({
-      where: {
-        guildId,
-        userId
-      },
-    });
+      const tempRoles = await TemporaryRole.findAll({
+        where: {
+          guildId,
+          userId,
+        },
+      });
 
-    ResponseHandler.sendSuccess(
-      res,
-      tempRoles,
-      "User's temporary roles retrieved successfully"
-    );
-  } catch (error) {
-    next(error);
+      ResponseHandler.sendSuccess(
+        res,
+        tempRoles,
+        "User's temporary roles retrieved successfully"
+      );
+    } catch (error) {
+      next(error);
+    }
   }
-});
+);
 
 /**
  * @swagger
@@ -229,7 +235,7 @@ router.get("/:id", async (req: Request, res: Response, next: NextFunction) => {
     const tempRole = await TemporaryRole.findOne({
       where: {
         id: parseInt(id),
-        guildId
+        guildId,
       },
     });
 
@@ -289,166 +295,62 @@ router.get("/:id", async (req: Request, res: Response, next: NextFunction) => {
  *       500:
  *         description: Server error
  */
-router.post("/", async (req: Request, res: Response, next: NextFunction) => {
-  const transaction = await sequelize.transaction();
+router.post(
+  "/:userId",
+  async (req: Request, res: Response, next: NextFunction) => {
+    const transaction = await sequelize.transaction();
 
-  try {
-    const { guildId } = req.params;
-    const { userId, roleId, duration } = req.body;
+    try {
+      const { guildId, userId } = req.params;
+      const { roleId, duration = 604800 } = req.body; // 1 week in seconds
 
-    // Validate required fields
-    if (!userId || !roleId) {
-      await transaction.rollback();
-      return ResponseHandler.sendValidationFail(
-        res,
-        "Missing required fields",
-        ["userId and roleId are required fields"]
-      );
-    }
-
-    // Validate duration if provided
-    if (duration !== undefined && duration !== null) {
-      if (typeof duration !== 'number' || duration < 0) {
+      // Validate required fields
+      if (!userId || !roleId) {
         await transaction.rollback();
         return ResponseHandler.sendValidationFail(
           res,
-          "Invalid duration",
-          ["Duration must be a positive number"]
+          "Missing required fields",
+          ["userId and roleId are required fields"]
         );
       }
-    }
 
-    // Check if the temporary role already exists
-    const existingRole = await TemporaryRole.findOne({
-      where: { guildId, userId, roleId },
-      transaction,
-    });
+      // Validate duration if provided
+      if (duration !== undefined && duration !== null) {
+        if (typeof duration !== "number" || duration < 0) {
+          await transaction.rollback();
+          return ResponseHandler.sendValidationFail(res, "Invalid duration", [
+            "Duration must be a positive number",
+          ]);
+        }
+      }
 
-    if (existingRole) {
-      await transaction.rollback();
-      return ResponseHandler.sendError(
-        res,
-        "Temporary role already exists for this user and role",
-        ResponseCode.CONFLICT
-      );
-    }
-
-    // Create the temporary role
-    const tempRole = await TemporaryRole.create(
-      {
+      // Prepare temp role data for upsert
+      const tempRoleData = {
         guildId,
         userId,
         roleId,
         duration: duration || null,
-      } as TemporaryRole,
-      { transaction }
-    );
+      } as TemporaryRole;
 
-    await transaction.commit();
+      // Use upsert to create or update in a single operation
+      const [tempRole] = await TemporaryRole.upsert(tempRoleData, {
+        transaction,
+      });
 
-    ResponseHandler.sendSuccess(
-      res,
-      tempRole,
-      "Temporary role created successfully",
-      ResponseCode.CREATED
-    );
-  } catch (error) {
-    await transaction.rollback();
-    next(error);
-  }
-});
+      await transaction.commit();
 
-/**
- * @swagger
- * /guild/{guildId}/temp-role/{id}:
- *   put:
- *     summary: Update a temporary role
- *     tags:
- *       - Temporary Roles
- *     parameters:
- *       - name: guildId
- *         in: path
- *         required: true
- *         description: The Discord ID of the guild
- *         schema:
- *           type: string
- *       - name: id
- *         in: path
- *         required: true
- *         description: The ID of the temporary role
- *         schema:
- *           type: integer
- *     requestBody:
- *       required: true
- *       content:
- *         application/json:
- *           schema:
- *             type: object
- *             properties:
- *               duration:
- *                 type: integer
- *                 description: New duration in minutes
- *     responses:
- *       200:
- *         description: Temporary role updated successfully
- *       404:
- *         description: Temporary role not found
- *       500:
- *         description: Server error
- */
-router.put("/:id", async (req: Request, res: Response, next: NextFunction) => {
-  const transaction = await sequelize.transaction();
-
-  try {
-    const { guildId, id } = req.params;
-    const { duration } = req.body;
-
-    // Validate duration
-    if (duration !== undefined && duration !== null) {
-      if (typeof duration !== 'number' || duration < 0) {
-        await transaction.rollback();
-        return ResponseHandler.sendValidationFail(
-          res,
-          "Invalid duration",
-          ["Duration must be a positive number"]
-        );
-      }
-    }
-
-    // Find the temporary role
-    const tempRole = await TemporaryRole.findOne({
-      where: {
-        id: parseInt(id),
-        guildId
-      },
-      transaction,
-    });
-
-    if (!tempRole) {
-      await transaction.rollback();
-      return ResponseHandler.sendError(
+      ResponseHandler.sendSuccess(
         res,
-        "Temporary role not found",
-        ResponseCode.NOT_FOUND
+        tempRole,
+        "Temporary role created successfully",
+        ResponseCode.CREATED
       );
+    } catch (error) {
+      await transaction.rollback();
+      next(error);
     }
-
-    // Update the temporary role
-    tempRole.duration = duration;
-    await tempRole.save({ transaction });
-
-    await transaction.commit();
-
-    ResponseHandler.sendSuccess(
-      res,
-      tempRole,
-      "Temporary role updated successfully"
-    );
-  } catch (error) {
-    await transaction.rollback();
-    next(error);
   }
-});
+);
 
 /**
  * @swagger
@@ -478,34 +380,37 @@ router.put("/:id", async (req: Request, res: Response, next: NextFunction) => {
  *       500:
  *         description: Server error
  */
-router.delete("/:id", async (req: Request, res: Response, next: NextFunction) => {
-  try {
-    const { guildId, id } = req.params;
+router.delete(
+  "/:id",
+  async (req: Request, res: Response, next: NextFunction) => {
+    try {
+      const { guildId, id } = req.params;
 
-    const deleted = await TemporaryRole.destroy({
-      where: {
-        id: parseInt(id),
-        guildId
-      },
-    });
+      const deleted = await TemporaryRole.destroy({
+        where: {
+          id: parseInt(id),
+          guildId,
+        },
+      });
 
-    if (deleted === 0) {
-      return ResponseHandler.sendError(
+      if (deleted === 0) {
+        return ResponseHandler.sendError(
+          res,
+          "Temporary role not found",
+          ResponseCode.NOT_FOUND
+        );
+      }
+
+      ResponseHandler.sendSuccess(
         res,
-        "Temporary role not found",
-        ResponseCode.NOT_FOUND
+        null,
+        "Temporary role deleted successfully",
+        ResponseCode.NO_CONTENT
       );
+    } catch (error) {
+      next(error);
     }
-
-    ResponseHandler.sendSuccess(
-      res,
-      null,
-      "Temporary role deleted successfully",
-      ResponseCode.NO_CONTENT
-    );
-  } catch (error) {
-    next(error);
   }
-});
+);
 
 export default router;

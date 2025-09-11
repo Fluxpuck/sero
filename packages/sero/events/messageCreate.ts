@@ -1,8 +1,9 @@
 import { Message, Events } from "discord.js";
 import { Event } from "../types/client.types";
 import { logger } from "../utils/logger";
-import { postRequest } from "../database/connection";
 import { useCooldown } from "../utils/cooldown";
+import { postRequest } from "../database/connection";
+import { ResponseStatus } from "../types/response.types";
 
 const log = logger("message-create");
 
@@ -33,10 +34,10 @@ const event: Event = {
       const result = await postRequest(
         `/guild/${message.guildId}/levels/gain/${message.author.id}`
       );
-      log.debug(
-        `${message.author.tag} gained ${result.data.fluctuation} XP`,
-        result
-      );
+      if (result.status !== ResponseStatus.SUCCESS) {
+        log.error(`${message.author.tag} failed to gain XP`, result);
+        return;
+      }
     }
   },
 };
