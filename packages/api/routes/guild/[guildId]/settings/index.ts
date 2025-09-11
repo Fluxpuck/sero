@@ -6,6 +6,7 @@ import {
 import { ResponseHandler } from "../../../../utils/response.utils";
 import { ResponseCode } from "../../../../utils/response.types";
 import { sequelize } from "../../../../database/sequelize";
+import { cache } from "../../../../middleware/cache";
 
 const router = Router({ mergeParams: true });
 
@@ -128,60 +129,51 @@ router.get("/", async (req: Request, res: Response, next: NextFunction) => {
 router.post("/", async (req: Request, res: Response, next: NextFunction) => {
   try {
     await sequelize.transaction(async (transaction) => {
-    const { guildId } = req.params;
-    const { type, targetId, excludeIds } = req.body;
+      const { guildId } = req.params;
+      const { type, targetId, excludeIds } = req.body;
 
-    if (!type || !targetId) {
-      return ResponseHandler.sendValidationFail(
-        res,
-        "Type and targetId are required",
-        ["Type and targetId are required fields"]
-      );
-    }
-
-    // Validate the setting type
-    if (!Object.values(GuildSettingType).includes(type as GuildSettingType)) {
-      return ResponseHandler.sendValidationFail(res, "Invalid setting type", [
-        `'${type}' is not a valid setting type`,
-      ]);
-    }
-
-    // Try to find existing setting first
-    const [setting, created] = await GuildSettings.findOrCreate({
-      where: {
-        guildId,
-        type: type as GuildSettingType,
-      },
-      defaults: {
-        guildId,
-        type: type as GuildSettingType,
-        targetId,
-        excludeIds: excludeIds || [],
-      } as GuildSettings,
-      transaction,
-    });
-
-    // If setting already exists, update it
-    if (!created) {
-      setting.targetId = targetId;
-      if (excludeIds) {
-        setting.excludeIds = excludeIds;
+      if (!type || !targetId) {
+        return ResponseHandler.sendValidationFail(
+          res,
+          "Type and targetId are required",
+          ["Type and targetId are required fields"]
+        );
       }
-      await setting.save({ transaction });
-      return ResponseHandler.sendSuccess(
+
+      // Validate the setting type
+      if (!Object.values(GuildSettingType).includes(type as GuildSettingType)) {
+        return ResponseHandler.sendValidationFail(res, "Invalid setting type", [
+          `'${type}' is not a valid setting type`,
+        ]);
+      }
+
+      // Use upsert to create or update the setting
+      const result = await GuildSettings.upsert(
+        {
+          guildId,
+          type: type as GuildSettingType,
+          targetId,
+          excludeIds: excludeIds || [],
+        } as GuildSettings,
+        {
+          transaction,
+          returning: true,
+          // These are the fields that identify a unique record
+          fields: ['guildId', 'type', 'targetId', 'excludeIds']
+        }
+      );
+      
+      // result[0] is the updated/created instance
+      // result[1] is a boolean indicating whether a record was created (true) or updated (false)
+      const [setting, created] = result;
+      
+      ResponseHandler.sendSuccess(
         res,
         setting,
-        "Guild setting updated successfully"
+        created ? "Guild setting created successfully" : "Guild setting updated successfully",
+        created ? ResponseCode.CREATED : ResponseCode.SUCCESS
       );
-    }
-
-    ResponseHandler.sendSuccess(
-      res,
-      setting,
-      "Guild setting created successfully",
-      ResponseCode.CREATED
-    );
-  });
+    });
   } catch (error) {
     next(error);
   }
@@ -219,26 +211,137 @@ router.delete(
   async (req: Request, res: Response, next: NextFunction) => {
     try {
       await sequelize.transaction(async (transaction) => {
-      const { guildId, settingId } = req.params;
+        const { guildId, settingId } = req.params;
 
-      const setting = await GuildSettings.findOne({
-        where: { id: settingId, guildId },
+        const setting = await GuildSettings.findOne({
+          where: { id: settingId, guildId },
+        });
+
+        if (!setting) {
+          return ResponseHandler.sendError(
+            res,
+            "Setting not found for this guild",
+            ResponseCode.NOT_FOUND
+          );
+        }
+
+        await setting.destroy({ transaction });
+        res.status(204).send();
+      });
+    } catch (error) {
+      next(error);
+    }
+  }
+);
+
+/**
+ * @swagger
+ * /guild/{guildId}/settings/available:
+ *   get:
+ *     summary: Get all available guild setting types
+ *     tags: [Guild Settings]
+ *     parameters:
+ *       - in: path
+ *         name: guildId
+ *         description: The Discord ID of the guild
+ *         schema:
+ *           type: string
+ *     responses:
+ *       200:
+ *         description: Successful operation
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 types:
+ *                   type: array
+ *                   items:
+ *                     type: object
+ *                     properties:
+ *                       id:
+ *                         type: string
+ *                       name:
+ *                         type: string
+ *                       description:
+ *                         type: string
+ *       500:
+ *         description: Server error
+ */
+router.get(
+  "/available",
+  cache({ ttl: 3600 }),
+  async (req: Request, res: Response, next: NextFunction) => {
+    try {
+      // Create a descriptive list of all available setting types
+      const settingTypes = Object.values(GuildSettingType).map((type) => {
+        let name = "";
+        let description = "";
+
+        switch (type) {
+          // case GuildSettingType.ADMIN_ROLE:
+          //   name = "Admin Role";
+          //   description =
+          //     "Role that has administrative permissions for the bot";
+          //   break;
+          // case GuildSettingType.MODERATOR_ROLE:
+          //   name = "Moderator Role";
+          //   description = "Role that has moderation permissions for the bot";
+          //   break;
+          case GuildSettingType.WELCOME_CHANNEL:
+            name = "Welcome Channel";
+            description = "Channel where welcome messages are sent";
+            break;
+          case GuildSettingType.LEVEL_UP_CHANNEL:
+            name = "Level Up Channel";
+            description = "Channel where level up announcements are sent";
+            break;
+          case GuildSettingType.EXP_REWARD_DROP_CHANNEL:
+            name = "Experience Reward Channel";
+            description = "Channel where experience reward drops are announced";
+            break;
+          case GuildSettingType.BIRTHDAY_ROLE:
+            name = "Birthday Role";
+            description = "Role assigned to members on their birthday";
+            break;
+          case GuildSettingType.BIRTHDAY_CHANNEL:
+            name = "Birthday Channel";
+            description = "Channel where birthday announcements are sent";
+            break;
+          case GuildSettingType.MEMBER_LOGS_CHANNEL:
+            name = "Member Logs Channel";
+            description = "Channel where member join/leave events are logged";
+            break;
+          case GuildSettingType.VC_LOGS_CHANNEL:
+            name = "Voice Channel Logs";
+            description = "Channel where voice channel events are logged";
+            break;
+          case GuildSettingType.MODERATION_LOGS_CHANNEL:
+            name = "Moderation Logs Channel";
+            description = "Channel where moderation events are logged";
+            break;
+          default:
+            name = String(type)
+              .replace(/-/g, " ")
+              .replace(/\b\w/g, (letter: string) => letter.toUpperCase());
+            description = "No description available";
+        }
+
+        return {
+          id: type,
+          name,
+          description,
+        };
       });
 
-      if (!setting) {
-        return ResponseHandler.sendError(
-          res,
-          "Setting not found for this guild",
-          ResponseCode.NOT_FOUND
-        );
-      }
-
-      await setting.destroy({ transaction });
-      res.status(204).send();
-    });
-  } catch (error) {
-    next(error);
-  }
+      ResponseHandler.sendSuccess(
+        res,
+        { types: settingTypes },
+        "Available guild setting types retrieved successfully"
+      );
+    } catch (error) {
+      next(error);
+    }
   }
 );
 

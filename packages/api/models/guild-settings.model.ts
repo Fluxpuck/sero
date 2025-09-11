@@ -12,7 +12,7 @@ export enum GuildSettingType {
   BIRTHDAY_CHANNEL = "birthday-channel",
 
   MEMBER_LOGS_CHANNEL = "member-logs-channel",
-  BAN_LOGS_CHANNEL = "ban-logs-channel",
+  MODERATION_LOGS_CHANNEL = "moderation-logs-channel",
   VC_LOGS_CHANNEL = "vc-logs-channel",
 }
 
@@ -29,6 +29,7 @@ export enum GuildSettingType {
       fields: ["guildId", "type"],
     },
     {
+      unique: false,
       fields: ["guildId", "targetId"],
     },
     {
