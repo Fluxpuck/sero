@@ -49,14 +49,10 @@ router.get(
       const { guildId } = req.params;
       const { settings = false } = req.query;
 
-      console.log("GuildId", guildId);
-
       const guild = await Guild.findOne({
         where: { guildId },
         include: settings === "true" ? [GuildSettings] : [],
       });
-
-      console.log("Guild", guild);
 
       if (!guild) {
         return ResponseHandler.sendError(

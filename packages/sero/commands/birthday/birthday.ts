@@ -89,8 +89,6 @@ const command: Command = {
       ),
     ]);
 
-    console.log("birthday", { birthdayResponse, setBirthdayResponse });
-
     if (setBirthdayResponse.code === ResponseCode.VALIDATION_ERROR) {
       safeReply(
         interaction,
