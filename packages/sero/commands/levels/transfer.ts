@@ -2,7 +2,7 @@ import { SlashCommandBuilder, ChatInputCommandInteraction } from "discord.js";
 import { safeReply, safeErrorReply } from "../../utils/message";
 import { Command } from "../../types/client.types";
 import { postRequest } from "../../database/connection";
-import { ResponseCode } from "../../types/response.types";
+import { ResponseCode, ResponseStatus } from "../../types/response.types";
 
 const command: Command = {
   data: new SlashCommandBuilder()
@@ -54,7 +54,7 @@ const command: Command = {
       { amount, targetId: targetUser.id }
     );
 
-    if (response.code === ResponseCode.SUCCESS) {
+    if (response.status === ResponseStatus.SUCCESS) {
       const {
         dailyTransferLimit,
         actualTransferAmount,

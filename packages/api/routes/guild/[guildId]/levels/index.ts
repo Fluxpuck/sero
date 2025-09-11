@@ -167,6 +167,14 @@ router.get(
         } as UserLevel,
       });
 
+      const position =
+        (await UserLevel.count({
+          where: {
+            guildId,
+            experience: { [Op.gt]: userLevel.experience },
+          },
+        })) + 1;
+
       const modifier = await Modifier.findOne({ where: { userId, guildId } });
 
       const ranks = await LevelRank.findAll({
@@ -178,7 +186,10 @@ router.get(
       });
 
       const response = {
-        userLevel,
+        userLevel: {
+          ...userLevel.toJSON(),
+          position,
+        },
         modifier: modifier?.amount ?? 1,
         ranks: ranks ?? [],
       };

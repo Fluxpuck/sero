@@ -1,5 +1,9 @@
 import { AttachmentBuilder } from "discord.js";
 import sharp from "sharp";
+import { logger } from "./logger";
+
+// Initialize logger
+const log = logger("RankCard");
 
 /**
  * Color constants used for rank card generation
@@ -21,6 +25,7 @@ export const RankCardColors = {
  * @param level - The user's current level
  * @param currentLevelExp - Experience required for the current level
  * @param nextLevelExp - Experience required for the next level
+ * @param remainingExp - Experience remaining to reach the next level
  * @returns A Discord AttachmentBuilder containing the rank card image
  */
 export const createRankCard = async (
@@ -31,9 +36,11 @@ export const createRankCard = async (
   experience: number,
   level: number,
   currentLevelExp: number,
-  nextLevelExp: number
+  nextLevelExp: number,
+  remainingExp: number
 ): Promise<AttachmentBuilder | undefined> => {
   try {
+    log.debug(`Generating rank card for user: ${userId} (${userName}), level: ${level}, position: #${position}, exp: ${experience}/${nextLevelExp}`);
     // Define dimensions
     const width = 400;
     const height = 100;
@@ -68,6 +75,7 @@ export const createRankCard = async (
     });
 
     // Download and process avatar
+    log.debug(`Downloading avatar for rank card: ${avatarURL.substring(0, 60)}...`);
     const avatarBuffer = await downloadImage(avatarURL);
     const circleAvatar = await sharp(avatarBuffer)
       .resize(avatarSize, avatarSize)
@@ -146,6 +154,7 @@ export const createRankCard = async (
         `;
 
     // Composite all elements together
+    log.debug(`Compositing rank card elements with progress: ${Math.round((experience - currentLevelExp) / (nextLevelExp - currentLevelExp) * 100)}%`);
     const finalImage = await baseImage
       .composite([
         {
@@ -168,15 +177,17 @@ export const createRankCard = async (
       .toBuffer();
 
     // Create Discord attachment
+    log.debug(`Creating Discord attachment for rank card: ${userId}_rank.png`);
     const attachment = new AttachmentBuilder(finalImage, {
       name: `${userId}_rank.png`,
       description: `Rank card for ${userName}`,
     });
 
+    log.success(`Rank card successfully generated for user: ${userId} (${userName}) at level ${level}`);
     return attachment;
   } catch (error) {
-    console.error(
-      "Error creating rank card:",
+    log.error(
+      `Failed to create rank card for user ${userId}:`,
       error instanceof Error ? error.message : String(error)
     );
     // Return undefined so the calling function can handle the error appropriately
@@ -209,10 +220,12 @@ export const downloadImage = async (url: string): Promise<Buffer> => {
       throw new Error("Received empty image data");
     }
 
-    return Buffer.from(arrayBuffer);
+    const buffer = Buffer.from(arrayBuffer);
+    log.debug(`Avatar image downloaded successfully: ${url.substring(0, 40)}... (${buffer.length / 1024} KB)`);
+    return buffer;
   } catch (error) {
-    console.error(
-      "Error downloading image:",
+    log.error(
+      `Failed to download avatar image (${url ? url.substring(0, 30) + '...' : 'undefined URL'}):`,
       error instanceof Error ? error.message : String(error)
     );
     // Re-throw the error so the calling function can handle it appropriately
@@ -226,7 +239,7 @@ export const downloadImage = async (url: string): Promise<Buffer> => {
  * @returns The formatted number as a string
  */
 const formatNumberWithSuffix = (num: number): string => {
-  if (isNaN(num)) return num.toString();
+  if (isNaN(num)) return '0';
 
   if (num < 10000) {
     return num.toString();
