@@ -4,7 +4,7 @@ import {
   Guild,
   UserLevel,
   LevelRank,
-  Modifier,
+  LevelMultiplier,
   User,
 } from "../../../../models";
 import { fetchUsername, fetchGuildName } from "../../../../utils/discord-api";
@@ -146,8 +146,8 @@ router.get("/", async (req: Request, res: Response, next: NextFunction) => {
  *               properties:
  *                 userLevel:
  *                   $ref: '#/components/schemas/UserLevel'
- *                 modifier:
- *                   $ref: '#/components/schemas/Modifier'
+ *                 multiplier:
+ *                   $ref: '#/components/schemas/LevelMultiplier'
  *       404:
  *         description: Guild not found
  *       500:
@@ -175,7 +175,9 @@ router.get(
           },
         })) + 1;
 
-      const modifier = await Modifier.findOne({ where: { userId, guildId } });
+      const multiplier = await LevelMultiplier.findOne({
+        where: { userId, guildId },
+      });
 
       const ranks = await LevelRank.findAll({
         where: {
@@ -190,7 +192,7 @@ router.get(
           ...userLevel.toJSON(),
           position,
         },
-        modifier: modifier?.amount ?? 1,
+        multiplier: multiplier?.amount ?? 1,
         ranks: ranks ?? [],
       };
 
@@ -243,8 +245,8 @@ router.get(
  *               properties:
  *                 userLevel:
  *                   $ref: '#/components/schemas/UserLevel'
- *                 modifier:
- *                   $ref: '#/components/schemas/Modifier'
+ *                 multiplier:
+ *                   $ref: '#/components/schemas/LevelMultiplier'
  *       404:
  *         description: Guild not found
  *       500:
@@ -346,8 +348,8 @@ router.post(
  *               properties:
  *                 userLevel:
  *                   $ref: '#/components/schemas/UserLevel'
- *                 modifier:
- *                   $ref: '#/components/schemas/Modifier'
+ *                 multiplier:
+ *                   $ref: '#/components/schemas/LevelMultiplier'
  *       404:
  *         description: Guild not found
  *       500:

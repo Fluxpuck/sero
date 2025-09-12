@@ -23,7 +23,7 @@ import {
   CommandLogs,
   Aways,
   Messages,
-  Modifier,
+  LevelMultiplier,
   Jobs,
   initModels,
 } from "../models";
@@ -79,7 +79,7 @@ export const sequelize = new Sequelize(
       CommandLogs,
       Aways,
       Messages,
-      Modifier,
+      LevelMultiplier,
       Jobs,
     ],
   }

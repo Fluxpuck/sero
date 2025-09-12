@@ -14,15 +14,15 @@ const MAX_EXP = 25;
 
 /**
  * Calculates the experience points for a user
- * @param personalModifier The personal modifier for the user
- * @param serverModifier The server modifier for the user
+ * @param personalMultiplier The personal multiplier for the user
+ * @param serverMultiplier The server multiplier for the user
  * @returns The calculated experience points
  */
-export const calculateXp = (personalModifier = 1, serverModifier = 1) => {
+export const calculateXp = (personalMultiplier = 1, serverMultiplier = 1) => {
   return (
     Math.ceil(Math.random() * (MAX_EXP - BASE_EXP + 1) + BASE_EXP) *
-    serverModifier *
-    personalModifier
+    serverMultiplier *
+    personalMultiplier
   );
 };
 

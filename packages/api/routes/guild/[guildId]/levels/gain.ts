@@ -1,5 +1,5 @@
 import { Request, Response, Router, NextFunction } from "express";
-import { Modifier } from "../../../../models";
+import { LevelMultiplier } from "../../../../models";
 import { ResponseHandler } from "../../../../utils/response.utils";
 import { calculateXp } from "../../../../utils/levels.utils";
 import { logUserExperience } from "../../../../utils/log.utils";
@@ -12,14 +12,14 @@ const router = Router({ mergeParams: true });
 /*
 This route is for naturally increasing a user's level
 by the default 15-25 experience per message
-including the personal and guild modifiers
+including the personal and guild multiplier
 */
 
 /**
  * @swagger
  * /guild/{guildId}/levels/gain/{userId}:
  *   post:
- *     summary: Increase a user's level by default amount (15-25) including modifiers
+ *     summary: Increase a user's level by default amount (15-25) including multipliers
  *     tags:
  *       - Levels
  *     parameters:
@@ -68,14 +68,19 @@ router.post(
         transaction
       );
 
-      // Get Guild and User modifiers
-      const guild_modifier = await Modifier.findOne({ where: { guildId } });
-      const user_modifier = await Modifier.findOne({
+      // Get Guild and User multipliers (if any)
+      const guild_multiplier = await LevelMultiplier.findOne({
+        where: { guildId },
+      });
+      const user_multiplier = await LevelMultiplier.findOne({
         where: { guildId, userId },
       });
 
-      // Calculate gain based on modifiers
-      const gain = calculateXp(guild_modifier?.amount, user_modifier?.amount);
+      // Calculate gain based on multipliers
+      const gain = calculateXp(
+        guild_multiplier?.amount,
+        user_multiplier?.amount
+      );
 
       // Update user level
       userLevel.experience += gain;

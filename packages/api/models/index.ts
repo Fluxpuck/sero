@@ -22,7 +22,7 @@ import { Commands } from "./commands.model";
 import { CommandLogs } from "./command-logs.model";
 import { Aways } from "./aways.model";
 import { Messages } from "./messages.model";
-import { Modifier } from "./modifiers.model";
+import { LevelMultiplier } from "./level-multiplier.model";
 import { Jobs } from "./jobs.model";
 import {
   TemplateMessages,
@@ -54,7 +54,7 @@ export {
   CommandLogs,
   Aways,
   Messages,
-  Modifier,
+  LevelMultiplier,
   Jobs,
   TemplateMessages,
   TemplateMessagesType,
@@ -91,7 +91,7 @@ export const initModels = (sequelize: Sequelize): void => {
     CommandLogs,
     Aways,
     Messages,
-    Modifier,
+    LevelMultiplier,
     Jobs,
     TemplateMessages,
     PrereasonMessages,
@@ -275,7 +275,7 @@ export const initModels = (sequelize: Sequelize): void => {
     sourceKey: "guildId",
     constraints: false,
   });
-  Guild.hasMany(Modifier, {
+  Guild.hasMany(LevelMultiplier, {
     foreignKey: "guildId",
     sourceKey: "guildId",
     constraints: false,
@@ -457,7 +457,10 @@ export const initModels = (sequelize: Sequelize): void => {
 
   Messages.belongsTo(Guild, { foreignKey: "guildId", constraints: false });
 
-  Modifier.belongsTo(Guild, { foreignKey: "guildId", constraints: false });
+  LevelMultiplier.belongsTo(Guild, {
+    foreignKey: "guildId",
+    constraints: false,
+  });
 
   TemplateMessages.belongsTo(Guild, {
     foreignKey: "guildId",

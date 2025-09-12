@@ -7,7 +7,7 @@ import {
   Model,
   Table,
 } from "sequelize-typescript";
-import { UserLevel, UserBalances, Modifier } from "../models";
+import { UserLevel, UserBalances, LevelMultiplier } from "../models";
 
 export enum UserType {
   ADMIN = "admin",
@@ -102,7 +102,7 @@ export class User extends Model<User> {
   }
 
   @AfterCreate
-  static async addModifier(instance: User) {
+  static async addMultiplier(instance: User) {
     // Run UserLevel and UserBalances upserts in parallel
     await Promise.all([
       UserLevel.upsert({
@@ -115,10 +115,10 @@ export class User extends Model<User> {
       } as UserBalances),
     ]);
 
-    // Upsert the modifier
-    await Modifier.upsert({
+    // Upsert the LevelMultiplier
+    await LevelMultiplier.upsert({
       guildId: instance.guildId,
       userId: instance.userId,
-    } as Modifier);
+    } as LevelMultiplier);
   }
 }

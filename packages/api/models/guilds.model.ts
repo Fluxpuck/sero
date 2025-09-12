@@ -6,7 +6,7 @@ import {
   Model,
   Table,
 } from "sequelize-typescript";
-import { Modifier } from "./modifiers.model";
+import { LevelMultiplier } from "./level-multiplier.model";
 
 @Table({
   tableName: "guilds",
@@ -51,14 +51,14 @@ export class Guild extends Model<Guild> {
   declare premium: boolean;
 
   @AfterCreate
-  static async addModifier(instance: Guild) {
-    await Modifier.upsert(
+  static async addMultiplier(instance: Guild) {
+    await LevelMultiplier.upsert(
       {
         guildId: instance.guildId,
         amount: 1,
         active: true,
         expireAt: null,
-      } as Modifier,
+      } as LevelMultiplier,
       {
         conflictFields: ["userId", "guildId"],
       }

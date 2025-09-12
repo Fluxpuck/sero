@@ -1,5 +1,5 @@
 import { Request, Response, Router, NextFunction } from "express";
-import { Modifier } from "../../../../models";
+import { LevelMultiplier } from "../../../../models";
 import { ResponseHandler } from "../../../../utils/response.utils";
 import { logUserExperience } from "../../../../utils/log.utils";
 import { UserExperienceLogType } from "../../../../models/user-experience-logs.model";
@@ -83,19 +83,21 @@ router.post(
         rewardAmount = Math.floor(Math.random() * (max - min + 1)) + min;
       }
 
-      // Apply modifiers if needed
-      const guild_modifier = await Modifier.findOne({ where: { guildId } });
-      const user_modifier = await Modifier.findOne({
-        where: { guildId, userId },
-      });
+      // // Apply multipliers if needed
+      // const guild_multiplier = await LevelMultiplier.findOne({
+      //   where: { guildId },
+      // });
+      // const user_multiplier = await LevelMultiplier.findOne({
+      //   where: { guildId, userId },
+      // });
 
-      // Apply modifiers to the reward amount if needed
-      if (guild_modifier?.amount || user_modifier?.amount) {
-        // Apply modifiers as multipliers to the base reward amount
-        const guildMod = guild_modifier?.amount || 1;
-        const userMod = user_modifier?.amount || 1;
-        rewardAmount = Math.ceil(rewardAmount * guildMod * userMod);
-      }
+      // // Apply multipliers to the reward amount if needed
+      // if (guild_multiplier?.amount || user_multiplier?.amount) {
+      //   // Apply multipliers as multipliers to the base reward amount
+      //   const guildMod = guild_multiplier?.amount || 1;
+      //   const userMod = user_multiplier?.amount || 1;
+      //   rewardAmount = Math.ceil(rewardAmount * guildMod * userMod);
+      // }
 
       // Get or create user level
       const [userLevel, created] = await getOrCreateUserLevel(
