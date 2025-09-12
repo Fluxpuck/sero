@@ -55,12 +55,10 @@ export class Guild extends Model<Guild> {
     await LevelMultiplier.upsert(
       {
         guildId: instance.guildId,
-        amount: 1,
-        active: true,
-        expireAt: null,
+        multiplier: 1,
       } as LevelMultiplier,
       {
-        conflictFields: ["userId", "guildId"],
+        returning: true,
       }
     );
   }
