@@ -8,6 +8,8 @@ import {
   Table,
 } from "sequelize-typescript";
 
+export type LevelMultiplierType = "server" | "personal";
+
 @Table({
   tableName: "multipliers",
   createdAt: "createdAt",
@@ -54,6 +56,13 @@ export class LevelMultiplier extends Model<LevelMultiplier> {
   })
   declare userId: string | null;
 
+  @Default("server")
+  @Column({
+    type: DataType.ENUM("server", "personal"),
+    allowNull: false,
+  })
+  declare type: LevelMultiplierType;
+
   @Default(1)
   @Column({
     type: DataType.INTEGER,
@@ -62,14 +71,17 @@ export class LevelMultiplier extends Model<LevelMultiplier> {
       max: 10,
     },
   })
-  declare amount: number;
+  declare multiplier: number;
 
   @Column({
-    type: DataType.BOOLEAN,
-    allowNull: false,
-    defaultValue: true,
+    type: DataType.INTEGER,
+    allowNull: true,
+    validate: {
+      isInt: true,
+      min: 0,
+    },
   })
-  declare active: boolean;
+  declare duration: number | null;
 
   @Column({
     type: DataType.DATE,
@@ -77,13 +89,31 @@ export class LevelMultiplier extends Model<LevelMultiplier> {
   })
   declare expireAt: Date | null;
 
+  get hasActiveBoost(): boolean {
+    return (
+      this.multiplier > 1 &&
+      (this.expireAt ? new Date() < this.expireAt : false)
+    );
+  }
+
   @BeforeCreate
   @BeforeUpdate
-  static checkExpiration(instance: LevelMultiplier) {
-    // If expiration date exists and has passed
-    if (instance.expireAt && new Date() > instance.expireAt) {
-      instance.active = false;
-      instance.amount = 1;
+  static calculateExpireAt(instance: LevelMultiplier): void {
+    if (instance.duration) {
+      instance.setDataValue(
+        "expireAt",
+        new Date(Date.now() + instance.duration * 1000)
+      );
+    }
+  }
+
+  @BeforeCreate
+  @BeforeUpdate
+  static async setType(instance: LevelMultiplier): Promise<void> {
+    if (instance.userId) {
+      instance.setDataValue("type", "personal");
+    } else {
+      instance.setDataValue("type", "server");
     }
   }
 }

@@ -83,21 +83,21 @@ router.post(
         rewardAmount = Math.floor(Math.random() * (max - min + 1)) + min;
       }
 
-      // // Apply multipliers if needed
-      // const guild_multiplier = await LevelMultiplier.findOne({
-      //   where: { guildId },
-      // });
-      // const user_multiplier = await LevelMultiplier.findOne({
-      //   where: { guildId, userId },
-      // });
+      // Apply multipliers if needed
+      const guild_multiplier = await LevelMultiplier.findOne({
+        where: { guildId, userId: null, type: 'server' },
+      });
+      const user_multiplier = await LevelMultiplier.findOne({
+        where: { guildId, userId, type: 'personal' },
+      });
 
-      // // Apply multipliers to the reward amount if needed
-      // if (guild_multiplier?.amount || user_multiplier?.amount) {
-      //   // Apply multipliers as multipliers to the base reward amount
-      //   const guildMod = guild_multiplier?.amount || 1;
-      //   const userMod = user_multiplier?.amount || 1;
-      //   rewardAmount = Math.ceil(rewardAmount * guildMod * userMod);
-      // }
+      // Apply multipliers to the reward amount if needed
+      // Check if multipliers are active using hasActiveBoost
+      const guildMod = guild_multiplier?.hasActiveBoost ? guild_multiplier.multiplier : 1;
+      const userMod = user_multiplier?.hasActiveBoost ? user_multiplier.multiplier : 1;
+      
+      // Apply multipliers to the base reward amount
+      rewardAmount = Math.ceil(rewardAmount * guildMod * userMod);
 
       // Get or create user level
       const [userLevel, created] = await getOrCreateUserLevel(

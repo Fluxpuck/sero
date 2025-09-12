@@ -70,16 +70,20 @@ router.post(
 
       // Get Guild and User multipliers (if any)
       const guild_multiplier = await LevelMultiplier.findOne({
-        where: { guildId },
+        where: { guildId, userId: null, type: 'server' },
       });
       const user_multiplier = await LevelMultiplier.findOne({
-        where: { guildId, userId },
+        where: { guildId, userId, type: 'personal' },
       });
 
+      // Calculate gain based on multipliers, checking if they're active
+      const guildMultiplierValue = guild_multiplier?.hasActiveBoost ? guild_multiplier.multiplier : 1;
+      const userMultiplierValue = user_multiplier?.hasActiveBoost ? user_multiplier.multiplier : 1;
+      
       // Calculate gain based on multipliers
       const gain = calculateXp(
-        guild_multiplier?.amount,
-        user_multiplier?.amount
+        userMultiplierValue,
+        guildMultiplierValue
       );
 
       // Update user level

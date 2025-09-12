@@ -175,8 +175,13 @@ router.get(
           },
         })) + 1;
 
-      const multiplier = await LevelMultiplier.findOne({
-        where: { userId, guildId },
+      // Get both server and personal multipliers
+      const serverMultiplier = await LevelMultiplier.findOne({
+        where: { guildId, userId: null, type: 'server' },
+      });
+      
+      const personalMultiplier = await LevelMultiplier.findOne({
+        where: { userId, guildId, type: 'personal' },
       });
 
       const ranks = await LevelRank.findAll({
@@ -186,13 +191,21 @@ router.get(
         },
         order: [["level", "ASC"]],
       });
+      
+      // Check if multipliers are active using hasActiveBoost
+      const serverMultiplierValue = serverMultiplier?.hasActiveBoost ? serverMultiplier.multiplier : 1;
+      const personalMultiplierValue = personalMultiplier?.hasActiveBoost ? personalMultiplier.multiplier : 1;
 
       const response = {
         userLevel: {
           ...userLevel.toJSON(),
           position,
         },
-        multiplier: multiplier?.amount ?? 1,
+        multipliers: {
+          server: serverMultiplierValue,
+          personal: personalMultiplierValue,
+          total: serverMultiplierValue * personalMultiplierValue
+        },
         ranks: ranks ?? [],
       };
 
