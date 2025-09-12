@@ -103,7 +103,6 @@ export class User extends Model<User> {
 
   @AfterCreate
   static async addMultiplier(instance: User) {
-    // Run UserLevel and UserBalances upserts in parallel
     await Promise.all([
       UserLevel.upsert({
         guildId: instance.guildId,
@@ -113,12 +112,10 @@ export class User extends Model<User> {
         guildId: instance.guildId,
         userId: instance.userId,
       } as UserBalances),
+      LevelMultiplier.upsert({
+        guildId: instance.guildId,
+        userId: instance.userId,
+      } as LevelMultiplier),
     ]);
-
-    // Upsert the LevelMultiplier
-    await LevelMultiplier.upsert({
-      guildId: instance.guildId,
-      userId: instance.userId,
-    } as LevelMultiplier);
   }
 }

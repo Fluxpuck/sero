@@ -23,13 +23,10 @@ export type LevelMultiplierType = "server" | "personal";
       fields: ["guildId", "userId"],
     },
     {
+      fields: ["type"],
+    },
+    {
       fields: ["expireAt"],
-    },
-    {
-      fields: ["active"],
-    },
-    {
-      fields: ["active", "expireAt"],
     },
   ],
 })
