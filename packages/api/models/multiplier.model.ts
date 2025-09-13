@@ -74,7 +74,7 @@ export class GuildLevelMultiplier extends Model<GuildLevelMultiplier> {
 
   @BeforeCreate
   @BeforeUpdate
-  static calculateExpireAt(instance: UserLevelMultiplier): void {
+  static calculateExpireAt(instance: GuildLevelMultiplier): void {
     if (instance.duration) {
       instance.setDataValue(
         "expireAt",
