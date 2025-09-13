@@ -22,7 +22,7 @@ import { Commands } from "./commands.model";
 import { CommandLogs } from "./command-logs.model";
 import { Aways } from "./aways.model";
 import { Messages } from "./messages.model";
-import { LevelMultiplier } from "./level-multiplier.model";
+import { GuildLevelMultiplier, UserLevelMultiplier } from "./multiplier.model";
 import { Jobs } from "./jobs.model";
 import {
   TemplateMessages,
@@ -54,7 +54,8 @@ export {
   CommandLogs,
   Aways,
   Messages,
-  LevelMultiplier,
+  GuildLevelMultiplier,
+  UserLevelMultiplier,
   Jobs,
   TemplateMessages,
   TemplateMessagesType,
@@ -91,7 +92,8 @@ export const initModels = (sequelize: Sequelize): void => {
     CommandLogs,
     Aways,
     Messages,
-    LevelMultiplier,
+    GuildLevelMultiplier,
+    UserLevelMultiplier,
     Jobs,
     TemplateMessages,
     PrereasonMessages,
@@ -275,7 +277,7 @@ export const initModels = (sequelize: Sequelize): void => {
     sourceKey: "guildId",
     constraints: false,
   });
-  Guild.hasMany(LevelMultiplier, {
+  Guild.hasMany(GuildLevelMultiplier, {
     foreignKey: "guildId",
     sourceKey: "guildId",
     constraints: false,
@@ -457,7 +459,19 @@ export const initModels = (sequelize: Sequelize): void => {
 
   Messages.belongsTo(Guild, { foreignKey: "guildId", constraints: false });
 
-  LevelMultiplier.belongsTo(Guild, {
+  GuildLevelMultiplier.belongsTo(Guild, {
+    foreignKey: "guildId",
+    constraints: false,
+  });
+
+  UserLevelMultiplier.belongsTo(User, {
+    foreignKey: "userId",
+    constraints: false,
+    scope: {
+      guildId: { $col: "UserLevelMultiplier.guildId" },
+    },
+  });
+  UserLevelMultiplier.belongsTo(Guild, {
     foreignKey: "guildId",
     constraints: false,
   });

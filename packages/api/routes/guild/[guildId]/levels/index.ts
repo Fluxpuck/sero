@@ -4,7 +4,8 @@ import {
   Guild,
   UserLevel,
   LevelRank,
-  LevelMultiplier,
+  GuildLevelMultiplier,
+  UserLevelMultiplier,
   User,
 } from "../../../../models";
 import { fetchUsername, fetchGuildName } from "../../../../utils/discord-api";
@@ -147,7 +148,8 @@ router.get("/", async (req: Request, res: Response, next: NextFunction) => {
  *                 userLevel:
  *                   $ref: '#/components/schemas/UserLevel'
  *                 multiplier:
- *                   $ref: '#/components/schemas/LevelMultiplier'
+ *                   $ref: '#/components/schemas/GuildLevelMultiplier',
+ *                   $ref: '#/components/schemas/UserLevelMultiplier'
  *       404:
  *         description: Guild not found
  *       500:
@@ -176,12 +178,12 @@ router.get(
         })) + 1;
 
       // Get both server and personal multipliers
-      const serverMultiplier = await LevelMultiplier.findOne({
-        where: { guildId, userId: null, type: 'server' },
+      const serverMultiplier = await GuildLevelMultiplier.findOne({
+        where: { guildId },
       });
-      
-      const personalMultiplier = await LevelMultiplier.findOne({
-        where: { userId, guildId, type: 'personal' },
+
+      const personalMultiplier = await UserLevelMultiplier.findOne({
+        where: { guildId, userId },
       });
 
       const ranks = await LevelRank.findAll({
@@ -191,10 +193,14 @@ router.get(
         },
         order: [["level", "ASC"]],
       });
-      
+
       // Check if multipliers are active using hasActiveBoost
-      const serverMultiplierValue = serverMultiplier?.hasActiveBoost ? serverMultiplier.multiplier : 1;
-      const personalMultiplierValue = personalMultiplier?.hasActiveBoost ? personalMultiplier.multiplier : 1;
+      const serverMultiplierValue = serverMultiplier?.hasActiveBoost
+        ? serverMultiplier.multiplier
+        : 1;
+      const personalMultiplierValue = personalMultiplier?.hasActiveBoost
+        ? personalMultiplier.multiplier
+        : 1;
 
       const response = {
         userLevel: {
@@ -204,7 +210,7 @@ router.get(
         multipliers: {
           server: serverMultiplierValue,
           personal: personalMultiplierValue,
-          total: serverMultiplierValue * personalMultiplierValue
+          total: serverMultiplierValue * personalMultiplierValue,
         },
         ranks: ranks ?? [],
       };
@@ -259,7 +265,8 @@ router.get(
  *                 userLevel:
  *                   $ref: '#/components/schemas/UserLevel'
  *                 multiplier:
- *                   $ref: '#/components/schemas/LevelMultiplier'
+ *                   $ref: '#/components/schemas/GuildLevelMultiplier',
+ *                   $ref: '#/components/schemas/UserLevelMultiplier'
  *       404:
  *         description: Guild not found
  *       500:
@@ -362,7 +369,8 @@ router.post(
  *                 userLevel:
  *                   $ref: '#/components/schemas/UserLevel'
  *                 multiplier:
- *                   $ref: '#/components/schemas/LevelMultiplier'
+ *                   $ref: '#/components/schemas/GuildLevelMultiplier',
+ *                   $ref: '#/components/schemas/UserLevelMultiplier'
  *       404:
  *         description: Guild not found
  *       500:

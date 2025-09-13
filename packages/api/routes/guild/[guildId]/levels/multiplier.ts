@@ -1,16 +1,38 @@
 import { Request, Response, Router, NextFunction } from "express";
 import { ResponseHandler } from "../../../../utils/response.utils";
-import { logUserExperience } from "../../../../utils/log.utils";
-import { UserExperienceLogType } from "../../../../models/user-experience-logs.model";
 import { sequelize } from "../../../../database/sequelize";
 import { getOrCreateUserLevel } from "./index";
-import { LevelMultiplier, LevelMultiplierType } from "../../../../models/level-multiplier.model";
+import {
+  GuildLevelMultiplier,
+  UserLevelMultiplier,
+} from "../../../../models/multiplier.model";
+import { formatDuration } from "date-fns";
+
+function calculateTimeLeft(expireAt: Date | null) {
+  if (!expireAt) {
+    return {
+      timeLeft: null,
+      timeLeftString: "",
+    };
+  }
+
+  const now = Date.now();
+  const expireTime = new Date(expireAt).getTime();
+
+  const timeLeft = Math.max(0, Math.floor((expireTime - now) / 1000));
+  const timeLeftString = formatDuration({ seconds: timeLeft });
+
+  return {
+    timeLeft,
+    timeLeftString,
+  };
+}
 
 const router = Router({ mergeParams: true });
 
 /**
  * @swagger
- * /guild/{guildId}/levels/multiplier:
+ * /guild/{guildId}/levels/multiplier
  *   post:
  *     summary: Create or update a server-wide experience multiplier
  *     tags:
@@ -52,30 +74,32 @@ router.post("/", async (req: Request, res: Response, next: NextFunction) => {
     // Validate multiplier
     if (multiplier < 1 || multiplier > 10) {
       await transaction.rollback();
-      return ResponseHandler.sendValidationFail(
-        res,
-        "Invalid multiplier",
-        ["Multiplier must be between 1 and 10"]
-      );
+      return ResponseHandler.sendValidationFail(res, "Invalid multiplier", [
+        "Multiplier must be between 1 and 10",
+      ]);
     }
 
     // Create or update server multiplier using upsert
-    const [serverMultiplier] = await LevelMultiplier.upsert({
-      guildId,
-      userId: null,
-      multiplier,
-      duration,
-    } as LevelMultiplier, {
-      transaction,
-      returning: true
-    });
+    const [guildMultiplier] = await GuildLevelMultiplier.upsert(
+      {
+        guildId,
+        multiplier,
+        duration,
+      } as GuildLevelMultiplier,
+      {
+        transaction,
+        returning: true,
+      }
+    );
 
     await transaction.commit();
 
     return ResponseHandler.sendSuccess(
       res,
-      serverMultiplier,
-      `Server multiplier set to ${multiplier}${duration ? ` for ${duration} seconds` : ""}`
+      guildMultiplier,
+      `Guild multiplier set to ${multiplier}${
+        duration ? ` for ${duration} seconds` : ""
+      }`
     );
   } catch (error) {
     await transaction.rollback();
@@ -134,33 +158,36 @@ router.post(
       // Validate multiplier
       if (multiplier < 1 || multiplier > 10) {
         await transaction.rollback();
-        return ResponseHandler.sendValidationFail(
-          res,
-          "Invalid multiplier",
-          ["Multiplier must be between 1 and 10"]
-        );
+        return ResponseHandler.sendValidationFail(res, "Invalid multiplier", [
+          "Multiplier must be between 1 and 10",
+        ]);
       }
 
       // Create or update user level first to ensure the user exists
       await getOrCreateUserLevel(guildId, userId, transaction);
 
       // Create or update personal multiplier using upsert
-      const [personalMultiplier] = await LevelMultiplier.upsert({
-        guildId,
-        userId,
-        multiplier,
-        duration,
-      } as LevelMultiplier, {
-        transaction,
-        returning: true
-      });
+      const [personalMultiplier] = await UserLevelMultiplier.upsert(
+        {
+          guildId,
+          userId,
+          multiplier,
+          duration,
+        } as UserLevelMultiplier,
+        {
+          transaction,
+          returning: true,
+        }
+      );
 
       await transaction.commit();
 
       return ResponseHandler.sendSuccess(
         res,
         personalMultiplier,
-        `Personal multiplier for user ${userId} set to ${multiplier}${duration ? ` for ${duration} seconds` : ""}`
+        `User multiplier for ${userId} set to ${multiplier}${
+          duration ? ` for ${duration} seconds` : ""
+        }`
       );
     } catch (error) {
       await transaction.rollback();
@@ -194,23 +221,33 @@ router.get("/", async (req: Request, res: Response, next: NextFunction) => {
   try {
     const { guildId } = req.params;
 
-    const serverMultiplier = await LevelMultiplier.findOne({
-      where: { guildId, userId: null, type: "server" },
+    const serverMultiplier = await GuildLevelMultiplier.findOne({
+      where: { guildId },
     });
 
     if (!serverMultiplier) {
       return ResponseHandler.sendSuccess(
         res,
-        { multiplier: 1, active: false, expireAt: null },
+        {
+          multiplier: 1,
+          hasActiveBoost: false,
+          expireAt: null,
+          timeLeft: null,
+        },
         "No server multiplier found, using default"
       );
     }
+
+    const { timeLeft, timeLeftString } = calculateTimeLeft(
+      serverMultiplier?.hasActiveBoost ? serverMultiplier?.expireAt : null
+    );
 
     return ResponseHandler.sendSuccess(
       res,
       {
         ...serverMultiplier.toJSON(),
-        active: serverMultiplier.hasActiveBoost,
+        timeLeft,
+        timeLeftString,
       },
       "Server multiplier retrieved successfully"
     );
@@ -251,23 +288,28 @@ router.get(
     try {
       const { guildId, userId } = req.params;
 
-      const personalMultiplier = await LevelMultiplier.findOne({
-        where: { guildId, userId, type: "personal" },
+      const personalMultiplier = await UserLevelMultiplier.findOne({
+        where: { guildId, userId },
       });
 
       if (!personalMultiplier) {
         return ResponseHandler.sendSuccess(
           res,
-          { multiplier: 1, active: false, expireAt: null },
+          { multiplier: 1, active: false, expireAt: null, timeLeft: null },
           "No personal multiplier found, using default"
         );
       }
+
+      const { timeLeft, timeLeftString } = calculateTimeLeft(
+        personalMultiplier?.hasActiveBoost ? personalMultiplier?.expireAt : null
+      );
 
       return ResponseHandler.sendSuccess(
         res,
         {
           ...personalMultiplier.toJSON(),
           active: personalMultiplier.hasActiveBoost,
+          timeLeft,
         },
         "Personal multiplier retrieved successfully"
       );

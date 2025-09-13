@@ -7,7 +7,7 @@ import {
   Model,
   Table,
 } from "sequelize-typescript";
-import { UserLevel, UserBalances, LevelMultiplier } from "../models";
+import { UserLevel, UserBalances, UserLevelMultiplier } from "../models";
 
 export enum UserType {
   ADMIN = "admin",
@@ -112,10 +112,10 @@ export class User extends Model<User> {
         guildId: instance.guildId,
         userId: instance.userId,
       } as UserBalances),
-      LevelMultiplier.upsert({
+      UserLevelMultiplier.upsert({
         guildId: instance.guildId,
         userId: instance.userId,
-      } as LevelMultiplier),
+      } as UserLevelMultiplier),
     ]);
   }
 }

@@ -6,7 +6,7 @@ import {
   Model,
   Table,
 } from "sequelize-typescript";
-import { LevelMultiplier } from "./level-multiplier.model";
+import { GuildLevelMultiplier } from "./multiplier.model";
 
 @Table({
   tableName: "guilds",
@@ -52,11 +52,11 @@ export class Guild extends Model<Guild> {
 
   @AfterCreate
   static async addMultiplier(instance: Guild) {
-    await LevelMultiplier.upsert(
+    await GuildLevelMultiplier.upsert(
       {
         guildId: instance.guildId,
         multiplier: 1,
-      } as LevelMultiplier,
+      } as GuildLevelMultiplier,
       {
         returning: true,
       }

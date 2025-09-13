@@ -1,5 +1,5 @@
 import { Request, Response, Router, NextFunction } from "express";
-import { LevelMultiplier } from "../../../../models";
+import { GuildLevelMultiplier, UserLevelMultiplier } from "../../../../models";
 import { ResponseHandler } from "../../../../utils/response.utils";
 import { calculateXp } from "../../../../utils/levels.utils";
 import { logUserExperience } from "../../../../utils/log.utils";
@@ -69,11 +69,11 @@ router.post(
       );
 
       // Get Guild and User multipliers (if any)
-      const guild_multiplier = await LevelMultiplier.findOne({
-        where: { guildId, userId: null, type: 'server' },
+      const guild_multiplier = await GuildLevelMultiplier.findOne({
+        where: { guildId },
       });
-      const user_multiplier = await LevelMultiplier.findOne({
-        where: { guildId, userId, type: 'personal' },
+      const user_multiplier = await UserLevelMultiplier.findOne({
+        where: { guildId, userId },
       });
 
       // Calculate gain based on multipliers, checking if they're active

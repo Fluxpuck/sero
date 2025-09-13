@@ -1,5 +1,5 @@
 import { Request, Response, Router, NextFunction } from "express";
-import { LevelMultiplier } from "../../../../models";
+import { GuildLevelMultiplier, UserLevelMultiplier } from "../../../../models";
 import { ResponseHandler } from "../../../../utils/response.utils";
 import { logUserExperience } from "../../../../utils/log.utils";
 import { UserExperienceLogType } from "../../../../models/user-experience-logs.model";
@@ -84,18 +84,22 @@ router.post(
       }
 
       // Apply multipliers if needed
-      const guild_multiplier = await LevelMultiplier.findOne({
-        where: { guildId, userId: null, type: 'server' },
+      const guild_multiplier = await GuildLevelMultiplier.findOne({
+        where: { guildId },
       });
-      const user_multiplier = await LevelMultiplier.findOne({
-        where: { guildId, userId, type: 'personal' },
+      const user_multiplier = await UserLevelMultiplier.findOne({
+        where: { guildId, userId },
       });
 
       // Apply multipliers to the reward amount if needed
       // Check if multipliers are active using hasActiveBoost
-      const guildMod = guild_multiplier?.hasActiveBoost ? guild_multiplier.multiplier : 1;
-      const userMod = user_multiplier?.hasActiveBoost ? user_multiplier.multiplier : 1;
-      
+      const guildMod = guild_multiplier?.hasActiveBoost
+        ? guild_multiplier.multiplier
+        : 1;
+      const userMod = user_multiplier?.hasActiveBoost
+        ? user_multiplier.multiplier
+        : 1;
+
       // Apply multipliers to the base reward amount
       rewardAmount = Math.ceil(rewardAmount * guildMod * userMod);
 
